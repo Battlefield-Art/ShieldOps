@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     DeploymentPlan,
@@ -142,6 +145,40 @@ async def validate_configs(
 
     reasoning.insert(0, f"Validated {len(plans)} plan(s): {valid_count} valid")
     confidence = 0.9 if valid_count == len(plans) else 0.6
+
+    # LLM enhancement: deeper config validation reasoning
+    try:
+        from .prompts import SYSTEM_VALIDATE, ValidationResult
+
+        validation_context = json.dumps(
+            {
+                "total_plans": len(plans),
+                "valid_count": valid_count,
+                "plans_summary": [
+                    {
+                        "cluster": p.target.cluster_name,
+                        "namespace": p.target.namespace,
+                        "strategy": p.strategy.value,
+                        "replicas": p.replicas,
+                    }
+                    for p in plans[:10]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ValidationResult,
+            await llm_structured(
+                system_prompt=SYSTEM_VALIDATE,
+                user_prompt=f"Deployment validation context:\n{validation_context}",
+                schema=ValidationResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="otel_deployer", node="validate_configs")
+        reasoning.append(f"LLM analysis: {llm_result.summary}")
+        reasoning.extend(llm_result.recommendations)
+    except Exception:
+        logger.debug("llm_fallback", agent="otel_deployer", node="validate_configs")
 
     return {
         "stage": DeployStage.VALIDATE.value,

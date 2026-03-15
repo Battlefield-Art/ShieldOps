@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
 from pydantic import BaseModel
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     CoverageGap,
@@ -65,11 +68,44 @@ async def create_rules(
         rule = await toolkit.create_detection_rule(gap)
         rules.append(rule.model_dump())
 
+    reasoning_note = f"Created {len(rules)} detection rules for coverage gaps"
+
+    # LLM enhancement: intelligent rule creation analysis
+    try:
+        from .prompts import SYSTEM_CREATE_RULES, RuleCreationResult
+
+        rules_context = json.dumps(
+            {
+                "total_gaps": len(gaps),
+                "rules_created": len(rules),
+                "gaps_summary": [
+                    {
+                        "technique_id": g.technique_id,
+                        "technique_name": g.technique_name,
+                        "current_coverage": g.current_coverage,
+                    }
+                    for g in gaps[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            RuleCreationResult,
+            await llm_structured(
+                system_prompt=SYSTEM_CREATE_RULES,
+                user_prompt=f"Detection rule creation context:\n{rules_context}",
+                schema=RuleCreationResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="detection_engineering", node="create_rules")
+        reasoning_note = f"{llm_result.summary} {reasoning_note}"
+    except Exception:
+        logger.debug("llm_fallback", agent="detection_engineering", node="create_rules")
+
     return {
         "stage": DetectionStage.TEST_RULES.value,
         "rules_created": rules,
-        "reasoning_chain": state.get("reasoning_chain", [])
-        + [f"Created {len(rules)} detection rules for coverage gaps"],
+        "reasoning_chain": state.get("reasoning_chain", []) + [reasoning_note],
     }
 
 

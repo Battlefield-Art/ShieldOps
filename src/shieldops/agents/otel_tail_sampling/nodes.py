@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
+
+from shieldops.utils.llm import llm_structured
 
 from .models import SamplingPolicy, SamplingStage, TraceProfile
 from .tools import OTelTailSamplingToolkit
@@ -61,6 +64,44 @@ async def design_policies(
             f"Designed {policy.policy_type.value} policy '{policy.name}' "
             f"for {profile.service} (rate={policy.sample_rate:.2f})"
         )
+
+    # LLM enhancement: intelligent policy design reasoning
+    try:
+        from .prompts import SYSTEM_DESIGN, PolicyDesignResult
+
+        policy_context = json.dumps(
+            {
+                "budget_pct": budget_pct,
+                "num_profiles": len(profiles),
+                "profiles_summary": [
+                    {
+                        "service": p.service,
+                        "volume_per_min": p.volume_per_min,
+                        "error_rate": p.error_rate,
+                        "p99_latency_ms": p.p99_latency_ms,
+                    }
+                    for p in profiles[:20]
+                ],
+                "policies_summary": [
+                    {"name": p.name, "type": p.policy_type.value, "rate": p.sample_rate}
+                    for p in policies[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            PolicyDesignResult,
+            await llm_structured(
+                system_prompt=SYSTEM_DESIGN,
+                user_prompt=f"Sampling policy design context:\n{policy_context}",
+                schema=PolicyDesignResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="otel_tail_sampling", node="design_policies")
+        reasoning.append(f"LLM analysis: {llm_result.summary}")
+        reasoning.extend(llm_result.coverage_risks)
+    except Exception:
+        logger.debug("llm_fallback", agent="otel_tail_sampling", node="design_policies")
 
     return {
         "stage": SamplingStage.SIMULATE.value,

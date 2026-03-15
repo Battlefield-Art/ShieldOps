@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     LogEndpoint,
@@ -98,6 +101,39 @@ async def test_parsing(
             f"Parsing for {result.service}: {result.parsed_pct:.1f}% success, "
             f"{result.failed_pct:.1f}% failed{error_info}"
         )
+
+    # LLM enhancement: intelligent parsing analysis
+    try:
+        from .prompts import SYSTEM_PARSE, ParsingAnalysisResult
+
+        parsing_context = json.dumps(
+            {
+                "services_tested": len(results),
+                "results_summary": [
+                    {
+                        "service": r.service,
+                        "parsed_pct": r.parsed_pct,
+                        "failed_pct": r.failed_pct,
+                        "sample_errors": r.sample_errors[:3] if r.sample_errors else [],
+                    }
+                    for r in results[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ParsingAnalysisResult,
+            await llm_structured(
+                system_prompt=SYSTEM_PARSE,
+                user_prompt=f"Log parsing test context:\n{parsing_context}",
+                schema=ParsingAnalysisResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="otel_logs_pipeline", node="test_parsing")
+        reasoning.append(f"LLM analysis: {llm_result.summary}")
+        reasoning.extend(llm_result.parsing_issues)
+    except Exception:
+        logger.debug("llm_fallback", agent="otel_logs_pipeline", node="test_parsing")
 
     return {
         "stage": LogStage.VALIDATE.value,

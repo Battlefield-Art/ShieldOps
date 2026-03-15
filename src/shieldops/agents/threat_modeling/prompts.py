@@ -1,5 +1,23 @@
 """Threat Modeling Agent — LLM prompt templates."""
 
+from pydantic import BaseModel, Field
+
+
+class ThreatAnalysisResult(BaseModel):
+    """Structured output from LLM-assisted threat analysis."""
+
+    summary: str = Field(description="Brief summary of threat analysis")
+    critical_threats: list[str] = Field(
+        description="Critical threat vectors requiring immediate attention"
+    )
+    attack_scenarios: list[str] = Field(
+        description="Concrete attack scenarios identified via STRIDE"
+    )
+    recommended_controls: list[str] = Field(
+        description="Recommended security controls for top threats"
+    )
+
+
 SYSTEM_DISCOVER = (
     "You are a threat modeling architect discovering service architecture components.\n"
     "For the target service:\n"

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     CollectorAction,
@@ -150,6 +153,34 @@ async def generate_config(
         f"{len(receivers)} receivers, {len(processors)} processors, "
         f"{len(exporters)} exporters, {len(pipelines)} pipelines",
     ]
+
+    # LLM enhancement: intelligent config optimization advice
+    try:
+        from .prompts import SYSTEM_GENERATE, ConfigGenerationResult
+
+        config_context = json.dumps(
+            {
+                "deployment_mode": mode.value,
+                "receivers": [r.name for r in receivers],
+                "processors": [p.name for p in processors],
+                "exporters": [e.name for e in exporters],
+                "pipelines": [p.name for p in pipelines],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ConfigGenerationResult,
+            await llm_structured(
+                system_prompt=SYSTEM_GENERATE,
+                user_prompt=f"OTel Collector config context:\n{config_context}",
+                schema=ConfigGenerationResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="otel_collector_manager", node="generate_config")
+        reasoning.append(f"LLM analysis: {llm_result.summary}")
+        reasoning.extend(llm_result.optimization_notes)
+    except Exception:
+        logger.debug("llm_fallback", agent="otel_collector_manager", node="generate_config")
 
     return {
         "collector_config": config.model_dump(),

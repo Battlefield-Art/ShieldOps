@@ -1,5 +1,23 @@
 """OTel Metrics Pipeline Agent — LLM prompt templates."""
 
+from pydantic import BaseModel, Field
+
+
+class CardinalityOptimizationResult(BaseModel):
+    """Structured output from LLM-assisted cardinality optimization."""
+
+    summary: str = Field(description="Brief summary of cardinality analysis")
+    high_impact_metrics: list[str] = Field(
+        description="Metrics with highest cardinality impact"
+    )
+    drop_recommendations: list[str] = Field(
+        description="Metrics recommended for dropping or aggregation"
+    )
+    estimated_savings_pct: float = Field(
+        description="Estimated overall storage savings percentage"
+    )
+
+
 SYSTEM_DISCOVER = """You are an OpenTelemetry metrics pipeline specialist for ShieldOps.
 Discover all metric endpoints in the target namespace:
 

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     CardinalityReport,
@@ -98,6 +101,39 @@ async def optimize_cardinality(
             f"{len(report.high_cardinality_metrics)} high-cardinality metrics, "
             f"est. {report.estimated_savings_pct:.1f}% savings if drops applied"
         )
+
+    # LLM enhancement: intelligent cardinality optimization
+    try:
+        from .prompts import SYSTEM_OPTIMIZE, CardinalityOptimizationResult
+
+        cardinality_context = json.dumps(
+            {
+                "services_analyzed": len(reports),
+                "reports_summary": [
+                    {
+                        "service": r.service,
+                        "total_series": r.total_series,
+                        "high_cardinality_count": len(r.high_cardinality_metrics),
+                        "estimated_savings_pct": r.estimated_savings_pct,
+                    }
+                    for r in reports[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            CardinalityOptimizationResult,
+            await llm_structured(
+                system_prompt=SYSTEM_OPTIMIZE,
+                user_prompt=f"Cardinality optimization context:\n{cardinality_context}",
+                schema=CardinalityOptimizationResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="otel_metrics_pipeline", node="optimize_cardinality")
+        reasoning.append(f"LLM analysis: {llm_result.summary}")
+        reasoning.extend(llm_result.drop_recommendations)
+    except Exception:
+        logger.debug("llm_fallback", agent="otel_metrics_pipeline", node="optimize_cardinality")
 
     return {
         "stage": MetricStage.VALIDATE.value,

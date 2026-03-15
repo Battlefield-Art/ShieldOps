@@ -1,5 +1,23 @@
 """Automated Security Testing Agent — LLM prompt templates."""
 
+from pydantic import BaseModel, Field
+
+
+class FindingsAnalysisResult(BaseModel):
+    """Structured output from LLM-assisted findings analysis."""
+
+    summary: str = Field(description="Brief summary of findings analysis")
+    attack_chains: list[str] = Field(
+        description="Identified attack chains from correlated findings"
+    )
+    top_recommendations: list[str] = Field(
+        description="Top remediation recommendations ranked by risk reduction"
+    )
+    overall_risk: str = Field(
+        description="Overall risk level: low, medium, high, critical"
+    )
+
+
 SYSTEM_DEFINE_SCOPE = (
     "You are a security testing engineer defining the scope of a security assessment.\n"
     "For the engagement:\n"

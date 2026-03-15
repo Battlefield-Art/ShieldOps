@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
 from pydantic import BaseModel
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     SecurityFinding,
@@ -131,16 +134,50 @@ async def analyze_findings(
     for f in sorted_findings[:5]:
         recommendations.append(f"[{f.severity.value.upper()}] {f.title}: {f.remediation}")
 
+    reasoning_note = (
+        f"Analyzed {len(raw_findings)} findings, "
+        f"deduplicated to {len(deduped)}, "
+        f"generated {len(recommendations)} recommendations"
+    )
+
+    # LLM enhancement: deeper findings analysis
+    try:
+        from .prompts import SYSTEM_ANALYZE_FINDINGS, FindingsAnalysisResult
+
+        findings_context = json.dumps(
+            {
+                "total_raw": len(raw_findings),
+                "deduped": len(deduped),
+                "findings_summary": [
+                    {
+                        "title": f.title,
+                        "severity": f.severity.value,
+                        "risk_score": f.risk_score,
+                        "category": f.category.value,
+                    }
+                    for f in sorted_findings[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            FindingsAnalysisResult,
+            await llm_structured(
+                system_prompt=SYSTEM_ANALYZE_FINDINGS,
+                user_prompt=f"Security findings context:\n{findings_context}",
+                schema=FindingsAnalysisResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="security_testing", node="analyze_findings")
+        reasoning_note = f"{llm_result.summary} {reasoning_note}"
+    except Exception:
+        logger.debug("llm_fallback", agent="security_testing", node="analyze_findings")
+
     return {
         "stage": TestStage.REPORT.value,
         "findings": [f.model_dump() for f in sorted_findings],
         "recommendations": recommendations,
-        "reasoning_chain": state.get("reasoning_chain", [])
-        + [
-            f"Analyzed {len(raw_findings)} findings, "
-            f"deduplicated to {len(deduped)}, "
-            f"generated {len(recommendations)} recommendations"
-        ],
+        "reasoning_chain": state.get("reasoning_chain", []) + [reasoning_note],
     }
 
 

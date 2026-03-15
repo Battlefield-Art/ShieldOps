@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
+
+from shieldops.utils.llm import llm_structured
 
 from .models import ComplianceResult, ConventionRule, Violation
 from .tools import OTelSemanticToolkit
@@ -93,6 +96,38 @@ async def analyze_violations(
         f"Violations breakdown: {len(errors)} error(s), "
         f"{len(warnings)} warning(s), {len(infos)} info(s)",
     ]
+
+    # LLM enhancement: deeper violation analysis
+    try:
+        from .prompts import SYSTEM_ANALYZE_VIOLATIONS, ViolationAnalysisResult
+
+        violation_context = json.dumps(
+            {
+                "overall_score": round(overall_score, 2),
+                "total_violations": len(all_violations),
+                "errors": len(errors),
+                "warnings": len(warnings),
+                "infos": len(infos),
+                "sample_violations": [
+                    {"attribute": v.attribute, "severity": v.severity, "rule": v.rule_name}
+                    for v in all_violations[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ViolationAnalysisResult,
+            await llm_structured(
+                system_prompt=SYSTEM_ANALYZE_VIOLATIONS,
+                user_prompt=f"Violation analysis context:\n{violation_context}",
+                schema=ViolationAnalysisResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="otel_semantic", node="analyze_violations")
+        reasoning.append(f"LLM analysis: {llm_result.summary}")
+        reasoning.extend(llm_result.common_patterns)
+    except Exception:
+        logger.debug("llm_fallback", agent="otel_semantic", node="analyze_violations")
 
     return {
         "overall_score": round(overall_score, 2),

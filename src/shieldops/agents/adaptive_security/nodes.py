@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
 from pydantic import BaseModel
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     AdaptationStage,
@@ -106,16 +109,46 @@ async def evaluate_proposals(
     total = len(proposals)
     confidence = round(accepted_count / total, 4) if total > 0 else 0.0
 
+    reasoning_note = (
+        f"Evaluated {total} proposals: {accepted_count} accepted, "
+        f"{total - accepted_count} rejected"
+    )
+
+    # LLM enhancement: deeper evaluation reasoning
+    try:
+        from .prompts import SYSTEM_EVALUATE, EvaluationResult
+
+        eval_context = json.dumps(
+            {
+                "total_proposals": total,
+                "accepted": accepted_count,
+                "rejected": total - accepted_count,
+                "proposals_summary": [
+                    {"metric": p.metric_name, "old": p.current_value, "new": p.proposed_value}
+                    for p in proposals[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            EvaluationResult,
+            await llm_structured(
+                system_prompt=SYSTEM_EVALUATE,
+                user_prompt=f"Proposal evaluation context:\n{eval_context}",
+                schema=EvaluationResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="adaptive_security", node="evaluate_proposals")
+        reasoning_note = f"{llm_result.summary} {reasoning_note}"
+    except Exception:
+        logger.debug("llm_fallback", agent="adaptive_security", node="evaluate_proposals")
+
     return {
         "stage": AdaptationStage.APPLY.value,
         "results": results,
         "accepted_count": accepted_count,
         "confidence_score": confidence,
-        "reasoning_chain": state.get("reasoning_chain", [])
-        + [
-            f"Evaluated {total} proposals: {accepted_count} accepted, "
-            f"{total - accepted_count} rejected"
-        ],
+        "reasoning_chain": state.get("reasoning_chain", []) + [reasoning_note],
     }
 
 

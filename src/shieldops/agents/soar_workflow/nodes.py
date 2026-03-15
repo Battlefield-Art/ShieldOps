@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
 from pydantic import BaseModel
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     AlertIntake,
@@ -82,11 +85,44 @@ async def enrich_context(state: dict[str, Any], toolkit: SOARWorkflowToolkit) ->
 
     malicious_count = sum(1 for e in enrichments if e.get("result", {}).get("is_malicious", False))
 
+    reasoning_note = (
+        f"Enriched {len(indicators)} indicators: {malicious_count} flagged as malicious"
+    )
+
+    # LLM enhancement: deeper enrichment analysis
+    try:
+        from .prompts import SYSTEM_ENRICH, EnrichmentAnalysisResult
+
+        enrich_context = json.dumps(
+            {
+                "total_indicators": len(indicators),
+                "malicious_count": malicious_count,
+                "alert_severity": alert.severity,
+                "mitre_tactics": alert.mitre_tactics,
+                "enrichments_summary": [
+                    {"indicator": e.get("indicator", ""), "is_malicious": e.get("result", {}).get("is_malicious", False)}
+                    for e in enrichments[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            EnrichmentAnalysisResult,
+            await llm_structured(
+                system_prompt=SYSTEM_ENRICH,
+                user_prompt=f"Enrichment context:\n{enrich_context}",
+                schema=EnrichmentAnalysisResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="soar_workflow", node="enrich_context")
+        reasoning_note = f"{llm_result.summary} {reasoning_note}"
+    except Exception:
+        logger.debug("llm_fallback", agent="soar_workflow", node="enrich_context")
+
     return {
         "stage": ResponseStage.CONTAIN.value,
         "enrichments": enrichments,
-        "reasoning_chain": state.get("reasoning_chain", [])
-        + [f"Enriched {len(indicators)} indicators: {malicious_count} flagged as malicious"],
+        "reasoning_chain": state.get("reasoning_chain", []) + [reasoning_note],
     }
 
 

@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
 from pydantic import BaseModel
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     DomainAssessment,
@@ -99,12 +102,45 @@ async def prioritize_remediation(
     if assessments:
         overall_score = round(sum(a.score for a in assessments) / len(assessments), 1)
 
+    reasoning_note = f"Prioritized {len(prioritized)} gaps, overall score: {overall_score}"
+
+    # LLM enhancement: intelligent prioritization reasoning
+    try:
+        from .prompts import SYSTEM_PRIORITIZE, PrioritizationResult
+
+        prioritize_context = json.dumps(
+            {
+                "overall_score": overall_score,
+                "total_gaps": len(prioritized),
+                "gaps_summary": [
+                    {
+                        "domain": g.domain.value if hasattr(g.domain, "value") else str(g.domain),
+                        "risk_category": g.risk_category,
+                        "effort_hours": g.effort_hours,
+                    }
+                    for g in prioritized[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            PrioritizationResult,
+            await llm_structured(
+                system_prompt=SYSTEM_PRIORITIZE,
+                user_prompt=f"Prioritization context:\n{prioritize_context}",
+                schema=PrioritizationResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="security_posture", node="prioritize_remediation")
+        reasoning_note = f"{llm_result.summary} {reasoning_note}"
+    except Exception:
+        logger.debug("llm_fallback", agent="security_posture", node="prioritize_remediation")
+
     return {
         "stage": PostureStage.RECOMMEND.value,
         "gaps": prioritized_data,
         "overall_score": overall_score,
-        "reasoning_chain": state.get("reasoning_chain", [])
-        + [f"Prioritized {len(prioritized)} gaps, overall score: {overall_score}"],
+        "reasoning_chain": state.get("reasoning_chain", []) + [reasoning_note],
     }
 
 

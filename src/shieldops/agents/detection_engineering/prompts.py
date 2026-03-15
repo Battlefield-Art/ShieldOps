@@ -1,5 +1,23 @@
 """Detection Engineering Agent — LLM prompt templates."""
 
+from pydantic import BaseModel, Field
+
+
+class RuleCreationResult(BaseModel):
+    """Structured output from LLM-assisted detection rule creation."""
+
+    summary: str = Field(description="Brief summary of rule creation results")
+    rule_quality_notes: list[str] = Field(
+        description="Notes on rule quality and coverage effectiveness"
+    )
+    tuning_suggestions: list[str] = Field(
+        description="Suggestions for reducing false positives"
+    )
+    coverage_improvement: str = Field(
+        description="Expected MITRE ATT&CK coverage improvement"
+    )
+
+
 SYSTEM_ASSESS_COVERAGE = (
     "You are a detection engineering analyst assessing MITRE ATT&CK coverage.\n"
     "For each tactic and technique:\n"

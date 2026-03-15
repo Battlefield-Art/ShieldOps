@@ -1,5 +1,23 @@
 """OTel Logs Pipeline Agent — LLM prompt templates."""
 
+from pydantic import BaseModel, Field
+
+
+class ParsingAnalysisResult(BaseModel):
+    """Structured output from LLM-assisted parsing analysis."""
+
+    summary: str = Field(description="Brief summary of parsing test results")
+    parsing_issues: list[str] = Field(
+        description="Parsing issues found across services"
+    )
+    format_recommendations: list[str] = Field(
+        description="Recommendations for improving log format parsing"
+    )
+    severity_mapping_notes: list[str] = Field(
+        description="Notes on severity level mapping accuracy"
+    )
+
+
 SYSTEM_DISCOVER = """You are an OpenTelemetry logs pipeline specialist for ShieldOps.
 Discover all log sources in the target namespace:
 

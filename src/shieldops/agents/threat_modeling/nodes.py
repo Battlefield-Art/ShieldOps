@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import structlog
 from pydantic import BaseModel
+
+from shieldops.utils.llm import llm_structured
 
 from .models import (
     ModelingStage,
@@ -71,11 +74,48 @@ async def analyze_threats(state: dict[str, Any], toolkit: ThreatModelingToolkit)
     threats = await toolkit.analyze_threats(components)
     threats_data = [t.model_dump() for t in threats]
 
+    reasoning_note = f"Identified {len(threats)} threat vectors using STRIDE analysis"
+
+    # LLM enhancement: deeper STRIDE threat analysis
+    try:
+        from .prompts import SYSTEM_ANALYZE, ThreatAnalysisResult
+
+        threat_context = json.dumps(
+            {
+                "total_components": len(components),
+                "threats_found": len(threats),
+                "components_summary": [
+                    {"name": c.name, "type": c.component_type, "trust_boundary": c.trust_boundary}
+                    for c in components[:20]
+                ],
+                "threats_summary": [
+                    {
+                        "name": t.name,
+                        "stride_category": t.stride_category,
+                        "risk_score": t.risk_score,
+                    }
+                    for t in threats[:20]
+                ],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ThreatAnalysisResult,
+            await llm_structured(
+                system_prompt=SYSTEM_ANALYZE,
+                user_prompt=f"Threat analysis context:\n{threat_context}",
+                schema=ThreatAnalysisResult,
+            ),
+        )
+        logger.info("llm_enhanced", agent="threat_modeling", node="analyze_threats")
+        reasoning_note = f"{llm_result.summary} {reasoning_note}"
+    except Exception:
+        logger.debug("llm_fallback", agent="threat_modeling", node="analyze_threats")
+
     return {
         "stage": ModelingStage.ASSESS.value,
         "threats": threats_data,
-        "reasoning_chain": state.get("reasoning_chain", [])
-        + [f"Identified {len(threats)} threat vectors using STRIDE analysis"],
+        "reasoning_chain": state.get("reasoning_chain", []) + [reasoning_note],
     }
 
 

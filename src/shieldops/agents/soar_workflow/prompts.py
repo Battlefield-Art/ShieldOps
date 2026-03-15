@@ -1,5 +1,26 @@
 """SOAR Workflow Orchestrator Agent — LLM prompt templates."""
 
+from pydantic import BaseModel, Field
+
+
+class EnrichmentAnalysisResult(BaseModel):
+    """Structured output from LLM-assisted enrichment analysis."""
+
+    summary: str = Field(description="Brief summary of enrichment findings")
+    threat_level: str = Field(
+        description="Overall threat level: low, medium, high, critical"
+    )
+    key_indicators: list[str] = Field(
+        description="Key malicious indicators requiring immediate action"
+    )
+    recommended_containment: list[str] = Field(
+        description="Recommended containment actions based on enrichment"
+    )
+    false_positive_candidates: list[str] = Field(
+        description="Indicators likely to be false positives"
+    )
+
+
 SYSTEM_INTAKE = (
     "You are a SOAR intake analyst processing incoming security alerts.\n"
     "For each alert:\n"
