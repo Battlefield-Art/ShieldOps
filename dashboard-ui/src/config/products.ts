@@ -32,6 +32,13 @@ import {
   MessageSquare,
   Plug,
   Zap,
+  Target,
+  Shield,
+  FileCheck,
+  Filter,
+  Crosshair,
+  TestTube2,
+  ScrollText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -54,7 +61,7 @@ export const PRODUCTS: Record<Exclude<ProductId, "platform">, Product> = {
     name: "SRE Intelligence",
     tagline: "Autonomous incident response",
     description:
-      "AI agents that investigate alerts, identify root causes, execute remediations, and learn from outcomes — across multi-cloud and on-prem.",
+      "50 autonomous agents that investigate alerts, identify root causes, optimize telemetry pipelines, and learn from outcomes — across AWS, GCP, Azure, K8s, and on-prem.",
     icon: LayoutDashboard,
     color: "text-brand-400",
     bgGradient: "from-brand-600/20 to-brand-800/20",
@@ -65,7 +72,7 @@ export const PRODUCTS: Record<Exclude<ProductId, "platform">, Product> = {
     name: "Security Operations",
     tagline: "AI-powered threat defense",
     description:
-      "Autonomous SOC agents for threat hunting, vulnerability management, incident correlation, and playbook execution.",
+      "Autonomous SOC agents for threat intelligence, risk-based alerting, MITRE ATT&CK mapping, vulnerability management, and SOAR playbook orchestration.",
     icon: ShieldAlert,
     color: "text-red-400",
     bgGradient: "from-red-600/20 to-red-800/20",
@@ -160,6 +167,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/capacity", icon: HardDrive, label: "Capacity" },
       { to: "/app/learning", icon: Brain, label: "Learning" },
       { to: "/app/system-health", icon: HeartPulse, label: "System Health" },
+      { to: "/app/telemetry-optimizer", icon: BarChart3, label: "Telemetry Costs" },
+      { to: "/app/incident-commander", icon: Siren, label: "Incident Commander" },
     ],
   },
   {
@@ -172,6 +181,15 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/vulnerabilities", icon: Bug, label: "Vulnerabilities" },
       { to: "/app/incidents", icon: Layers, label: "Incident Correlation" },
       { to: "/app/playbooks", icon: BookOpen, label: "Playbooks" },
+      { to: "/app/risk-scoring", icon: Target, label: "Risk Scoring" },
+      { to: "/app/threat-intel", icon: Shield, label: "Threat Intel" },
+      { to: "/app/compliance-audit", icon: FileCheck, label: "Compliance Audit" },
+      { to: "/app/adaptive-security", icon: ShieldCheck, label: "Adaptive Security" },
+      { to: "/app/security-posture", icon: ShieldAlert, label: "Security Posture" },
+      { to: "/app/soar-workflow", icon: Zap, label: "SOAR Workflows" },
+      { to: "/app/detection-engineering", icon: Crosshair, label: "Detection Eng." },
+      { to: "/app/security-testing", icon: TestTube2, label: "Security Testing" },
+      { to: "/app/threat-modeling", icon: Shield, label: "Threat Modeling" },
     ],
   },
   {
@@ -192,6 +210,20 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/app/compliance", icon: ShieldCheck, label: "Compliance" },
       { to: "/app/audit-log", icon: FileText, label: "Audit Log" },
+    ],
+  },
+  {
+    id: "observability",
+    label: "Observability",
+    color: "text-cyan-400",
+    items: [
+      { to: "/app/otel-pipeline", icon: Activity, label: "OTel Pipeline" },
+      { to: "/app/otel-collector-manager", icon: Server, label: "Collector Mgmt" },
+      { to: "/app/otel-deployer", icon: Rocket, label: "OTel Deployer" },
+      { to: "/app/otel-semantic", icon: FileCheck, label: "Semantic Conv." },
+      { to: "/app/tail-sampling", icon: Filter, label: "Tail Sampling" },
+      { to: "/app/metrics-pipeline", icon: BarChart3, label: "Metrics Pipeline" },
+      { to: "/app/logs-pipeline", icon: ScrollText, label: "Logs Pipeline" },
     ],
   },
   {

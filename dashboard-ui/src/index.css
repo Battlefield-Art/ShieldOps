@@ -4,7 +4,17 @@
 
 @layer base {
   body {
-    @apply bg-gray-950 text-gray-100;
+    @apply bg-gray-950 text-gray-100 antialiased;
+  }
+
+  /* Ensure smooth scrolling without hijacking */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Selection color matches brand */
+  ::selection {
+    @apply bg-brand-600/30 text-white;
   }
 }
 
@@ -20,5 +30,15 @@
 
   .animate-slide-in-left {
     animation: slide-in-left 0.2s ease-out;
+  }
+
+  /* Terminal cursor blink */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .animate-blink {
+    animation: blink 1.2s step-end infinite;
   }
 }

@@ -1,46 +1,87 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowUp, Paperclip, Search, Shield, Activity, GitBranch, BarChart3 } from "lucide-react";
+import clsx from "clsx";
+
+const examplePrompts = [
+  { label: "Investigate CPU spike on prod", icon: Search },
+  { label: "Optimize telemetry costs", icon: BarChart3 },
+  { label: "Run threat intelligence scan", icon: Shield },
+  { label: "Detect infrastructure drift", icon: GitBranch },
+  { label: "Analyze SLO burn rate", icon: Activity },
+];
 
 export default function HeroSection() {
+  const [input, setInput] = useState("");
+
   return (
-    <section className="relative px-6 pb-20 pt-32">
-      <div className="relative mx-auto max-w-4xl text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-600/40 bg-brand-950/60 px-4 py-1.5 text-sm text-brand-300">
-          <span className="h-2 w-2 rounded-full bg-brand-400" />
-          Now in Private Beta
+    <section className="px-6 pb-24 pt-28 sm:pt-32">
+      <div className="mx-auto max-w-3xl text-center">
+        {/* Private Beta badge */}
+        <div className="mb-6 inline-flex items-center gap-2 rounded-md border border-gray-800 bg-gray-900 px-3 py-1 text-xs font-medium text-gray-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
+          Private Beta
         </div>
 
-        <h1 className="text-4xl font-bold leading-tight tracking-tight text-gray-50 sm:text-5xl lg:text-6xl">
-          Autonomous SRE agents that
-          <br />
-          <span className="text-brand-400">investigate, fix, and learn.</span>
+        {/* Heading */}
+        <h1 className="text-4xl font-bold leading-[1.15] tracking-tight text-gray-50 sm:text-5xl lg:text-[3.5rem]">
+          What should we investigate?
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray-400">
-          ShieldOps deploys AI agents that respond to incidents in minutes — analyzing logs,
-          identifying root causes, executing remediations, and improving over time.
-          For SRE teams running production across AWS, GCP, Azure, and on-prem.
+        {/* Subheading */}
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-gray-400">
+          ShieldOps deploys autonomous AI agents that investigate incidents, remediate
+          infrastructure issues, and learn from outcomes — in minutes, not hours.
         </p>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            to="/app?demo=true"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-900/30 transition-all hover:bg-brand-500 hover:shadow-brand-900/50"
-          >
-            <Play className="h-4 w-4" />
-            Try the Live Demo
-          </Link>
-          <a
-            href="mailto:founders@shieldops.io"
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-6 py-3 text-sm font-medium text-gray-300 transition-all hover:border-gray-500 hover:bg-gray-900 hover:text-white"
-          >
-            Contact Sales
-            <ArrowRight className="h-4 w-4" />
-          </a>
+        {/* Chat input container */}
+        <div className="mt-10 rounded-xl border border-gray-800 bg-gray-900">
+          <textarea
+            rows={3}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Describe an incident, ask a question, or paste an alert..."
+            className="w-full resize-none bg-transparent px-4 pt-4 pb-2 text-sm text-gray-200 placeholder-gray-500 outline-none"
+          />
+          <div className="flex items-center justify-between border-t border-gray-800 px-3 py-2">
+            <button
+              type="button"
+              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-800 hover:text-gray-300"
+              aria-label="Attach file"
+            >
+              <Paperclip className="h-4 w-4" />
+            </button>
+            <Link
+              to="/app?demo=true"
+              className="inline-flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-cyan-600"
+            >
+              Send to Agent
+              <ArrowUp className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
 
-        <p className="mt-8 text-sm text-gray-600">
-          No sign-up required for demo. Currently onboarding design partners.
+        {/* Example prompt chips */}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          {examplePrompts.map((prompt) => (
+            <button
+              key={prompt.label}
+              type="button"
+              onClick={() => setInput(prompt.label)}
+              className={clsx(
+                "inline-flex items-center gap-1.5 rounded-full border border-gray-800 bg-gray-900 px-4 py-2 text-sm text-gray-400",
+                "transition-colors hover:border-gray-600 hover:text-gray-200"
+              )}
+            >
+              <prompt.icon className="h-3.5 w-3.5" />
+              {prompt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Trust signals */}
+        <p className="mt-8 text-xs text-gray-500">
+          No signup required &middot; 50 autonomous agents &middot; SOC 2 compliant
         </p>
       </div>
     </section>

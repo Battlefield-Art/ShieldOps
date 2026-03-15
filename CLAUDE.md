@@ -63,10 +63,10 @@ runner.py     # Entry point — lifecycle management, execution
 policy.py     # OPA policy integration (optional)
 ```
 
-There are 29 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction.
+There are 50 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction, otel_pipeline, risk_scoring, auto_learning, security_automation, gitops, telemetry_optimizer, threat_intel, incident_commander, compliance_auditor, otel_collector_manager, adaptive_security, otel_deployer, security_posture, otel_semantic, soar_workflow, otel_tail_sampling, detection_engineering, otel_metrics_pipeline, security_testing, otel_logs_pipeline, threat_modeling.
 
 ### Engine Module Pattern
-The bulk of the codebase (~1,412+ modules) are analytics/intelligence engines across 13 packages. Each follows a strict pattern:
+The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines across 13 packages. Each follows a strict pattern:
 ```python
 # 3 StrEnum classes, 3 Pydantic models (Record, Analysis, Report)
 # Engine class with: add_record()/record_item(), process(key),
@@ -79,10 +79,10 @@ The bulk of the codebase (~1,412+ modules) are analytics/intelligence engines ac
 ### Key Packages
 | Package | Purpose | Count |
 |---------|---------|-------|
-| `observability/` | Alert intelligence, telemetry, SLI/SLO, OTel, tracing, multi-hop investigation | 174+ |
-| `security/` | Threat detection, SOAR, zero trust, XDR, behavioral risk, HRPO policy optimization | 334+ |
+| `observability/` | Alert intelligence, telemetry, SLI/SLO, OTel pipeline/autoscaler/sampling/attribution/cost, SLO-aware sampling, cardinality control, eBPF telemetry, collector fleet management, backpressure analysis, span-to-metric conversion | 204+ |
+| `security/` | Threat detection, SOAR, zero trust, XDR, RBA pipeline (detection→risk→notable), MITRE mapping, hunt automation, playbook selection, IOC lifecycle, identity risk, threat feed quality, entity risk aggregation | 364+ |
 | `operations/` | Runbooks, automation, chaos, capacity, resource budgets | 128+ |
-| `analytics/` | DORA, AIOps, root cause, auto-learning, self-evolving agents (Dr. Zero) | 186+ |
+| `analytics/` | DORA, AIOps, root cause, experiment lifecycle, agent benchmarking, hyperparameter tuning, swarm intelligence, self-healing, knowledge distillation, autoresearch experiments, compute budget management | 222+ |
 | `incidents/` | Triage, escalation, postmortem, on-call burden, notification | 85+ |
 | `compliance/` | Evidence, audit, regulatory, policy enforcement, cost governance | 99+ |
 | `billing/` | FinOps, cost optimization, RI planning, waste classification | 84+ |
@@ -137,6 +137,22 @@ The bulk of the codebase (~1,412+ modules) are analytics/intelligence engines ac
 - No agent can delete databases, drop tables, or modify IAM root policies
 - Confidence thresholds: autonomous >0.85, human approval 0.5-0.85, escalate <0.5
 
+## Infrastructure
+- **CI/CD**: 7 GitHub Actions workflows (ci.yml, cd-backend.yml, cd-dashboard.yml, cd-staging.yml, cd-production.yml, gitops-sync.yml)
+- **Kubernetes**: 16 manifests in `infrastructure/kubernetes/` (deployment, HPA, ingress, network policies, PDB, Kafka, Redis, OPA sidecar, secrets, configmaps)
+- **Terraform**: `infrastructure/terraform/{aws,gcp,azure}/` — validated in CI
+- **Docker**: `infrastructure/docker/Dockerfile` + `docker-compose.yml`
+- **Helm**: `infrastructure/helm/` — chart for self-hosted deployments
+- **Database**: `src/shieldops/db/` — SQLAlchemy models, Alembic migrations, async sessions, repository pattern
+- **Monitoring**: `infrastructure/monitoring/`
+
+## Productionization Status
+- **Phase 135 (LLM Wiring)**: Done — all 38 agents wired with `llm_structured()` via `src/shieldops/utils/llm.py`
+- LLM Router at `src/shieldops/utils/llm_router.py` (Haiku/Sonnet/Opus complexity routing)
+- Cloud connectors have real SDK implementations (boto3, google-cloud, azure, kubernetes-client)
+- 14 API middleware modules (rate limiter, tenant isolation, billing enforcement, security headers)
+- See `docs/tasks.md` for remaining GA checklist (integration tests, pentest, SOC 2, docs site)
+
 ## Environment Variables
 ```
 ANTHROPIC_API_KEY=     # Claude API key (primary LLM)
@@ -146,7 +162,12 @@ REDIS_URL=             # Redis connection
 KAFKA_BROKERS=         # Kafka broker list
 OPA_ENDPOINT=          # OPA policy engine URL
 LANGSMITH_API_KEY=     # Agent tracing
+STRIPE_SECRET_KEY=     # Billing integration
+STRIPE_WEBHOOK_SECRET= # Stripe webhooks
+SLACK_BOT_TOKEN=       # ChatOps approvals
+PAGERDUTY_API_KEY=     # Alert ingestion
+VAULT_ADDR=            # Secret management
 ```
 
 ## Custom Slash Commands
-`/build`, `/test`, `/deploy`, `/scan`, `/review`, `/analyze`, `/design`, `/task`, `/build-agent`, `/scan-security`, `/check-health`, `/run-agent`, `/review-agent`
+`/build`, `/test`, `/deploy`, `/scan`, `/review`, `/analyze`, `/design`, `/task`, `/build-agent`, `/scan-security`, `/check-health`, `/run-agent`, `/review-agent`, `/manage-otel`, `/manage-gitops`

@@ -57,6 +57,24 @@ const MCPServers = lazy(() => import("./pages/MCPServers"));
 const ChatOps = lazy(() => import("./pages/ChatOps"));
 const EnterpriseIntegrations = lazy(() => import("./pages/EnterpriseIntegrations"));
 const AutomationRules = lazy(() => import("./pages/AutomationRules"));
+const TelemetryOptimizer = lazy(() => import("./pages/TelemetryOptimizer"));
+const RiskScoring = lazy(() => import("./pages/RiskScoring"));
+const OTelPipeline = lazy(() => import("./pages/OTelPipeline"));
+const ThreatIntel = lazy(() => import("./pages/ThreatIntel"));
+const IncidentCommander = lazy(() => import("./pages/IncidentCommander"));
+const ComplianceAudit = lazy(() => import("./pages/ComplianceAudit"));
+const OTelCollectorManager = lazy(() => import("./pages/OTelCollectorManager"));
+const AdaptiveSecurity = lazy(() => import("./pages/AdaptiveSecurity"));
+const OTelDeployer = lazy(() => import("./pages/OTelDeployer"));
+const SecurityPosture = lazy(() => import("./pages/SecurityPosture"));
+const OTelSemantic = lazy(() => import("./pages/OTelSemantic"));
+const SOARWorkflow = lazy(() => import("./pages/SOARWorkflow"));
+const TailSampling = lazy(() => import("./pages/TailSampling"));
+const DetectionEngineering = lazy(() => import("./pages/DetectionEngineering"));
+const MetricsPipeline = lazy(() => import("./pages/MetricsPipeline"));
+const SecurityTesting = lazy(() => import("./pages/SecurityTesting"));
+const LogsPipeline = lazy(() => import("./pages/LogsPipeline"));
+const ThreatModeling = lazy(() => import("./pages/ThreatModeling"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -174,6 +192,24 @@ export default function App() {
               <Route path="chatops" element={<ChatOps />} />
               <Route path="integrations" element={<EnterpriseIntegrations />} />
               <Route path="automation" element={<AutomationRules />} />
+              <Route path="telemetry-optimizer" element={<TelemetryOptimizer />} />
+              <Route path="risk-scoring" element={<RiskScoring />} />
+              <Route path="otel-pipeline" element={<OTelPipeline />} />
+              <Route path="threat-intel" element={<ThreatIntel />} />
+              <Route path="incident-commander" element={<IncidentCommander />} />
+              <Route path="compliance-audit" element={<ComplianceAudit />} />
+              <Route path="otel-collector-manager" element={<OTelCollectorManager />} />
+              <Route path="adaptive-security" element={<AdaptiveSecurity />} />
+              <Route path="otel-deployer" element={<OTelDeployer />} />
+              <Route path="security-posture" element={<SecurityPosture />} />
+              <Route path="otel-semantic" element={<OTelSemantic />} />
+              <Route path="soar-workflow" element={<SOARWorkflow />} />
+              <Route path="tail-sampling" element={<TailSampling />} />
+              <Route path="detection-engineering" element={<DetectionEngineering />} />
+              <Route path="metrics-pipeline" element={<MetricsPipeline />} />
+              <Route path="security-testing" element={<SecurityTesting />} />
+              <Route path="logs-pipeline" element={<LogsPipeline />} />
+              <Route path="threat-modeling" element={<ThreatModeling />} />
             </Route>
 
             {/* Catch-all */}

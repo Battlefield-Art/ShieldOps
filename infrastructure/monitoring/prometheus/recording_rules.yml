@@ -103,3 +103,40 @@ groups:
             sum by (method, path_template) (rate(http_request_duration_seconds_count[5m])),
             1e-10
           )
+
+  # ── Agent Execution Metrics ────────────────────────────────────
+  - name: shieldops.agents.recording
+    interval: 30s
+    rules:
+      # Agent invocation rate by type
+      - record: shieldops:agent_invocations:rate5m
+        expr: >
+          sum by (agent_type) (
+            rate(agent_invocations_total[5m])
+          )
+
+      # Agent success rate by type
+      - record: shieldops:agent_success_rate:5m
+        expr: >
+          sum by (agent_type) (rate(agent_invocations_total{status="success"}[5m]))
+          /
+          clamp_min(sum by (agent_type) (rate(agent_invocations_total[5m])), 1e-10)
+
+      # Agent P95 duration by type
+      - record: shieldops:agent_duration:p95
+        expr: >
+          histogram_quantile(0.95,
+            sum by (le, agent_type) (rate(agent_duration_seconds_bucket[5m]))
+          )
+
+      # LLM token usage rate
+      - record: shieldops:llm_tokens:rate5m
+        expr: >
+          sum by (model, agent_type) (
+            rate(llm_tokens_total[5m])
+          )
+
+      # LLM cost rate ($/min)
+      - record: shieldops:llm_cost:rate1m
+        expr: >
+          sum(rate(llm_cost_dollars_total[1m])) * 60

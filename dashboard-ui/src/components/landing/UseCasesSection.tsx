@@ -14,94 +14,116 @@ import clsx from "clsx";
 interface UseCase {
   icon: LucideIcon;
   color: string;
-  borderHover: string;
   title: string;
+  audience: string;
   description: string;
+  capabilities: string[];
   link: string;
-  tag: string;
-  tagColor: string;
 }
 
 const USE_CASES: UseCase[] = [
   {
     icon: Server,
     color: "text-brand-400",
-    borderHover: "hover:border-brand-500/40",
-    title: "Managed SRE as a Service",
+    title: "Managed SRE",
+    audience: "For teams without dedicated SRE",
     description:
-      "We operate ShieldOps for you — a virtual SRE team that monitors, investigates, and remediates 24/7. Perfect for teams that can't staff a dedicated SRE function.",
+      "A virtual SRE team that monitors, investigates, and remediates 24/7.",
+    capabilities: [
+      "24/7 autonomous incident response",
+      "Root cause analysis in minutes",
+      "Automated rollback and scaling",
+    ],
     link: "/products/sre",
-    tag: "MSP Model",
-    tagColor: "text-brand-400 bg-brand-500/10",
   },
   {
     icon: Shield,
     color: "text-red-400",
-    borderHover: "hover:border-red-500/40",
-    title: "Autonomous SOC Platform",
+    title: "Autonomous SOC",
+    audience: "For security operations teams",
     description:
-      "AI-first SOC that triages alerts, correlates telemetry, runs threat hunts, and triggers SOAR playbooks. Deploy in-house or through MSSP partners.",
+      "AI-first SOC that triages, correlates, hunts, and triggers playbooks.",
+    capabilities: [
+      "Automated alert triage and correlation",
+      "MITRE ATT&CK mapped threat hunting",
+      "SOAR playbook orchestration",
+    ],
     link: "/products/soc",
-    tag: "Security",
-    tagColor: "text-red-400 bg-red-500/10",
   },
   {
     icon: DollarSign,
     color: "text-emerald-400",
-    borderHover: "hover:border-emerald-500/40",
-    title: "FinOps Cost Intelligence",
+    title: "FinOps Intelligence",
+    audience: "For cloud cost optimization",
     description:
-      "Detect cost anomalies, optimize reserved instances, enforce tag governance, and forecast budgets with ML-powered accuracy.",
+      "Detect anomalies, optimize reservations, and forecast budgets with ML.",
+    capabilities: [
+      "Cost anomaly detection across providers",
+      "RI and savings plan optimization",
+      "Tag governance and waste elimination",
+    ],
     link: "/products/finops",
-    tag: "FinOps",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
   },
   {
     icon: FileCheck,
     color: "text-amber-400",
-    borderHover: "hover:border-amber-500/40",
     title: "Compliance Automation",
+    audience: "For regulated industries",
     description:
-      "Continuous SOC 2, PCI-DSS, HIPAA, and GDPR compliance. Automated evidence collection, gap analysis, and audit-ready reporting.",
+      "Continuous SOC 2, PCI-DSS, HIPAA, and GDPR compliance monitoring.",
+    capabilities: [
+      "Automated evidence collection",
+      "Continuous control monitoring",
+      "Audit-ready reporting",
+    ],
     link: "/products/compliance",
-    tag: "Compliance",
-    tagColor: "text-amber-400 bg-amber-500/10",
   },
   {
     icon: Code,
     color: "text-sky-400",
-    borderHover: "hover:border-sky-500/40",
-    title: "Developer API Platform",
+    title: "Developer API",
+    audience: "For platform teams",
     description:
-      "Expose ShieldOps capabilities as metered APIs. Tool vendors and platform teams embed investigations, remediations, and analytics into their own products.",
+      "Embed ShieldOps capabilities into your own products via metered APIs.",
+    capabilities: [
+      "RESTful investigation & remediation APIs",
+      "Webhook-driven event processing",
+      "Usage-based billing built in",
+    ],
     link: "/products/api",
-    tag: "Platform",
-    tagColor: "text-sky-400 bg-sky-500/10",
   },
   {
     icon: Store,
     color: "text-orange-400",
-    borderHover: "hover:border-orange-500/40",
     title: "Agent Marketplace",
+    audience: "For the ecosystem",
     description:
-      "Discover community-built agents, connectors, and industry playbooks. Publish your own and earn revenue through the ecosystem.",
+      "Discover community-built agents, connectors, and industry playbooks.",
+    capabilities: [
+      "Browse and deploy community agents",
+      "Publish and monetize your own",
+      "Industry-specific playbook packs",
+    ],
     link: "/products/marketplace",
-    tag: "Ecosystem",
-    tagColor: "text-orange-400 bg-orange-500/10",
   },
 ];
 
 export default function UseCasesSection() {
   return (
-    <section className="px-6 py-20">
+    <section className="bg-gray-900/40 px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-12 text-center">
+        <div className="mb-4">
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-400">
+            Use Cases
+          </p>
+        </div>
+        <div className="mb-12 max-w-2xl">
           <h2 className="text-3xl font-bold tracking-tight text-gray-50">
             Built for every ops team
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
-            From SRE to SOC to FinOps — deploy the right agents for your use
-            case.
+          <p className="mt-4 text-lg text-gray-400">
+            From SRE to SOC to FinOps — deploy the right agents for your
+            operational challenges.
           </p>
         </div>
 
@@ -112,31 +134,28 @@ export default function UseCasesSection() {
               <Link
                 key={uc.title}
                 to={uc.link}
-                className={clsx(
-                  "group flex flex-col rounded-xl border border-gray-800 bg-gray-900 p-6 transition-all hover:border-gray-600 hover:shadow-lg hover:shadow-gray-900/50",
-                  uc.borderHover,
-                )}
+                className="group flex flex-col rounded-xl border border-gray-800 bg-gray-950 p-6 transition-colors hover:border-gray-700 hover:bg-gray-900/80"
               >
-                <span
-                  className={clsx(
-                    "mb-4 inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-medium",
-                    uc.tagColor,
-                  )}
-                >
-                  {uc.tag}
-                </span>
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-800/60">
-                    <Icon className={clsx("h-5 w-5", uc.color)} />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-100">
-                    {uc.title}
-                  </h3>
+                <div className="mb-1 flex items-center gap-3">
+                  <Icon className={clsx("h-5 w-5 shrink-0", uc.color)} />
+                  <h3 className="font-semibold text-gray-100">{uc.title}</h3>
                 </div>
-                <p className="flex-1 text-sm leading-relaxed text-gray-400">
+                <p className="mb-3 text-xs text-gray-500">{uc.audience}</p>
+                <p className="text-sm leading-relaxed text-gray-400">
                   {uc.description}
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors group-hover:text-brand-400">
+                <ul className="mt-4 flex-1 space-y-1.5">
+                  {uc.capabilities.map((cap) => (
+                    <li
+                      key={cap}
+                      className="flex items-start gap-2 text-sm text-gray-500"
+                    >
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gray-600" />
+                      {cap}
+                    </li>
+                  ))}
+                </ul>
+                <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-brand-400 transition-colors group-hover:text-brand-300">
                   Learn more
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </span>

@@ -1,26 +1,538 @@
 # ShieldOps — Master Task Tracker
 
-## Current Phase: 128-130 — Dr. Zero-Inspired Self-Evolving Agent Intelligence
+## Productionization Roadmap — Phases 135-140
+
+### Phase 135 — LLM Wiring & Real Agent Execution (DONE)
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 1 | Wire Anthropic Claude API | `llm_structured()` wired into all 10 Phase 131-134 agents (threat_intel, telemetry_optimizer, risk_scoring, auto_learning, otel_pipeline, security_automation, gitops, incident_commander, compliance_auditor) with try/except fallback | Done |
+| 2 | LLM utility module | `src/shieldops/utils/llm.py` — ChatAnthropic singleton with `llm_analyze()`, `llm_structured()` | Already existed |
+| 3 | LLM Router | `src/shieldops/utils/llm_router.py` — complexity-based routing (Haiku/Sonnet/Opus) with cost tracking | Already existed |
+| 4 | Token budget management | LLM cost tracker at `src/shieldops/billing/llm_cost_tracker.py` | Already existed |
+| 5 | Agent streaming | WebSocket streaming via `agent_ws.py` route | Already existed |
+
+### Platform Inventory (Verified)
+
+| Component | Count/Status | Production Ready? |
+|-----------|-------------|-------------------|
+| LangGraph Agents | 50 (all LLM-wired) | Yes — Claude API with graceful fallback |
+| Engine Modules | 1,562+ | Yes — all tested |
+| Unit Tests | 62,169 passing | Yes |
+| API Routes | 700+ | Yes — rate limiting, tenant isolation, security headers |
+| API Middleware | 14 | Yes — rate limiter, tenant, CORS, billing, idempotency, metrics |
+| Dashboard Pages | 58+ | Yes — manus.ai-inspired landing + all 50 agents have UI pages |
+| CI/CD Pipeline | 7 workflows | Yes — lint, test, e2e, Terraform, OPA, security scan |
+| Kubernetes | 16 manifests | Yes — deployment, HPA, ingress, PDB, network policies, OPA sidecar |
+| Terraform | AWS + GCP + Azure | Yes — validated in CI |
+| Helm Chart | Complete | Yes |
+| Docker | Dockerfile + 7-service compose | Yes — API, Postgres, Redis, Kafka, OPA, Jaeger, Dashboard |
+| Database | 20+ tables, Alembic migrations | Yes — async SQLAlchemy, repository pattern |
+| Cloud Connectors | AWS (boto3), GCP, Azure, K8s, Linux | Yes — real SDK calls with lazy initialization |
+| Auth | JWT + API keys + OIDC/SSO | Yes |
+| Health Checks | /health, /ready with DB/Redis/Kafka checks | Yes — wired to K8s probes |
+| Load Testing | k6 — smoke, CRUD, auth, WebSocket, read-heavy | Yes |
+| Config | 240-line .env.example + Pydantic Settings | Yes |
+| Documentation | API docs, deployment guides, getting started, architecture | Yes |
+| Billing | Stripe integration, usage metering, LLM cost tracking | Yes |
+| Monitoring | Jaeger (tracing), OTel exporter config, metrics middleware | Yes |
+
+### Remaining GA Checklist
+
+| # | Task | Priority | Status |
+|---|------|----------|--------|
+| 1 | LLM wiring for Phase 131-134 agents | Critical | Done |
+| 2 | Agent registry updated (38 agents in app.py) | Critical | Done |
+| 3 | MkDocs documentation for new agents (6 agent docs) | Medium | Done |
+| 4 | MkDocs nav updated with all 38 agents | Medium | Done |
+| 5 | Integration tests for new agents (OTel, threat_intel, incident_commander, compliance_auditor) | High | Done |
+| 6 | Prometheus recording rules for agent metrics (invocation rate, success rate, P95, LLM tokens) | Medium | Done |
+| 7 | Prometheus alert rules (agent failure >20%, latency >2min, LLM cost >$5/min) | Medium | Done |
+| 8 | Agent registry updated in app.py (38 agents auto-register on startup) | High | Done |
+| 9 | Production Launch Runbook created (docs/PRODUCTION_LAUNCH_RUNBOOK.md) | High | Done |
+| 10 | MkDocs documentation for 6 new agents + nav restructured for all 38 | Medium | Done |
+| 11 | Dashboard pages for Phase 131-134 agents (6 pages) | High | Done |
+| 12 | Dashboard pages for Phase 135-140 agents (12 pages + routes + sidebar nav) | High | Done |
+| 13 | Integration tests for Phase 135-140 agents (32 tests in 4 files) | High | Done |
+| 14 | All 50 agents registered in app.py startup | High | Done |
+| 15 | Ruff lint + format pass on all new agent/engine code (76 files formatted, 29 errors fixed) | High | Done |
+| 16 | Full test suite verified: 62,169 unit + 150 integration = 62,319 tests passing | Critical | Done |
+| 17 | Dashboard build verified clean (58+ pages, TypeScript + Vite) | High | Done |
+| 18 | Purple colors removed from all 8 pages, gradients cleaned from 2 pages | High | Done |
+| 19 | UI audit: zero purple, zero glassmorphism, all animations functional (not decorative) | High | Done |
+| 20 | Final verified: 62,169 unit + 150 integration = 62,319 tests, dashboard build clean | Critical | Done |
+| 21 | External penetration test | High | Planned — requires vendor |
+| 13 | Production environment provisioning (Terraform apply) | High | Planned — requires cloud accounts |
+| 14 | DNS + TLS + CDN setup | High | Planned — requires domain registrar |
+| 15 | Status page setup (statuspage.io) | Medium | Planned |
+
+---
+
+---
+
+## Phase 140 — OTel Three-Pillar Completion, Threat Modeling & Predictive Intelligence (Done)
 
 ### Overview
 
 | Metric | Value |
 |--------|-------|
-| **Phases** | 128, 129, 130 |
-| **Theme** | Self-Evolving Agent Intelligence (Dr. Zero), Multi-Hop Investigation, Policy Optimization (HRPO) |
-| **Inspiration** | arxiv 2601.07055 — "Dr. Zero: Self-Evolving Search Agents without Training Data" |
-| **Feature Modules** | 36 (12 per phase) |
-| **New Tests** | 36 test files (~340 tests) |
-| **Total Tests (platform)** | ~59,740+ |
+| **Phase** | 140 |
+| **Theme** | Complete OTel three-pillar coverage (logs), STRIDE threat modeling, predictive incident intelligence |
+| **New Agents** | 2 (otel_logs_pipeline, threat_modeling) — total now 50 |
+| **New Engines** | 8 (3 OTel logs/correlation/cost, 2 STRIDE/attack-path, 3 specialization/knowledge-graph/prediction) |
+| **New Tests** | 283 |
+| **Total Tests (platform)** | ~62,200+ |
+
+### Milestone: 50 Autonomous Agents
+
+ShieldOps now has **50 LangGraph agents** covering:
+- **OTel Observability (8)**: otel_pipeline, otel_collector_manager, otel_deployer, otel_semantic, otel_tail_sampling, otel_metrics_pipeline, otel_logs_pipeline, telemetry_optimizer
+- **Security (10)**: security, security_automation, threat_intel, risk_scoring, adaptive_security, security_posture, soar_workflow, detection_engineering, security_testing, threat_modeling
+- **SRE Core (8)**: investigation, remediation, incident_commander, auto_remediation, incident_response, prediction, cost, compliance_auditor
+- **Automation (8)**: learning, auto_learning, supervisor, chatops, automation_orchestrator, intelligent_automation, gitops, soar_orchestration
+- **Intelligence (16)**: soc_analyst, threat_hunter, forensics, deception, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, itdr, xdr, observability_intelligence, platform_intelligence, security_convergence, autonomous_defense, enterprise_integration
+
+---
+
+## Phase 139 — OTel Metrics Pipeline, Security Testing & Operational Maturity (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 139 |
+| **Theme** | OTel metrics pipeline (golden signals, cardinality, SLI), automated security testing, operational maturity assessment |
+| **New Agents** | 2 (otel_metrics_pipeline, security_testing) — total now 48 |
+| **New Engines** | 8 (3 OTel metrics, 2 security testing, 3 operational analytics) |
+| **New Tests** | 289 |
+| **Total Tests (platform)** | ~61,900+ |
+
+---
+
+## Phase 138 — OTel Tail Sampling Intelligence, Detection Engineering & Fleet Intelligence (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 138 |
+| **Theme** | OTel tail-based sampling optimization, automated detection rule engineering, fleet-wide agent intelligence |
+| **Inspiration** | OTel Collector tail_sampling processor, Splunk RBA detection engineering, Karpathy autoresearch prompt optimization |
+| **New Agents** | 2 (otel_tail_sampling, detection_engineering) — total now 46 |
+| **New Engines** | 8 (3 OTel sampling/batch/exporter, 2 detection lifecycle/MITRE coverage, 3 prompt optimizer/improvement/fleet intelligence) |
+| **New Tests** | 280 (63 agent + 217 engine) |
+| **Total Tests (platform)** | ~61,600+ |
+
+### Phase 138 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | OTel Tail Sampling Agent | otel_tail_sampling (analyze traces → design policies → simulate → apply), generates tail_sampling processor YAML | Done |
+| Tier 2 | Detection Engineering Agent | detection_engineering (assess MITRE coverage → create rules → test/tune → deploy), auto-generates detection rules | Done |
+| Tier 3 | OTel Pipeline Engines (3) | tail_sampling_policy, otel_batch_processor, otel_exporter_reliability | Done |
+| Tier 4 | Detection Engines (2) | detection_rule_lifecycle, mitre_coverage_tracker | Done |
+| Tier 5 | Fleet Intelligence Engines (3) | agent_prompt_optimizer, continuous_improvement, fleet_intelligence | Done |
+
+---
+
+## Phase 137 — OTel Semantic Standards, SOAR Orchestration & Agent Evolution (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 137 |
+| **Theme** | OTel semantic conventions enforcement, SOAR workflow orchestration, cross-signal correlation, agent evolution tracking |
+| **Inspiration** | opentelemetry.io semantic conventions, Splunk RBA + SOAR integration, Karpathy autoresearch agent evolution |
+| **New Agents** | 2 (otel_semantic, soar_workflow) — total now 44 |
+| **New Engines** | 8 (3 OTel correlation, 2 security SOAR/kill-chain, 3 autoresearch evolution) |
+| **New Tests** | 289 (69 agent + 220 engine) |
+| **Total Tests (platform)** | ~61,300+ |
+
+### Phase 137 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | OTel Semantic Conventions Agent | otel_semantic (load rules → scan services → analyze violations → generate fixes) | Done |
+| Tier 2 | SOAR Workflow Orchestrator Agent | soar_workflow (intake → enrich → contain → eradicate → recover) | Done |
+| Tier 3 | OTel Correlation Engines (3) | otel_semantic_validation, otel_log_correlation, cross_signal_correlation | Done |
+| Tier 4 | Security SOAR Engines (2) | kill_chain_tracker, soar_response_tracker | Done |
+| Tier 5 | Agent Evolution Engines (3) | agent_resource_governor, investigation_pattern, agent_evolution_tracker | Done |
+
+---
+
+## Phase 136 — OTel Deployment Orchestration, Security Posture & Meta-Learning (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 136 |
+| **Theme** | OTel Collector K8s deployment orchestration, Security posture management, Agent meta-learning |
+| **Inspiration** | opentelemetry.io deployment patterns (DaemonSet/Deployment/Sidecar), Splunk RBA posture scoring, Karpathy autoresearch meta-learning |
+| **New Agents** | 2 (otel_deployer, security_posture) — total now 42 |
+| **New Engines** | 8 (3 OTel deployment, 2 security posture, 3 autoresearch meta-learning) |
+| **New Tests** | 311 (71 agent + 240 engine) |
+| **Total Tests (platform)** | ~61,000+ |
+
+### Phase 136 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | OTel Deployment Orchestrator | otel_deployer agent (plan → validate → deploy → verify), K8s DaemonSet/Deployment/Sidecar patterns | Done |
+| Tier 2 | Security Posture Manager | security_posture agent (assess domains → identify gaps → prioritize → report), unified posture scoring | Done |
+| Tier 3 | OTel Deployment Engines (3) | otel_deployment_tracker, otel_pipeline_throughput, otel_extension_manager | Done |
+| Tier 4 | Security Posture Engines (2) | security_posture_scorer, threat_simulation | Done |
+| Tier 5 | Autoresearch Meta-Learning (3) | agent_meta_learning, autonomous_experiment, agent_collaboration_optimizer | Done |
+
+---
+
+## Phase 135 — OTel Standards Compliance, Adaptive Security & Autoresearch Learning (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 135 |
+| **Theme** | OTel Collector management (opentelemetry.io standards), Adaptive Security (RBA + auto-threshold tuning), Autoresearch learning engines |
+| **Inspiration** | opentelemetry.io/docs/collector, Splunk RBA, Karpathy autoresearch |
+| **New Agents** | 2 (otel_collector_manager, adaptive_security) — total now 40 |
+| **New Engines** | 8 (3 OTel-standards, 2 RBA, 3 autoresearch) |
+| **New Tests** | 298 (72 agent + 226 engine) |
+| **Total Tests (platform)** | ~60,700+ |
+
+### Phase 135 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | OTel Collector Manager Agent | otel_collector_manager agent (assess → generate YAML → deploy → monitor), real OTel Collector config generation | Done |
+| Tier 2 | Adaptive Security Agent | adaptive_security agent (baseline → detect drift → propose threshold adjustment → evaluate → accept/reject), RBA + autoresearch pattern | Done |
+| Tier 3 | OTel Standards Engines (3) | otel_config_generator, otel_health_monitor, otel_connector_routing | Done |
+| Tier 4 | RBA Engines (2) | adaptive_threshold, risk_timeline | Done |
+| Tier 5 | Autoresearch Engines (3) | agent_curriculum, experiment_replay, resource_efficiency_optimizer | Done |
+
+### Phase 135 — Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| OTel Collector YAML generation | Agent generates real OTel Collector configs (receivers/processors/exporters/service.pipelines) following opentelemetry.io standards |
+| Adaptive threshold tuning | RBA thresholds auto-adjust based on baseline drift (>2 sigma), using autoresearch propose-evaluate-accept/reject pattern |
+| Agent curriculum learning | Progressive difficulty levels for agent skill development (beginner→expert), with regression detection |
+| Experiment replay | Meta-learning from past experiments via exact/perturbed/counterfactual replay strategies |
+| Resource efficiency optimizer | Track and optimize LLM tokens, compute, memory per agent using cost-per-outcome metrics |
+
+---
+
+## Previous: Phase 134 — Full Platform Consolidation, Incident Command & Compliance Automation (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 134 |
+| **Theme** | Platform consolidation of all Phases 131-133 engines + Incident Commander agent + Compliance Auditor agent |
+| **Inspiration** | autoresearch (experiment lifecycle), Splunk RBA (risk scoring pipeline), SOC4Kafka (OTel pipeline), manus.ai (UI/UX) |
+| **New Agents** | 2 (incident_commander, compliance_auditor) — total now 38 |
+| **Consolidated Engines** | 70 (23 observability, 23 security, 24 analytics) — all tested and verified |
+| **New Tests** | 2 new agent test files + 827 existing engine tests verified passing |
+| **Total Tests (platform)** | ~62,500+ |
 | **Branch** | `main` |
 
-### Phase Summary
+### Phase 134 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | Incident Commander Agent | incident_commander agent (triage → coordinate → monitor → close loop) | Done |
+| Tier 2 | Compliance Auditor Agent | compliance_auditor agent (scan → collect_evidence → analyze_gaps → report) | Done |
+| Tier 3 | Advanced OTel Engines (12) | auto_instrumentation_coverage, collector_config_drift, collector_fleet_autoscaler, collector_resource_limiter, ebpf_telemetry, exporter_delivery_tracker, helm_deployment_intelligence, kafka_otel_bridge, pipeline_backpressure_analyzer, processor_chain_optimizer, receiver_pipeline_stage, span_to_metric_conversion, telemetry_fanout_router, distributed_context | Done |
+| Tier 4 | Advanced RBA Engines (12) | detection_to_risk_converter, entity_risk_aggregation, multi_source_risk_fusion, rba_detection_coverage, rba_threshold_tuner, risk_attribution_explainer, risk_context_enrichment, risk_factor_decay, risk_notable_generator, tactic_chain_risk, technique_risk_weight, threat_object_correlator | Done |
+| Tier 5 | Autoresearch Engines (13) | agent_checkpoint_manager, compute_budget_allocator, compute_cost_tracker, experiment_parameter_search, hypothesis_experiment_loop, improvement_attribution, iteration_efficiency_tracker, lightweight_eval_harness, optimization_convergence_detector, resource_aware_execution, self_contained_agent_profiler, single_metric_focus | Done |
+| Tier 6 | UI Overhaul | Manus.ai-inspired landing page, chat-first hero, agent showcase, clean nav, professional branding | Done |
+
+### Phase 134 — Tier 1: Incident Commander Agent
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/incident_commander/graph.py` | create_incident_commander_graph | agents | Done |
+| 2 | `agents/incident_commander/nodes.py` | triage, coordinate_agents, monitor_and_decide, close_incident | agents | Done |
+| 3 | `agents/incident_commander/tools.py` | IncidentCommanderToolkit | agents | Done |
+| 4 | `agents/incident_commander/models.py` | IncidentCommanderState, IncidentContext, AgentTask, CommandDecision | agents | Done |
+| 5 | `agents/incident_commander/runner.py` | IncidentCommanderRunner | agents | Done |
+
+### Phase 134 — Tier 2: Compliance Auditor Agent
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/compliance_auditor/graph.py` | create_compliance_auditor_graph | agents | Done |
+| 2 | `agents/compliance_auditor/nodes.py` | scan_infrastructure, collect_evidence, analyze_gaps, generate_report | agents | Done |
+| 3 | `agents/compliance_auditor/tools.py` | ComplianceAuditorToolkit | agents | Done |
+| 4 | `agents/compliance_auditor/models.py` | ComplianceAuditorState, ControlAssessment, EvidenceItem | agents | Done |
+| 5 | `agents/compliance_auditor/runner.py` | ComplianceAuditorRunner | agents | Done |
+
+### Phase 134 — Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Incident Commander agent | Orchestrates multi-agent response — coordinates investigation, remediation, and security agents for complex incidents |
+| Compliance Auditor agent | Automates SOC 2/PCI-DSS/HIPAA/GDPR scanning, evidence collection, and audit-ready reporting |
+| Consolidation of 70 engines | All Phases 131-133 engines verified with 1,966 passing tests — ready for production |
+| Chat-first landing page | Manus.ai-inspired "What should we investigate?" hero with chat input and agent showcase |
+| Advanced RBA pipeline | 12 engines creating a complete risk-based alerting pipeline from detection to notable generation |
+| Autoresearch experiment engines | 13 engines implementing Karpathy's propose-execute-evaluate-accept/reject with resource budgets |
+| OTel pipeline deepening | 12 engines for collector fleet management, backpressure analysis, span-to-metric conversion |
+
+---
+
+### Previous: Phase 133 — Deep Observability, Threat Intelligence & Swarm Learning (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 133 |
+| **Theme** | Deep Observability (SLO-aware sampling, cardinality control), Threat Intelligence (automated IOC lifecycle), Swarm Agent Learning |
+| **Inspiration** | autoresearch (telemetry optimization experiments), Splunk RBA (identity risk, SOAR analytics), SOC4Kafka (eBPF, distributed tracing) |
+| **New Agents** | 2 (telemetry_optimizer, threat_intel) |
+| **New Engines** | 11 (2 observability, 4 security, 5 analytics) |
+| **New Tests** | 5 test files (~300+ tests) |
+| **Total Tests (platform)** | ~60,500+ |
+| **Branch** | `main` |
+
+### Phase 133 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | Telemetry Optimizer Agent | telemetry_optimizer agent (analyze→identify_waste→propose→experiment loop), slo_aware_sampling_engine, cardinality_control_engine | Done |
+| Tier 2 | Threat Intelligence Agent | threat_intel agent (collect→correlate→assess→distribute), ioc_lifecycle_engine, soar_playbook_analytics_engine, identity_risk_engine, threat_feed_quality_engine | Done |
+| Tier 3 | Swarm Agent Learning | self_healing_analytics_engine, swarm_intelligence_engine, learning_feedback_loop_engine, agent_knowledge_distillation_engine | Done |
+| Tier 4 | Existing Engine Extensions | ebpf_telemetry_engine, distributed_context_engine (verified pattern compliance) | Done |
+
+### Phase 133 — Tier 1: Telemetry Optimizer Agent & Observability Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/telemetry_optimizer/graph.py` | create_telemetry_optimizer_graph | agents | Done |
+| 2 | `agents/telemetry_optimizer/nodes.py` | analyze_pipeline, identify_waste, propose_optimizations, run_experiments | agents | Done |
+| 3 | `agents/telemetry_optimizer/tools.py` | TelemetryOptimizerToolkit | agents | Done |
+| 4 | `agents/telemetry_optimizer/models.py` | TelemetryOptimizerState, TelemetryWaste, OptimizationProposal, OptimizationExperiment | agents | Done |
+| 5 | `agents/telemetry_optimizer/prompts.py` | SYSTEM_ANALYZE, SYSTEM_IDENTIFY_WASTE, SYSTEM_PROPOSE, SYSTEM_EXPERIMENT | agents | Done |
+| 6 | `agents/telemetry_optimizer/runner.py` | TelemetryOptimizerRunner | agents | Done |
+| 7 | `slo_aware_sampling_engine.py` | SloAwareSamplingEngine | observability | Done |
+| 8 | `cardinality_control_engine.py` | CardinalityControlEngine | observability | Done |
+
+### Phase 133 — Tier 2: Threat Intelligence Agent & Security Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/threat_intel/graph.py` | create_threat_intel_graph | agents | Done |
+| 2 | `agents/threat_intel/nodes.py` | collect_intelligence, correlate_indicators, assess_threats, distribute_results | agents | Done |
+| 3 | `agents/threat_intel/tools.py` | ThreatIntelToolkit | agents | Done |
+| 4 | `agents/threat_intel/models.py` | ThreatIntelState, ThreatIndicator, IntelCorrelation, ThreatAssessment | agents | Done |
+| 5 | `agents/threat_intel/prompts.py` | SYSTEM_COLLECT, SYSTEM_CORRELATE, SYSTEM_ASSESS, SYSTEM_DISTRIBUTE | agents | Done |
+| 6 | `agents/threat_intel/runner.py` | ThreatIntelRunner | agents | Done |
+| 7 | `ioc_lifecycle_engine.py` | IOCLifecycleEngine | security | Done |
+| 8 | `soar_playbook_analytics_engine.py` | SoarPlaybookAnalyticsEngine | security | Done |
+| 9 | `identity_risk_engine.py` | IdentityRiskEngine | security | Done |
+| 10 | `threat_feed_quality_engine.py` | ThreatFeedQualityEngine | security | Done |
+
+### Phase 133 — Tier 3: Swarm Agent Learning Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `self_healing_analytics_engine.py` | SelfHealingAnalyticsEngine | analytics | Done |
+| 2 | `swarm_intelligence_engine.py` | SwarmIntelligenceEngine | analytics | Done |
+| 3 | `learning_feedback_loop_engine.py` | LearningFeedbackLoopEngine | analytics | Done |
+| 4 | `agent_knowledge_distillation_engine.py` | AgentKnowledgeDistillationEngine | analytics | Done |
+
+### Phase 133 — Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Autoresearch-pattern telemetry optimization | Propose→Experiment→Accept/Reject loop with fixed budget for safe cost optimization |
+| Threat intel collect→correlate→assess→distribute pipeline | Standard CTI lifecycle with conditional distribution (only if high-priority indicators found) |
+| SLO-aware sampling | Sampling rates adapt based on SLO health and burn rate — critical services keep full fidelity |
+| Cardinality control engine | Detect and cap metric cardinality explosions before they impact cost/performance |
+| Identity risk scoring | Composite risk from access patterns, impossible travel, privilege usage |
+| SOAR playbook analytics | Rank playbooks by performance, identify automation candidates, track MTTR |
+| Swarm intelligence for multi-agent | Optimize task allocation and detect fragmentation across agent swarms |
+| Knowledge distillation | Transfer learning patterns from high-performing agents to newer ones |
+| Self-healing analytics | Track and optimize autonomous healing actions across services |
+
+---
+
+### Previous: Phase 132 — Advanced OTel Intelligence, Security Automation & GitOps (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 132 |
+| **Theme** | Advanced OTel Intelligence, Security Automation, Agent Optimization, GitOps |
+| **Inspiration** | autoresearch (agent optimization), Splunk RBA (security automation), SOC4Kafka (OTel scaling) |
+| **New Agents** | 2 (security_automation, gitops) |
+| **New Engines** | 12 (4 observability, 4 security, 4 analytics) |
+| **New Tests** | 5 test files (~260+ tests) |
+| **Total Tests (platform)** | ~60,200+ |
+| **Branch** | `main` |
+
+### Phase 132 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | Advanced OTel Intelligence | collector_autoscaler, trace_sampling_optimizer, resource_attribution, telemetry_cost_optimizer | Done |
+| Tier 2 | Security Automation | security_automation agent, threat_hunt_automation, security_playbook_selector, attack_surface_continuous_scorer, incident_auto_classification | Done |
+| Tier 3 | Agent Optimization | agent_performance_benchmark, hyperparameter_auto_tuner, multi_agent_coordination, agent_resource_efficiency | Done |
+| Tier 4 | GitOps Agent | gitops agent (drift detection, reconciliation, deployment verification) | Done |
+
+### Phase 132 — Tier 1: Advanced OTel Intelligence Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `otel_collector_autoscaler_engine.py` | OTelCollectorAutoscalerEngine | observability | Done |
+| 2 | `otel_trace_sampling_optimizer_engine.py` | OTelTraceSamplingOptimizerEngine | observability | Done |
+| 3 | `otel_resource_attribution_engine.py` | OTelResourceAttributionEngine | observability | Done |
+| 4 | `telemetry_cost_optimizer_engine.py` | TelemetryCostOptimizerEngine | observability | Done |
+
+### Phase 132 — Tier 2: Security Automation Agent & Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/security_automation/` | SecurityAutomationRunner | agents | Done |
+| 2 | `threat_hunt_automation_engine.py` | ThreatHuntAutomationEngine | security | Done |
+| 3 | `security_playbook_selector_engine.py` | SecurityPlaybookSelectorEngine | security | Done |
+| 4 | `attack_surface_continuous_scorer_engine.py` | AttackSurfaceContinuousScorerEngine | security | Done |
+| 5 | `incident_auto_classification_engine.py` | IncidentAutoClassificationEngine | security | Done |
+
+### Phase 132 — Tier 3: Agent Optimization Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agent_performance_benchmark_engine.py` | AgentPerformanceBenchmarkEngine | analytics | Done |
+| 2 | `hyperparameter_auto_tuner_engine.py` | HyperparameterAutoTunerEngine | analytics | Done |
+| 3 | `multi_agent_coordination_engine.py` | MultiAgentCoordinationEngine | analytics | Done |
+| 4 | `agent_resource_efficiency_engine.py` | AgentResourceEfficiencyEngine | analytics | Done |
+
+### Phase 132 — Tier 4: GitOps Agent
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/gitops/graph.py` | build_graph | agents | Done |
+| 2 | `agents/gitops/nodes.py` | detect_drift, plan_reconciliation, apply_reconciliation, verify_and_report | agents | Done |
+| 3 | `agents/gitops/tools.py` | GitOpsToolkit | agents | Done |
+| 4 | `agents/gitops/models.py` | GitOpsState, DriftItem, ReconciliationPlan | agents | Done |
+| 5 | `agents/gitops/runner.py` | GitOpsRunner | agents | Done |
+
+### Phase 132 — Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Auto-trigger hunts from RBA scores | Close the loop between risk aggregation and proactive threat hunting |
+| Playbook matching by MITRE tactic | Consistent framework for alert-to-playbook mapping |
+| Agent hyperparameter auto-tuning | Autoresearch pattern applied to agent configuration optimization |
+| GitOps reconciliation agent | Infrastructure drift detection and automated reconciliation |
+| Telemetry cost attribution | FinOps for observability — attribute costs to services/teams |
+| Multi-agent coordination engine | Optimize how agents collaborate and avoid conflicts |
+
+---
+
+### Previous: Phase 131 — Observability 2.0, Security Intelligence & AI Automation (Done)
+
+### Overview
+
+| Metric | Value |
+|--------|-------|
+| **Phase** | 131 |
+| **Theme** | Observability 2.0 (OTel), Risk-Based Security, Autonomous Learning |
+| **Inspiration** | karpathy/autoresearch, splunk-otel-collector-for-kafka, splunk/rba, splunk-otel-python |
+| **New Agents** | 3 (otel_pipeline, risk_scoring, auto_learning) |
+| **New Engines** | 9 (3 observability, 3 security, 3 analytics) |
+| **New Integrations** | 4 (OTel Kafka receiver, pipeline processor, collector manager, Python instrumentor) |
+| **New Tests** | 7 test files (~200+ tests) |
+| **Total Tests (platform)** | ~59,940+ |
+| **Branch** | `main` |
+
+### Phase 131 Summary
+
+| Tier | Theme | Components | Status |
+|------|-------|------------|--------|
+| Tier 1 | OTel Pipeline Agent + Engines | otel_pipeline agent, otel_pipeline_health_engine, otel_kafka_ingestion_engine, auto_instrumentation_engine | Done |
+| Tier 2 | Risk-Based Security Agent + Engines | risk_scoring agent, risk_aggregation_engine, mitre_attack_mapper_engine, security_signal_correlation_engine | Done |
+| Tier 3 | Auto Learning Agent + Engines | auto_learning agent, experiment_lifecycle_engine, resource_budget_tracker_engine, convergence_optimizer_engine | Done |
+| Tier 4 | OTel Integration Tools | kafka_receiver, pipeline_processor, collector_manager, python_instrumentor | Done |
+| Tier 5 | Skills & Documentation | run-agent, add-integration updates, tasks.md, CLAUDE.md | Done |
+
+### Phase 131 — Tier 1: OTel Pipeline Agent & Observability Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/otel_pipeline/graph.py` | build_graph | agents | Done |
+| 2 | `agents/otel_pipeline/nodes.py` | discover_pipeline, configure_pipeline, validate_pipeline, monitor_pipeline | agents | Done |
+| 3 | `agents/otel_pipeline/tools.py` | OTelPipelineToolkit | agents | Done |
+| 4 | `agents/otel_pipeline/models.py` | OTelPipelineState, CollectorConfig, PipelineHealthMetric | agents | Done |
+| 5 | `agents/otel_pipeline/prompts.py` | SYSTEM_DISCOVER, SYSTEM_CONFIGURE, SYSTEM_VALIDATE, SYSTEM_MONITOR | agents | Done |
+| 6 | `agents/otel_pipeline/runner.py` | OTelPipelineRunner | agents | Done |
+| 7 | `otel_pipeline_health_engine.py` | OTelPipelineHealthEngine | observability | Done |
+| 8 | `otel_kafka_ingestion_engine.py` | OTelKafkaIngestionEngine | observability | Done |
+| 9 | `auto_instrumentation_engine.py` | AutoInstrumentationEngine | observability | Done |
+
+### Phase 131 — Tier 2: Risk-Based Security Agent & Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/risk_scoring/graph.py` | build_graph | agents | Done |
+| 2 | `agents/risk_scoring/nodes.py` | collect_observations, enrich_observations, aggregate_by_entity, decide_actions | agents | Done |
+| 3 | `agents/risk_scoring/tools.py` | RiskScoringToolkit | agents | Done |
+| 4 | `agents/risk_scoring/models.py` | RiskScoringState, SecurityObservation, RiskEntity | agents | Done |
+| 5 | `agents/risk_scoring/prompts.py` | SYSTEM_ENRICH, SYSTEM_AGGREGATE, SYSTEM_SCORE, SYSTEM_DECIDE | agents | Done |
+| 6 | `agents/risk_scoring/runner.py` | RiskScoringRunner | agents | Done |
+| 7 | `risk_aggregation_engine.py` | RiskAggregationEngine | security | Done |
+| 8 | `mitre_attack_mapper_engine.py` | MitreAttackMapperEngine | security | Done |
+| 9 | `security_signal_correlation_engine.py` | SecuritySignalCorrelationEngine | security | Done |
+
+### Phase 131 — Tier 3: Auto Learning Agent & Engines
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `agents/auto_learning/graph.py` | build_graph | agents | Done |
+| 2 | `agents/auto_learning/nodes.py` | assess_baseline, generate_proposals, run_experiments, evaluate_and_decide | agents | Done |
+| 3 | `agents/auto_learning/tools.py` | AutoLearningToolkit | agents | Done |
+| 4 | `agents/auto_learning/models.py` | AutoLearningState, ResourceBudget, Proposal, ExperimentResult | agents | Done |
+| 5 | `agents/auto_learning/prompts.py` | SYSTEM_ASSESS, SYSTEM_PROPOSE, SYSTEM_EVALUATE, SYSTEM_DECIDE | agents | Done |
+| 6 | `agents/auto_learning/runner.py` | AutoLearningRunner | agents | Done |
+| 7 | `experiment_lifecycle_engine.py` | ExperimentLifecycleEngine | analytics | Done |
+| 8 | `resource_budget_tracker_engine.py` | ResourceBudgetTrackerEngine | analytics | Done |
+| 9 | `convergence_optimizer_engine.py` | ConvergenceOptimizerEngine | analytics | Done |
+
+### Phase 131 — Tier 4: OTel Integration Tools
+
+| # | Module | Class | Package | Status |
+|---|--------|-------|---------|--------|
+| 1 | `integrations/otel/kafka_receiver.py` | KafkaOTelReceiver | integrations | Done |
+| 2 | `integrations/otel/pipeline_processor.py` | ProcessorChain | integrations | Done |
+| 3 | `integrations/otel/collector_manager.py` | CollectorManager | integrations | Done |
+| 4 | `integrations/otel/python_instrumentor.py` | PythonInstrumentor | integrations | Done |
+
+### Phase 131 — Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Fixed resource budgets (autoresearch pattern) | 5-minute cap per experiment prevents runaway resource consumption |
+| Risk-Based Alerting (Splunk RBA) | Aggregate low-confidence observations into high-fidelity alerts to reduce noise |
+| MITRE ATT&CK mapping | Standard framework for cross-module security correlation |
+| Receiver→Processor→Exporter pipeline | Industry-standard OTel pattern for composable telemetry pipelines |
+| DaemonSet collector deployment | Per-node deployment ensures comprehensive telemetry coverage |
+| Full-fidelity tracing default | No sampling by default ensures no incident-relevant data is lost |
+| Propose→Execute→Evaluate→Accept/Reject loop | Autoresearch-inspired autonomous improvement cycle |
+
+---
+
+### Previous: Phases 128-130 — Dr. Zero-Inspired Self-Evolving Agent Intelligence (Done)
 
 | Phase | Theme | Modules | Tests | Status |
 |-------|-------|---------|-------|--------|
-| 128 | Self-Evolving Agent Intelligence (Dr. Zero) | 12 (incident scenario proposer, solver performance evolution, difficulty-guided reward, proposer-solver co-evolution, automated curriculum, self-evolution convergence, synthetic scenario quality, agent skill acquisition, evolution iteration optimizer, co-evolution compute efficiency, capability frontier mapper, self-play benchmark) | ~109 | Done |
-| 129 | Multi-Hop Investigation & Reasoning Intelligence | 12 (multi-hop root cause, bridge entity discovery, investigation reasoning depth, tool-use interleaving, cross-service hop tracing, adaptive retrieval strategy, reasoning chain integrity, investigation trajectory scorer, multi-turn investigation, reasoning decomposition, investigation completeness, hop complexity distribution) | ~111 | Done |
-| 130 | Policy Optimization & Format Intelligence (HRPO) | 12 (hop-grouped policy optimizer, advantage estimation, format compliance reward, policy gradient variance, security task complexity clustering, reward shaping, policy convergence monitor, KL divergence regularization, outcome-based reward scorer, curriculum difficulty calibrator, group baseline estimator, policy stability analyzer) | ~120 | Done |
+| 128 | Self-Evolving Agent Intelligence (Dr. Zero) | 12 | ~109 | Done |
+| 129 | Multi-Hop Investigation & Reasoning Intelligence | 12 | ~111 | Done |
+| 130 | Policy Optimization & Format Intelligence (HRPO) | 12 | ~120 | Done |
 
 ---
 

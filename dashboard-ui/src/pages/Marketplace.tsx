@@ -977,7 +977,7 @@ export default function Marketplace() {
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900 via-gray-900 to-brand-950/30 p-8">
+      <div className="rounded-xl border border-gray-800 bg-gray-900 p-8">
         <div className="flex items-center gap-3">
           <Store className="h-8 w-8 text-brand-400" />
           <h1 className="text-2xl font-bold text-gray-100">

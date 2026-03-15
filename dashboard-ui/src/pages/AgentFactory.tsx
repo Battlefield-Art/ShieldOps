@@ -374,7 +374,7 @@ export default function AgentFactory() {
       {/* Hero section */}
       <div className="relative overflow-hidden">
         {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-950/30 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-transparent" />
 
         <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
           {/* Top row: persona + metrics */}

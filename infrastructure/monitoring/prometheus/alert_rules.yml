@@ -223,3 +223,52 @@ groups:
             worse, allowed without proper authorization checks. Verify OPA
             connectivity and policy bundle integrity.
           runbook_url: "https://runbooks.shieldops.internal/infra/opa-evaluation-failed"
+
+  # ── Agent Execution Alerts ───────────────────────────────────
+  - name: shieldops.agents
+    rules:
+      - alert: AgentHighFailureRate
+        expr: >
+          (1 - shieldops:agent_success_rate:5m) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          service: shieldops-agents
+        annotations:
+          summary: "Agent {{ $labels.agent_type }} failure rate > 20%"
+          description: >
+            Agent type {{ $labels.agent_type }} has a failure rate of
+            {{ $value | printf "%.0f" }}% over the last 10 minutes.
+          runbook_url: "https://runbooks.shieldops.internal/agents/high-failure-rate"
+
+      - alert: AgentHighLatency
+        expr: >
+          shieldops:agent_duration:p95 > 120
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          service: shieldops-agents
+        annotations:
+          summary: "Agent {{ $labels.agent_type }} P95 latency > 2 minutes"
+          description: >
+            Agent type {{ $labels.agent_type }} P95 execution time is
+            {{ $value | printf "%.0f" }}s. Investigate LLM latency or
+            connector timeouts.
+          runbook_url: "https://runbooks.shieldops.internal/agents/high-latency"
+
+      - alert: LLMCostSpike
+        expr: >
+          shieldops:llm_cost:rate1m > 5
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+          service: shieldops-llm
+        annotations:
+          summary: "LLM cost exceeding $5/min for 15 minutes"
+          description: >
+            Sustained LLM spend of ${{ $value | printf "%.2f" }}/min.
+            Check for runaway agent loops or unexpectedly large context windows.
+          runbook_url: "https://runbooks.shieldops.internal/llm/cost-spike"
