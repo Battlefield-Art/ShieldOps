@@ -8329,16 +8329,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     if settings.compliance_auditor_enabled:
         try:
-            from shieldops.agents.compliance_auditor import AgentComplianceAuditor
+            from shieldops.agents.compliance_auditor.runner import ComplianceAuditorRunner
             from shieldops.api.routes import compliance_auditor as aca_mod
 
-            aca_engine = AgentComplianceAuditor(
-                max_records=settings.compliance_auditor_max_records,
-                min_pass_rate_pct=settings.compliance_auditor_min_pass_rate_pct,
-            )
-            aca_mod.set_engine(aca_engine)
+            aca_runner = ComplianceAuditorRunner()
+            aca_mod.set_runner(aca_runner)
             app.include_router(
-                aca_mod.aca_route,
+                aca_mod.router,
                 prefix=settings.api_prefix,
                 tags=["Compliance Auditor"],
             )
