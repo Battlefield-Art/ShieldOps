@@ -50,7 +50,6 @@ from shieldops.agents.incident_commander.prompts import (
 from shieldops.agents.incident_commander.runner import IncidentCommanderRunner
 from shieldops.agents.incident_commander.tools import IncidentCommanderToolkit
 
-
 # -- Fixtures ----------------------------------------------------------------
 
 
@@ -165,15 +164,11 @@ class TestState:
     def test_list_fields_are_independent(self):
         s1 = IncidentCommanderState()
         s2 = IncidentCommanderState()
-        s1.agent_tasks.append(
-            AgentTask(agent_type="investigation", task_description="test")
-        )
+        s1.agent_tasks.append(AgentTask(agent_type="investigation", task_description="test"))
         assert s2.agent_tasks == []
 
     def test_state_with_error(self):
-        state = IncidentCommanderState(
-            error="dispatch failed", current_step="failed"
-        )
+        state = IncidentCommanderState(error="dispatch failed", current_step="failed")
         assert state.error == "dispatch failed"
         assert state.current_step == "failed"
 
@@ -293,9 +288,7 @@ class TestToolkit:
             environment="production",
             severity=SeverityLevel.SEV1,
         )
-        agents = IncidentCommanderToolkit._recommend_agents(
-            SeverityLevel.SEV1, context
-        )
+        agents = IncidentCommanderToolkit._recommend_agents(SeverityLevel.SEV1, context)
         assert "investigation" in agents
         assert "remediation" in agents
         assert "security" in agents
@@ -307,9 +300,7 @@ class TestToolkit:
             environment="staging",
             severity=SeverityLevel.SEV3,
         )
-        agents = IncidentCommanderToolkit._recommend_agents(
-            SeverityLevel.SEV3, context
-        )
+        agents = IncidentCommanderToolkit._recommend_agents(SeverityLevel.SEV3, context)
         assert "investigation" in agents
         assert "remediation" not in agents
         assert "security" not in agents
@@ -340,9 +331,7 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_escalate_mock_fallback(self):
         toolkit = IncidentCommanderToolkit()
-        result = await toolkit.escalate(
-            EscalationStatus.VP_ENG, "SEV1 not resolving"
-        )
+        result = await toolkit.escalate(EscalationStatus.VP_ENG, "SEV1 not resolving")
         assert result["level"] == "vp_eng"
         assert result["status"] == "escalated"
 
@@ -466,14 +455,10 @@ class TestNodes:
         assert result["decisions"][0].action == "triage_complete"
 
     @pytest.mark.asyncio
-    async def test_coordinate_agents_sev2_production(
-        self, base_state: IncidentCommanderState
-    ):
+    async def test_coordinate_agents_sev2_production(self, base_state: IncidentCommanderState):
         # First triage
         triage_result = await triage(base_state)
-        state = IncidentCommanderState(
-            **{**base_state.model_dump(), **triage_result}
-        )
+        state = IncidentCommanderState(**{**base_state.model_dump(), **triage_result})
         result = await coordinate_agents(state)
         assert result["current_step"] == "coordinate_agents"
         assert result["stage"] == CommandStage.RESOLVE
@@ -481,9 +466,7 @@ class TestNodes:
         assert len(result["agent_tasks"]) >= 2
 
     @pytest.mark.asyncio
-    async def test_monitor_and_decide_all_completed(
-        self, monitored_state: IncidentCommanderState
-    ):
+    async def test_monitor_and_decide_all_completed(self, monitored_state: IncidentCommanderState):
         result = await monitor_and_decide(monitored_state)
         assert result["current_step"] == "monitor_and_decide"
         # Mock fallback returns "completed" status
@@ -492,16 +475,12 @@ class TestNodes:
         assert result["confidence_score"] == pytest.approx(0.9)
 
     @pytest.mark.asyncio
-    async def test_close_incident(
-        self, monitored_state: IncidentCommanderState
-    ):
+    async def test_close_incident(self, monitored_state: IncidentCommanderState):
         result = await close_incident(monitored_state)
         assert result["current_step"] == "complete"
         assert result["stage"] == CommandStage.REVIEW
         assert "ALT-001" in result["resolution_summary"]
-        assert len(result["reasoning_chain"]) > len(
-            monitored_state.reasoning_chain
-        )
+        assert len(result["reasoning_chain"]) > len(monitored_state.reasoning_chain)
 
 
 # -- TestConditionalEdges ----------------------------------------------------
@@ -510,11 +489,7 @@ class TestNodes:
 class TestConditionalEdges:
     def test_route_resolve(self):
         state = IncidentCommanderState(
-            decisions=[
-                CommandDecision(
-                    action="resolve", reasoning="all clear", confidence=0.9
-                )
-            ],
+            decisions=[CommandDecision(action="resolve", reasoning="all clear", confidence=0.9)],
         )
         assert route_after_monitor(state) == "close_incident"
 
@@ -523,9 +498,7 @@ class TestConditionalEdges:
 
         state = IncidentCommanderState(
             decisions=[
-                CommandDecision(
-                    action="escalate", reasoning="SEV1 timeout", confidence=0.7
-                )
+                CommandDecision(action="escalate", reasoning="SEV1 timeout", confidence=0.7)
             ],
         )
         assert route_after_monitor(state) == END

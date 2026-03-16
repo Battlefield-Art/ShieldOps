@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from shieldops.agents.soar_workflow.graph import build_graph, create_soar_workflow_graph
 from shieldops.agents.soar_workflow.models import (
     AlertIntake,
     EnrichmentResult,
@@ -14,7 +15,6 @@ from shieldops.agents.soar_workflow.models import (
     ResponseStatus,
     SOARWorkflowState,
 )
-from shieldops.agents.soar_workflow.tools import SOARWorkflowToolkit, _classify_indicator
 from shieldops.agents.soar_workflow.nodes import (
     enrich_context,
     execute_containment,
@@ -22,8 +22,6 @@ from shieldops.agents.soar_workflow.nodes import (
     intake_and_classify,
     recover_and_report,
 )
-from shieldops.agents.soar_workflow.graph import build_graph, create_soar_workflow_graph
-from shieldops.agents.soar_workflow.runner import SOARWorkflowRunner
 from shieldops.agents.soar_workflow.prompts import (
     SYSTEM_CONTAIN,
     SYSTEM_ENRICH,
@@ -31,7 +29,8 @@ from shieldops.agents.soar_workflow.prompts import (
     SYSTEM_INTAKE,
     SYSTEM_RECOVER,
 )
-
+from shieldops.agents.soar_workflow.runner import SOARWorkflowRunner
+from shieldops.agents.soar_workflow.tools import SOARWorkflowToolkit, _classify_indicator
 
 # =====================================================================
 # Enum Tests
@@ -237,13 +236,15 @@ class TestSOARWorkflowToolkit:
     @pytest.mark.asyncio
     async def test_intake_alert_basic(self) -> None:
         toolkit = SOARWorkflowToolkit()
-        alert = await toolkit.intake_alert({
-            "alert_id": "A-001",
-            "source": "splunk",
-            "severity": "high",
-            "description": "Brute force login attempt",
-            "indicators": ["10.0.0.1"],
-        })
+        alert = await toolkit.intake_alert(
+            {
+                "alert_id": "A-001",
+                "source": "splunk",
+                "severity": "high",
+                "description": "Brute force login attempt",
+                "indicators": ["10.0.0.1"],
+            }
+        )
         assert alert.alert_id == "A-001"
         assert alert.source == "splunk"
         assert alert.severity == "high"
@@ -252,18 +253,22 @@ class TestSOARWorkflowToolkit:
     @pytest.mark.asyncio
     async def test_intake_alert_auto_detect_tactics(self) -> None:
         toolkit = SOARWorkflowToolkit()
-        alert = await toolkit.intake_alert({
-            "description": "Phishing email with malware attachment",
-        })
+        alert = await toolkit.intake_alert(
+            {
+                "description": "Phishing email with malware attachment",
+            }
+        )
         tactics = alert.mitre_tactics
         assert any("Initial Access" in t for t in tactics) or any("Execution" in t for t in tactics)
 
     @pytest.mark.asyncio
     async def test_intake_alert_default_tactic(self) -> None:
         toolkit = SOARWorkflowToolkit()
-        alert = await toolkit.intake_alert({
-            "description": "Generic security event",
-        })
+        alert = await toolkit.intake_alert(
+            {
+                "description": "Generic security event",
+            }
+        )
         assert len(alert.mitre_tactics) > 0
 
     @pytest.mark.asyncio

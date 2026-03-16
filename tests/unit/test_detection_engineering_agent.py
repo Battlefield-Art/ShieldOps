@@ -4,36 +4,34 @@ from __future__ import annotations
 
 import pytest
 
+from shieldops.agents.detection_engineering.graph import (
+    _should_deploy,
+    build_graph,
+    create_detection_engineering_graph,
+)
 from shieldops.agents.detection_engineering.models import (
     CoverageGap,
     DetectionEngineeringState,
     DetectionRule,
     DetectionStage,
-    ReasoningStep,
     RuleStatus,
     RuleType,
     TuningResult,
 )
-from shieldops.agents.detection_engineering.tools import DetectionEngineeringToolkit
 from shieldops.agents.detection_engineering.nodes import (
     assess_coverage,
     backtest_and_tune,
     create_rules,
     deploy_rules,
 )
-from shieldops.agents.detection_engineering.graph import (
-    build_graph,
-    create_detection_engineering_graph,
-    _should_deploy,
-)
-from shieldops.agents.detection_engineering.runner import DetectionEngineeringRunner
 from shieldops.agents.detection_engineering.prompts import (
     SYSTEM_ASSESS_COVERAGE,
     SYSTEM_CREATE_RULES,
     SYSTEM_DEPLOY,
     SYSTEM_TEST_AND_TUNE,
 )
-
+from shieldops.agents.detection_engineering.runner import DetectionEngineeringRunner
+from shieldops.agents.detection_engineering.tools import DetectionEngineeringToolkit
 
 # =====================================================================
 # Enum Tests
@@ -327,7 +325,9 @@ class TestNodes:
         assert "deploy-node-001" in result["rules_deployed"]
 
     @pytest.mark.asyncio()
-    async def test_deploy_rules_node_skips_high_fp(self, toolkit: DetectionEngineeringToolkit) -> None:
+    async def test_deploy_rules_node_skips_high_fp(
+        self, toolkit: DetectionEngineeringToolkit
+    ) -> None:
         rule = DetectionRule(
             rule_id="high-fp-001",
             name="High FP Rule",

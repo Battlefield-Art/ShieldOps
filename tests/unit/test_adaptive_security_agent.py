@@ -11,9 +11,9 @@ from shieldops.agents.adaptive_security.models import (
     AdaptiveSecurityState,
     BaselineMetrics,
     ReasoningStep,
+    ThreatContext,
     ThresholdProposal,
     ThresholdType,
-    ThreatContext,
 )
 from shieldops.agents.adaptive_security.nodes import (
     apply_accepted,
@@ -29,7 +29,6 @@ from shieldops.agents.adaptive_security.prompts import (
 )
 from shieldops.agents.adaptive_security.runner import AdaptiveSecurityRunner
 from shieldops.agents.adaptive_security.tools import AdaptiveSecurityToolkit
-
 
 # ---------------------------------------------------------------------------
 # Model tests

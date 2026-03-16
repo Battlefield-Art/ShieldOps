@@ -13,15 +13,6 @@ from shieldops.observability.otel_collector_autoscaler_engine import (
     ScalerStatus,
     ScalingMetric,
 )
-from shieldops.observability.otel_trace_sampling_optimizer_engine import (
-    OTelTraceSamplingOptimizerEngine,
-    SamplingOptimization,
-    SamplingStrategy,
-    TraceImportance,
-    TraceSamplingAnalysis,
-    TraceSamplingRecord,
-    TraceSamplingReport,
-)
 from shieldops.observability.otel_resource_attribution_engine import (
     AttributionMethod,
     CostTrend,
@@ -30,6 +21,15 @@ from shieldops.observability.otel_resource_attribution_engine import (
     ResourceAttributionRecord,
     ResourceAttributionReport,
     ResourceCostType,
+)
+from shieldops.observability.otel_trace_sampling_optimizer_engine import (
+    OTelTraceSamplingOptimizerEngine,
+    SamplingOptimization,
+    SamplingStrategy,
+    TraceImportance,
+    TraceSamplingAnalysis,
+    TraceSamplingRecord,
+    TraceSamplingReport,
 )
 from shieldops.observability.telemetry_cost_optimizer_engine import (
     CostCategory,
@@ -40,7 +40,6 @@ from shieldops.observability.telemetry_cost_optimizer_engine import (
     TelemetryCostRecord,
     TelemetryCostReport,
 )
-
 
 # ============================================================================
 # OTelCollectorAutoscalerEngine

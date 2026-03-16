@@ -3,54 +3,51 @@ Autonomous Experiment, Agent Collaboration Optimizer."""
 
 from __future__ import annotations
 
-import pytest
-
+from shieldops.analytics.agent_collaboration_optimizer_engine import (
+    AgentCollaborationOptimizerAnalysis,
+    AgentCollaborationOptimizerEngine,
+    AgentCollaborationOptimizerRecord,
+    AgentCollaborationOptimizerReport,
+    CollaborationMode,
+    ConflictType,
+    HandoffQuality,
+)
+from shieldops.analytics.agent_meta_learning_engine import (
+    AgentGeneration,
+    AgentMetaLearningAnalysis,
+    AgentMetaLearningEngine,
+    AgentMetaLearningRecord,
+    AgentMetaLearningReport,
+    LearningOutcome,
+    MetaStrategy,
+)
+from shieldops.analytics.autonomous_experiment_engine import (
+    AutonomousExperimentAnalysis,
+    AutonomousExperimentEngine,
+    AutonomousExperimentRecord,
+    AutonomousExperimentReport,
+    BudgetStatus,
+    DecisionOutcome,
+    ExperimentPhase,
+)
 from shieldops.security.security_posture_scorer_engine import (
     ComplianceAlignment,
     PostureDomain,
     PostureMaturity,
+    SecurityPostureScorerAnalysis,
     SecurityPostureScorerEngine,
     SecurityPostureScorerRecord,
-    SecurityPostureScorerAnalysis,
     SecurityPostureScorerReport,
 )
 from shieldops.security.threat_simulation_engine import (
     MitreTactic,
     SimulationOutcome,
     SimulationType,
+    ThreatSimulationAnalysis,
     ThreatSimulationEngine,
     ThreatSimulationRecord,
-    ThreatSimulationAnalysis,
     ThreatSimulationReport,
 )
-from shieldops.analytics.agent_meta_learning_engine import (
-    AgentGeneration,
-    LearningOutcome,
-    MetaStrategy,
-    AgentMetaLearningEngine,
-    AgentMetaLearningRecord,
-    AgentMetaLearningAnalysis,
-    AgentMetaLearningReport,
-)
-from shieldops.analytics.autonomous_experiment_engine import (
-    BudgetStatus,
-    DecisionOutcome,
-    ExperimentPhase,
-    AutonomousExperimentEngine,
-    AutonomousExperimentRecord,
-    AutonomousExperimentAnalysis,
-    AutonomousExperimentReport,
-)
-from shieldops.analytics.agent_collaboration_optimizer_engine import (
-    CollaborationMode,
-    ConflictType,
-    HandoffQuality,
-    AgentCollaborationOptimizerEngine,
-    AgentCollaborationOptimizerRecord,
-    AgentCollaborationOptimizerAnalysis,
-    AgentCollaborationOptimizerReport,
-)
-
 
 # ============================================================
 # SecurityPostureScorerEngine Tests
@@ -133,10 +130,14 @@ class TestPostureScorerEngine:
 
     def test_compute_domain_scores(self):
         self.engine.add_record(
-            name="r1", posture_domain=PostureDomain.IDENTITY, score=80.0,
+            name="r1",
+            posture_domain=PostureDomain.IDENTITY,
+            score=80.0,
         )
         self.engine.add_record(
-            name="r2", posture_domain=PostureDomain.IDENTITY, score=60.0,
+            name="r2",
+            posture_domain=PostureDomain.IDENTITY,
+            score=60.0,
         )
         result = self.engine.compute_domain_scores()
         assert len(result) == 1
@@ -145,7 +146,8 @@ class TestPostureScorerEngine:
 
     def test_detect_posture_regression_gaps(self):
         self.engine.add_record(
-            name="r1", service="api",
+            name="r1",
+            service="api",
             compliance_alignment=ComplianceAlignment.GAP,
         )
         regressions = self.engine.detect_posture_regression()
@@ -154,7 +156,8 @@ class TestPostureScorerEngine:
 
     def test_detect_posture_regression_low_maturity(self):
         self.engine.add_record(
-            name="r1", service="api",
+            name="r1",
+            service="api",
             posture_maturity=PostureMaturity.INITIAL,
             compliance_alignment=ComplianceAlignment.ALIGNED,
         )
@@ -164,7 +167,8 @@ class TestPostureScorerEngine:
 
     def test_detect_posture_regression_none(self):
         self.engine.add_record(
-            name="r1", service="api",
+            name="r1",
+            service="api",
             posture_maturity=PostureMaturity.MANAGED,
             compliance_alignment=ComplianceAlignment.ALIGNED,
         )
@@ -172,11 +176,15 @@ class TestPostureScorerEngine:
 
     def test_benchmark_against_framework(self):
         self.engine.add_record(
-            name="r1", framework="NIST", score=80.0,
+            name="r1",
+            framework="NIST",
+            score=80.0,
             compliance_alignment=ComplianceAlignment.ALIGNED,
         )
         self.engine.add_record(
-            name="r2", framework="NIST", score=40.0,
+            name="r2",
+            framework="NIST",
+            score=40.0,
             compliance_alignment=ComplianceAlignment.GAP,
         )
         result = self.engine.benchmark_against_framework()
@@ -278,8 +286,10 @@ class TestThreatSimulationEngine:
 
     def test_add_record(self):
         r = self.engine.add_record(
-            name="sim1", simulation_type=SimulationType.RED_TEAM,
-            mitre_tactic=MitreTactic.EXECUTION, score=70.0,
+            name="sim1",
+            simulation_type=SimulationType.RED_TEAM,
+            mitre_tactic=MitreTactic.EXECUTION,
+            score=70.0,
         )
         assert r.simulation_type == SimulationType.RED_TEAM
 
@@ -314,11 +324,13 @@ class TestThreatSimulationEngine:
 
     def test_identify_detection_gaps(self):
         self.engine.add_record(
-            name="r1", mitre_tactic=MitreTactic.EXECUTION,
+            name="r1",
+            mitre_tactic=MitreTactic.EXECUTION,
             simulation_outcome=SimulationOutcome.MISSED,
         )
         self.engine.add_record(
-            name="r2", mitre_tactic=MitreTactic.EXECUTION,
+            name="r2",
+            mitre_tactic=MitreTactic.EXECUTION,
             simulation_outcome=SimulationOutcome.DETECTED,
         )
         gaps = self.engine.identify_detection_gaps()
@@ -328,18 +340,21 @@ class TestThreatSimulationEngine:
 
     def test_identify_detection_gaps_no_gaps(self):
         self.engine.add_record(
-            name="r1", simulation_outcome=SimulationOutcome.DETECTED,
+            name="r1",
+            simulation_outcome=SimulationOutcome.DETECTED,
         )
         assert len(self.engine.identify_detection_gaps()) == 0
 
     def test_compute_detection_coverage(self):
         self.engine.add_record(
-            name="r1", simulation_type=SimulationType.RED_TEAM,
+            name="r1",
+            simulation_type=SimulationType.RED_TEAM,
             simulation_outcome=SimulationOutcome.DETECTED,
             detection_time_seconds=30.0,
         )
         self.engine.add_record(
-            name="r2", simulation_type=SimulationType.RED_TEAM,
+            name="r2",
+            simulation_type=SimulationType.RED_TEAM,
             simulation_outcome=SimulationOutcome.MISSED,
             detection_time_seconds=0.0,
         )
@@ -349,8 +364,10 @@ class TestThreatSimulationEngine:
 
     def test_recommend_detection_improvements_missed(self):
         self.engine.add_record(
-            name="r1", simulation_outcome=SimulationOutcome.MISSED,
-            mitre_tactic=MitreTactic.PERSISTENCE, service="api",
+            name="r1",
+            simulation_outcome=SimulationOutcome.MISSED,
+            mitre_tactic=MitreTactic.PERSISTENCE,
+            service="api",
         )
         recs = self.engine.recommend_detection_improvements()
         assert len(recs) == 1
@@ -358,16 +375,20 @@ class TestThreatSimulationEngine:
 
     def test_recommend_detection_improvements_partial(self):
         self.engine.add_record(
-            name="r1", simulation_outcome=SimulationOutcome.PARTIALLY_DETECTED,
-            mitre_tactic=MitreTactic.DISCOVERY, service="api",
+            name="r1",
+            simulation_outcome=SimulationOutcome.PARTIALLY_DETECTED,
+            mitre_tactic=MitreTactic.DISCOVERY,
+            service="api",
         )
         recs = self.engine.recommend_detection_improvements()
         assert recs[0]["priority"] == "high"
 
     def test_recommend_detection_improvements_low_score(self):
         self.engine.add_record(
-            name="r1", simulation_outcome=SimulationOutcome.DETECTED,
-            score=20.0, service="api",
+            name="r1",
+            simulation_outcome=SimulationOutcome.DETECTED,
+            score=20.0,
+            service="api",
         )
         recs = self.engine.recommend_detection_improvements()
         assert recs[0]["priority"] == "medium"
@@ -456,8 +477,10 @@ class TestMetaLearningEngine:
 
     def test_add_record(self):
         r = self.engine.add_record(
-            name="ml1", meta_strategy=MetaStrategy.TRANSFER,
-            improvement_pct=15.0, training_cost=100.0,
+            name="ml1",
+            meta_strategy=MetaStrategy.TRANSFER,
+            improvement_pct=15.0,
+            training_cost=100.0,
         )
         assert r.improvement_pct == 15.0
 
@@ -486,14 +509,18 @@ class TestMetaLearningEngine:
 
     def test_identify_best_learning_strategies(self):
         self.engine.add_record(
-            name="r1", meta_strategy=MetaStrategy.TRANSFER,
+            name="r1",
+            meta_strategy=MetaStrategy.TRANSFER,
             learning_outcome=LearningOutcome.IMPROVED,
-            improvement_pct=20.0, training_cost=50.0,
+            improvement_pct=20.0,
+            training_cost=50.0,
         )
         self.engine.add_record(
-            name="r2", meta_strategy=MetaStrategy.TRANSFER,
+            name="r2",
+            meta_strategy=MetaStrategy.TRANSFER,
             learning_outcome=LearningOutcome.DEGRADED,
-            improvement_pct=-5.0, training_cost=50.0,
+            improvement_pct=-5.0,
+            training_cost=50.0,
         )
         result = self.engine.identify_best_learning_strategies()
         assert len(result) == 1
@@ -502,32 +529,42 @@ class TestMetaLearningEngine:
 
     def test_cross_pollinate_agent_knowledge(self):
         self.engine.add_record(
-            name="r1", agent_generation=AgentGeneration.GEN1,
-            meta_strategy=MetaStrategy.CURRICULUM, improvement_pct=15.0,
+            name="r1",
+            agent_generation=AgentGeneration.GEN1,
+            meta_strategy=MetaStrategy.CURRICULUM,
+            improvement_pct=15.0,
         )
         self.engine.add_record(
-            name="r2", agent_generation=AgentGeneration.GEN2,
-            meta_strategy=MetaStrategy.TRANSFER, improvement_pct=10.0,
+            name="r2",
+            agent_generation=AgentGeneration.GEN2,
+            meta_strategy=MetaStrategy.TRANSFER,
+            improvement_pct=10.0,
         )
         result = self.engine.cross_pollinate_agent_knowledge()
         assert len(result) >= 1
 
     def test_cross_pollinate_no_opportunities(self):
         self.engine.add_record(
-            name="r1", agent_generation=AgentGeneration.GEN1,
-            meta_strategy=MetaStrategy.TRANSFER, improvement_pct=10.0,
+            name="r1",
+            agent_generation=AgentGeneration.GEN1,
+            meta_strategy=MetaStrategy.TRANSFER,
+            improvement_pct=10.0,
         )
         self.engine.add_record(
-            name="r2", agent_generation=AgentGeneration.GEN2,
-            meta_strategy=MetaStrategy.TRANSFER, improvement_pct=10.0,
+            name="r2",
+            agent_generation=AgentGeneration.GEN2,
+            meta_strategy=MetaStrategy.TRANSFER,
+            improvement_pct=10.0,
         )
         result = self.engine.cross_pollinate_agent_knowledge()
         assert len(result) == 0
 
     def test_evaluate_meta_learning_roi(self):
         self.engine.add_record(
-            name="r1", meta_strategy=MetaStrategy.ENSEMBLE,
-            improvement_pct=20.0, training_cost=100.0,
+            name="r1",
+            meta_strategy=MetaStrategy.ENSEMBLE,
+            improvement_pct=20.0,
+            training_cost=100.0,
             learning_outcome=LearningOutcome.IMPROVED,
         )
         result = self.engine.evaluate_meta_learning_roi()
@@ -536,8 +573,10 @@ class TestMetaLearningEngine:
 
     def test_evaluate_roi_zero_cost(self):
         self.engine.add_record(
-            name="r1", meta_strategy=MetaStrategy.DISTILLATION,
-            improvement_pct=10.0, training_cost=0.0,
+            name="r1",
+            meta_strategy=MetaStrategy.DISTILLATION,
+            improvement_pct=10.0,
+            training_cost=0.0,
         )
         result = self.engine.evaluate_meta_learning_roi()
         assert result[0]["roi"] == 0.0
@@ -630,8 +669,10 @@ class TestAutonomousExperimentEngine:
 
     def test_add_record(self):
         r = self.engine.add_record(
-            name="exp1", experiment_phase=ExperimentPhase.EXECUTE,
-            budget_spent=500.0, budget_total=1000.0,
+            name="exp1",
+            experiment_phase=ExperimentPhase.EXECUTE,
+            budget_spent=500.0,
+            budget_total=1000.0,
         )
         assert r.budget_spent == 500.0
 
@@ -666,13 +707,19 @@ class TestAutonomousExperimentEngine:
 
     def test_generate_experiment_hypotheses_rejected(self):
         self.engine.add_record(
-            name="r1", service="api", decision_outcome=DecisionOutcome.REJECT,
+            name="r1",
+            service="api",
+            decision_outcome=DecisionOutcome.REJECT,
         )
         self.engine.add_record(
-            name="r2", service="api", decision_outcome=DecisionOutcome.REJECT,
+            name="r2",
+            service="api",
+            decision_outcome=DecisionOutcome.REJECT,
         )
         self.engine.add_record(
-            name="r3", service="api", decision_outcome=DecisionOutcome.ACCEPT,
+            name="r3",
+            service="api",
+            decision_outcome=DecisionOutcome.ACCEPT,
         )
         hypotheses = self.engine.generate_experiment_hypotheses()
         assert len(hypotheses) >= 1
@@ -680,15 +727,20 @@ class TestAutonomousExperimentEngine:
 
     def test_generate_experiment_hypotheses_pivoted(self):
         self.engine.add_record(
-            name="r1", service="api", decision_outcome=DecisionOutcome.PIVOT,
+            name="r1",
+            service="api",
+            decision_outcome=DecisionOutcome.PIVOT,
         )
         hypotheses = self.engine.generate_experiment_hypotheses()
         assert any("scoping" in h["hypothesis"] for h in hypotheses)
 
     def test_enforce_budget_constraints_exhausted(self):
         self.engine.add_record(
-            name="exp1", budget_status=BudgetStatus.EXHAUSTED,
-            budget_spent=1000.0, budget_total=1000.0, service="api",
+            name="exp1",
+            budget_status=BudgetStatus.EXHAUSTED,
+            budget_spent=1000.0,
+            budget_total=1000.0,
+            service="api",
         )
         violations = self.engine.enforce_budget_constraints()
         assert len(violations) == 1
@@ -697,29 +749,39 @@ class TestAutonomousExperimentEngine:
 
     def test_enforce_budget_constraints_over_budget(self):
         self.engine.add_record(
-            name="exp1", budget_status=BudgetStatus.OVER_BUDGET,
-            budget_spent=1200.0, budget_total=1000.0, service="api",
+            name="exp1",
+            budget_status=BudgetStatus.OVER_BUDGET,
+            budget_spent=1200.0,
+            budget_total=1000.0,
+            service="api",
         )
         violations = self.engine.enforce_budget_constraints()
         assert violations[0]["action"] == "review"
 
     def test_enforce_budget_constraints_at_limit(self):
         self.engine.add_record(
-            name="exp1", budget_status=BudgetStatus.AT_LIMIT,
-            budget_spent=990.0, budget_total=1000.0, service="api",
+            name="exp1",
+            budget_status=BudgetStatus.AT_LIMIT,
+            budget_spent=990.0,
+            budget_total=1000.0,
+            service="api",
         )
         violations = self.engine.enforce_budget_constraints()
         assert violations[0]["action"] == "monitor"
 
     def test_enforce_budget_constraints_ok(self):
         self.engine.add_record(
-            name="exp1", budget_status=BudgetStatus.UNDER_BUDGET,
+            name="exp1",
+            budget_status=BudgetStatus.UNDER_BUDGET,
         )
         assert len(self.engine.enforce_budget_constraints()) == 0
 
     def test_compute_experiment_roi(self):
         self.engine.add_record(
-            name="r1", service="api", score=80.0, budget_spent=100.0,
+            name="r1",
+            service="api",
+            score=80.0,
+            budget_spent=100.0,
             decision_outcome=DecisionOutcome.ACCEPT,
         )
         result = self.engine.compute_experiment_roi()
@@ -728,7 +790,10 @@ class TestAutonomousExperimentEngine:
 
     def test_compute_experiment_roi_zero_spend(self):
         self.engine.add_record(
-            name="r1", service="api", score=80.0, budget_spent=0.0,
+            name="r1",
+            service="api",
+            score=80.0,
+            budget_spent=0.0,
         )
         result = self.engine.compute_experiment_roi()
         assert result[0]["roi"] == 0.0
@@ -767,7 +832,9 @@ class TestAutonomousExperimentEngine:
 
     def test_analyze_distribution(self):
         self.engine.add_record(
-            name="r1", score=80.0, experiment_phase=ExperimentPhase.ANALYZE,
+            name="r1",
+            score=80.0,
+            experiment_phase=ExperimentPhase.ANALYZE,
         )
         dist = self.engine.analyze_distribution()
         assert "analyze" in dist
@@ -822,8 +889,10 @@ class TestCollaborationOptimizerEngine:
 
     def test_add_record(self):
         r = self.engine.add_record(
-            name="collab1", collaboration_mode=CollaborationMode.PARALLEL,
-            agent_count=3, latency_ms=150.0,
+            name="collab1",
+            collaboration_mode=CollaborationMode.PARALLEL,
+            agent_count=3,
+            latency_ms=150.0,
         )
         assert r.agent_count == 3
 
@@ -858,12 +927,16 @@ class TestCollaborationOptimizerEngine:
 
     def test_detect_collaboration_bottlenecks(self):
         self.engine.add_record(
-            name="r1", collaboration_mode=CollaborationMode.SEQUENTIAL,
-            handoff_quality=HandoffQuality.FAILED, latency_ms=500.0,
+            name="r1",
+            collaboration_mode=CollaborationMode.SEQUENTIAL,
+            handoff_quality=HandoffQuality.FAILED,
+            latency_ms=500.0,
         )
         self.engine.add_record(
-            name="r2", collaboration_mode=CollaborationMode.SEQUENTIAL,
-            handoff_quality=HandoffQuality.CLEAN, latency_ms=100.0,
+            name="r2",
+            collaboration_mode=CollaborationMode.SEQUENTIAL,
+            handoff_quality=HandoffQuality.CLEAN,
+            latency_ms=100.0,
         )
         bottlenecks = self.engine.detect_collaboration_bottlenecks()
         assert len(bottlenecks) == 1
@@ -871,39 +944,52 @@ class TestCollaborationOptimizerEngine:
 
     def test_detect_collaboration_bottlenecks_empty(self):
         self.engine.add_record(
-            name="r1", handoff_quality=HandoffQuality.CLEAN,
+            name="r1",
+            handoff_quality=HandoffQuality.CLEAN,
         )
         assert len(self.engine.detect_collaboration_bottlenecks()) == 0
 
     def test_optimize_agent_handoffs_failed(self):
         self.engine.add_record(
-            name="r1", service="api", handoff_quality=HandoffQuality.FAILED,
+            name="r1",
+            service="api",
+            handoff_quality=HandoffQuality.FAILED,
         )
         opts = self.engine.optimize_agent_handoffs()
         assert any(o["priority"] == "critical" for o in opts)
 
     def test_optimize_agent_handoffs_redundant(self):
         self.engine.add_record(
-            name="r1", service="api", handoff_quality=HandoffQuality.REDUNDANT,
+            name="r1",
+            service="api",
+            handoff_quality=HandoffQuality.REDUNDANT,
         )
         opts = self.engine.optimize_agent_handoffs()
         assert any(o["issue"] == "redundant_handoffs" for o in opts)
 
     def test_optimize_agent_handoffs_all_clean(self):
         self.engine.add_record(
-            name="r1", service="api", handoff_quality=HandoffQuality.CLEAN,
+            name="r1",
+            service="api",
+            handoff_quality=HandoffQuality.CLEAN,
         )
         opts = self.engine.optimize_agent_handoffs()
         assert any(o["issue"] == "none" for o in opts)
 
     def test_resolve_agent_conflicts(self):
         self.engine.add_record(
-            name="r1", handoff_quality=HandoffQuality.FAILED,
-            conflict_type=ConflictType.RESOURCE, service="api", score=30.0,
+            name="r1",
+            handoff_quality=HandoffQuality.FAILED,
+            conflict_type=ConflictType.RESOURCE,
+            service="api",
+            score=30.0,
         )
         self.engine.add_record(
-            name="r2", handoff_quality=HandoffQuality.FAILED,
-            conflict_type=ConflictType.RESOURCE, service="db", score=20.0,
+            name="r2",
+            handoff_quality=HandoffQuality.FAILED,
+            conflict_type=ConflictType.RESOURCE,
+            service="db",
+            score=20.0,
         )
         resolutions = self.engine.resolve_agent_conflicts()
         assert len(resolutions) == 1
@@ -912,15 +998,18 @@ class TestCollaborationOptimizerEngine:
 
     def test_resolve_agent_conflicts_data(self):
         self.engine.add_record(
-            name="r1", handoff_quality=HandoffQuality.PARTIAL,
-            conflict_type=ConflictType.DATA, service="api",
+            name="r1",
+            handoff_quality=HandoffQuality.PARTIAL,
+            conflict_type=ConflictType.DATA,
+            service="api",
         )
         resolutions = self.engine.resolve_agent_conflicts()
         assert any("validation" in r["resolution"] for r in resolutions)
 
     def test_resolve_agent_conflicts_no_conflicts(self):
         self.engine.add_record(
-            name="r1", handoff_quality=HandoffQuality.CLEAN,
+            name="r1",
+            handoff_quality=HandoffQuality.CLEAN,
         )
         assert len(self.engine.resolve_agent_conflicts()) == 0
 
@@ -962,7 +1051,8 @@ class TestCollaborationOptimizerEngine:
 
     def test_analyze_distribution(self):
         self.engine.add_record(
-            name="r1", score=80.0,
+            name="r1",
+            score=80.0,
             collaboration_mode=CollaborationMode.CONSENSUS,
         )
         dist = self.engine.analyze_distribution()

@@ -11,7 +11,6 @@ import pytest
 
 from shieldops.agents.detection_engineering.runner import DetectionEngineeringRunner
 
-
 # ── Full Pipeline ─────────────────────────────────────────────────────
 
 

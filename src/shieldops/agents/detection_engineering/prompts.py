@@ -10,12 +10,8 @@ class RuleCreationResult(BaseModel):
     rule_quality_notes: list[str] = Field(
         description="Notes on rule quality and coverage effectiveness"
     )
-    tuning_suggestions: list[str] = Field(
-        description="Suggestions for reducing false positives"
-    )
-    coverage_improvement: str = Field(
-        description="Expected MITRE ATT&CK coverage improvement"
-    )
+    tuning_suggestions: list[str] = Field(description="Suggestions for reducing false positives")
+    coverage_improvement: str = Field(description="Expected MITRE ATT&CK coverage improvement")
 
 
 SYSTEM_ASSESS_COVERAGE = (

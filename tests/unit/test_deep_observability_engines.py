@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import pytest
 
-
 # ============================================================================
 # SloAwareSamplingEngine
 # ============================================================================
@@ -20,6 +19,7 @@ def _try_import_slo():
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         return True
     except ImportError:
         return False
@@ -31,6 +31,7 @@ class TestSloSamplingEnums:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         assert eng is not None
 
@@ -41,6 +42,7 @@ class TestSloSamplingModels:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         assert eng is not None
 
@@ -48,6 +50,7 @@ class TestSloSamplingModels:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine(max_records=100)
         assert eng._max_records == 100
 
@@ -58,6 +61,7 @@ class TestSloSamplingAddRecord:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         r = eng.add_record(name="api-server")
         assert r is not None
@@ -67,6 +71,7 @@ class TestSloSamplingAddRecord:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         r = eng.add_record(name="api-server", sampling_rate=0.1)
         assert r.name == "api-server"
@@ -75,6 +80,7 @@ class TestSloSamplingAddRecord:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine(max_records=3)
         for i in range(5):
             eng.add_record(name=f"svc-{i}")
@@ -84,6 +90,7 @@ class TestSloSamplingAddRecord:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         r = eng.add_record(name="svc-a")
         found = eng.get_record(r.id) if hasattr(eng, "get_record") else r
@@ -93,6 +100,7 @@ class TestSloSamplingAddRecord:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         if hasattr(eng, "get_record"):
             assert eng.get_record("nonexistent") is None
@@ -104,6 +112,7 @@ class TestSloSamplingProcess:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         r = eng.add_record(name="svc-a")
         if hasattr(eng, "process"):
@@ -114,6 +123,7 @@ class TestSloSamplingProcess:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         if hasattr(eng, "process"):
             result = eng.process("nonexistent")
@@ -126,6 +136,7 @@ class TestSloSamplingReport:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         eng.add_record(name="svc-a")
         report = eng.generate_report()
@@ -136,6 +147,7 @@ class TestSloSamplingReport:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         report = eng.generate_report()
         assert report.total_records == 0
@@ -147,6 +159,7 @@ class TestSloSamplingStats:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         stats = eng.get_stats()
         assert stats["total_records"] == 0
@@ -155,6 +168,7 @@ class TestSloSamplingStats:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         eng.add_record(name="svc-a")
         stats = eng.get_stats()
@@ -167,6 +181,7 @@ class TestSloSamplingClearData:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         eng.add_record(name="svc-a")
         result = eng.clear_data()
@@ -180,6 +195,7 @@ class TestSloSamplingDomainMethod1:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         eng.add_record(name="svc-a", service="svc-a", sampling_rate=0.5)
         result = eng.estimate_sampling_savings()
@@ -189,6 +205,7 @@ class TestSloSamplingDomainMethod1:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         result = eng.estimate_sampling_savings()
         assert isinstance(result, dict)
@@ -200,6 +217,7 @@ class TestSloSamplingDomainMethod2:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         eng.add_record(name="svc-a", service="svc-a", sampling_rate=0.5)
         result = eng.compute_slo_aware_rate("svc-a")
@@ -212,6 +230,7 @@ class TestSloSamplingDomainMethod3:
         from shieldops.observability.slo_aware_sampling_engine import (
             SloAwareSamplingEngine,
         )
+
         eng = SloAwareSamplingEngine()
         eng.add_record(name="svc-a", service="svc-a", burn_rate=2.5)
         result = eng.detect_burn_rate_anomalies()
@@ -228,6 +247,7 @@ def _try_import_cardinality():
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         return True
     except ImportError:
         return False
@@ -242,6 +262,7 @@ class TestCardinalityEnums:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         assert eng is not None
 
@@ -255,6 +276,7 @@ class TestCardinalityModels:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         assert eng is not None
 
@@ -262,6 +284,7 @@ class TestCardinalityModels:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine(max_records=100)
         assert eng._max_records == 100
 
@@ -275,6 +298,7 @@ class TestCardinalityAddRecord:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         r = eng.add_record(name="http_requests_total")
         assert r is not None
@@ -284,6 +308,7 @@ class TestCardinalityAddRecord:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         r = eng.add_record(name="http_requests_total", series_count=50000)
         assert r.name == "http_requests_total"
@@ -292,6 +317,7 @@ class TestCardinalityAddRecord:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine(max_records=3)
         for i in range(5):
             eng.add_record(name=f"metric_{i}")
@@ -301,6 +327,7 @@ class TestCardinalityAddRecord:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         r = eng.add_record(name="metric-a")
         found = eng.get_record(r.id) if hasattr(eng, "get_record") else r
@@ -310,6 +337,7 @@ class TestCardinalityAddRecord:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         if hasattr(eng, "get_record"):
             assert eng.get_record("nonexistent") is None
@@ -324,6 +352,7 @@ class TestCardinalityProcess:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         r = eng.add_record(name="metric-a")
         if hasattr(eng, "process"):
@@ -334,6 +363,7 @@ class TestCardinalityProcess:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         if hasattr(eng, "process"):
             result = eng.process("nonexistent")
@@ -349,6 +379,7 @@ class TestCardinalityReport:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         eng.add_record(name="metric-a")
         report = eng.generate_report()
@@ -359,6 +390,7 @@ class TestCardinalityReport:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         report = eng.generate_report()
         assert report.total_records == 0
@@ -373,6 +405,7 @@ class TestCardinalityStats:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         stats = eng.get_stats()
         assert stats["total_records"] == 0
@@ -381,6 +414,7 @@ class TestCardinalityStats:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         eng.add_record(name="metric-a")
         stats = eng.get_stats()
@@ -396,6 +430,7 @@ class TestCardinalityClearData:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         eng.add_record(name="metric-a")
         result = eng.clear_data()
@@ -412,12 +447,25 @@ class TestCardinalityDomainMethod1:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         eng.add_record(name="metric-a")
-        methods = [m for m in dir(eng) if not m.startswith("_")
-                   and m not in ("add_record", "process", "generate_report",
-                                 "get_stats", "clear_data", "get_record",
-                                 "list_records", "add_analysis")]
+        methods = [
+            m
+            for m in dir(eng)
+            if not m.startswith("_")
+            and m
+            not in (
+                "add_record",
+                "process",
+                "generate_report",
+                "get_stats",
+                "clear_data",
+                "get_record",
+                "list_records",
+                "add_analysis",
+            )
+        ]
         if methods:
             result = getattr(eng, methods[0])()
             assert result is not None
@@ -426,11 +474,24 @@ class TestCardinalityDomainMethod1:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
-        methods = [m for m in dir(eng) if not m.startswith("_")
-                   and m not in ("add_record", "process", "generate_report",
-                                 "get_stats", "clear_data", "get_record",
-                                 "list_records", "add_analysis")]
+        methods = [
+            m
+            for m in dir(eng)
+            if not m.startswith("_")
+            and m
+            not in (
+                "add_record",
+                "process",
+                "generate_report",
+                "get_stats",
+                "clear_data",
+                "get_record",
+                "list_records",
+                "add_analysis",
+            )
+        ]
         if methods:
             result = getattr(eng, methods[0])()
             assert result is not None
@@ -445,12 +506,25 @@ class TestCardinalityDomainMethod2:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         eng.add_record(name="metric-a")
-        methods = [m for m in dir(eng) if not m.startswith("_")
-                   and m not in ("add_record", "process", "generate_report",
-                                 "get_stats", "clear_data", "get_record",
-                                 "list_records", "add_analysis")]
+        methods = [
+            m
+            for m in dir(eng)
+            if not m.startswith("_")
+            and m
+            not in (
+                "add_record",
+                "process",
+                "generate_report",
+                "get_stats",
+                "clear_data",
+                "get_record",
+                "list_records",
+                "add_analysis",
+            )
+        ]
         if len(methods) >= 2:
             result = getattr(eng, methods[1])()
             assert result is not None
@@ -465,12 +539,25 @@ class TestCardinalityDomainMethod3:
         from shieldops.observability.cardinality_control_engine import (
             CardinalityControlEngine,
         )
+
         eng = CardinalityControlEngine()
         eng.add_record(name="metric-a")
-        methods = [m for m in dir(eng) if not m.startswith("_")
-                   and m not in ("add_record", "process", "generate_report",
-                                 "get_stats", "clear_data", "get_record",
-                                 "list_records", "add_analysis")]
+        methods = [
+            m
+            for m in dir(eng)
+            if not m.startswith("_")
+            and m
+            not in (
+                "add_record",
+                "process",
+                "generate_report",
+                "get_stats",
+                "clear_data",
+                "get_record",
+                "list_records",
+                "add_analysis",
+            )
+        ]
         if len(methods) >= 3:
             result = getattr(eng, methods[2])()
             assert result is not None

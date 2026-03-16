@@ -18,7 +18,6 @@ from shieldops.agents.incident_commander.models import (
 )
 from shieldops.agents.incident_commander.runner import IncidentCommanderRunner
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
 
 

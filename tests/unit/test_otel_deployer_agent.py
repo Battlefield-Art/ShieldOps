@@ -29,7 +29,6 @@ from shieldops.agents.otel_deployer.prompts import (
 )
 from shieldops.agents.otel_deployer.tools import OTelDeployerToolkit
 
-
 # ---------------------------------------------------------------------------
 # Model tests
 # ---------------------------------------------------------------------------

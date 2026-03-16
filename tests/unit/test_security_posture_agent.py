@@ -15,7 +15,6 @@ from shieldops.agents.security_posture.models import (
 )
 from shieldops.agents.security_posture.tools import SecurityPostureToolkit
 
-
 # =====================================================================
 # Enum Tests
 # =====================================================================
@@ -172,11 +171,7 @@ class TestSecurityPostureState:
         state = SecurityPostureState(
             request_id="sp-test-1",
             stage=PostureStage.SCORE,
-            assessments=[
-                DomainAssessment(
-                    domain=PostureDomain.CLOUD, score=65.0
-                )
-            ],
+            assessments=[DomainAssessment(domain=PostureDomain.CLOUD, score=65.0)],
         )
         data = state.model_dump()
         restored = SecurityPostureState.model_validate(data)
@@ -225,8 +220,12 @@ class TestIdentifyGaps:
     async def test_identify_gaps_returns_gaps(self) -> None:
         toolkit = SecurityPostureToolkit()
         assessments = [
-            DomainAssessment(domain=PostureDomain.CLOUD, score=60.0, controls_passing=21, controls_total=35),
-            DomainAssessment(domain=PostureDomain.IDENTITY, score=80.0, controls_passing=20, controls_total=25),
+            DomainAssessment(
+                domain=PostureDomain.CLOUD, score=60.0, controls_passing=21, controls_total=35
+            ),
+            DomainAssessment(
+                domain=PostureDomain.IDENTITY, score=80.0, controls_passing=20, controls_total=25
+            ),
         ]
         gaps = await toolkit.identify_gaps(assessments)
         assert len(gaps) > 0
@@ -235,8 +234,16 @@ class TestIdentifyGaps:
     @pytest.mark.asyncio
     async def test_lower_score_produces_more_gaps(self) -> None:
         toolkit = SecurityPostureToolkit()
-        low_assessment = [DomainAssessment(domain=PostureDomain.CLOUD, score=30.0, controls_passing=10, controls_total=35)]
-        high_assessment = [DomainAssessment(domain=PostureDomain.CLOUD, score=95.0, controls_passing=33, controls_total=35)]
+        low_assessment = [
+            DomainAssessment(
+                domain=PostureDomain.CLOUD, score=30.0, controls_passing=10, controls_total=35
+            )
+        ]
+        high_assessment = [
+            DomainAssessment(
+                domain=PostureDomain.CLOUD, score=95.0, controls_passing=33, controls_total=35
+            )
+        ]
         low_gaps = await toolkit.identify_gaps(low_assessment)
         high_gaps = await toolkit.identify_gaps(high_assessment)
         assert len(low_gaps) >= len(high_gaps)
@@ -378,7 +385,9 @@ class TestIdentifyGapsNode:
         toolkit = SecurityPostureToolkit()
         state: dict = {
             "assessments": [
-                DomainAssessment(domain=PostureDomain.CLOUD, score=55.0, controls_passing=19, controls_total=35).model_dump(),
+                DomainAssessment(
+                    domain=PostureDomain.CLOUD, score=55.0, controls_passing=19, controls_total=35
+                ).model_dump(),
             ],
             "reasoning_chain": [],
         }
@@ -400,8 +409,18 @@ class TestPrioritizeRemediationNode:
                 DomainAssessment(domain=PostureDomain.IDENTITY, score=70.0).model_dump(),
             ],
             "gaps": [
-                PostureGap(description="Gap A", impact_score=80.0, effort_hours=4.0, category=RiskCategory.HIGH).model_dump(),
-                PostureGap(description="Gap B", impact_score=30.0, effort_hours=20.0, category=RiskCategory.LOW).model_dump(),
+                PostureGap(
+                    description="Gap A",
+                    impact_score=80.0,
+                    effort_hours=4.0,
+                    category=RiskCategory.HIGH,
+                ).model_dump(),
+                PostureGap(
+                    description="Gap B",
+                    impact_score=30.0,
+                    effort_hours=20.0,
+                    category=RiskCategory.LOW,
+                ).model_dump(),
             ],
             "reasoning_chain": [],
         }

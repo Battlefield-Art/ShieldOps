@@ -12,7 +12,6 @@ import pytest
 from shieldops.agents.otel_pipeline.nodes import _ValidationLLMResult
 from shieldops.agents.otel_pipeline.runner import OTelPipelineRunner
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
 
 
@@ -264,9 +263,7 @@ async def test_otel_pipeline_validation_with_llm(
             k8s_client=mock_k8s_client,
             kafka_client=mock_kafka_client,
         )
-        result = await runner.run(
-            cluster_name="test-cluster", exporter_targets=["otlp_http"]
-        )
+        result = await runner.run(cluster_name="test-cluster", exporter_targets=["otlp_http"])
 
     # LLM recommendation should appear in reasoning chain
     chain = _get(result, "reasoning_chain", [])

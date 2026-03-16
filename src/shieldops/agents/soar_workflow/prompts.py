@@ -7,9 +7,7 @@ class EnrichmentAnalysisResult(BaseModel):
     """Structured output from LLM-assisted enrichment analysis."""
 
     summary: str = Field(description="Brief summary of enrichment findings")
-    threat_level: str = Field(
-        description="Overall threat level: low, medium, high, critical"
-    )
+    threat_level: str = Field(description="Overall threat level: low, medium, high, critical")
     key_indicators: list[str] = Field(
         description="Key malicious indicators requiring immediate action"
     )

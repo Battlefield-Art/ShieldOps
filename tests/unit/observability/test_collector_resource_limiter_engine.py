@@ -138,7 +138,9 @@ class TestDomainMethods:
         results = engine.predict_oom_risk()
         assert results[0]["hours_to_oom"] <= results[-1]["hours_to_oom"]
 
-    def test_evaluate_limit_headroom_sorted_asc(self, engine: CollectorResourceLimiterEngine) -> None:
+    def test_evaluate_limit_headroom_sorted_asc(
+        self, engine: CollectorResourceLimiterEngine
+    ) -> None:
         _add_sample(engine, collector_id="tight", current_usage=950.0, limit_value=1000.0)
         _add_sample(engine, collector_id="roomy", current_usage=100.0, limit_value=1000.0)
         results = engine.evaluate_limit_headroom()

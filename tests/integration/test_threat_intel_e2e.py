@@ -12,12 +12,10 @@ import pytest
 
 from shieldops.agents.threat_intel.models import (
     IntelSource,
-    ThreatConfidence,
     ThreatIntelState,
 )
 from shieldops.agents.threat_intel.prompts import AssessmentResult
 from shieldops.agents.threat_intel.runner import ThreatIntelRunner
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────
 

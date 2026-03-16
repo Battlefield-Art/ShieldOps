@@ -73,12 +73,8 @@ def test_generate_report(engine: AgentCheckpointManagerEngine) -> None:
 
 
 def test_evaluate_checkpoint_quality(engine: AgentCheckpointManagerEngine) -> None:
-    engine.add_record(
-        agent_id="a3", checkpoint_id="cp-a", metric_score=0.7, baseline_score=0.5
-    )
-    engine.add_record(
-        agent_id="a3", checkpoint_id="cp-b", metric_score=0.9, baseline_score=0.5
-    )
+    engine.add_record(agent_id="a3", checkpoint_id="cp-a", metric_score=0.7, baseline_score=0.5)
+    engine.add_record(agent_id="a3", checkpoint_id="cp-b", metric_score=0.9, baseline_score=0.5)
     result = engine.evaluate_checkpoint_quality("a3")
     assert len(result) == 2
     assert result[0]["metric_score"] >= result[1]["metric_score"]

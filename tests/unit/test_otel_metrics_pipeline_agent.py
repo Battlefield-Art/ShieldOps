@@ -16,12 +16,13 @@ from shieldops.agents.otel_metrics_pipeline.models import (
 )
 from shieldops.agents.otel_metrics_pipeline.nodes import (
     configure_pipeline as configure_pipeline_node,
+)
+from shieldops.agents.otel_metrics_pipeline.nodes import (
     discover_endpoints,
     optimize_cardinality,
     validate_coverage,
 )
 from shieldops.agents.otel_metrics_pipeline.tools import OTelMetricsPipelineToolkit
-
 
 # ---------------------------------------------------------------------------
 # StrEnum tests
@@ -143,18 +144,14 @@ class TestOTelMetricsPipelineToolkit:
         return OTelMetricsPipelineToolkit()
 
     @pytest.mark.asyncio
-    async def test_discover_metric_endpoints(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    async def test_discover_metric_endpoints(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         endpoints = await toolkit.discover_metric_endpoints("default")
         assert len(endpoints) >= 3
         assert all(isinstance(ep, MetricEndpoint) for ep in endpoints)
         sources = {ep.source for ep in endpoints}
         assert MetricSource.PROMETHEUS in sources
 
-    def test_configure_pipeline_prometheus(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_configure_pipeline_prometheus(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         endpoints = [
             MetricEndpoint(service="svc", source=MetricSource.PROMETHEUS),
         ]
@@ -173,9 +170,7 @@ class TestOTelMetricsPipelineToolkit:
         assert "statsd" in config.receivers
         assert config.aggregation_temporality == "delta"
 
-    def test_configure_pipeline_multiple_sources(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_configure_pipeline_multiple_sources(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         endpoints = [
             MetricEndpoint(service="a", source=MetricSource.PROMETHEUS),
             MetricEndpoint(service="b", source=MetricSource.OTLP),
@@ -187,32 +182,24 @@ class TestOTelMetricsPipelineToolkit:
         assert "hostmetrics" in config.receivers
         assert "otlp" in config.exporters
 
-    def test_analyze_cardinality_known_service(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_analyze_cardinality_known_service(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         report = toolkit.analyze_cardinality("api-gateway")
         assert report.service == "api-gateway"
         assert report.total_series > 0
         assert len(report.high_cardinality_metrics) > 0
         assert report.estimated_savings_pct > 0.0
 
-    def test_analyze_cardinality_unknown_service(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_analyze_cardinality_unknown_service(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         report = toolkit.analyze_cardinality("unknown-svc")
         assert report.service == "unknown-svc"
         assert report.total_series == 5000  # default
 
-    def test_check_golden_signals(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_check_golden_signals(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         golden = toolkit.check_golden_signals("default")
         assert set(golden.keys()) == {"latency", "traffic", "errors", "saturation"}
         assert all(golden.values())
 
-    def test_generate_yaml_valid(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_generate_yaml_valid(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         config = MetricPipelineConfig(
             receivers=["prometheus", "otlp"],
             processors=["memory_limiter", "batch", "filter"],
@@ -226,9 +213,7 @@ class TestOTelMetricsPipelineToolkit:
         assert "service" in parsed
         assert "metrics" in parsed["service"]["pipelines"]
 
-    def test_generate_yaml_pipeline_references(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_generate_yaml_pipeline_references(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         config = MetricPipelineConfig(
             receivers=["prometheus"],
             processors=["batch"],
@@ -241,9 +226,7 @@ class TestOTelMetricsPipelineToolkit:
         assert pipeline["processors"] == ["batch"]
         assert pipeline["exporters"] == ["otlp"]
 
-    def test_generate_yaml_with_endpoints(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_generate_yaml_with_endpoints(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         endpoints = [
             MetricEndpoint(
                 service="api",
@@ -264,9 +247,7 @@ class TestOTelMetricsPipelineToolkit:
         assert scrape_cfg["scrape_interval"] == "30s"
         assert "api:9090/metrics" in scrape_cfg["static_configs"][0]["targets"]
 
-    def test_generate_yaml_hostmetrics_scrapers(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_generate_yaml_hostmetrics_scrapers(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         config = MetricPipelineConfig(
             receivers=["hostmetrics"],
             processors=["batch"],
@@ -278,9 +259,7 @@ class TestOTelMetricsPipelineToolkit:
         assert "cpu" in hm["scrapers"]
         assert "memory" in hm["scrapers"]
 
-    def test_generate_yaml_statsd_receiver(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    def test_generate_yaml_statsd_receiver(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         config = MetricPipelineConfig(
             receivers=["statsd"],
             processors=["batch"],
@@ -303,9 +282,7 @@ class TestNodes:
         return OTelMetricsPipelineToolkit()
 
     @pytest.mark.asyncio
-    async def test_discover_endpoints_node(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    async def test_discover_endpoints_node(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         state: dict = {"target_namespace": "prod", "reasoning_chain": []}
         result = await discover_endpoints(state, toolkit)
         assert result["stage"] == "configure"
@@ -313,9 +290,7 @@ class TestNodes:
         assert len(result["reasoning_chain"]) > 0
 
     @pytest.mark.asyncio
-    async def test_configure_pipeline_node(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    async def test_configure_pipeline_node(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         state: dict = {
             "endpoints": [
                 MetricEndpoint(
@@ -332,9 +307,7 @@ class TestNodes:
         assert "prometheus" in result["pipeline_config"]["receivers"]
 
     @pytest.mark.asyncio
-    async def test_optimize_cardinality_node(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    async def test_optimize_cardinality_node(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         state: dict = {
             "endpoints": [
                 MetricEndpoint(service="api-gateway").model_dump(),
@@ -347,9 +320,7 @@ class TestNodes:
         assert result["cardinality_reports"][0]["service"] == "api-gateway"
 
     @pytest.mark.asyncio
-    async def test_validate_coverage_node(
-        self, toolkit: OTelMetricsPipelineToolkit
-    ) -> None:
+    async def test_validate_coverage_node(self, toolkit: OTelMetricsPipelineToolkit) -> None:
         config = MetricPipelineConfig(
             receivers=["prometheus"],
             processors=["batch"],

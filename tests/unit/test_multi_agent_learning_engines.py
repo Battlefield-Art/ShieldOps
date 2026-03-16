@@ -3,6 +3,24 @@ learning feedback loop, agent knowledge distillation."""
 
 from __future__ import annotations
 
+from shieldops.analytics.agent_knowledge_distillation_engine import (
+    AgentKnowledgeDistillationEngine,
+    DistillationAnalysis,
+    DistillationMethod,
+    DistillationRecord,
+    DistillationReport,
+    KnowledgeType,
+    TransferOutcome,
+)
+from shieldops.analytics.learning_feedback_loop_engine import (
+    ConvergenceStatus,
+    FeedbackType,
+    LearningFeedbackAnalysis,
+    LearningFeedbackLoopEngine,
+    LearningFeedbackRecord,
+    LearningFeedbackReport,
+    LearningPhase,
+)
 from shieldops.analytics.self_healing_analytics_engine import (
     HealingAction,
     HealingOutcome,
@@ -21,25 +39,6 @@ from shieldops.analytics.swarm_intelligence_engine import (
     SwarmIntelligenceReport,
     SwarmRole,
 )
-from shieldops.analytics.learning_feedback_loop_engine import (
-    ConvergenceStatus,
-    FeedbackType,
-    LearningFeedbackAnalysis,
-    LearningFeedbackLoopEngine,
-    LearningFeedbackRecord,
-    LearningFeedbackReport,
-    LearningPhase,
-)
-from shieldops.analytics.agent_knowledge_distillation_engine import (
-    AgentKnowledgeDistillationEngine,
-    DistillationAnalysis,
-    DistillationMethod,
-    DistillationRecord,
-    DistillationReport,
-    KnowledgeType,
-    TransferOutcome,
-)
-
 
 # ===========================================================================
 # 1. SelfHealingAnalyticsEngine

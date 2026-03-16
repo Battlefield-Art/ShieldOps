@@ -44,7 +44,6 @@ from shieldops.agents.gitops.nodes import (
 from shieldops.agents.gitops.runner import GitOpsRunner
 from shieldops.agents.gitops.tools import GitOpsToolkit
 
-
 # ── Fixtures ─────────────────────────────────────────────────────
 
 
@@ -252,12 +251,16 @@ class TestGitOpsToolkit:
 
         toolkit = GitOpsToolkit(connector_router=mock_router)
         # Patch internal methods to return test data
-        toolkit._fetch_desired_state = AsyncMock(return_value={
-            "nginx": {"kind": "Deployment", "replicas": 3},
-        })
-        toolkit._fetch_actual_state = AsyncMock(return_value={
-            "nginx": {"kind": "Deployment", "replicas": 2},
-        })
+        toolkit._fetch_desired_state = AsyncMock(
+            return_value={
+                "nginx": {"kind": "Deployment", "replicas": 3},
+            }
+        )
+        toolkit._fetch_actual_state = AsyncMock(
+            return_value={
+                "nginx": {"kind": "Deployment", "replicas": 2},
+            }
+        )
 
         result = await toolkit.detect_drift("https://github.com/org/repo", namespace="default")
         assert len(result) == 1
@@ -377,7 +380,8 @@ class TestGitOpsToolkit:
         result = await toolkit.get_change_history("default", limit=5)
         assert len(result) == 1
         mock_repo.get_change_history.assert_awaited_once_with(
-            namespace="default", limit=5,
+            namespace="default",
+            limit=5,
         )
 
     def test_determine_action_missing_resource(self):
@@ -434,7 +438,8 @@ class TestGitOpsToolkit:
 
     def test_assess_item_risk_critical_severity(self, sample_drift_item_critical: DriftItem):
         risk = GitOpsToolkit._assess_item_risk(
-            sample_drift_item_critical, ReconciliationAction.UPDATE,
+            sample_drift_item_critical,
+            ReconciliationAction.UPDATE,
         )
         assert risk >= 0.5  # base 0.3 + policy 0.2 + critical 0.2 = 0.7
 
@@ -466,7 +471,9 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_detect_drift_node_with_items(
-        self, base_state: GitOpsState, sample_drift_item: DriftItem,
+        self,
+        base_state: GitOpsState,
+        sample_drift_item: DriftItem,
     ):
         mock_toolkit = MagicMock(spec=GitOpsToolkit)
         mock_toolkit.detect_drift = AsyncMock(return_value=[sample_drift_item])
@@ -478,7 +485,9 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_plan_reconciliation_node(
-        self, base_state: GitOpsState, sample_drift_item: DriftItem,
+        self,
+        base_state: GitOpsState,
+        sample_drift_item: DriftItem,
     ):
         base_state.drift_items = [sample_drift_item]
 
@@ -500,7 +509,9 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_apply_reconciliation_node(
-        self, base_state: GitOpsState, sample_plan: ReconciliationPlan,
+        self,
+        base_state: GitOpsState,
+        sample_plan: ReconciliationPlan,
     ):
         base_state.plan = sample_plan
 
@@ -528,7 +539,9 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_verify_and_report_node(
-        self, base_state: GitOpsState, sample_apply_result: ApplyResult,
+        self,
+        base_state: GitOpsState,
+        sample_apply_result: ApplyResult,
     ):
         base_state.apply_results = [sample_apply_result]
         base_state.started_at = datetime.now(UTC)
@@ -545,7 +558,9 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_verify_and_report_failed(
-        self, base_state: GitOpsState, sample_apply_result: ApplyResult,
+        self,
+        base_state: GitOpsState,
+        sample_apply_result: ApplyResult,
     ):
         base_state.apply_results = [sample_apply_result]
         base_state.started_at = datetime.now(UTC)
@@ -568,7 +583,9 @@ class TestGraphRouting:
         assert needs_approval(base_state) == "__end__"
 
     def test_needs_approval_true(
-        self, base_state: GitOpsState, sample_drift_item: DriftItem,
+        self,
+        base_state: GitOpsState,
+        sample_drift_item: DriftItem,
     ):
         base_state.drift_items = [sample_drift_item]
         base_state.plan = ReconciliationPlan(
@@ -580,7 +597,9 @@ class TestGraphRouting:
         assert needs_approval(base_state) == "__end__"
 
     def test_needs_approval_false(
-        self, base_state: GitOpsState, sample_drift_item: DriftItem,
+        self,
+        base_state: GitOpsState,
+        sample_drift_item: DriftItem,
     ):
         base_state.drift_items = [sample_drift_item]
         base_state.plan = ReconciliationPlan(
@@ -598,9 +617,7 @@ class TestGraphRouting:
 class TestGitOpsRunner:
     @pytest.mark.asyncio
     async def test_run_basic(self):
-        with patch(
-            "shieldops.agents.gitops.runner.create_gitops_graph"
-        ) as mock_graph_fn:
+        with patch("shieldops.agents.gitops.runner.create_gitops_graph") as mock_graph_fn:
             mock_compiled = AsyncMock()
             mock_compiled.ainvoke.return_value = GitOpsState(
                 request_id="gitops-test",
@@ -629,9 +646,7 @@ class TestGitOpsRunner:
 
     @pytest.mark.asyncio
     async def test_run_error_handling(self):
-        with patch(
-            "shieldops.agents.gitops.runner.create_gitops_graph"
-        ) as mock_graph_fn:
+        with patch("shieldops.agents.gitops.runner.create_gitops_graph") as mock_graph_fn:
             mock_compiled = AsyncMock()
             mock_compiled.ainvoke.side_effect = RuntimeError("Connection failed")
 
@@ -648,9 +663,7 @@ class TestGitOpsRunner:
             assert result.error == "Connection failed"
 
     def test_get_reconciliation(self):
-        with patch(
-            "shieldops.agents.gitops.runner.create_gitops_graph"
-        ) as mock_graph_fn:
+        with patch("shieldops.agents.gitops.runner.create_gitops_graph") as mock_graph_fn:
             mock_graph = MagicMock()
             mock_graph.compile.return_value = MagicMock()
             mock_graph_fn.return_value = mock_graph
@@ -663,9 +676,7 @@ class TestGitOpsRunner:
             assert runner.get_reconciliation("test-123") is state
 
     def test_list_reconciliations(self):
-        with patch(
-            "shieldops.agents.gitops.runner.create_gitops_graph"
-        ) as mock_graph_fn:
+        with patch("shieldops.agents.gitops.runner.create_gitops_graph") as mock_graph_fn:
             mock_graph = MagicMock()
             mock_graph.compile.return_value = MagicMock()
             mock_graph_fn.return_value = mock_graph

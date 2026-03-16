@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.observability.otel_semantic_validation_engine import (
-    ComplianceLevel,
-    FixComplexity,
-    OtelSemanticValidationAnalysis,
-    OtelSemanticValidationEngine,
-    OtelSemanticValidationRecord,
-    OtelSemanticValidationReport,
-    SemanticScope,
+from shieldops.observability.cross_signal_correlation_engine import (
+    CorrelationStrength,
+    CrossSignalCorrelationAnalysis,
+    CrossSignalCorrelationEngine,
+    CrossSignalCorrelationRecord,
+    CrossSignalCorrelationReport,
+    RootCauseConfidence,
+    SignalType,
 )
 from shieldops.observability.otel_log_correlation_engine import (
     CorrelationQuality,
@@ -22,16 +22,15 @@ from shieldops.observability.otel_log_correlation_engine import (
     OtelLogCorrelationRecord,
     OtelLogCorrelationReport,
 )
-from shieldops.observability.cross_signal_correlation_engine import (
-    CorrelationStrength,
-    CrossSignalCorrelationAnalysis,
-    CrossSignalCorrelationEngine,
-    CrossSignalCorrelationRecord,
-    CrossSignalCorrelationReport,
-    RootCauseConfidence,
-    SignalType,
+from shieldops.observability.otel_semantic_validation_engine import (
+    ComplianceLevel,
+    FixComplexity,
+    OtelSemanticValidationAnalysis,
+    OtelSemanticValidationEngine,
+    OtelSemanticValidationRecord,
+    OtelSemanticValidationReport,
+    SemanticScope,
 )
-
 
 # ========== OtelSemanticValidationEngine ==========
 
@@ -133,8 +132,12 @@ class TestSemanticValidationEngine:
         assert len(engine._analyses) == 1
 
     def test_compute_convention_compliance(self, engine):
-        engine.add_record(name="a", service="svc-a", compliance_level=ComplianceLevel.FULL, score=90)
-        engine.add_record(name="b", service="svc-a", compliance_level=ComplianceLevel.PARTIAL, score=40)
+        engine.add_record(
+            name="a", service="svc-a", compliance_level=ComplianceLevel.FULL, score=90
+        )
+        engine.add_record(
+            name="b", service="svc-a", compliance_level=ComplianceLevel.PARTIAL, score=40
+        )
         results = engine.compute_convention_compliance()
         assert len(results) == 1
         assert results[0]["service"] == "svc-a"
@@ -143,14 +146,29 @@ class TestSemanticValidationEngine:
 
     def test_identify_naming_violations(self, engine):
         engine.add_record(name="ok", compliance_level=ComplianceLevel.FULL, violation_count=0)
-        engine.add_record(name="bad", compliance_level=ComplianceLevel.NONE, violation_count=5, attribute_name="http.method")
+        engine.add_record(
+            name="bad",
+            compliance_level=ComplianceLevel.NONE,
+            violation_count=5,
+            attribute_name="http.method",
+        )
         violations = engine.identify_naming_violations()
         assert len(violations) == 1
         assert violations[0]["attribute_name"] == "http.method"
 
     def test_recommend_attribute_fixes(self, engine):
-        engine.add_record(name="fix1", compliance_level=ComplianceLevel.PARTIAL, fix_complexity=FixComplexity.TRIVIAL, attribute_name="a.b")
-        engine.add_record(name="fix2", compliance_level=ComplianceLevel.NONE, fix_complexity=FixComplexity.COMPLEX, attribute_name="c.d")
+        engine.add_record(
+            name="fix1",
+            compliance_level=ComplianceLevel.PARTIAL,
+            fix_complexity=FixComplexity.TRIVIAL,
+            attribute_name="a.b",
+        )
+        engine.add_record(
+            name="fix2",
+            compliance_level=ComplianceLevel.NONE,
+            fix_complexity=FixComplexity.COMPLEX,
+            attribute_name="c.d",
+        )
         recs = engine.recommend_attribute_fixes()
         assert len(recs) == 2
         assert recs[0]["priority"] == "high"
@@ -302,22 +320,30 @@ class TestLogCorrelationEngine:
         assert a.analysis_score == 70
 
     def test_compute_correlation_rate(self, engine):
-        engine.add_record(name="a", service="svc-a", correlation_status=CorrelationStatus.CORRELATED, score=80)
-        engine.add_record(name="b", service="svc-a", correlation_status=CorrelationStatus.ORPHANED, score=30)
+        engine.add_record(
+            name="a", service="svc-a", correlation_status=CorrelationStatus.CORRELATED, score=80
+        )
+        engine.add_record(
+            name="b", service="svc-a", correlation_status=CorrelationStatus.ORPHANED, score=30
+        )
         results = engine.compute_correlation_rate()
         assert len(results) == 1
         assert results[0]["correlation_rate"] == 50.0
 
     def test_identify_orphaned_logs(self, engine):
         engine.add_record(name="ok", correlation_status=CorrelationStatus.CORRELATED)
-        engine.add_record(name="orphan", correlation_status=CorrelationStatus.ORPHANED, log_count=100)
+        engine.add_record(
+            name="orphan", correlation_status=CorrelationStatus.ORPHANED, log_count=100
+        )
         orphaned = engine.identify_orphaned_logs()
         assert len(orphaned) == 1
         assert orphaned[0]["name"] == "orphan"
 
     def test_recommend_instrumentation_fixes(self, engine):
         engine.add_record(name="a", service="svc-a", correlation_status=CorrelationStatus.ORPHANED)
-        engine.add_record(name="b", service="svc-a", correlation_status=CorrelationStatus.CORRELATED)
+        engine.add_record(
+            name="b", service="svc-a", correlation_status=CorrelationStatus.CORRELATED
+        )
         recs = engine.recommend_instrumentation_fixes()
         assert len(recs) == 1
         assert "svc-a" in recs[0]["suggestion"]
@@ -458,8 +484,12 @@ class TestCrossSignalEngine:
         assert results[0]["coverage_pct"] == 100.0
 
     def test_identify_causal_chains(self, engine):
-        engine.add_record(name="a", correlation_id="corr-1", signal_type=SignalType.TRACE, service="s1", score=80)
-        engine.add_record(name="b", correlation_id="corr-1", signal_type=SignalType.LOG, service="s1", score=60)
+        engine.add_record(
+            name="a", correlation_id="corr-1", signal_type=SignalType.TRACE, service="s1", score=80
+        )
+        engine.add_record(
+            name="b", correlation_id="corr-1", signal_type=SignalType.LOG, service="s1", score=60
+        )
         chains = engine.identify_causal_chains()
         assert len(chains) == 1
         assert chains[0]["chain_length"] == 2
@@ -471,8 +501,12 @@ class TestCrossSignalEngine:
         assert len(chains) == 0
 
     def test_compute_root_cause_confidence(self, engine):
-        engine.add_record(name="a", service="s1", root_cause_confidence=RootCauseConfidence.CONFIRMED)
-        engine.add_record(name="b", service="s1", root_cause_confidence=RootCauseConfidence.UNLIKELY)
+        engine.add_record(
+            name="a", service="s1", root_cause_confidence=RootCauseConfidence.CONFIRMED
+        )
+        engine.add_record(
+            name="b", service="s1", root_cause_confidence=RootCauseConfidence.UNLIKELY
+        )
         results = engine.compute_root_cause_confidence()
         assert len(results) == 1
         assert results[0]["confirmed_count"] == 1

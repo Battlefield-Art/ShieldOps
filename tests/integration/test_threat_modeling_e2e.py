@@ -9,9 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.agents.threat_modeling.models import StrideCategory
 from shieldops.agents.threat_modeling.runner import ThreatModelingRunner
-
 
 # ── Full Pipeline ─────────────────────────────────────────────────────
 
@@ -108,9 +106,7 @@ async def test_threats_have_impact_and_likelihood():
     threats = result.get("threats", [])
     for t in threats:
         assert 0.0 <= t.get("impact_score", -1) <= 100.0
-        assert t.get("likelihood") in (
-            "very_likely", "likely", "possible", "unlikely", "rare"
-        )
+        assert t.get("likelihood") in ("very_likely", "likely", "possible", "unlikely", "rare")
 
 
 # ── Risk Assessment ───────────────────────────────────────────────────

@@ -19,9 +19,7 @@ def engine() -> HelmDeploymentIntelligenceEngine:
     return HelmDeploymentIntelligenceEngine(max_records=100)
 
 
-def _add_sample(
-    engine: HelmDeploymentIntelligenceEngine, **kwargs: object
-) -> HelmDeploymentRecord:
+def _add_sample(engine: HelmDeploymentIntelligenceEngine, **kwargs: object) -> HelmDeploymentRecord:
     defaults: dict[str, object] = {
         "release_name": "otelcol",
         "deployment_mode": DeploymentMode.DEPLOYMENT,
@@ -64,7 +62,9 @@ class TestProcess:
         analysis = engine.process(rec.id)
         assert analysis.misconfig_detected is True  # type: ignore[union-attr]
 
-    def test_risk_score_higher_for_unsupported(self, engine: HelmDeploymentIntelligenceEngine) -> None:
+    def test_risk_score_higher_for_unsupported(
+        self, engine: HelmDeploymentIntelligenceEngine
+    ) -> None:
         rec_good = _add_sample(engine, chart_health=ChartHealth.UP_TO_DATE)
         rec_bad = _add_sample(engine, chart_health=ChartHealth.UNSUPPORTED)
         a_good = engine.process(rec_good.id)

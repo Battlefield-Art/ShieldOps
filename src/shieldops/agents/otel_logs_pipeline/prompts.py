@@ -7,9 +7,7 @@ class ParsingAnalysisResult(BaseModel):
     """Structured output from LLM-assisted parsing analysis."""
 
     summary: str = Field(description="Brief summary of parsing test results")
-    parsing_issues: list[str] = Field(
-        description="Parsing issues found across services"
-    )
+    parsing_issues: list[str] = Field(description="Parsing issues found across services")
     format_recommendations: list[str] = Field(
         description="Recommendations for improving log format parsing"
     )

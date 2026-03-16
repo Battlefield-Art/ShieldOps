@@ -7,15 +7,11 @@ class PolicyDesignResult(BaseModel):
     """Structured output from LLM-assisted policy design."""
 
     summary: str = Field(description="Brief summary of designed policies")
-    optimization_notes: list[str] = Field(
-        description="Notes on sampling optimizations applied"
-    )
+    optimization_notes: list[str] = Field(description="Notes on sampling optimizations applied")
     coverage_risks: list[str] = Field(
         description="Risks of missing critical traces with these policies"
     )
-    estimated_savings_pct: float = Field(
-        description="Estimated overall cost savings percentage"
-    )
+    estimated_savings_pct: float = Field(description="Estimated overall cost savings percentage")
 
 
 SYSTEM_ANALYZE = """You are an OpenTelemetry tail-sampling specialist for ShieldOps.

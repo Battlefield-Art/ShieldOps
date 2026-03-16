@@ -6,15 +6,6 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.security.soar_playbook_analytics_engine import (
-    AutomationLevel,
-    PlaybookOutcome,
-    PlaybookTier,
-    SoarPlaybookAnalyticsAnalysis,
-    SoarPlaybookAnalyticsEngine,
-    SoarPlaybookAnalyticsRecord,
-    SoarPlaybookAnalyticsReport,
-)
 from shieldops.security.identity_risk_engine import (
     AccessPattern,
     IdentityRiskAnalysis,
@@ -33,6 +24,15 @@ from shieldops.security.ioc_lifecycle_engine import (
     IOCPhase,
     IOCType,
 )
+from shieldops.security.soar_playbook_analytics_engine import (
+    AutomationLevel,
+    PlaybookOutcome,
+    PlaybookTier,
+    SoarPlaybookAnalyticsAnalysis,
+    SoarPlaybookAnalyticsEngine,
+    SoarPlaybookAnalyticsRecord,
+    SoarPlaybookAnalyticsReport,
+)
 from shieldops.security.threat_feed_quality_engine import (
     FeedQualityMetric,
     FeedTier,
@@ -42,7 +42,6 @@ from shieldops.security.threat_feed_quality_engine import (
     ThreatFeedRecord,
     ThreatFeedReport,
 )
-
 
 # ============================================================
 # SOAR Playbook Analytics Engine
@@ -242,9 +241,7 @@ class TestSoarPlaybookAnalyticsEngine:
         assert "pb-4" in names
         assert "pb-0" not in names
 
-    def test_rank_playbooks_by_performance(
-        self, engine: SoarPlaybookAnalyticsEngine
-    ) -> None:
+    def test_rank_playbooks_by_performance(self, engine: SoarPlaybookAnalyticsEngine) -> None:
         engine.add_record(
             playbook_name="good",
             playbook_outcome=PlaybookOutcome.SUCCESS,
@@ -263,14 +260,10 @@ class TestSoarPlaybookAnalyticsEngine:
         assert ranked[1]["success_rate"] == 0.0
         assert ranked[1]["rank_tier"] == "low"
 
-    def test_rank_playbooks_by_performance_empty(
-        self, engine: SoarPlaybookAnalyticsEngine
-    ) -> None:
+    def test_rank_playbooks_by_performance_empty(self, engine: SoarPlaybookAnalyticsEngine) -> None:
         assert engine.rank_playbooks_by_performance() == []
 
-    def test_identify_automation_candidates(
-        self, engine: SoarPlaybookAnalyticsEngine
-    ) -> None:
+    def test_identify_automation_candidates(self, engine: SoarPlaybookAnalyticsEngine) -> None:
         engine.add_record(
             playbook_name="manual-heavy",
             automation_level=AutomationLevel.MANUAL,
@@ -299,9 +292,7 @@ class TestSoarPlaybookAnalyticsEngine:
     ) -> None:
         assert engine.identify_automation_candidates() == []
 
-    def test_calculate_mean_time_to_respond(
-        self, engine: SoarPlaybookAnalyticsEngine
-    ) -> None:
+    def test_calculate_mean_time_to_respond(self, engine: SoarPlaybookAnalyticsEngine) -> None:
         engine.add_record(
             playbook_name="pb1",
             incident_type="malware",
@@ -489,9 +480,7 @@ class TestIdentityRiskEngine:
         assert report.total_records == 0
         assert report.avg_risk_score == 0.0
 
-    def test_generate_report_normal_recommendation(
-        self, engine: IdentityRiskEngine
-    ) -> None:
+    def test_generate_report_normal_recommendation(self, engine: IdentityRiskEngine) -> None:
         engine.add_record(
             identity_id="safe",
             identity_risk_level=IdentityRiskLevel.LOW,
@@ -588,9 +577,7 @@ class TestIdentityRiskEngine:
         assert results[0]["usage_ratio"] == 0.05
         assert any("Revoke" in c for c in results[0]["recommended_changes"])
 
-    def test_recommend_access_changes_high_risk(
-        self, engine: IdentityRiskEngine
-    ) -> None:
+    def test_recommend_access_changes_high_risk(self, engine: IdentityRiskEngine) -> None:
         engine.add_record(
             identity_id="risky",
             privileges_granted=10,
@@ -601,9 +588,7 @@ class TestIdentityRiskEngine:
         assert len(results) == 1
         assert any("MFA" in c for c in results[0]["recommended_changes"])
 
-    def test_recommend_access_changes_priv_escalation(
-        self, engine: IdentityRiskEngine
-    ) -> None:
+    def test_recommend_access_changes_priv_escalation(self, engine: IdentityRiskEngine) -> None:
         engine.add_record(
             identity_id="escalator",
             privileges_granted=20,
@@ -611,10 +596,7 @@ class TestIdentityRiskEngine:
             access_pattern=AccessPattern.PRIVILEGE_ESCALATION,
         )
         results = engine.recommend_access_changes()
-        assert any(
-            "privilege escalation" in c.lower()
-            for c in results[0]["recommended_changes"]
-        )
+        assert any("privilege escalation" in c.lower() for c in results[0]["recommended_changes"])
 
     def test_recommend_access_changes_empty(self, engine: IdentityRiskEngine) -> None:
         assert engine.recommend_access_changes() == []
@@ -835,9 +817,7 @@ class TestIOCLifecycleEngine:
         assert result["total_iocs"] == 0
         assert result["effectiveness_grade"] == "no_data"
 
-    def test_recommend_ioc_actions_high_confidence(
-        self, engine: IOCLifecycleEngine
-    ) -> None:
+    def test_recommend_ioc_actions_high_confidence(self, engine: IOCLifecycleEngine) -> None:
         engine.add_record(
             ioc_value="definite-bad",
             ioc_phase=IOCPhase.DISCOVERED,
@@ -874,9 +854,7 @@ class TestIOCLifecycleEngine:
         results = engine.recommend_ioc_actions()
         assert results[0]["recommended_action"] == "ignore"
 
-    def test_recommend_ioc_actions_skips_non_discovered(
-        self, engine: IOCLifecycleEngine
-    ) -> None:
+    def test_recommend_ioc_actions_skips_non_discovered(self, engine: IOCLifecycleEngine) -> None:
         engine.add_record(
             ioc_value="deployed-ioc",
             ioc_phase=IOCPhase.DEPLOYED,
@@ -984,9 +962,7 @@ class TestThreatFeedQualityEngine:
         assert "performing well" in result.recommended_action
         assert result.risk_assessment == 10.0
 
-    def test_process_found_moderate_quality(
-        self, engine: ThreatFeedQualityEngine
-    ) -> None:
+    def test_process_found_moderate_quality(self, engine: ThreatFeedQualityEngine) -> None:
         rec = engine.add_record(feed_name="ok-feed", quality_score=0.6)
         result = engine.process(rec.id)
         assert isinstance(result, ThreatFeedAnalysis)
@@ -1083,9 +1059,7 @@ class TestThreatFeedQualityEngine:
         assert ranked[0]["feed_name"] == "top-feed"
         assert ranked[0]["avg_quality_score"] == 0.95
 
-    def test_rank_feeds_by_quality_empty(
-        self, engine: ThreatFeedQualityEngine
-    ) -> None:
+    def test_rank_feeds_by_quality_empty(self, engine: ThreatFeedQualityEngine) -> None:
         assert engine.rank_feeds_by_quality() == []
 
     def test_detect_feed_overlap(self, engine: ThreatFeedQualityEngine) -> None:
@@ -1095,17 +1069,13 @@ class TestThreatFeedQualityEngine:
         assert len(overlaps) == 1
         assert overlaps[0]["overlap_ratio_pct"] == 95.0
 
-    def test_detect_feed_overlap_no_overlap(
-        self, engine: ThreatFeedQualityEngine
-    ) -> None:
+    def test_detect_feed_overlap_no_overlap(self, engine: ThreatFeedQualityEngine) -> None:
         engine.add_record(feed_name="feed-a", total_iocs=1000)
         engine.add_record(feed_name="feed-b", total_iocs=100)
         overlaps = engine.detect_feed_overlap()
         assert len(overlaps) == 0
 
-    def test_detect_feed_overlap_empty(
-        self, engine: ThreatFeedQualityEngine
-    ) -> None:
+    def test_detect_feed_overlap_empty(self, engine: ThreatFeedQualityEngine) -> None:
         assert engine.detect_feed_overlap() == []
 
     def test_compute_feed_roi(self, engine: ThreatFeedQualityEngine) -> None:
@@ -1121,9 +1091,7 @@ class TestThreatFeedQualityEngine:
         assert roi[0]["cost_per_detection"] == 2.0
         assert roi[0]["roi_score"] == 0.5
 
-    def test_compute_feed_roi_zero_cost(
-        self, engine: ThreatFeedQualityEngine
-    ) -> None:
+    def test_compute_feed_roi_zero_cost(self, engine: ThreatFeedQualityEngine) -> None:
         engine.add_record(
             feed_name="free-feed",
             true_detections=50,

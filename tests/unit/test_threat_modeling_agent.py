@@ -22,7 +22,6 @@ from shieldops.agents.threat_modeling.nodes import (
 )
 from shieldops.agents.threat_modeling.tools import ThreatModelingToolkit
 
-
 # ── StrEnum tests ──────────────────────────────────────────────────────
 
 
@@ -177,9 +176,7 @@ class TestThreatModelingToolkit:
         return ThreatModelingToolkit()
 
     @pytest.mark.asyncio()
-    async def test_discover_components_web_app(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_discover_components_web_app(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         assert len(components) > 0
         assert all(isinstance(c, ServiceComponent) for c in components)
@@ -187,34 +184,26 @@ class TestThreatModelingToolkit:
         assert "load_balancer" in names
 
     @pytest.mark.asyncio()
-    async def test_discover_components_microservice(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_discover_components_microservice(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("microservice")
         assert len(components) > 0
         names = [c.name for c in components]
         assert "service_mesh" in names
 
     @pytest.mark.asyncio()
-    async def test_discover_components_default(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_discover_components_default(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("unknown_service")
         assert len(components) > 0
 
     @pytest.mark.asyncio()
-    async def test_analyze_threats_produces_vectors(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_analyze_threats_produces_vectors(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         assert len(threats) > 0
         assert all(isinstance(t, ThreatVector) for t in threats)
 
     @pytest.mark.asyncio()
-    async def test_analyze_threats_unique_ids(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_analyze_threats_unique_ids(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         ids = [t.id for t in threats]
@@ -232,9 +221,7 @@ class TestThreatModelingToolkit:
             )
 
     @pytest.mark.asyncio()
-    async def test_assess_risk_scores_threats(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_assess_risk_scores_threats(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         scored = await toolkit.assess_risk(threats)
@@ -243,9 +230,7 @@ class TestThreatModelingToolkit:
             assert t.risk_score > 0.0
 
     @pytest.mark.asyncio()
-    async def test_assess_risk_sorted_descending(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_assess_risk_sorted_descending(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         scored = await toolkit.assess_risk(threats)
@@ -253,9 +238,7 @@ class TestThreatModelingToolkit:
         assert scores == sorted(scores, reverse=True)
 
     @pytest.mark.asyncio()
-    async def test_recommend_mitigations(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_recommend_mitigations(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         scored = await toolkit.assess_risk(threats)
@@ -263,16 +246,16 @@ class TestThreatModelingToolkit:
         assert len(mitigations) > 0
         assert all(isinstance(m, Mitigation) for m in mitigations)
 
-    def test_calculate_residual_risk(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    def test_calculate_residual_risk(self, toolkit: ThreatModelingToolkit) -> None:
         threats = [
             ThreatVector(
-                id="THR-1", risk_score=80.0,
+                id="THR-1",
+                risk_score=80.0,
                 stride_category=StrideCategory.TAMPERING,
             ),
             ThreatVector(
-                id="THR-2", risk_score=60.0,
+                id="THR-2",
+                risk_score=60.0,
                 stride_category=StrideCategory.SPOOFING,
             ),
         ]
@@ -286,14 +269,10 @@ class TestThreatModelingToolkit:
         avg_raw = (80.0 + 60.0) / 2
         assert residual < avg_raw
 
-    def test_calculate_residual_risk_no_threats(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    def test_calculate_residual_risk_no_threats(self, toolkit: ThreatModelingToolkit) -> None:
         assert toolkit.calculate_residual_risk([], []) == 0.0
 
-    def test_calculate_residual_risk_no_mitigations(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    def test_calculate_residual_risk_no_mitigations(self, toolkit: ThreatModelingToolkit) -> None:
         threats = [
             ThreatVector(id="THR-1", risk_score=80.0),
         ]
@@ -310,9 +289,7 @@ class TestNodes:
         return ThreatModelingToolkit()
 
     @pytest.mark.asyncio()
-    async def test_discover_architecture_node(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_discover_architecture_node(self, toolkit: ThreatModelingToolkit) -> None:
         state: dict = {"target_service": "web_app", "reasoning_chain": []}
         result = await discover_architecture(state, toolkit)
         assert result["stage"] == ModelingStage.ANALYZE.value
@@ -320,9 +297,7 @@ class TestNodes:
         assert len(result["reasoning_chain"]) == 1
 
     @pytest.mark.asyncio()
-    async def test_analyze_threats_node(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_analyze_threats_node(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         state: dict = {
             "components": [c.model_dump() for c in components],
@@ -333,9 +308,7 @@ class TestNodes:
         assert len(result["threats"]) > 0
 
     @pytest.mark.asyncio()
-    async def test_assess_risk_node(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_assess_risk_node(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         state: dict = {
@@ -347,9 +320,7 @@ class TestNodes:
         assert len(result["threats"]) == len(threats)
 
     @pytest.mark.asyncio()
-    async def test_recommend_mitigations_node(
-        self, toolkit: ThreatModelingToolkit
-    ) -> None:
+    async def test_recommend_mitigations_node(self, toolkit: ThreatModelingToolkit) -> None:
         components = await toolkit.discover_components("web_application")
         threats = await toolkit.analyze_threats(components)
         scored = await toolkit.assess_risk(threats)

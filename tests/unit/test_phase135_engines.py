@@ -3,24 +3,6 @@ AgentCurriculumEngine, ExperimentReplayEngine, ResourceEfficiencyOptimizerEngine
 
 from __future__ import annotations
 
-from shieldops.security.adaptive_threshold_engine import (
-    AdaptationStrategy,
-    AdaptiveThresholdAnalysis,
-    AdaptiveThresholdEngine,
-    AdaptiveThresholdRecord,
-    AdaptiveThresholdReport,
-    DriftDirection,
-    ThresholdStatus,
-)
-from shieldops.security.risk_timeline_engine import (
-    RiskPhase,
-    RiskTimelineAnalysis,
-    RiskTimelineEngine,
-    RiskTimelineRecord,
-    RiskTimelineReport,
-    TimelineGranularity,
-    TrendDirection,
-)
 from shieldops.analytics.agent_curriculum_engine import (
     AgentCurriculumAnalysis,
     AgentCurriculumEngine,
@@ -48,7 +30,24 @@ from shieldops.analytics.resource_efficiency_optimizer_engine import (
     ResourceEfficiencyOptimizerReport,
     ResourceType,
 )
-
+from shieldops.security.adaptive_threshold_engine import (
+    AdaptationStrategy,
+    AdaptiveThresholdAnalysis,
+    AdaptiveThresholdEngine,
+    AdaptiveThresholdRecord,
+    AdaptiveThresholdReport,
+    DriftDirection,
+    ThresholdStatus,
+)
+from shieldops.security.risk_timeline_engine import (
+    RiskPhase,
+    RiskTimelineAnalysis,
+    RiskTimelineEngine,
+    RiskTimelineRecord,
+    RiskTimelineReport,
+    TimelineGranularity,
+    TrendDirection,
+)
 
 # ============================================================================
 # AdaptiveThresholdEngine

@@ -124,8 +124,12 @@ class TestDomainMethods:
     def test_compare_receiver_efficiency_sorted_desc(
         self, engine: ReceiverPipelineStageEngine
     ) -> None:
-        _add_sample(engine, receiver_type=ReceiverType.OTLP_GRPC, accepted_per_sec=2000.0, latency_ms=1.0)
-        _add_sample(engine, receiver_type=ReceiverType.PROMETHEUS, accepted_per_sec=100.0, latency_ms=50.0)
+        _add_sample(
+            engine, receiver_type=ReceiverType.OTLP_GRPC, accepted_per_sec=2000.0, latency_ms=1.0
+        )
+        _add_sample(
+            engine, receiver_type=ReceiverType.PROMETHEUS, accepted_per_sec=100.0, latency_ms=50.0
+        )
         results = engine.compare_receiver_efficiency()
         assert results[0]["efficiency_score"] >= results[-1]["efficiency_score"]
 

@@ -10,12 +10,8 @@ class ViolationAnalysisResult(BaseModel):
     common_patterns: list[str] = Field(
         description="Common violation patterns observed across services"
     )
-    migration_needed: list[str] = Field(
-        description="Deprecated conventions requiring migration"
-    )
-    priority_fixes: list[str] = Field(
-        description="Highest priority fixes to address first"
-    )
+    migration_needed: list[str] = Field(description="Deprecated conventions requiring migration")
+    priority_fixes: list[str] = Field(description="Highest priority fixes to address first")
 
 
 SYSTEM_LOAD_RULES = """You are an OpenTelemetry semantic conventions expert for ShieldOps.

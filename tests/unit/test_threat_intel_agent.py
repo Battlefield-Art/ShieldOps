@@ -53,7 +53,6 @@ from shieldops.agents.threat_intel.prompts import (
 from shieldops.agents.threat_intel.runner import ThreatIntelRunner
 from shieldops.agents.threat_intel.tools import ThreatIntelToolkit
 
-
 # -- Fixtures ----------------------------------------------------------------
 
 
@@ -185,9 +184,7 @@ class TestState:
         assert s2.sources == []
 
     def test_state_with_error(self):
-        state = ThreatIntelState(
-            error="feed timeout", current_step="failed"
-        )
+        state = ThreatIntelState(error="feed timeout", current_step="failed")
         assert state.error == "feed timeout"
         assert state.current_step == "failed"
 
@@ -432,9 +429,7 @@ class TestToolkit:
         assert "srv-web-01" in result[0].entities_affected
 
     @pytest.mark.asyncio
-    async def test_assess_relevance_confirmed_with_matches(
-        self, sample_indicator: ThreatIndicator
-    ):
+    async def test_assess_relevance_confirmed_with_matches(self, sample_indicator: ThreatIndicator):
         toolkit = ThreatIntelToolkit()
         correlation = IntelCorrelation(
             indicator_value="192.168.1.100",
@@ -669,9 +664,7 @@ class TestNodes:
         assert result["stage"] == IntelStage.ASSESS
 
     @pytest.mark.asyncio
-    async def test_correlate_observations_with_indicators(
-        self, sample_indicator: ThreatIndicator
-    ):
+    async def test_correlate_observations_with_indicators(self, sample_indicator: ThreatIndicator):
         state = ThreatIntelState(
             request_id="ti-corr-1",
             indicators_collected=[sample_indicator],
@@ -690,9 +683,7 @@ class TestNodes:
         assert result["stage"] == IntelStage.DISTRIBUTE
 
     @pytest.mark.asyncio
-    async def test_assess_threats_with_data(
-        self, sample_indicator: ThreatIndicator
-    ):
+    async def test_assess_threats_with_data(self, sample_indicator: ThreatIndicator):
         correlation = IntelCorrelation(
             indicator_value="192.168.1.100",
             match_count=1,
@@ -740,9 +731,7 @@ class TestNodes:
 
 
 class TestConditionalEdges:
-    def test_should_distribute_high_priority(
-        self, assessed_state: ThreatIntelState
-    ):
+    def test_should_distribute_high_priority(self, assessed_state: ThreatIntelState):
         assert should_distribute(assessed_state) == "distribute_intel"
 
     def test_should_distribute_actionable_no_high_priority(self):
@@ -830,9 +819,7 @@ class TestIntegration:
         assert should_distribute(state) == "__end__"
 
     @pytest.mark.asyncio
-    async def test_full_workflow_with_indicators(
-        self, sample_indicator: ThreatIndicator
-    ):
+    async def test_full_workflow_with_indicators(self, sample_indicator: ThreatIndicator):
         """When indicators are present, full pipeline runs through distribute."""
         state = ThreatIntelState(
             request_id="ti-int-full",

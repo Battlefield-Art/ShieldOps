@@ -100,7 +100,10 @@ async def enrich_context(state: dict[str, Any], toolkit: SOARWorkflowToolkit) ->
                 "alert_severity": alert.severity,
                 "mitre_tactics": alert.mitre_tactics,
                 "enrichments_summary": [
-                    {"indicator": e.get("indicator", ""), "is_malicious": e.get("result", {}).get("is_malicious", False)}
+                    {
+                        "indicator": e.get("indicator", ""),
+                        "is_malicious": e.get("result", {}).get("is_malicious", False),
+                    }
                     for e in enrichments[:20]
                 ],
             },

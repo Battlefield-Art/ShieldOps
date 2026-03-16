@@ -39,7 +39,6 @@ from shieldops.analytics.multi_agent_coordination_engine import (
     ResolutionStrategy,
 )
 
-
 # ===========================================================================
 # AgentPerformanceBenchmarkEngine
 # ===========================================================================
@@ -183,12 +182,8 @@ class TestBenchmarkAnalysis:
 class TestBenchmarkDomainMethods:
     def test_compute_benchmark_score(self):
         eng = AgentPerformanceBenchmarkEngine()
-        eng.add_record(
-            agent_id="a1", dimension=BenchmarkDimension.ACCURACY, score=80.0
-        )
-        eng.add_record(
-            agent_id="a1", dimension=BenchmarkDimension.LATENCY, score=60.0
-        )
+        eng.add_record(agent_id="a1", dimension=BenchmarkDimension.ACCURACY, score=80.0)
+        eng.add_record(agent_id="a1", dimension=BenchmarkDimension.LATENCY, score=60.0)
         result = eng.compute_benchmark_score("a1")
         assert result["agent_id"] == "a1"
         assert result["overall_score"] == 70.0
@@ -206,17 +201,13 @@ class TestBenchmarkDomainMethods:
             baseline=BenchmarkBaseline.INDUSTRY_STANDARD,
             score=90.0,
         )
-        result = eng.compare_against_baseline(
-            "a1", BenchmarkBaseline.INDUSTRY_STANDARD
-        )
+        result = eng.compare_against_baseline("a1", BenchmarkBaseline.INDUSTRY_STANDARD)
         assert result["comparison"] == "above_baseline"
         assert result["delta"] == 20.0
 
     def test_compare_against_baseline_no_data(self):
         eng = AgentPerformanceBenchmarkEngine()
-        result = eng.compare_against_baseline(
-            "missing", BenchmarkBaseline.PEER_COMPARISON
-        )
+        result = eng.compare_against_baseline("missing", BenchmarkBaseline.PEER_COMPARISON)
         assert result["comparison"] == "no_data"
 
     def test_identify_regressions(self):
@@ -430,9 +421,7 @@ class TestTunerDomainMethods:
 class TestTunerReportAndStats:
     def test_report_populated(self):
         eng = HyperparameterAutoTunerEngine()
-        eng.add_record(
-            agent_id="a1", outcome=TuningOutcome.DEGRADED, score=10.0
-        )
+        eng.add_record(agent_id="a1", outcome=TuningOutcome.DEGRADED, score=10.0)
         report = eng.generate_report()
         assert isinstance(report, TuningReport)
         assert report.degraded_count == 1
@@ -736,12 +725,8 @@ class TestEfficiencyDomainMethods:
 
     def test_identify_resource_waste(self):
         eng = AgentResourceEfficiencyEngine()
-        eng.add_record(
-            agent_id="a1", grade=EfficiencyGrade.POOR, usage_value=200.0
-        )
-        eng.add_record(
-            agent_id="a2", grade=EfficiencyGrade.EXCELLENT, usage_value=10.0
-        )
+        eng.add_record(agent_id="a1", grade=EfficiencyGrade.POOR, usage_value=200.0)
+        eng.add_record(agent_id="a2", grade=EfficiencyGrade.EXCELLENT, usage_value=10.0)
         result = eng.identify_resource_waste()
         assert len(result) == 1
         assert result[0]["agent_id"] == "a1"
@@ -771,9 +756,7 @@ class TestEfficiencyDomainMethods:
 class TestEfficiencyReportAndStats:
     def test_report_populated(self):
         eng = AgentResourceEfficiencyEngine()
-        eng.add_record(
-            agent_id="a1", grade=EfficiencyGrade.POOR, usage_value=100.0
-        )
+        eng.add_record(agent_id="a1", grade=EfficiencyGrade.POOR, usage_value=100.0)
         report = eng.generate_report()
         assert isinstance(report, EfficiencyReport)
         assert report.poor_efficiency_count == 1

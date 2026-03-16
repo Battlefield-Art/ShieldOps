@@ -15,7 +15,6 @@ import yaml
 from shieldops.agents.otel_collector_manager.models import CollectorAction
 from shieldops.agents.otel_collector_manager.runner import OTelCollectorManagerRunner
 
-
 # ── Full Pipeline ─────────────────────────────────────────────────────
 
 

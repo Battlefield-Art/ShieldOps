@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import math
-
 from shieldops.security.risk_factor_decay_engine import (
     DecayCurve,
     DecayHealth,
@@ -164,27 +162,19 @@ class TestGetStatsAndClear:
 
 class TestApplyDecayCurves:
     def test_linear(self):
-        result = RiskFactorDecayEngine._apply_curve(
-            DecayCurve.LINEAR, 100.0, 5.0, 10.0
-        )
+        result = RiskFactorDecayEngine._apply_curve(DecayCurve.LINEAR, 100.0, 5.0, 10.0)
         assert result == 50.0
 
     def test_linear_floor_zero(self):
-        result = RiskFactorDecayEngine._apply_curve(
-            DecayCurve.LINEAR, 10.0, 100.0, 1.0
-        )
+        result = RiskFactorDecayEngine._apply_curve(DecayCurve.LINEAR, 10.0, 100.0, 1.0)
         assert result == 0.0
 
     def test_exponential(self):
-        result = RiskFactorDecayEngine._apply_curve(
-            DecayCurve.EXPONENTIAL, 100.0, 0.0, 24.0
-        )
+        result = RiskFactorDecayEngine._apply_curve(DecayCurve.EXPONENTIAL, 100.0, 0.0, 24.0)
         assert result == 100.0
 
     def test_step_function(self):
-        result = RiskFactorDecayEngine._apply_curve(
-            DecayCurve.STEP_FUNCTION, 100.0, 10.0, 48.0
-        )
+        result = RiskFactorDecayEngine._apply_curve(DecayCurve.STEP_FUNCTION, 100.0, 10.0, 48.0)
         assert result == 80.0
 
 

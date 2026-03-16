@@ -2,20 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
-from shieldops.security.stride_analysis_engine import (
-    AnalysisDepth,
-    StrideAnalysisEngine,
-    StrideCategory,
-    ThreatStatus,
-)
-from shieldops.security.attack_path_analysis_engine import (
-    AttackPathAnalysisEngine,
-    EntryPointType,
-    PathComplexity,
-    PathStatus,
-)
 from shieldops.analytics.agent_specialization_engine import (
     AdaptationSpeed,
     AgentSpecializationEngine,
@@ -34,7 +20,18 @@ from shieldops.analytics.predictive_incident_engine import (
     PredictionHorizon,
     PredictiveIncidentEngine,
 )
-
+from shieldops.security.attack_path_analysis_engine import (
+    AttackPathAnalysisEngine,
+    EntryPointType,
+    PathComplexity,
+    PathStatus,
+)
+from shieldops.security.stride_analysis_engine import (
+    AnalysisDepth,
+    StrideAnalysisEngine,
+    StrideCategory,
+    ThreatStatus,
+)
 
 # ============================================================
 # StrideAnalysisEngine Tests
@@ -121,47 +118,61 @@ class TestStrideAnalysisEngine:
         assert a.analysis_score == 80.0
 
     def test_compute_threat_density(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               category=StrideCategory.SPOOFING, threat_count=5)
-        self.engine.add_record(name="r2", service="svc-a",
-                               category=StrideCategory.TAMPERING, threat_count=3)
+        self.engine.add_record(
+            name="r1", service="svc-a", category=StrideCategory.SPOOFING, threat_count=5
+        )
+        self.engine.add_record(
+            name="r2", service="svc-a", category=StrideCategory.TAMPERING, threat_count=3
+        )
         result = self.engine.compute_threat_density()
         assert len(result) == 1
         assert result[0]["total_threats"] == 8
 
     def test_compute_threat_density_grade(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               category=StrideCategory.SPOOFING, threat_count=25)
+        self.engine.add_record(
+            name="r1", service="svc-a", category=StrideCategory.SPOOFING, threat_count=25
+        )
         result = self.engine.compute_threat_density()
         assert result[0]["density_grade"] == "critical"
 
     def test_identify_unmitigated_threats(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               status=ThreatStatus.IDENTIFIED, severity_score=9.0)
-        self.engine.add_record(name="r2", service="svc-a",
-                               status=ThreatStatus.MITIGATED, severity_score=8.0)
+        self.engine.add_record(
+            name="r1", service="svc-a", status=ThreatStatus.IDENTIFIED, severity_score=9.0
+        )
+        self.engine.add_record(
+            name="r2", service="svc-a", status=ThreatStatus.MITIGATED, severity_score=8.0
+        )
         result = self.engine.identify_unmitigated_threats()
         assert len(result) == 1
         assert result[0]["priority"] == "critical"
 
     def test_identify_unmitigated_threats_low(self) -> None:
-        self.engine.add_record(name="r1", status=ThreatStatus.IDENTIFIED,
-                               severity_score=2.0, service="svc")
+        self.engine.add_record(
+            name="r1", status=ThreatStatus.IDENTIFIED, severity_score=2.0, service="svc"
+        )
         result = self.engine.identify_unmitigated_threats()
         assert result[0]["priority"] == "low"
 
     def test_recommend_analysis_priorities(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               depth=AnalysisDepth.SURFACE,
-                               status=ThreatStatus.IDENTIFIED, severity_score=7.0)
+        self.engine.add_record(
+            name="r1",
+            service="svc-a",
+            depth=AnalysisDepth.SURFACE,
+            status=ThreatStatus.IDENTIFIED,
+            severity_score=7.0,
+        )
         result = self.engine.recommend_analysis_priorities()
         assert len(result) >= 1
         assert result[0]["priority"] == "high"
 
     def test_recommend_analysis_priorities_high_severity(self) -> None:
-        self.engine.add_record(name="r1", service="svc-b",
-                               depth=AnalysisDepth.STANDARD,
-                               status=ThreatStatus.IDENTIFIED, severity_score=8.0)
+        self.engine.add_record(
+            name="r1",
+            service="svc-b",
+            depth=AnalysisDepth.STANDARD,
+            status=ThreatStatus.IDENTIFIED,
+            severity_score=8.0,
+        )
         result = self.engine.recommend_analysis_priorities()
         assert any(r["issue"] == "high_severity_unmitigated" for r in result)
 
@@ -284,20 +295,29 @@ class TestAttackPathAnalysisEngine:
         assert a.analysis_score == 55.0
 
     def test_identify_shortest_attack_paths(self) -> None:
-        self.engine.add_record(name="p1", service="svc-a", status=PathStatus.ACTIVE,
-                               complexity=PathComplexity.TRIVIAL, path_length=1,
-                               risk_score=9.0)
-        self.engine.add_record(name="p2", service="svc-a", status=PathStatus.ACTIVE,
-                               complexity=PathComplexity.COMPLEX, path_length=5,
-                               risk_score=3.0)
+        self.engine.add_record(
+            name="p1",
+            service="svc-a",
+            status=PathStatus.ACTIVE,
+            complexity=PathComplexity.TRIVIAL,
+            path_length=1,
+            risk_score=9.0,
+        )
+        self.engine.add_record(
+            name="p2",
+            service="svc-a",
+            status=PathStatus.ACTIVE,
+            complexity=PathComplexity.COMPLEX,
+            path_length=5,
+            risk_score=3.0,
+        )
         result = self.engine.identify_shortest_attack_paths()
         assert len(result) == 2
         assert result[0]["name"] == "p1"  # shorter effective length
         assert result[0]["priority"] == "critical"
 
     def test_identify_shortest_attack_paths_blocked_excluded(self) -> None:
-        self.engine.add_record(name="p1", status=PathStatus.BLOCKED, path_length=1,
-                               service="svc")
+        self.engine.add_record(name="p1", status=PathStatus.BLOCKED, path_length=1, service="svc")
         result = self.engine.identify_shortest_attack_paths()
         assert len(result) == 0
 
@@ -315,8 +335,13 @@ class TestAttackPathAnalysisEngine:
         assert result[0]["grade"] == "excellent"
 
     def test_recommend_choke_points(self) -> None:
-        self.engine.add_record(name="p1", service="svc-a", status=PathStatus.ACTIVE,
-                               complexity=PathComplexity.TRIVIAL, risk_score=8.0)
+        self.engine.add_record(
+            name="p1",
+            service="svc-a",
+            status=PathStatus.ACTIVE,
+            complexity=PathComplexity.TRIVIAL,
+            risk_score=8.0,
+        )
         result = self.engine.recommend_choke_points()
         assert len(result) == 1
         assert result[0]["priority"] == "critical"
@@ -437,42 +462,64 @@ class TestAgentSpecializationEngine:
         assert a.analysis_score == 90.0
 
     def test_identify_agent_specializations(self) -> None:
-        self.engine.add_record(name="agent-1", domain=SpecializationDomain.SECURITY,
-                               success_rate=0.95, service="svc")
-        self.engine.add_record(name="agent-1", domain=SpecializationDomain.COST,
-                               success_rate=0.60, service="svc")
+        self.engine.add_record(
+            name="agent-1", domain=SpecializationDomain.SECURITY, success_rate=0.95, service="svc"
+        )
+        self.engine.add_record(
+            name="agent-1", domain=SpecializationDomain.COST, success_rate=0.60, service="svc"
+        )
         result = self.engine.identify_agent_specializations()
         assert len(result) == 1
         assert result[0]["best_domain"] == "security"
         assert result[0]["domains_covered"] == 2
 
     def test_detect_skill_overlap(self) -> None:
-        self.engine.add_record(name="agent-1", domain=SpecializationDomain.SECURITY,
-                               proficiency=ProficiencyLevel.EXPERT, service="svc")
-        self.engine.add_record(name="agent-2", domain=SpecializationDomain.SECURITY,
-                               proficiency=ProficiencyLevel.PROFICIENT, service="svc")
+        self.engine.add_record(
+            name="agent-1",
+            domain=SpecializationDomain.SECURITY,
+            proficiency=ProficiencyLevel.EXPERT,
+            service="svc",
+        )
+        self.engine.add_record(
+            name="agent-2",
+            domain=SpecializationDomain.SECURITY,
+            proficiency=ProficiencyLevel.PROFICIENT,
+            service="svc",
+        )
         result = self.engine.detect_skill_overlap()
         assert len(result) == 1
         assert result[0]["agent_count"] == 2
 
     def test_detect_skill_overlap_no_overlap(self) -> None:
-        self.engine.add_record(name="agent-1", domain=SpecializationDomain.SECURITY,
-                               proficiency=ProficiencyLevel.NOVICE, service="svc")
+        self.engine.add_record(
+            name="agent-1",
+            domain=SpecializationDomain.SECURITY,
+            proficiency=ProficiencyLevel.NOVICE,
+            service="svc",
+        )
         result = self.engine.detect_skill_overlap()
         assert len(result) == 0
 
     def test_recommend_agent_assignments(self) -> None:
-        self.engine.add_record(name="agent-1", domain=SpecializationDomain.SECURITY,
-                               proficiency=ProficiencyLevel.NOVICE, success_rate=0.4,
-                               service="svc")
+        self.engine.add_record(
+            name="agent-1",
+            domain=SpecializationDomain.SECURITY,
+            proficiency=ProficiencyLevel.NOVICE,
+            success_rate=0.4,
+            service="svc",
+        )
         result = self.engine.recommend_agent_assignments()
         # Should find uncovered domains (security has no expert)
         assert len(result) >= 1
 
     def test_recommend_agent_assignments_critical(self) -> None:
         # Only add to one domain, others are completely uncovered
-        self.engine.add_record(name="agent-1", domain=SpecializationDomain.SECURITY,
-                               proficiency=ProficiencyLevel.EXPERT, service="svc")
+        self.engine.add_record(
+            name="agent-1",
+            domain=SpecializationDomain.SECURITY,
+            proficiency=ProficiencyLevel.EXPERT,
+            service="svc",
+        )
         result = self.engine.recommend_agent_assignments()
         critical = [r for r in result if r["priority"] == "critical"]
         # 4 uncovered domains
@@ -610,10 +657,8 @@ class TestKnowledgeGraphEngine:
         assert result["total_entities"] == 0
 
     def test_compute_graph_connectivity(self) -> None:
-        self.engine.add_record(name="n1", edge_count=3, health=GraphHealth.CONNECTED,
-                               service="svc")
-        self.engine.add_record(name="n2", edge_count=2, health=GraphHealth.CONNECTED,
-                               service="svc")
+        self.engine.add_record(name="n1", edge_count=3, health=GraphHealth.CONNECTED, service="svc")
+        self.engine.add_record(name="n2", edge_count=2, health=GraphHealth.CONNECTED, service="svc")
         result = self.engine.compute_graph_connectivity()
         assert result["total_entities"] == 2
         assert result["total_edges"] == 5
@@ -748,58 +793,88 @@ class TestPredictiveIncidentEngine:
         assert a.analysis_score == 85.0
 
     def test_generate_incident_predictions(self) -> None:
-        self.engine.add_record(name="p1", service="svc-a",
-                               confidence=PredictionConfidence.HIGH, score=80.0,
-                               horizon=PredictionHorizon.MINUTES)
-        self.engine.add_record(name="p2", service="svc-a",
-                               confidence=PredictionConfidence.HIGH, score=70.0,
-                               horizon=PredictionHorizon.HOURS)
+        self.engine.add_record(
+            name="p1",
+            service="svc-a",
+            confidence=PredictionConfidence.HIGH,
+            score=80.0,
+            horizon=PredictionHorizon.MINUTES,
+        )
+        self.engine.add_record(
+            name="p2",
+            service="svc-a",
+            confidence=PredictionConfidence.HIGH,
+            score=70.0,
+            horizon=PredictionHorizon.HOURS,
+        )
         result = self.engine.generate_incident_predictions()
         assert len(result) == 1
         assert result[0]["high_confidence_indicators"] == 2
 
     def test_generate_incident_predictions_risk_levels(self) -> None:
         for i in range(5):
-            self.engine.add_record(name=f"p{i}", service="svc-a",
-                                   confidence=PredictionConfidence.HIGH, score=90.0)
+            self.engine.add_record(
+                name=f"p{i}", service="svc-a", confidence=PredictionConfidence.HIGH, score=90.0
+            )
         result = self.engine.generate_incident_predictions()
         assert result[0]["risk_level"] == "critical"
 
     def test_evaluate_prediction_accuracy(self) -> None:
-        self.engine.add_record(name="p1", horizon=PredictionHorizon.HOURS,
-                               indicator=IndicatorType.METRIC_ANOMALY,
-                               prediction_accuracy=85.0, service="svc")
+        self.engine.add_record(
+            name="p1",
+            horizon=PredictionHorizon.HOURS,
+            indicator=IndicatorType.METRIC_ANOMALY,
+            prediction_accuracy=85.0,
+            service="svc",
+        )
         result = self.engine.evaluate_prediction_accuracy()
         assert len(result) >= 1
         assert any(r["dimension"] == "horizon" for r in result)
         assert any(r["dimension"] == "indicator" for r in result)
 
     def test_evaluate_prediction_accuracy_grades(self) -> None:
-        self.engine.add_record(name="p1", horizon=PredictionHorizon.HOURS,
-                               prediction_accuracy=95.0, service="svc")
+        self.engine.add_record(
+            name="p1", horizon=PredictionHorizon.HOURS, prediction_accuracy=95.0, service="svc"
+        )
         result = self.engine.evaluate_prediction_accuracy()
         horizon_results = [r for r in result if r["dimension"] == "horizon"]
         assert horizon_results[0]["grade"] == "excellent"
 
     def test_identify_leading_indicators(self) -> None:
-        self.engine.add_record(name="p1", indicator=IndicatorType.METRIC_ANOMALY,
-                               confidence=PredictionConfidence.HIGH,
-                               prediction_accuracy=90.0, service="svc-a")
-        self.engine.add_record(name="p2", indicator=IndicatorType.METRIC_ANOMALY,
-                               confidence=PredictionConfidence.HIGH,
-                               prediction_accuracy=85.0, service="svc-b")
+        self.engine.add_record(
+            name="p1",
+            indicator=IndicatorType.METRIC_ANOMALY,
+            confidence=PredictionConfidence.HIGH,
+            prediction_accuracy=90.0,
+            service="svc-a",
+        )
+        self.engine.add_record(
+            name="p2",
+            indicator=IndicatorType.METRIC_ANOMALY,
+            confidence=PredictionConfidence.HIGH,
+            prediction_accuracy=85.0,
+            service="svc-b",
+        )
         result = self.engine.identify_leading_indicators()
         assert len(result) >= 1
         assert result[0]["indicator"] == "metric_anomaly"
         assert result[0]["high_confidence_pct"] == 100.0
 
     def test_identify_leading_indicators_mixed(self) -> None:
-        self.engine.add_record(name="p1", indicator=IndicatorType.LOG_PATTERN,
-                               confidence=PredictionConfidence.HIGH,
-                               prediction_accuracy=80.0, service="svc")
-        self.engine.add_record(name="p2", indicator=IndicatorType.LOG_PATTERN,
-                               confidence=PredictionConfidence.LOW,
-                               prediction_accuracy=40.0, service="svc")
+        self.engine.add_record(
+            name="p1",
+            indicator=IndicatorType.LOG_PATTERN,
+            confidence=PredictionConfidence.HIGH,
+            prediction_accuracy=80.0,
+            service="svc",
+        )
+        self.engine.add_record(
+            name="p2",
+            indicator=IndicatorType.LOG_PATTERN,
+            confidence=PredictionConfidence.LOW,
+            prediction_accuracy=40.0,
+            service="svc",
+        )
         result = self.engine.identify_leading_indicators()
         lp = [r for r in result if r["indicator"] == "log_pattern"]
         assert lp[0]["high_confidence_pct"] == 50.0

@@ -13,9 +13,7 @@ class FindingsAnalysisResult(BaseModel):
     top_recommendations: list[str] = Field(
         description="Top remediation recommendations ranked by risk reduction"
     )
-    overall_risk: str = Field(
-        description="Overall risk level: low, medium, high, critical"
-    )
+    overall_risk: str = Field(description="Overall risk level: low, medium, high, critical")
 
 
 SYSTEM_DEFINE_SCOPE = (

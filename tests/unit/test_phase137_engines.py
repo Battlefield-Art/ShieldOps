@@ -4,23 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.security.kill_chain_tracker_engine import (
-    DetectionPoint,
-    KillChainPhase,
-    KillChainTrackerAnalysis,
-    KillChainTrackerEngine,
-    KillChainTrackerRecord,
-    KillChainTrackerReport,
-    ProgressionRisk,
-)
-from shieldops.security.soar_response_tracker_engine import (
-    AutomationLevel,
-    ResponseEffectiveness,
-    ResponsePhase,
-    SoarResponseTrackerAnalysis,
-    SoarResponseTrackerEngine,
-    SoarResponseTrackerRecord,
-    SoarResponseTrackerReport,
+from shieldops.analytics.agent_evolution_tracker_engine import (
+    AgentEvolutionTrackerAnalysis,
+    AgentEvolutionTrackerEngine,
+    AgentEvolutionTrackerRecord,
+    AgentEvolutionTrackerReport,
+    CapabilityDomain,
+    EvolutionPhase,
+    EvolutionTrend,
 )
 from shieldops.analytics.agent_resource_governor_engine import (
     AgentResourceGovernorAnalysis,
@@ -40,16 +31,24 @@ from shieldops.analytics.investigation_pattern_engine import (
     PatternConfidence,
     PatternType,
 )
-from shieldops.analytics.agent_evolution_tracker_engine import (
-    AgentEvolutionTrackerAnalysis,
-    AgentEvolutionTrackerEngine,
-    AgentEvolutionTrackerRecord,
-    AgentEvolutionTrackerReport,
-    CapabilityDomain,
-    EvolutionPhase,
-    EvolutionTrend,
+from shieldops.security.kill_chain_tracker_engine import (
+    DetectionPoint,
+    KillChainPhase,
+    KillChainTrackerAnalysis,
+    KillChainTrackerEngine,
+    KillChainTrackerRecord,
+    KillChainTrackerReport,
+    ProgressionRisk,
 )
-
+from shieldops.security.soar_response_tracker_engine import (
+    AutomationLevel,
+    ResponseEffectiveness,
+    ResponsePhase,
+    SoarResponseTrackerAnalysis,
+    SoarResponseTrackerEngine,
+    SoarResponseTrackerRecord,
+    SoarResponseTrackerReport,
+)
 
 # ========== KillChainTrackerEngine ==========
 
@@ -138,8 +137,20 @@ class TestKillChainEngine:
         assert a.analysis_score == 90
 
     def test_track_attack_progression(self, engine):
-        engine.add_record(name="a", attacker_id="atk-1", kill_chain_phase=KillChainPhase.RECONNAISSANCE, service="s1", event_count=5)
-        engine.add_record(name="b", attacker_id="atk-1", kill_chain_phase=KillChainPhase.EXPLOITATION, service="s2", event_count=3)
+        engine.add_record(
+            name="a",
+            attacker_id="atk-1",
+            kill_chain_phase=KillChainPhase.RECONNAISSANCE,
+            service="s1",
+            event_count=5,
+        )
+        engine.add_record(
+            name="b",
+            attacker_id="atk-1",
+            kill_chain_phase=KillChainPhase.EXPLOITATION,
+            service="s2",
+            event_count=3,
+        )
         results = engine.track_attack_progression()
         assert len(results) == 1
         assert results[0]["progression_depth"] == 4  # exploitation is index 3, +1
@@ -164,7 +175,9 @@ class TestKillChainEngine:
         assert preds[0]["predicted_next_phase"] == "exploitation"
 
     def test_predict_next_phase_final(self, engine):
-        engine.add_record(name="a", attacker_id="atk-1", kill_chain_phase=KillChainPhase.ACTIONS_ON_OBJECTIVES)
+        engine.add_record(
+            name="a", attacker_id="atk-1", kill_chain_phase=KillChainPhase.ACTIONS_ON_OBJECTIVES
+        )
         preds = engine.predict_next_phase()
         assert len(preds) == 0
 
@@ -286,26 +299,53 @@ class TestSoarResponseEngine:
         assert a.name == "a1"
 
     def test_compute_mean_time_to_contain(self, engine):
-        engine.add_record(name="a", service="svc-a", response_phase=ResponsePhase.CONTAINMENT, response_time_seconds=300, score=80)
-        engine.add_record(name="b", service="svc-a", response_phase=ResponsePhase.CONTAINMENT, response_time_seconds=600, score=70)
+        engine.add_record(
+            name="a",
+            service="svc-a",
+            response_phase=ResponsePhase.CONTAINMENT,
+            response_time_seconds=300,
+            score=80,
+        )
+        engine.add_record(
+            name="b",
+            service="svc-a",
+            response_phase=ResponsePhase.CONTAINMENT,
+            response_time_seconds=600,
+            score=70,
+        )
         results = engine.compute_mean_time_to_contain()
         assert len(results) == 1
         assert results[0]["mttc_seconds"] == 450.0
 
     def test_compute_mttc_skips_non_containment(self, engine):
-        engine.add_record(name="a", service="svc-a", response_phase=ResponsePhase.RECOVERY, response_time_seconds=100)
+        engine.add_record(
+            name="a",
+            service="svc-a",
+            response_phase=ResponsePhase.RECOVERY,
+            response_time_seconds=100,
+        )
         results = engine.compute_mean_time_to_contain()
         assert len(results) == 0
 
     def test_identify_slow_response_phases(self, engine):
-        engine.add_record(name="a", response_phase=ResponsePhase.CONTAINMENT, response_time_seconds=100)
-        engine.add_record(name="b", response_phase=ResponsePhase.RECOVERY, response_time_seconds=500)
+        engine.add_record(
+            name="a", response_phase=ResponsePhase.CONTAINMENT, response_time_seconds=100
+        )
+        engine.add_record(
+            name="b", response_phase=ResponsePhase.RECOVERY, response_time_seconds=500
+        )
         slow = engine.identify_slow_response_phases()
         assert len(slow) >= 1
         assert slow[0]["phase"] == "recovery"
 
     def test_recommend_automation_upgrades(self, engine):
-        engine.add_record(name="a", service="svc-a", automation_level=AutomationLevel.MANUAL, response_time_seconds=5000, response_effectiveness=ResponseEffectiveness.INEFFECTIVE)
+        engine.add_record(
+            name="a",
+            service="svc-a",
+            automation_level=AutomationLevel.MANUAL,
+            response_time_seconds=5000,
+            response_effectiveness=ResponseEffectiveness.INEFFECTIVE,
+        )
         recs = engine.recommend_automation_upgrades()
         assert len(recs) == 1
         assert recs[0]["priority"] == "high"
@@ -427,7 +467,13 @@ class TestResourceGovernorEngine:
         assert len(engine._records) == 100
 
     def test_enforce_resource_limits(self, engine):
-        engine.add_record(name="a", service="s1", resource_policy=ResourcePolicy.ENFORCE, usage_amount=150, budget_limit=100)
+        engine.add_record(
+            name="a",
+            service="s1",
+            resource_policy=ResourcePolicy.ENFORCE,
+            usage_amount=150,
+            budget_limit=100,
+        )
         violations = engine.enforce_resource_limits()
         assert len(violations) == 1
         assert violations[0]["action"] == "throttled"
@@ -438,7 +484,9 @@ class TestResourceGovernorEngine:
         assert len(engine.enforce_resource_limits()) == 0
 
     def test_enforce_limits_warn_action(self, engine):
-        engine.add_record(name="a", resource_policy=ResourcePolicy.WARN, usage_amount=200, budget_limit=100)
+        engine.add_record(
+            name="a", resource_policy=ResourcePolicy.WARN, usage_amount=200, budget_limit=100
+        )
         violations = engine.enforce_resource_limits()
         assert violations[0]["action"] == "warned"
 
@@ -575,21 +623,45 @@ class TestInvestigationPatternEngine:
         assert len(patterns) == 0
 
     def test_match_incident_to_pattern(self, engine):
-        engine.add_record(name="validated", pattern_confidence=PatternConfidence.VALIDATED, pattern_hash="h1", service="s1")
-        engine.add_record(name="incident", pattern_confidence=PatternConfidence.EMERGING, pattern_hash="h1", service="s1")
+        engine.add_record(
+            name="validated",
+            pattern_confidence=PatternConfidence.VALIDATED,
+            pattern_hash="h1",
+            service="s1",
+        )
+        engine.add_record(
+            name="incident",
+            pattern_confidence=PatternConfidence.EMERGING,
+            pattern_hash="h1",
+            service="s1",
+        )
         matches = engine.match_incident_to_pattern()
         assert len(matches) == 1
         assert matches[0]["pattern_name"] == "validated"
 
     def test_match_incident_no_match(self, engine):
-        engine.add_record(name="a", pattern_confidence=PatternConfidence.VALIDATED, pattern_hash="h1")
-        engine.add_record(name="b", pattern_confidence=PatternConfidence.EMERGING, pattern_hash="h2")
+        engine.add_record(
+            name="a", pattern_confidence=PatternConfidence.VALIDATED, pattern_hash="h1"
+        )
+        engine.add_record(
+            name="b", pattern_confidence=PatternConfidence.EMERGING, pattern_hash="h2"
+        )
         matches = engine.match_incident_to_pattern()
         assert len(matches) == 0
 
     def test_compute_pattern_accuracy(self, engine):
-        engine.add_record(name="a", pattern_type=PatternType.SYMPTOM_CLUSTER, match_quality=MatchQuality.EXACT, score=90)
-        engine.add_record(name="b", pattern_type=PatternType.SYMPTOM_CLUSTER, match_quality=MatchQuality.PARTIAL, score=50)
+        engine.add_record(
+            name="a",
+            pattern_type=PatternType.SYMPTOM_CLUSTER,
+            match_quality=MatchQuality.EXACT,
+            score=90,
+        )
+        engine.add_record(
+            name="b",
+            pattern_type=PatternType.SYMPTOM_CLUSTER,
+            match_quality=MatchQuality.PARTIAL,
+            score=50,
+        )
         results = engine.compute_pattern_accuracy()
         assert len(results) == 1
         assert results[0]["accuracy_pct"] == 50.0
@@ -717,8 +789,22 @@ class TestEvolutionTrackerEngine:
         assert a.name == "a1"
 
     def test_track_capability_growth(self, engine):
-        engine.add_record(name="agent-a", evolution_phase=EvolutionPhase.LEARNING, capability_domain=CapabilityDomain.INVESTIGATION, score=60, skill_count=5, version="1.0")
-        engine.add_record(name="agent-a", evolution_phase=EvolutionPhase.PROFICIENT, capability_domain=CapabilityDomain.SECURITY, score=80, skill_count=10, version="2.0")
+        engine.add_record(
+            name="agent-a",
+            evolution_phase=EvolutionPhase.LEARNING,
+            capability_domain=CapabilityDomain.INVESTIGATION,
+            score=60,
+            skill_count=5,
+            version="1.0",
+        )
+        engine.add_record(
+            name="agent-a",
+            evolution_phase=EvolutionPhase.PROFICIENT,
+            capability_domain=CapabilityDomain.SECURITY,
+            score=80,
+            skill_count=10,
+            version="2.0",
+        )
         results = engine.track_capability_growth()
         assert len(results) == 1
         assert results[0]["phase_depth"] == 3  # proficient is index 2, +1
@@ -731,25 +817,46 @@ class TestEvolutionTrackerEngine:
         assert plateaus[0]["plateau_count"] == 1
 
     def test_detect_plateaus_none(self, engine):
-        engine.add_record(name="agent-a", evolution_phase=EvolutionPhase.LEARNING, evolution_trend=EvolutionTrend.ACCELERATING, score=80)
+        engine.add_record(
+            name="agent-a",
+            evolution_phase=EvolutionPhase.LEARNING,
+            evolution_trend=EvolutionTrend.ACCELERATING,
+            score=80,
+        )
         plateaus = engine.detect_performance_plateaus()
         assert len(plateaus) == 0
 
     def test_recommend_evolution_path_regression(self, engine):
-        engine.add_record(name="agent-a", evolution_phase=EvolutionPhase.PROFICIENT, evolution_trend=EvolutionTrend.REGRESSING, capability_domain=CapabilityDomain.SECURITY, score=40)
+        engine.add_record(
+            name="agent-a",
+            evolution_phase=EvolutionPhase.PROFICIENT,
+            evolution_trend=EvolutionTrend.REGRESSING,
+            capability_domain=CapabilityDomain.SECURITY,
+            score=40,
+        )
         recs = engine.recommend_evolution_path()
         assert len(recs) == 1
         assert recs[0]["issue"] == "regression_detected"
         assert recs[0]["priority"] == "high"
 
     def test_recommend_evolution_path_plateau(self, engine):
-        engine.add_record(name="agent-a", evolution_phase=EvolutionPhase.PLATEAU, evolution_trend=EvolutionTrend.STEADY, score=70)
+        engine.add_record(
+            name="agent-a",
+            evolution_phase=EvolutionPhase.PLATEAU,
+            evolution_trend=EvolutionTrend.STEADY,
+            score=70,
+        )
         recs = engine.recommend_evolution_path()
         assert len(recs) == 1
         assert recs[0]["issue"] == "plateau"
 
     def test_recommend_evolution_path_growth(self, engine):
-        engine.add_record(name="agent-a", evolution_phase=EvolutionPhase.BOOTSTRAP, evolution_trend=EvolutionTrend.ACCELERATING, score=60)
+        engine.add_record(
+            name="agent-a",
+            evolution_phase=EvolutionPhase.BOOTSTRAP,
+            evolution_trend=EvolutionTrend.ACCELERATING,
+            score=60,
+        )
         recs = engine.recommend_evolution_path()
         assert len(recs) == 1
         assert recs[0]["issue"] == "growth_opportunity"

@@ -50,7 +50,9 @@ class TestProcess:
     def test_scale_up_high_pressure(self, engine: CollectorFleetAutoscalerEngine) -> None:
         # pressure = 90*0.4 + 90*0.4 + min(0/1000,1)*20 = 72 — triggers REBALANCE not SCALE_UP
         # need pressure > 80: cpu=100, mem=100 -> 40+40+0=80 still borderline; add queue
-        rec = _add_sample(engine, cpu_utilization=100.0, memory_utilization=100.0, queue_depth=10000)
+        rec = _add_sample(
+            engine, cpu_utilization=100.0, memory_utilization=100.0, queue_depth=10000
+        )
         analysis = engine.process(rec.id)
         assert analysis.scaling_action == ScalingAction.SCALE_UP  # type: ignore[union-attr]
 
@@ -124,12 +126,8 @@ class TestDomainMethods:
     def test_forecast_fleet_capacity_needs_two_samples(
         self, engine: CollectorFleetAutoscalerEngine
     ) -> None:
-        _add_sample(
-            engine, collector_id="growing", throughput_lag_sec=1.0, replica_count=2
-        )
-        _add_sample(
-            engine, collector_id="growing", throughput_lag_sec=10.0, replica_count=2
-        )
+        _add_sample(engine, collector_id="growing", throughput_lag_sec=1.0, replica_count=2)
+        _add_sample(engine, collector_id="growing", throughput_lag_sec=10.0, replica_count=2)
         results = engine.forecast_fleet_capacity()
         assert any(r["collector_id"] == "growing" for r in results)
 

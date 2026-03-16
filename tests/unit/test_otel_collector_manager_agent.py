@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import yaml
 import pytest
+import yaml
 
 from shieldops.agents.otel_collector_manager import create_otel_collector_manager_graph
 from shieldops.agents.otel_collector_manager.models import (
@@ -24,15 +24,14 @@ from shieldops.agents.otel_collector_manager.nodes import (
     generate_config,
     monitor_health,
 )
-from shieldops.agents.otel_collector_manager.runner import OTelCollectorManagerRunner
-from shieldops.agents.otel_collector_manager.tools import OTelCollectorManagerToolkit
 from shieldops.agents.otel_collector_manager.prompts import (
     SYSTEM_ASSESS,
     SYSTEM_DEPLOY,
     SYSTEM_GENERATE,
     SYSTEM_MONITOR,
 )
-
+from shieldops.agents.otel_collector_manager.runner import OTelCollectorManagerRunner
+from shieldops.agents.otel_collector_manager.tools import OTelCollectorManagerToolkit
 
 # ---------------------------------------------------------------------------
 # StrEnum tests

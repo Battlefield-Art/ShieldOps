@@ -15,7 +15,6 @@ from shieldops.agents.otel_semantic.models import (
 )
 from shieldops.agents.otel_semantic.tools import OTelSemanticToolkit
 
-
 # ---------------------------------------------------------------------------
 # Model Tests
 # ---------------------------------------------------------------------------

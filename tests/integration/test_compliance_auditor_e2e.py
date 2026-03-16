@@ -11,7 +11,6 @@ import pytest
 
 from shieldops.agents.compliance_auditor.runner import ComplianceAuditorRunner
 
-
 # ── Helpers ───────────────────────────────────────────────────────────
 
 
@@ -85,9 +84,7 @@ async def test_compliance_auditor_multi_framework():
 async def test_compliance_auditor_all_frameworks():
     """Audit across all five supported frameworks."""
     runner = ComplianceAuditorRunner()
-    result = await runner.run(
-        frameworks=["soc2", "pci_dss", "hipaa", "gdpr", "iso27001"]
-    )
+    result = await runner.run(frameworks=["soc2", "pci_dss", "hipaa", "gdpr", "iso27001"])
 
     report = _get(result, "report", {})
     assert report.get("total_controls") == 25  # 5 controls x 5 frameworks

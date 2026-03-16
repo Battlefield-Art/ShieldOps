@@ -7,31 +7,30 @@ import pytest
 from shieldops.observability.golden_signals_coverage_engine import (
     CoverageStatus,
     GoldenSignal,
+    GoldenSignalsCoverageAnalysis,
     GoldenSignalsCoverageEngine,
     GoldenSignalsCoverageRecord,
-    GoldenSignalsCoverageAnalysis,
     GoldenSignalsCoverageReport,
     SignalQuality,
 )
 from shieldops.observability.metric_aggregation_optimizer_engine import (
     AggregationMethod,
+    MetricAggregationOptimizerAnalysis,
     MetricAggregationOptimizerEngine,
     MetricAggregationOptimizerRecord,
-    MetricAggregationOptimizerAnalysis,
     MetricAggregationOptimizerReport,
     OptimizationOutcome,
     TemporalityType,
 )
 from shieldops.observability.service_level_indicator_engine import (
-    SLIStatus,
-    SLIType,
+    ServiceLevelIndicatorAnalysis,
     ServiceLevelIndicatorEngine,
     ServiceLevelIndicatorRecord,
-    ServiceLevelIndicatorAnalysis,
     ServiceLevelIndicatorReport,
+    SLIStatus,
+    SLIType,
     ValidationResult,
 )
-
 
 # ============================================================================
 # GoldenSignalsCoverageEngine
@@ -85,7 +84,9 @@ class TestGoldenSignalsCoverageEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="latency-check", golden_signal=GoldenSignal.LATENCY, score=80.0, service="api")
+        r = engine.add_record(
+            name="latency-check", golden_signal=GoldenSignal.LATENCY, score=80.0, service="api"
+        )
         assert r.name == "latency-check"
         assert r.golden_signal == GoldenSignal.LATENCY
 
@@ -127,7 +128,9 @@ class TestGoldenSignalsCoverageEngine:
         assert len(engine.list_records(limit=3)) == 3
 
     def test_add_analysis(self, engine):
-        a = engine.add_analysis(name="analysis1", golden_signal=GoldenSignal.TRAFFIC, analysis_score=75.0)
+        a = engine.add_analysis(
+            name="analysis1", golden_signal=GoldenSignal.TRAFFIC, analysis_score=75.0
+        )
         assert a.name == "analysis1"
 
     def test_ring_buffer_records(self, engine):
@@ -164,19 +167,33 @@ class TestGoldenSignalsCoverageEngine:
         assert engine.identify_uncovered_services() == []
 
     def test_recommend_instrumentation_missing(self, engine):
-        engine.add_record(name="m1", coverage_status=CoverageStatus.MISSING, golden_signal=GoldenSignal.SATURATION, service="api")
+        engine.add_record(
+            name="m1",
+            coverage_status=CoverageStatus.MISSING,
+            golden_signal=GoldenSignal.SATURATION,
+            service="api",
+        )
         recs = engine.recommend_instrumentation()
         assert len(recs) == 1
         assert recs[0]["priority"] == "high"
 
     def test_recommend_instrumentation_insufficient(self, engine):
-        engine.add_record(name="m1", coverage_status=CoverageStatus.COVERED, signal_quality=SignalQuality.INSUFFICIENT, service="api")
+        engine.add_record(
+            name="m1",
+            coverage_status=CoverageStatus.COVERED,
+            signal_quality=SignalQuality.INSUFFICIENT,
+            service="api",
+        )
         recs = engine.recommend_instrumentation()
         assert len(recs) == 1
         assert recs[0]["priority"] == "medium"
 
     def test_recommend_instrumentation_empty(self, engine):
-        engine.add_record(name="ok", coverage_status=CoverageStatus.COVERED, signal_quality=SignalQuality.EXCELLENT)
+        engine.add_record(
+            name="ok",
+            coverage_status=CoverageStatus.COVERED,
+            signal_quality=SignalQuality.EXCELLENT,
+        )
         assert engine.recommend_instrumentation() == []
 
     def test_analyze_distribution(self, engine):
@@ -286,7 +303,9 @@ class TestMetricAggregationOptimizerEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="m1", temporality_type=TemporalityType.DELTA, score=70.0, service="api")
+        r = engine.add_record(
+            name="m1", temporality_type=TemporalityType.DELTA, score=70.0, service="api"
+        )
         assert r.temporality_type == TemporalityType.DELTA
 
     def test_get_record(self, engine):
@@ -457,13 +476,17 @@ class TestServiceLevelIndicatorEngine:
         assert len(engine._records) == 100
 
     def test_validate_sli_definitions_valid(self, engine):
-        engine.add_record(name="sli1", validation_result=ValidationResult.VALID, target_value=99.9, service="api")
+        engine.add_record(
+            name="sli1", validation_result=ValidationResult.VALID, target_value=99.9, service="api"
+        )
         results = engine.validate_sli_definitions()
         assert len(results) == 1
         assert results[0]["is_valid"] is True
 
     def test_validate_sli_definitions_misconfigured(self, engine):
-        engine.add_record(name="sli1", validation_result=ValidationResult.MISCONFIGURED, service="api")
+        engine.add_record(
+            name="sli1", validation_result=ValidationResult.MISCONFIGURED, service="api"
+        )
         results = engine.validate_sli_definitions()
         assert results[0]["is_valid"] is False
 
@@ -478,13 +501,25 @@ class TestServiceLevelIndicatorEngine:
         assert not results[0]["is_valid"]
 
     def test_detect_sli_drift(self, engine):
-        engine.add_record(name="sli1", target_value=99.9, actual_value=90.0, sli_status=SLIStatus.BREACHING, service="api")
+        engine.add_record(
+            name="sli1",
+            target_value=99.9,
+            actual_value=90.0,
+            sli_status=SLIStatus.BREACHING,
+            service="api",
+        )
         drifts = engine.detect_sli_drift()
         assert len(drifts) == 1
         assert drifts[0]["drift_pct"] > 5.0
 
     def test_detect_sli_drift_no_drift(self, engine):
-        engine.add_record(name="sli1", target_value=99.9, actual_value=99.8, sli_status=SLIStatus.MEETING, service="api")
+        engine.add_record(
+            name="sli1",
+            target_value=99.9,
+            actual_value=99.8,
+            sli_status=SLIStatus.MEETING,
+            service="api",
+        )
         drifts = engine.detect_sli_drift()
         assert len(drifts) == 0
 
@@ -495,13 +530,20 @@ class TestServiceLevelIndicatorEngine:
         assert recs[0]["priority"] == "high"
 
     def test_recommend_sli_improvements_misconfigured(self, engine):
-        engine.add_record(name="sli1", sli_status=SLIStatus.MEETING, validation_result=ValidationResult.MISCONFIGURED, service="api")
+        engine.add_record(
+            name="sli1",
+            sli_status=SLIStatus.MEETING,
+            validation_result=ValidationResult.MISCONFIGURED,
+            service="api",
+        )
         recs = engine.recommend_sli_improvements()
         assert len(recs) == 1
         assert recs[0]["priority"] == "medium"
 
     def test_recommend_sli_improvements_empty(self, engine):
-        engine.add_record(name="ok", sli_status=SLIStatus.MEETING, validation_result=ValidationResult.VALID)
+        engine.add_record(
+            name="ok", sli_status=SLIStatus.MEETING, validation_result=ValidationResult.VALID
+        )
         assert engine.recommend_sli_improvements() == []
 
     def test_process(self, engine):

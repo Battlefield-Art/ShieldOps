@@ -8,15 +8,12 @@ from shieldops.agents.security_automation.models import (
     AutomationStage,
     ContainmentAction,
     ContainmentResult,
-    LearningOutcome,
     PlaybookCandidate,
     PlaybookMatch,
-    ReasoningStep,
     RiskAlert,
     SecurityAutomationState,
 )
 from shieldops.agents.security_automation.tools import SecurityAutomationToolkit
-
 
 # =====================================================================
 # Enum Tests
@@ -126,9 +123,7 @@ class TestPlaybookCandidate:
 
     def test_confidence_bounds(self) -> None:
         with pytest.raises(ValueError):
-            PlaybookCandidate(
-                playbook_id="pb-1", name="Test", confidence=1.5
-            )
+            PlaybookCandidate(playbook_id="pb-1", name="Test", confidence=1.5)
 
 
 class TestContainmentResult:
@@ -407,9 +402,7 @@ class TestRecordLearning:
     def test_records_rejected_outcome(self) -> None:
         toolkit = SecurityAutomationToolkit()
         alert = _make_alert(entity="h2")
-        playbook = PlaybookCandidate(
-            playbook_id="pb-2", name="Test", confidence=0.5
-        )
+        playbook = PlaybookCandidate(playbook_id="pb-2", name="Test", confidence=0.5)
         results = [
             ContainmentResult(
                 action=ContainmentAction.ISOLATE_HOST,
@@ -454,7 +447,6 @@ class TestTriageAlertsNode:
     @pytest.mark.asyncio
     async def test_triage_filters_and_sorts(self) -> None:
         from shieldops.agents.security_automation.nodes import (
-            _get_toolkit,
             set_toolkit,
             triage_alerts,
         )
@@ -554,9 +546,7 @@ class TestExecuteResponseNode:
         result = await execute_response(state)
         assert len(result["containment_results"]) == 2
         assert all(r.success for r in result["containment_results"])
-        assert all(
-            "DRY RUN" in r.details for r in result["containment_results"]
-        )
+        assert all("DRY RUN" in r.details for r in result["containment_results"])
 
     @pytest.mark.asyncio
     async def test_skips_when_no_playbook(self) -> None:
@@ -586,9 +576,7 @@ class TestValidateAndLearnNode:
         state = SecurityAutomationState(
             request_id="test-7",
             triaged_alerts=[_make_alert(entity="h1")],
-            selected_playbook=PlaybookCandidate(
-                playbook_id="pb-1", name="T", confidence=0.9
-            ),
+            selected_playbook=PlaybookCandidate(playbook_id="pb-1", name="T", confidence=0.9),
             containment_results=[
                 ContainmentResult(
                     action=ContainmentAction.BLOCK_IP,
@@ -614,9 +602,7 @@ class TestValidateAndLearnNode:
         state = SecurityAutomationState(
             request_id="test-8",
             triaged_alerts=[_make_alert(entity="h2")],
-            selected_playbook=PlaybookCandidate(
-                playbook_id="pb-2", name="T", confidence=0.5
-            ),
+            selected_playbook=PlaybookCandidate(playbook_id="pb-2", name="T", confidence=0.5),
             containment_results=[
                 ContainmentResult(
                     action=ContainmentAction.ISOLATE_HOST,
@@ -648,14 +634,9 @@ class TestPrompts:
         )
 
         assert isinstance(SYSTEM_TRIAGE, str) and len(SYSTEM_TRIAGE) > 50
-        assert (
-            isinstance(SYSTEM_SELECT_PLAYBOOK, str)
-            and len(SYSTEM_SELECT_PLAYBOOK) > 50
-        )
+        assert isinstance(SYSTEM_SELECT_PLAYBOOK, str) and len(SYSTEM_SELECT_PLAYBOOK) > 50
         assert isinstance(SYSTEM_EXECUTE, str) and len(SYSTEM_EXECUTE) > 50
-        assert (
-            isinstance(SYSTEM_VALIDATE, str) and len(SYSTEM_VALIDATE) > 50
-        )
+        assert isinstance(SYSTEM_VALIDATE, str) and len(SYSTEM_VALIDATE) > 50
 
     def test_triage_prompt_mentions_rba(self) -> None:
         from shieldops.agents.security_automation.prompts import SYSTEM_TRIAGE

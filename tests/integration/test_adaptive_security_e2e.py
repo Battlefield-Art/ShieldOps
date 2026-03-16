@@ -10,11 +10,9 @@ from __future__ import annotations
 import pytest
 
 from shieldops.agents.adaptive_security.models import (
-    AdaptationStage,
     ThreatContext,
 )
 from shieldops.agents.adaptive_security.runner import AdaptiveSecurityRunner
-
 
 # ── Full Pipeline ─────────────────────────────────────────────────────
 

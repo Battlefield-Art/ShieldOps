@@ -4,24 +4,6 @@ AttackSurfaceContinuousScorerEngine, IncidentAutoClassificationEngine."""
 
 from __future__ import annotations
 
-from shieldops.security.threat_hunt_automation_engine import (
-    HuntOutcome,
-    HuntPriority,
-    HuntTrigger,
-    ThreatHuntAnalysis,
-    ThreatHuntAutomationEngine,
-    ThreatHuntRecord,
-    ThreatHuntReport,
-)
-from shieldops.security.security_playbook_selector_engine import (
-    MatchStrategy,
-    PlaybookCategory,
-    PlaybookSelectorAnalysis,
-    PlaybookSelectorRecord,
-    PlaybookSelectorReport,
-    SecurityPlaybookSelectorEngine,
-    SelectionConfidence,
-)
 from shieldops.security.attack_surface_continuous_scorer_engine import (
     AttackSurfaceAnalysis,
     AttackSurfaceContinuousScorerEngine,
@@ -40,7 +22,24 @@ from shieldops.security.incident_auto_classification_engine import (
     IncidentClassificationRecord,
     IncidentClassificationReport,
 )
-
+from shieldops.security.security_playbook_selector_engine import (
+    MatchStrategy,
+    PlaybookCategory,
+    PlaybookSelectorAnalysis,
+    PlaybookSelectorRecord,
+    PlaybookSelectorReport,
+    SecurityPlaybookSelectorEngine,
+    SelectionConfidence,
+)
+from shieldops.security.threat_hunt_automation_engine import (
+    HuntOutcome,
+    HuntPriority,
+    HuntTrigger,
+    ThreatHuntAnalysis,
+    ThreatHuntAutomationEngine,
+    ThreatHuntRecord,
+    ThreatHuntReport,
+)
 
 # =========================================================================
 # ThreatHuntAutomationEngine
@@ -190,15 +189,18 @@ class TestAutoTriggerHunts:
     def test_no_triggers(self):
         eng = ThreatHuntAutomationEngine()
         eng.add_record(
-            entity_id="e1", risk_score=0.3,
+            entity_id="e1",
+            risk_score=0.3,
             mitre_tactic="T1",
         )
         eng.add_record(
-            entity_id="e1", risk_score=0.3,
+            entity_id="e1",
+            risk_score=0.3,
             mitre_tactic="T2",
         )
         eng.add_record(
-            entity_id="e1", risk_score=0.3,
+            entity_id="e1",
+            risk_score=0.3,
             mitre_tactic="T3",
         )
         results = eng.auto_trigger_hunts()
@@ -209,7 +211,8 @@ class TestCorrelateHuntToRba:
     def test_strong_correlation(self):
         eng = ThreatHuntAutomationEngine()
         eng.add_record(
-            entity_id="e1", risk_score=0.9,
+            entity_id="e1",
+            risk_score=0.9,
             hunt_outcome=HuntOutcome.CONFIRMED_THREAT,
         )
         results = eng.correlate_hunt_to_rba()
@@ -218,7 +221,8 @@ class TestCorrelateHuntToRba:
     def test_weak_correlation(self):
         eng = ThreatHuntAutomationEngine()
         eng.add_record(
-            entity_id="e1", risk_score=0.3,
+            entity_id="e1",
+            risk_score=0.3,
             hunt_outcome=HuntOutcome.FALSE_POSITIVE,
         )
         results = eng.correlate_hunt_to_rba()
@@ -311,7 +315,9 @@ class TestPlaybookProcess:
     def test_high_confidence(self):
         eng = SecurityPlaybookSelectorEngine()
         rec = eng.add_record(
-            playbook_id="pb-1", success_rate=0.9, risk_level=0.8,
+            playbook_id="pb-1",
+            success_rate=0.9,
+            risk_level=0.8,
         )
         result = eng.process(rec.id)
         assert isinstance(result, PlaybookSelectorAnalysis)
@@ -364,7 +370,8 @@ class TestMatchAlertToPlaybook:
             success_rate=0.9,
         )
         results = eng.match_alert_to_playbook(
-            alert_type="brute_force", mitre_tactic="TA0006",
+            alert_type="brute_force",
+            mitre_tactic="TA0006",
         )
         assert results[0]["playbook_id"] == "pb-1"
         assert results[0]["confidence"] == "high"
@@ -372,10 +379,13 @@ class TestMatchAlertToPlaybook:
     def test_no_match(self):
         eng = SecurityPlaybookSelectorEngine()
         eng.add_record(
-            alert_type="malware", playbook_id="pb-1", mitre_tactic="TA0001",
+            alert_type="malware",
+            playbook_id="pb-1",
+            mitre_tactic="TA0001",
         )
         results = eng.match_alert_to_playbook(
-            alert_type="unknown_type", mitre_tactic="TA9999",
+            alert_type="unknown_type",
+            mitre_tactic="TA9999",
         )
         assert results[0]["confidence"] == "no_match"
 
@@ -388,7 +398,8 @@ class TestMatchAlertToPlaybook:
             success_rate=0.6,
         )
         results = eng.match_alert_to_playbook(
-            alert_type="other", mitre_tactic="TA0001",
+            alert_type="other",
+            mitre_tactic="TA0001",
         )
         assert len(results) >= 1
 
@@ -419,7 +430,9 @@ class TestPlaybookGaps:
     def test_no_gap(self):
         eng = SecurityPlaybookSelectorEngine()
         eng.add_record(
-            alert_type="malware", playbook_id="pb-1", risk_level=0.5,
+            alert_type="malware",
+            playbook_id="pb-1",
+            risk_level=0.5,
         )
         gaps = eng.identify_playbook_gaps()
         assert len(gaps) == 0
@@ -502,7 +515,8 @@ class TestSurfaceProcess:
     def test_low_risk(self):
         eng = AttackSurfaceContinuousScorerEngine()
         rec = eng.add_record(
-            exposure_level=ExposureLevel.AIR_GAPPED, risk_score=0.1,
+            exposure_level=ExposureLevel.AIR_GAPPED,
+            risk_score=0.1,
         )
         result = eng.process(rec.id)
         assert isinstance(result, AttackSurfaceAnalysis)
@@ -549,7 +563,8 @@ class TestComputeAttackSurfaceScore:
     def test_critical_grade(self):
         eng = AttackSurfaceContinuousScorerEngine()
         eng.add_record(
-            exposure_level=ExposureLevel.INTERNET_FACING, risk_score=0.9,
+            exposure_level=ExposureLevel.INTERNET_FACING,
+            risk_score=0.9,
         )
         result = eng.compute_attack_surface_score()
         assert result["grade"] == "critical"
@@ -558,7 +573,8 @@ class TestComputeAttackSurfaceScore:
     def test_low_grade(self):
         eng = AttackSurfaceContinuousScorerEngine()
         eng.add_record(
-            exposure_level=ExposureLevel.AIR_GAPPED, risk_score=0.1,
+            exposure_level=ExposureLevel.AIR_GAPPED,
+            risk_score=0.1,
         )
         result = eng.compute_attack_surface_score()
         assert result["grade"] == "low"
@@ -698,9 +714,7 @@ class TestIncidentProcess:
         )
         result = eng.process(rec.id)
         assert isinstance(result, IncidentClassificationAnalysis)
-        assert result.classification_confidence == (
-            ClassificationConfidence.DEFINITIVE
-        )
+        assert result.classification_confidence == (ClassificationConfidence.DEFINITIVE)
 
     def test_possible(self):
         eng = IncidentAutoClassificationEngine()
@@ -711,17 +725,13 @@ class TestIncidentProcess:
         )
         result = eng.process(rec.id)
         assert isinstance(result, IncidentClassificationAnalysis)
-        assert result.classification_confidence == (
-            ClassificationConfidence.POSSIBLE
-        )
+        assert result.classification_confidence == (ClassificationConfidence.POSSIBLE)
 
     def test_unknown(self):
         eng = IncidentAutoClassificationEngine()
         rec = eng.add_record(incident_id="inc-3")
         result = eng.process(rec.id)
-        assert result.classification_confidence == (
-            ClassificationConfidence.UNKNOWN
-        )
+        assert result.classification_confidence == (ClassificationConfidence.UNKNOWN)
 
     def test_not_found(self):
         eng = IncidentAutoClassificationEngine()
@@ -800,13 +810,16 @@ class TestMeasureClassificationAccuracy:
     def test_with_data(self):
         eng = IncidentAutoClassificationEngine()
         eng.add_record(
-            incident_class=IncidentClass.MALWARE, was_correct=True,
+            incident_class=IncidentClass.MALWARE,
+            was_correct=True,
         )
         eng.add_record(
-            incident_class=IncidentClass.MALWARE, was_correct=True,
+            incident_class=IncidentClass.MALWARE,
+            was_correct=True,
         )
         eng.add_record(
-            incident_class=IncidentClass.PHISHING, was_correct=False,
+            incident_class=IncidentClass.PHISHING,
+            was_correct=False,
         )
         result = eng.measure_classification_accuracy()
         assert result["overall_accuracy"] == 66.67

@@ -122,12 +122,16 @@ class TestDomainMethods:
         self, engine: PipelineBackpressureAnalyzerEngine
     ) -> None:
         _add_sample(
-            engine, pipeline_stage=PipelineStage.EXPORTER,
-            queue_depth=9000, queue_capacity=10000,
+            engine,
+            pipeline_stage=PipelineStage.EXPORTER,
+            queue_depth=9000,
+            queue_capacity=10000,
         )
         _add_sample(
-            engine, pipeline_stage=PipelineStage.RECEIVER,
-            queue_depth=100, queue_capacity=10000,
+            engine,
+            pipeline_stage=PipelineStage.RECEIVER,
+            queue_depth=100,
+            queue_capacity=10000,
         )
         results = engine.trace_backpressure_source()
         assert results[0]["avg_queue_fill_pct"] >= results[-1]["avg_queue_fill_pct"]
@@ -135,7 +139,9 @@ class TestDomainMethods:
     def test_measure_queue_drain_rate_deficit_positive(
         self, engine: PipelineBackpressureAnalyzerEngine
     ) -> None:
-        _add_sample(engine, pipeline_id="overfull", fill_rate_per_sec=2000.0, drain_rate_per_sec=500.0)
+        _add_sample(
+            engine, pipeline_id="overfull", fill_rate_per_sec=2000.0, drain_rate_per_sec=500.0
+        )
         results = engine.measure_queue_drain_rate()
         overfull = next(r for r in results if r["pipeline_id"] == "overfull")
         assert overfull["deficit"] > 0
@@ -144,7 +150,9 @@ class TestDomainMethods:
     def test_simulate_load_shed_impact_75pct_relieves(
         self, engine: PipelineBackpressureAnalyzerEngine
     ) -> None:
-        _add_sample(engine, pipeline_id="heavy", fill_rate_per_sec=4000.0, drain_rate_per_sec=1000.0)
+        _add_sample(
+            engine, pipeline_id="heavy", fill_rate_per_sec=4000.0, drain_rate_per_sec=1000.0
+        )
         results = engine.simulate_load_shed_impact()
         heavy = next(r for r in results if r["pipeline_id"] == "heavy")
         assert heavy["scenarios"]["shed_75_pct"]["relieved"] is True
@@ -152,7 +160,9 @@ class TestDomainMethods:
     def test_simulate_25pct_does_not_relieve_heavy_load(
         self, engine: PipelineBackpressureAnalyzerEngine
     ) -> None:
-        _add_sample(engine, pipeline_id="very_heavy", fill_rate_per_sec=4000.0, drain_rate_per_sec=100.0)
+        _add_sample(
+            engine, pipeline_id="very_heavy", fill_rate_per_sec=4000.0, drain_rate_per_sec=100.0
+        )
         results = engine.simulate_load_shed_impact()
         heavy = next(r for r in results if r["pipeline_id"] == "very_heavy")
         assert heavy["scenarios"]["shed_25_pct"]["relieved"] is False

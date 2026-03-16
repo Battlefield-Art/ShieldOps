@@ -4,28 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.security.vulnerability_prioritization_engine import (
-    AssetCriticality,
-    ExploitabilityLevel,
-    RemediationUrgency,
-    VulnerabilityPrioritizationEngine,
-    VulnerabilityPrioritizationRecord,
-    VulnerabilityPrioritizationAnalysis,
-    VulnerabilityPrioritizationReport,
-)
-from shieldops.security.credential_hygiene_engine import (
-    CredentialHygieneEngine,
-    CredentialHygieneRecord,
-    CredentialHygieneAnalysis,
-    CredentialHygieneReport,
-    CredentialType,
-    HygieneStatus,
-    RotationCompliance,
-)
 from shieldops.analytics.agent_decision_quality_engine import (
+    AgentDecisionQualityAnalysis,
     AgentDecisionQualityEngine,
     AgentDecisionQualityRecord,
-    AgentDecisionQualityAnalysis,
     AgentDecisionQualityReport,
     DecisionOutcome,
     DecisionType,
@@ -33,9 +15,9 @@ from shieldops.analytics.agent_decision_quality_engine import (
 )
 from shieldops.analytics.cost_effectiveness_engine import (
     CostCategory,
+    CostEffectivenessAnalysis,
     CostEffectivenessEngine,
     CostEffectivenessRecord,
-    CostEffectivenessAnalysis,
     CostEffectivenessReport,
     EfficiencyQuartile,
     ROIIndicator,
@@ -44,12 +26,29 @@ from shieldops.analytics.operational_maturity_engine import (
     AssessmentConfidence,
     MaturityDomain,
     MaturityLevel,
+    OperationalMaturityAnalysis,
     OperationalMaturityEngine,
     OperationalMaturityRecord,
-    OperationalMaturityAnalysis,
     OperationalMaturityReport,
 )
-
+from shieldops.security.credential_hygiene_engine import (
+    CredentialHygieneAnalysis,
+    CredentialHygieneEngine,
+    CredentialHygieneRecord,
+    CredentialHygieneReport,
+    CredentialType,
+    HygieneStatus,
+    RotationCompliance,
+)
+from shieldops.security.vulnerability_prioritization_engine import (
+    AssetCriticality,
+    ExploitabilityLevel,
+    RemediationUrgency,
+    VulnerabilityPrioritizationAnalysis,
+    VulnerabilityPrioritizationEngine,
+    VulnerabilityPrioritizationRecord,
+    VulnerabilityPrioritizationReport,
+)
 
 # ============================================================================
 # VulnerabilityPrioritizationEngine
@@ -95,7 +94,12 @@ class TestVulnPrioritizationEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="CVE-2024-001", exploitability_level=ExploitabilityLevel.ACTIVE_EXPLOIT, cvss_score=9.8, service="api")
+        r = engine.add_record(
+            name="CVE-2024-001",
+            exploitability_level=ExploitabilityLevel.ACTIVE_EXPLOIT,
+            cvss_score=9.8,
+            service="api",
+        )
         assert r.cvss_score == 9.8
 
     def test_get_record(self, engine):
@@ -127,15 +131,34 @@ class TestVulnPrioritizationEngine:
         assert len(engine._records) == 100
 
     def test_compute_risk_priority_score(self, engine):
-        engine.add_record(name="cve1", exploitability_level=ExploitabilityLevel.ACTIVE_EXPLOIT, asset_criticality=AssetCriticality.CROWN_JEWEL, cvss_score=9.8, service="api")
-        engine.add_record(name="cve2", exploitability_level=ExploitabilityLevel.NONE, asset_criticality=AssetCriticality.DEVELOPMENT, cvss_score=2.0, service="dev")
+        engine.add_record(
+            name="cve1",
+            exploitability_level=ExploitabilityLevel.ACTIVE_EXPLOIT,
+            asset_criticality=AssetCriticality.CROWN_JEWEL,
+            cvss_score=9.8,
+            service="api",
+        )
+        engine.add_record(
+            name="cve2",
+            exploitability_level=ExploitabilityLevel.NONE,
+            asset_criticality=AssetCriticality.DEVELOPMENT,
+            cvss_score=2.0,
+            service="dev",
+        )
         result = engine.compute_risk_priority_score()
         assert len(result) == 2
         assert result[0]["priority_score"] > result[1]["priority_score"]
 
     def test_identify_crown_jewel_vulns(self, engine):
-        engine.add_record(name="cve1", asset_criticality=AssetCriticality.CROWN_JEWEL, cvss_score=9.0, service="db")
-        engine.add_record(name="cve2", asset_criticality=AssetCriticality.STANDARD, cvss_score=5.0, service="api")
+        engine.add_record(
+            name="cve1",
+            asset_criticality=AssetCriticality.CROWN_JEWEL,
+            cvss_score=9.0,
+            service="db",
+        )
+        engine.add_record(
+            name="cve2", asset_criticality=AssetCriticality.STANDARD, cvss_score=5.0, service="api"
+        )
         result = engine.identify_crown_jewel_vulns()
         assert len(result) == 1
         assert result[0]["name"] == "cve1"
@@ -145,19 +168,28 @@ class TestVulnPrioritizationEngine:
         assert engine.identify_crown_jewel_vulns() == []
 
     def test_recommend_remediation_order_active_exploit(self, engine):
-        engine.add_record(name="cve1", exploitability_level=ExploitabilityLevel.ACTIVE_EXPLOIT, service="api")
+        engine.add_record(
+            name="cve1", exploitability_level=ExploitabilityLevel.ACTIVE_EXPLOIT, service="api"
+        )
         recs = engine.recommend_remediation_order()
         assert len(recs) == 1
         assert recs[0]["priority"] == "critical"
 
     def test_recommend_remediation_order_high_cvss(self, engine):
-        engine.add_record(name="cve1", exploitability_level=ExploitabilityLevel.POC_AVAILABLE, cvss_score=9.5, service="api")
+        engine.add_record(
+            name="cve1",
+            exploitability_level=ExploitabilityLevel.POC_AVAILABLE,
+            cvss_score=9.5,
+            service="api",
+        )
         recs = engine.recommend_remediation_order()
         assert len(recs) == 1
         assert recs[0]["priority"] == "high"
 
     def test_recommend_remediation_order_empty(self, engine):
-        engine.add_record(name="cve1", exploitability_level=ExploitabilityLevel.NONE, cvss_score=3.0)
+        engine.add_record(
+            name="cve1", exploitability_level=ExploitabilityLevel.NONE, cvss_score=3.0
+        )
         assert engine.recommend_remediation_order() == []
 
     def test_process(self, engine):
@@ -226,7 +258,12 @@ class TestCredentialHygieneEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="admin-pw", credential_type=CredentialType.PASSWORD, hygiene_status=HygieneStatus.HEALTHY, service="auth")
+        r = engine.add_record(
+            name="admin-pw",
+            credential_type=CredentialType.PASSWORD,
+            hygiene_status=HygieneStatus.HEALTHY,
+            service="auth",
+        )
         assert r.credential_type == CredentialType.PASSWORD
 
     def test_get_record(self, engine):
@@ -258,13 +295,27 @@ class TestCredentialHygieneEngine:
         assert len(engine._records) == 100
 
     def test_compute_credential_health(self, engine):
-        engine.add_record(name="pw1", score=80.0, hygiene_status=HygieneStatus.HEALTHY, rotation_compliance=RotationCompliance.ON_SCHEDULE, mfa_enabled=True, service="auth")
+        engine.add_record(
+            name="pw1",
+            score=80.0,
+            hygiene_status=HygieneStatus.HEALTHY,
+            rotation_compliance=RotationCompliance.ON_SCHEDULE,
+            mfa_enabled=True,
+            service="auth",
+        )
         result = engine.compute_credential_health()
         assert len(result) == 1
         assert result[0]["health_score"] == 80.0
 
     def test_compute_credential_health_expired(self, engine):
-        engine.add_record(name="pw1", score=80.0, hygiene_status=HygieneStatus.EXPIRED, rotation_compliance=RotationCompliance.NEVER_ROTATED, mfa_enabled=False, service="auth")
+        engine.add_record(
+            name="pw1",
+            score=80.0,
+            hygiene_status=HygieneStatus.EXPIRED,
+            rotation_compliance=RotationCompliance.NEVER_ROTATED,
+            mfa_enabled=False,
+            service="auth",
+        )
         result = engine.compute_credential_health()
         assert result[0]["health_score"] == 0.0
         assert "expired" in result[0]["risk_factors"]
@@ -272,24 +323,38 @@ class TestCredentialHygieneEngine:
         assert "no_mfa" in result[0]["risk_factors"]
 
     def test_compute_credential_health_critical(self, engine):
-        engine.add_record(name="pw1", score=80.0, hygiene_status=HygieneStatus.CRITICAL, service="auth")
+        engine.add_record(
+            name="pw1", score=80.0, hygiene_status=HygieneStatus.CRITICAL, service="auth"
+        )
         result = engine.compute_credential_health()
         assert "critical_status" in result[0]["risk_factors"]
 
     def test_compute_credential_health_overdue(self, engine):
-        engine.add_record(name="pw1", score=80.0, rotation_compliance=RotationCompliance.OVERDUE, service="auth")
+        engine.add_record(
+            name="pw1", score=80.0, rotation_compliance=RotationCompliance.OVERDUE, service="auth"
+        )
         result = engine.compute_credential_health()
         assert "overdue_rotation" in result[0]["risk_factors"]
 
     def test_identify_expired_credentials(self, engine):
-        engine.add_record(name="pw1", hygiene_status=HygieneStatus.EXPIRED, days_since_rotation=500, service="auth")
+        engine.add_record(
+            name="pw1",
+            hygiene_status=HygieneStatus.EXPIRED,
+            days_since_rotation=500,
+            service="auth",
+        )
         engine.add_record(name="pw2", hygiene_status=HygieneStatus.HEALTHY, service="api")
         result = engine.identify_expired_credentials()
         assert len(result) == 1
         assert result[0]["name"] == "pw1"
 
     def test_identify_expired_credentials_critical(self, engine):
-        engine.add_record(name="pw1", hygiene_status=HygieneStatus.CRITICAL, days_since_rotation=200, service="auth")
+        engine.add_record(
+            name="pw1",
+            hygiene_status=HygieneStatus.CRITICAL,
+            days_since_rotation=200,
+            service="auth",
+        )
         result = engine.identify_expired_credentials()
         assert len(result) == 1
 
@@ -298,13 +363,25 @@ class TestCredentialHygieneEngine:
         assert engine.identify_expired_credentials() == []
 
     def test_recommend_rotation_schedule(self, engine):
-        engine.add_record(name="key1", credential_type=CredentialType.API_KEY, rotation_compliance=RotationCompliance.OVERDUE, days_since_rotation=400, service="api")
+        engine.add_record(
+            name="key1",
+            credential_type=CredentialType.API_KEY,
+            rotation_compliance=RotationCompliance.OVERDUE,
+            days_since_rotation=400,
+            service="api",
+        )
         recs = engine.recommend_rotation_schedule()
         assert len(recs) == 1
         assert recs[0]["recommended_interval_days"] == 180
 
     def test_recommend_rotation_schedule_never_rotated(self, engine):
-        engine.add_record(name="token1", credential_type=CredentialType.TOKEN, rotation_compliance=RotationCompliance.NEVER_ROTATED, days_since_rotation=100, service="api")
+        engine.add_record(
+            name="token1",
+            credential_type=CredentialType.TOKEN,
+            rotation_compliance=RotationCompliance.NEVER_ROTATED,
+            days_since_rotation=100,
+            service="api",
+        )
         recs = engine.recommend_rotation_schedule()
         assert len(recs) == 1
         assert recs[0]["priority"] == "high"
@@ -378,7 +455,13 @@ class TestDecisionQualityEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="d1", decision_type=DecisionType.REMEDIATE, decision_outcome=DecisionOutcome.CORRECT, score=90.0, service="api")
+        r = engine.add_record(
+            name="d1",
+            decision_type=DecisionType.REMEDIATE,
+            decision_outcome=DecisionOutcome.CORRECT,
+            score=90.0,
+            service="api",
+        )
         assert r.decision_type == DecisionType.REMEDIATE
 
     def test_get_record(self, engine):
@@ -407,9 +490,24 @@ class TestDecisionQualityEngine:
         assert len(engine._records) == 100
 
     def test_compute_decision_accuracy(self, engine):
-        engine.add_record(name="d1", decision_type=DecisionType.INVESTIGATE, decision_outcome=DecisionOutcome.CORRECT, service="api")
-        engine.add_record(name="d2", decision_type=DecisionType.INVESTIGATE, decision_outcome=DecisionOutcome.INCORRECT, service="api")
-        engine.add_record(name="d3", decision_type=DecisionType.INVESTIGATE, decision_outcome=DecisionOutcome.PARTIAL, service="api")
+        engine.add_record(
+            name="d1",
+            decision_type=DecisionType.INVESTIGATE,
+            decision_outcome=DecisionOutcome.CORRECT,
+            service="api",
+        )
+        engine.add_record(
+            name="d2",
+            decision_type=DecisionType.INVESTIGATE,
+            decision_outcome=DecisionOutcome.INCORRECT,
+            service="api",
+        )
+        engine.add_record(
+            name="d3",
+            decision_type=DecisionType.INVESTIGATE,
+            decision_outcome=DecisionOutcome.PARTIAL,
+            service="api",
+        )
         result = engine.compute_decision_accuracy()
         assert len(result) == 1
         assert result[0]["total_decisions"] == 3
@@ -421,13 +519,21 @@ class TestDecisionQualityEngine:
 
     def test_identify_systematic_errors(self, engine):
         for i in range(4):
-            engine.add_record(name=f"d{i}", decision_type=DecisionType.REMEDIATE, decision_outcome=DecisionOutcome.INCORRECT, confidence=0.6, service="api")
+            engine.add_record(
+                name=f"d{i}",
+                decision_type=DecisionType.REMEDIATE,
+                decision_outcome=DecisionOutcome.INCORRECT,
+                confidence=0.6,
+                service="api",
+            )
         result = engine.identify_systematic_errors()
         assert len(result) == 1
         assert result[0]["is_systematic"] is True
 
     def test_identify_systematic_errors_overridden(self, engine):
-        engine.add_record(name="d1", decision_outcome=DecisionOutcome.OVERRIDDEN, confidence=0.5, service="api")
+        engine.add_record(
+            name="d1", decision_outcome=DecisionOutcome.OVERRIDDEN, confidence=0.5, service="api"
+        )
         result = engine.identify_systematic_errors()
         assert len(result) == 1
 
@@ -436,13 +542,17 @@ class TestDecisionQualityEngine:
         assert engine.identify_systematic_errors() == []
 
     def test_recommend_decision_improvements_incorrect(self, engine):
-        engine.add_record(name="d1", decision_outcome=DecisionOutcome.INCORRECT, confidence=0.3, service="api")
+        engine.add_record(
+            name="d1", decision_outcome=DecisionOutcome.INCORRECT, confidence=0.3, service="api"
+        )
         recs = engine.recommend_decision_improvements()
         high_priority = [r for r in recs if r["priority"] == "high"]
         assert len(high_priority) >= 1
 
     def test_recommend_decision_improvements_low_confidence(self, engine):
-        engine.add_record(name="d1", decision_outcome=DecisionOutcome.CORRECT, confidence=0.2, service="api")
+        engine.add_record(
+            name="d1", decision_outcome=DecisionOutcome.CORRECT, confidence=0.2, service="api"
+        )
         recs = engine.recommend_decision_improvements()
         med_priority = [r for r in recs if r["priority"] == "medium"]
         assert len(med_priority) == 1
@@ -516,7 +626,13 @@ class TestCostEffectivenessEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="c1", cost_category=CostCategory.LLM_TOKENS, cost_usd=0.50, time_saved_min=30.0, service="api")
+        r = engine.add_record(
+            name="c1",
+            cost_category=CostCategory.LLM_TOKENS,
+            cost_usd=0.50,
+            time_saved_min=30.0,
+            service="api",
+        )
         assert r.cost_usd == 0.50
 
     def test_get_record(self, engine):
@@ -570,19 +686,30 @@ class TestCostEffectivenessEngine:
         assert result[0]["verdict"] == "not_cost_effective"
 
     def test_identify_cost_optimization_negative_roi(self, engine):
-        engine.add_record(name="c1", roi_indicator=ROIIndicator.NEGATIVE, cost_usd=100.0, service="api")
+        engine.add_record(
+            name="c1", roi_indicator=ROIIndicator.NEGATIVE, cost_usd=100.0, service="api"
+        )
         recs = engine.identify_cost_optimization_opportunities()
         high = [r for r in recs if r["priority"] == "high"]
         assert len(high) == 1
 
     def test_identify_cost_optimization_bottom_quartile(self, engine):
-        engine.add_record(name="c1", efficiency_quartile=EfficiencyQuartile.BOTTOM, roi_indicator=ROIIndicator.NEUTRAL, service="api")
+        engine.add_record(
+            name="c1",
+            efficiency_quartile=EfficiencyQuartile.BOTTOM,
+            roi_indicator=ROIIndicator.NEUTRAL,
+            service="api",
+        )
         recs = engine.identify_cost_optimization_opportunities()
         med = [r for r in recs if r["priority"] == "medium"]
         assert len(med) == 1
 
     def test_identify_cost_optimization_empty(self, engine):
-        engine.add_record(name="ok", roi_indicator=ROIIndicator.POSITIVE, efficiency_quartile=EfficiencyQuartile.TOP)
+        engine.add_record(
+            name="ok",
+            roi_indicator=ROIIndicator.POSITIVE,
+            efficiency_quartile=EfficiencyQuartile.TOP,
+        )
         assert engine.identify_cost_optimization_opportunities() == []
 
     def test_process(self, engine):
@@ -657,7 +784,14 @@ class TestOperationalMaturityEngine:
         assert engine._threshold == 50.0
 
     def test_add_record(self, engine):
-        r = engine.add_record(name="m1", maturity_domain=MaturityDomain.MONITORING, maturity_level=MaturityLevel.DEFINED, score=70.0, service="platform", team="sre")
+        r = engine.add_record(
+            name="m1",
+            maturity_domain=MaturityDomain.MONITORING,
+            maturity_level=MaturityLevel.DEFINED,
+            score=70.0,
+            service="platform",
+            team="sre",
+        )
         assert r.maturity_domain == MaturityDomain.MONITORING
 
     def test_get_record(self, engine):
@@ -689,13 +823,26 @@ class TestOperationalMaturityEngine:
         assert len(engine._records) == 100
 
     def test_compute_maturity_score(self, engine):
-        engine.add_record(name="m1", maturity_domain=MaturityDomain.MONITORING, maturity_level=MaturityLevel.OPTIMIZED, score=90.0, automated_pct=95.0, service="platform")
+        engine.add_record(
+            name="m1",
+            maturity_domain=MaturityDomain.MONITORING,
+            maturity_level=MaturityLevel.OPTIMIZED,
+            score=90.0,
+            automated_pct=95.0,
+            service="platform",
+        )
         result = engine.compute_maturity_score()
         assert len(result) == 1
         assert result[0]["maturity_label"] == "optimized"
 
     def test_compute_maturity_score_ad_hoc(self, engine):
-        engine.add_record(name="m1", maturity_domain=MaturityDomain.INCIDENT_MANAGEMENT, maturity_level=MaturityLevel.AD_HOC, score=10.0, service="platform")
+        engine.add_record(
+            name="m1",
+            maturity_domain=MaturityDomain.INCIDENT_MANAGEMENT,
+            maturity_level=MaturityLevel.AD_HOC,
+            score=10.0,
+            service="platform",
+        )
         result = engine.compute_maturity_score()
         assert result[0]["maturity_label"] == "ad_hoc"
 
@@ -703,14 +850,20 @@ class TestOperationalMaturityEngine:
         assert engine.compute_maturity_score() == []
 
     def test_identify_maturity_gaps(self, engine):
-        engine.add_record(name="m1", maturity_level=MaturityLevel.AD_HOC, score=10.0, team="sre", service="s")
-        engine.add_record(name="m2", maturity_level=MaturityLevel.OPTIMIZED, score=90.0, team="sre", service="s")
+        engine.add_record(
+            name="m1", maturity_level=MaturityLevel.AD_HOC, score=10.0, team="sre", service="s"
+        )
+        engine.add_record(
+            name="m2", maturity_level=MaturityLevel.OPTIMIZED, score=90.0, team="sre", service="s"
+        )
         gaps = engine.identify_maturity_gaps()
         assert len(gaps) == 1
         assert gaps[0]["maturity_level"] == "ad_hoc"
 
     def test_identify_maturity_gaps_repeatable(self, engine):
-        engine.add_record(name="m1", maturity_level=MaturityLevel.REPEATABLE, score=30.0, team="sre", service="s")
+        engine.add_record(
+            name="m1", maturity_level=MaturityLevel.REPEATABLE, score=30.0, team="sre", service="s"
+        )
         gaps = engine.identify_maturity_gaps()
         assert len(gaps) == 1
 
@@ -726,13 +879,21 @@ class TestOperationalMaturityEngine:
         assert high[0]["target_level"] == "repeatable"
 
     def test_recommend_maturity_roadmap_low_automation(self, engine):
-        engine.add_record(name="m1", maturity_level=MaturityLevel.DEFINED, automated_pct=10.0, team="sre", service="s")
+        engine.add_record(
+            name="m1",
+            maturity_level=MaturityLevel.DEFINED,
+            automated_pct=10.0,
+            team="sre",
+            service="s",
+        )
         recs = engine.recommend_maturity_roadmap()
         med = [r for r in recs if r["priority"] == "medium"]
         assert len(med) == 1
 
     def test_recommend_maturity_roadmap_empty(self, engine):
-        engine.add_record(name="ok", maturity_level=MaturityLevel.OPTIMIZED, automated_pct=95.0, team="sre")
+        engine.add_record(
+            name="ok", maturity_level=MaturityLevel.OPTIMIZED, automated_pct=95.0, team="sre"
+        )
         assert engine.recommend_maturity_roadmap() == []
 
     def test_process(self, engine):
@@ -767,7 +928,9 @@ class TestOperationalMaturityEngine:
         assert len(engine._analyses) == 0
 
     def test_get_stats(self, engine):
-        engine.add_record(name="a", maturity_domain=MaturityDomain.SECURITY, service="s1", team="t1")
+        engine.add_record(
+            name="a", maturity_domain=MaturityDomain.SECURITY, service="s1", team="t1"
+        )
         stats = engine.get_stats()
         assert stats["total_records"] == 1
         assert "security" in stats["maturity_domain_distribution"]

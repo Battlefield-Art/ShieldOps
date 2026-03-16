@@ -110,8 +110,7 @@ async def evaluate_proposals(
     confidence = round(accepted_count / total, 4) if total > 0 else 0.0
 
     reasoning_note = (
-        f"Evaluated {total} proposals: {accepted_count} accepted, "
-        f"{total - accepted_count} rejected"
+        f"Evaluated {total} proposals: {accepted_count} accepted, {total - accepted_count} rejected"
     )
 
     # LLM enhancement: deeper evaluation reasoning

@@ -2,36 +2,33 @@
 
 from __future__ import annotations
 
-import pytest
-
 from shieldops.observability.otel_deployment_tracker_engine import (
     ClusterRegion,
     DeploymentPhase,
     DeploymentType,
+    OtelDeploymentTrackerAnalysis,
     OtelDeploymentTrackerEngine,
     OtelDeploymentTrackerRecord,
-    OtelDeploymentTrackerAnalysis,
     OtelDeploymentTrackerReport,
-)
-from shieldops.observability.otel_pipeline_throughput_engine import (
-    BottleneckLocation,
-    SignalType,
-    ThroughputStatus,
-    OtelPipelineThroughputEngine,
-    OtelPipelineThroughputRecord,
-    OtelPipelineThroughputAnalysis,
-    OtelPipelineThroughputReport,
 )
 from shieldops.observability.otel_extension_manager_engine import (
     ExtensionPriority,
     ExtensionStatus,
     ExtensionType,
+    OtelExtensionManagerAnalysis,
     OtelExtensionManagerEngine,
     OtelExtensionManagerRecord,
-    OtelExtensionManagerAnalysis,
     OtelExtensionManagerReport,
 )
-
+from shieldops.observability.otel_pipeline_throughput_engine import (
+    BottleneckLocation,
+    OtelPipelineThroughputAnalysis,
+    OtelPipelineThroughputEngine,
+    OtelPipelineThroughputRecord,
+    OtelPipelineThroughputReport,
+    SignalType,
+    ThroughputStatus,
+)
 
 # ============================================================
 # OtelDeploymentTrackerEngine Tests
@@ -152,15 +149,18 @@ class TestDeploymentTrackerEngine:
 
     def test_track_deployment_health(self):
         self.engine.add_record(
-            name="c1", cluster_region=ClusterRegion.US_EAST,
+            name="c1",
+            cluster_region=ClusterRegion.US_EAST,
             deployment_phase=DeploymentPhase.RUNNING,
         )
         self.engine.add_record(
-            name="c2", cluster_region=ClusterRegion.US_EAST,
+            name="c2",
+            cluster_region=ClusterRegion.US_EAST,
             deployment_phase=DeploymentPhase.FAILED,
         )
         self.engine.add_record(
-            name="c3", cluster_region=ClusterRegion.EU_WEST,
+            name="c3",
+            cluster_region=ClusterRegion.EU_WEST,
             deployment_phase=DeploymentPhase.RUNNING,
         )
         result = self.engine.track_deployment_health()
@@ -175,11 +175,15 @@ class TestDeploymentTrackerEngine:
 
     def test_detect_config_drift_across_clusters(self):
         self.engine.add_record(
-            name="c1", service="api", cluster_region=ClusterRegion.US_EAST,
+            name="c1",
+            service="api",
+            cluster_region=ClusterRegion.US_EAST,
             config_version="v1.0",
         )
         self.engine.add_record(
-            name="c2", service="api", cluster_region=ClusterRegion.EU_WEST,
+            name="c2",
+            service="api",
+            cluster_region=ClusterRegion.EU_WEST,
             config_version="v1.1",
         )
         drifts = self.engine.detect_config_drift_across_clusters()
@@ -188,19 +192,25 @@ class TestDeploymentTrackerEngine:
 
     def test_detect_config_drift_no_drift(self):
         self.engine.add_record(
-            name="c1", service="api", cluster_region=ClusterRegion.US_EAST,
+            name="c1",
+            service="api",
+            cluster_region=ClusterRegion.US_EAST,
             config_version="v1.0",
         )
         self.engine.add_record(
-            name="c2", service="api", cluster_region=ClusterRegion.EU_WEST,
+            name="c2",
+            service="api",
+            cluster_region=ClusterRegion.EU_WEST,
             config_version="v1.0",
         )
         assert len(self.engine.detect_config_drift_across_clusters()) == 0
 
     def test_recommend_deployment_upgrades_failed(self):
         self.engine.add_record(
-            name="c1", deployment_phase=DeploymentPhase.FAILED,
-            service="api", cluster_region=ClusterRegion.US_EAST,
+            name="c1",
+            deployment_phase=DeploymentPhase.FAILED,
+            service="api",
+            cluster_region=ClusterRegion.US_EAST,
         )
         recs = self.engine.recommend_deployment_upgrades()
         assert len(recs) == 1
@@ -208,8 +218,10 @@ class TestDeploymentTrackerEngine:
 
     def test_recommend_deployment_upgrades_degraded(self):
         self.engine.add_record(
-            name="c1", deployment_phase=DeploymentPhase.DEGRADED,
-            service="api", score=80.0,
+            name="c1",
+            deployment_phase=DeploymentPhase.DEGRADED,
+            service="api",
+            score=80.0,
         )
         recs = self.engine.recommend_deployment_upgrades()
         assert len(recs) == 1
@@ -217,8 +229,10 @@ class TestDeploymentTrackerEngine:
 
     def test_recommend_deployment_upgrades_low_score(self):
         self.engine.add_record(
-            name="c1", deployment_phase=DeploymentPhase.RUNNING,
-            service="api", score=20.0,
+            name="c1",
+            deployment_phase=DeploymentPhase.RUNNING,
+            service="api",
+            score=20.0,
         )
         recs = self.engine.recommend_deployment_upgrades()
         assert len(recs) == 1
@@ -341,8 +355,10 @@ class TestPipelineThroughputEngine:
 
     def test_add_record(self):
         r = self.engine.add_record(
-            name="pipeline1", signal_type=SignalType.TRACES,
-            events_per_second=1000.0, score=80.0,
+            name="pipeline1",
+            signal_type=SignalType.TRACES,
+            events_per_second=1000.0,
+            score=80.0,
         )
         assert r.name == "pipeline1"
         assert r.events_per_second == 1000.0
@@ -378,9 +394,11 @@ class TestPipelineThroughputEngine:
 
     def test_identify_throughput_bottlenecks(self):
         self.engine.add_record(
-            name="r1", throughput_status=ThroughputStatus.DROPPING,
+            name="r1",
+            throughput_status=ThroughputStatus.DROPPING,
             bottleneck_location=BottleneckLocation.EXPORTER,
-            signal_type=SignalType.TRACES, drop_rate=15.0,
+            signal_type=SignalType.TRACES,
+            drop_rate=15.0,
         )
         bottlenecks = self.engine.identify_throughput_bottlenecks()
         assert len(bottlenecks) == 1
@@ -389,18 +407,25 @@ class TestPipelineThroughputEngine:
 
     def test_identify_throughput_bottlenecks_empty(self):
         self.engine.add_record(
-            name="r1", throughput_status=ThroughputStatus.NORMAL,
+            name="r1",
+            throughput_status=ThroughputStatus.NORMAL,
         )
         assert len(self.engine.identify_throughput_bottlenecks()) == 0
 
     def test_compute_pipeline_efficiency(self):
         self.engine.add_record(
-            name="r1", service="api", signal_type=SignalType.TRACES,
-            throughput_status=ThroughputStatus.NORMAL, events_per_second=500.0,
+            name="r1",
+            service="api",
+            signal_type=SignalType.TRACES,
+            throughput_status=ThroughputStatus.NORMAL,
+            events_per_second=500.0,
         )
         self.engine.add_record(
-            name="r2", service="api", signal_type=SignalType.TRACES,
-            throughput_status=ThroughputStatus.DROPPING, events_per_second=200.0,
+            name="r2",
+            service="api",
+            signal_type=SignalType.TRACES,
+            throughput_status=ThroughputStatus.DROPPING,
+            events_per_second=200.0,
         )
         result = self.engine.compute_pipeline_efficiency()
         assert len(result) == 1
@@ -409,8 +434,10 @@ class TestPipelineThroughputEngine:
 
     def test_recommend_throughput_improvements_dropping(self):
         self.engine.add_record(
-            name="r1", throughput_status=ThroughputStatus.DROPPING,
-            service="api", drop_rate=5.0,
+            name="r1",
+            throughput_status=ThroughputStatus.DROPPING,
+            service="api",
+            drop_rate=5.0,
         )
         recs = self.engine.recommend_throughput_improvements()
         assert len(recs) == 1
@@ -418,7 +445,8 @@ class TestPipelineThroughputEngine:
 
     def test_recommend_throughput_improvements_backpressured(self):
         self.engine.add_record(
-            name="r1", throughput_status=ThroughputStatus.BACKPRESSURED,
+            name="r1",
+            throughput_status=ThroughputStatus.BACKPRESSURED,
             service="api",
         )
         recs = self.engine.recommend_throughput_improvements()
@@ -427,8 +455,10 @@ class TestPipelineThroughputEngine:
 
     def test_recommend_throughput_improvements_low_score(self):
         self.engine.add_record(
-            name="r1", throughput_status=ThroughputStatus.NORMAL,
-            service="api", score=20.0,
+            name="r1",
+            throughput_status=ThroughputStatus.NORMAL,
+            service="api",
+            score=20.0,
         )
         recs = self.engine.recommend_throughput_improvements()
         assert len(recs) == 1
@@ -534,8 +564,10 @@ class TestExtensionManagerEngine:
 
     def test_add_record(self):
         r = self.engine.add_record(
-            name="health_check_ext", extension_type=ExtensionType.HEALTH_CHECK,
-            port=13133, score=90.0,
+            name="health_check_ext",
+            extension_type=ExtensionType.HEALTH_CHECK,
+            port=13133,
+            score=90.0,
         )
         assert r.port == 13133
 
@@ -570,12 +602,16 @@ class TestExtensionManagerEngine:
 
     def test_audit_extension_coverage(self):
         self.engine.add_record(
-            name="hc", extension_type=ExtensionType.HEALTH_CHECK,
-            extension_status=ExtensionStatus.ENABLED, service="api",
+            name="hc",
+            extension_type=ExtensionType.HEALTH_CHECK,
+            extension_status=ExtensionStatus.ENABLED,
+            service="api",
         )
         self.engine.add_record(
-            name="pp", extension_type=ExtensionType.PPROF,
-            extension_status=ExtensionStatus.DISABLED, service="api",
+            name="pp",
+            extension_type=ExtensionType.PPROF,
+            extension_status=ExtensionStatus.DISABLED,
+            service="api",
         )
         result = self.engine.audit_extension_coverage()
         assert len(result) == 1
@@ -584,9 +620,11 @@ class TestExtensionManagerEngine:
 
     def test_detect_missing_extensions(self):
         self.engine.add_record(
-            name="hc", extension_type=ExtensionType.HEALTH_CHECK,
+            name="hc",
+            extension_type=ExtensionType.HEALTH_CHECK,
             extension_priority=ExtensionPriority.REQUIRED,
-            extension_status=ExtensionStatus.DISABLED, service="api",
+            extension_status=ExtensionStatus.DISABLED,
+            service="api",
         )
         result = self.engine.detect_missing_extensions()
         assert len(result) == 1
@@ -594,15 +632,19 @@ class TestExtensionManagerEngine:
 
     def test_detect_missing_extensions_all_enabled(self):
         self.engine.add_record(
-            name="hc", extension_type=ExtensionType.HEALTH_CHECK,
+            name="hc",
+            extension_type=ExtensionType.HEALTH_CHECK,
             extension_priority=ExtensionPriority.REQUIRED,
-            extension_status=ExtensionStatus.ENABLED, service="api",
+            extension_status=ExtensionStatus.ENABLED,
+            service="api",
         )
         assert len(self.engine.detect_missing_extensions()) == 0
 
     def test_recommend_extension_config_error(self):
         self.engine.add_record(
-            name="ext1", extension_status=ExtensionStatus.ERROR, service="api",
+            name="ext1",
+            extension_status=ExtensionStatus.ERROR,
+            service="api",
         )
         recs = self.engine.recommend_extension_config()
         assert len(recs) == 1
@@ -610,16 +652,22 @@ class TestExtensionManagerEngine:
 
     def test_recommend_extension_config_disabled_required(self):
         self.engine.add_record(
-            name="ext1", extension_status=ExtensionStatus.DISABLED,
-            extension_priority=ExtensionPriority.REQUIRED, service="api", score=80.0,
+            name="ext1",
+            extension_status=ExtensionStatus.DISABLED,
+            extension_priority=ExtensionPriority.REQUIRED,
+            service="api",
+            score=80.0,
         )
         recs = self.engine.recommend_extension_config()
         assert any(r["priority"] == "high" for r in recs)
 
     def test_recommend_extension_config_low_score(self):
         self.engine.add_record(
-            name="ext1", extension_status=ExtensionStatus.ENABLED,
-            extension_priority=ExtensionPriority.OPTIONAL, service="api", score=20.0,
+            name="ext1",
+            extension_status=ExtensionStatus.ENABLED,
+            extension_priority=ExtensionPriority.OPTIONAL,
+            service="api",
+            score=20.0,
         )
         recs = self.engine.recommend_extension_config()
         assert len(recs) == 1

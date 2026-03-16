@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import time
-
 import pytest
 
 from shieldops.agents.compliance_auditor import create_compliance_auditor_graph
@@ -16,7 +14,6 @@ from shieldops.agents.compliance_auditor.models import (
     EvidenceItem,
     ReasoningStep,
 )
-from shieldops.agents.compliance_auditor.tools import ComplianceAuditorToolkit
 from shieldops.agents.compliance_auditor.nodes import (
     analyze_gaps,
     collect_evidence,
@@ -29,7 +26,7 @@ from shieldops.agents.compliance_auditor.prompts import (
     SYSTEM_GENERATE_REPORT,
     SYSTEM_SCAN,
 )
-from shieldops.agents.compliance_auditor.runner import ComplianceAuditorRunner
+from shieldops.agents.compliance_auditor.tools import ComplianceAuditorToolkit
 
 
 class TestComplianceAuditorModels:
@@ -165,8 +162,12 @@ class TestComplianceAuditorToolkit:
         toolkit = ComplianceAuditorToolkit()
         assessments = [
             {"control_id": "C1", "framework": "soc2", "status": "compliant", "gaps": []},
-            {"control_id": "C2", "framework": "soc2", "status": "non_compliant",
-             "gaps": ["Missing encryption"]},
+            {
+                "control_id": "C2",
+                "framework": "soc2",
+                "status": "non_compliant",
+                "gaps": ["Missing encryption"],
+            },
             {"control_id": "C3", "framework": "soc2", "status": "partial", "gaps": []},
             {"control_id": "C4", "framework": "soc2", "status": "not_applicable", "gaps": []},
         ]
@@ -242,8 +243,12 @@ class TestComplianceAuditorNodes:
         state: dict = {
             "controls_assessed": [
                 {"control_id": "C1", "framework": "soc2", "status": "compliant", "gaps": []},
-                {"control_id": "C2", "framework": "soc2", "status": "non_compliant",
-                 "gaps": ["Missing config"]},
+                {
+                    "control_id": "C2",
+                    "framework": "soc2",
+                    "status": "non_compliant",
+                    "gaps": ["Missing config"],
+                },
             ],
             "reasoning_chain": [],
         }

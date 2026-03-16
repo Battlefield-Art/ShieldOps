@@ -95,7 +95,9 @@ class TestGenerateReport:
 
 
 class TestGetStats:
-    def test_coverage_status_distribution_key(self, engine: AutoInstrumentationCoverageEngine) -> None:
+    def test_coverage_status_distribution_key(
+        self, engine: AutoInstrumentationCoverageEngine
+    ) -> None:
         _add_sample(engine)
         stats = engine.get_stats()
         assert "coverage_status_distribution" in stats

@@ -12,15 +12,6 @@ from shieldops.observability.otel_config_generator_engine import (
     PipelineSignal,
     ValidationStatus,
 )
-from shieldops.observability.otel_health_monitor_engine import (
-    AlertSeverity,
-    CollectorStatus,
-    HealthIndicator,
-    OtelHealthMonitorAnalysis,
-    OtelHealthMonitorEngine,
-    OtelHealthMonitorRecord,
-    OtelHealthMonitorReport,
-)
 from shieldops.observability.otel_connector_routing_engine import (
     ConnectorType,
     OtelConnectorRoutingAnalysis,
@@ -30,7 +21,15 @@ from shieldops.observability.otel_connector_routing_engine import (
     RoutingHealth,
     RoutingStrategy,
 )
-
+from shieldops.observability.otel_health_monitor_engine import (
+    AlertSeverity,
+    CollectorStatus,
+    HealthIndicator,
+    OtelHealthMonitorAnalysis,
+    OtelHealthMonitorEngine,
+    OtelHealthMonitorRecord,
+    OtelHealthMonitorReport,
+)
 
 # ============================================================================
 # OtelConfigGeneratorEngine

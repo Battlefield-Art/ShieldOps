@@ -72,8 +72,12 @@ class TestProcess:
         assert analysis.drift_detected is False  # type: ignore[union-attr]
 
     def test_fidelity_score_lossy_lower(self, engine: KafkaOtelBridgeEngine) -> None:
-        rec_exact = _add_sample(engine, bridge_fidelity=BridgeFidelity.EXACT, signal_value_score=100.0)
-        rec_lossy = _add_sample(engine, bridge_fidelity=BridgeFidelity.LOSSY, signal_value_score=100.0)
+        rec_exact = _add_sample(
+            engine, bridge_fidelity=BridgeFidelity.EXACT, signal_value_score=100.0
+        )
+        rec_lossy = _add_sample(
+            engine, bridge_fidelity=BridgeFidelity.LOSSY, signal_value_score=100.0
+        )
         a_exact = engine.process(rec_exact.id)
         a_lossy = engine.process(rec_lossy.id)
         assert a_exact.fidelity_score > a_lossy.fidelity_score  # type: ignore[union-attr]

@@ -3,54 +3,51 @@ continuous improvement, fleet intelligence)."""
 
 from __future__ import annotations
 
-import pytest
-
-from shieldops.security.detection_rule_lifecycle_engine import (
-    RuleLifecyclePhase,
-    RuleQuality,
-    MaintenanceAction,
-    DetectionRuleLifecycleEngine,
-    DetectionRuleLifecycleRecord,
-    DetectionRuleLifecycleAnalysis,
-    DetectionRuleLifecycleReport,
-)
-from shieldops.security.mitre_coverage_tracker_engine import (
-    CoverageLevel,
-    TacticPriority,
-    CoverageChange,
-    MitreCoverageTrackerEngine,
-    MitreCoverageTrackerRecord,
-    MitreCoverageTrackerAnalysis,
-    MitreCoverageTrackerReport,
-)
 from shieldops.analytics.agent_prompt_optimizer_engine import (
-    PromptVariant,
-    OptimizationMetric,
-    PromptStatus,
+    AgentPromptOptimizerAnalysis,
     AgentPromptOptimizerEngine,
     AgentPromptOptimizerRecord,
-    AgentPromptOptimizerAnalysis,
     AgentPromptOptimizerReport,
+    OptimizationMetric,
+    PromptStatus,
+    PromptVariant,
 )
 from shieldops.analytics.continuous_improvement_engine import (
-    ImprovementArea,
-    CyclePhase,
-    ImprovementStatus,
+    ContinuousImprovementAnalysis,
     ContinuousImprovementEngine,
     ContinuousImprovementRecord,
-    ContinuousImprovementAnalysis,
     ContinuousImprovementReport,
+    CyclePhase,
+    ImprovementArea,
+    ImprovementStatus,
 )
 from shieldops.analytics.fleet_intelligence_engine import (
-    FleetMetric,
     FleetHealth,
-    StrategicInsight,
+    FleetIntelligenceAnalysis,
     FleetIntelligenceEngine,
     FleetIntelligenceRecord,
-    FleetIntelligenceAnalysis,
     FleetIntelligenceReport,
+    FleetMetric,
+    StrategicInsight,
 )
-
+from shieldops.security.detection_rule_lifecycle_engine import (
+    DetectionRuleLifecycleAnalysis,
+    DetectionRuleLifecycleEngine,
+    DetectionRuleLifecycleRecord,
+    DetectionRuleLifecycleReport,
+    MaintenanceAction,
+    RuleLifecyclePhase,
+    RuleQuality,
+)
+from shieldops.security.mitre_coverage_tracker_engine import (
+    CoverageChange,
+    CoverageLevel,
+    MitreCoverageTrackerAnalysis,
+    MitreCoverageTrackerEngine,
+    MitreCoverageTrackerRecord,
+    MitreCoverageTrackerReport,
+    TacticPriority,
+)
 
 # =============================================================================
 # DetectionRuleLifecycleEngine Tests
@@ -909,8 +906,6 @@ class TestFleetIntelligenceEngine:
         assert len(gaps) == 1
 
     def test_analyze_distribution(self):
-        self.engine.add_record(
-            name="a", fleet_metric=FleetMetric.TOTAL_INVOCATIONS, score=80.0
-        )
+        self.engine.add_record(name="a", fleet_metric=FleetMetric.TOTAL_INVOCATIONS, score=80.0)
         dist = self.engine.analyze_distribution()
         assert "total_invocations" in dist

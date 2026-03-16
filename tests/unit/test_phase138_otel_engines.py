@@ -2,36 +2,33 @@
 
 from __future__ import annotations
 
-import pytest
-
+from shieldops.observability.otel_batch_processor_engine import (
+    BatchStatus,
+    OtelBatchProcessorAnalysis,
+    OtelBatchProcessorEngine,
+    OtelBatchProcessorRecord,
+    OtelBatchProcessorReport,
+    QueuePressure,
+    TuningAction,
+)
+from shieldops.observability.otel_exporter_reliability_engine import (
+    BackendType,
+    ExporterHealth,
+    OtelExporterReliabilityAnalysis,
+    OtelExporterReliabilityEngine,
+    OtelExporterReliabilityRecord,
+    OtelExporterReliabilityReport,
+    RetryOutcome,
+)
 from shieldops.observability.tail_sampling_policy_engine import (
     PolicyDecision,
     PolicyEffectiveness,
     SamplingCriteria,
+    TailSamplingPolicyAnalysis,
     TailSamplingPolicyEngine,
     TailSamplingPolicyRecord,
-    TailSamplingPolicyAnalysis,
     TailSamplingPolicyReport,
 )
-from shieldops.observability.otel_batch_processor_engine import (
-    BatchStatus,
-    QueuePressure,
-    TuningAction,
-    OtelBatchProcessorEngine,
-    OtelBatchProcessorRecord,
-    OtelBatchProcessorAnalysis,
-    OtelBatchProcessorReport,
-)
-from shieldops.observability.otel_exporter_reliability_engine import (
-    ExporterHealth,
-    RetryOutcome,
-    BackendType,
-    OtelExporterReliabilityEngine,
-    OtelExporterReliabilityRecord,
-    OtelExporterReliabilityAnalysis,
-    OtelExporterReliabilityReport,
-)
-
 
 # =============================================================================
 # TailSamplingPolicyEngine Tests
@@ -132,12 +129,8 @@ class TestTailSamplingPolicyEngine:
         assert engine._records[0].name == "p5"
 
     def test_evaluate_policy_effectiveness(self):
-        self.engine.add_record(
-            name="policy-x", score=80.0, spans_evaluated=1000, spans_sampled=100
-        )
-        self.engine.add_record(
-            name="policy-x", score=60.0, spans_evaluated=2000, spans_sampled=200
-        )
+        self.engine.add_record(name="policy-x", score=80.0, spans_evaluated=1000, spans_sampled=100)
+        self.engine.add_record(name="policy-x", score=60.0, spans_evaluated=2000, spans_sampled=200)
         results = self.engine.evaluate_policy_effectiveness()
         assert len(results) == 1
         assert results[0]["policy_name"] == "policy-x"

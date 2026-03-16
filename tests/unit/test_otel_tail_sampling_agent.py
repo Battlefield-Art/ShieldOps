@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
-import yaml
 import pytest
+import yaml
 
+from shieldops.agents.otel_tail_sampling.graph import (
+    _should_apply,
+    build_graph,
+    create_otel_tail_sampling_graph,
+)
 from shieldops.agents.otel_tail_sampling.models import (
     OTelTailSamplingState,
     PolicyType,
@@ -14,24 +19,19 @@ from shieldops.agents.otel_tail_sampling.models import (
     SimulationResult,
     TraceProfile,
 )
-from shieldops.agents.otel_tail_sampling.tools import OTelTailSamplingToolkit
 from shieldops.agents.otel_tail_sampling.nodes import (
     analyze_traces,
     apply_policies,
     design_policies,
     simulate_impact,
 )
-from shieldops.agents.otel_tail_sampling.graph import (
-    build_graph,
-    create_otel_tail_sampling_graph,
-    _should_apply,
-)
 from shieldops.agents.otel_tail_sampling.runner import OTelTailSamplingRunner
-
+from shieldops.agents.otel_tail_sampling.tools import OTelTailSamplingToolkit
 
 # ---------------------------------------------------------------------------
 # Model tests
 # ---------------------------------------------------------------------------
+
 
 class TestModels:
     def test_sampling_stage_values(self) -> None:
@@ -106,6 +106,7 @@ class TestModels:
 # ---------------------------------------------------------------------------
 # Toolkit tests
 # ---------------------------------------------------------------------------
+
 
 class TestToolkit:
     def setup_method(self) -> None:
@@ -261,6 +262,7 @@ class TestToolkit:
 # Node tests
 # ---------------------------------------------------------------------------
 
+
 class TestNodes:
     def setup_method(self) -> None:
         self.toolkit = OTelTailSamplingToolkit()
@@ -291,9 +293,7 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_simulate_impact_node(self) -> None:
-        profile = TraceProfile(
-            service="svc-x", volume_per_min=10000, error_rate=0.01
-        ).model_dump()
+        profile = TraceProfile(service="svc-x", volume_per_min=10000, error_rate=0.01).model_dump()
         policy = SamplingPolicy(
             name="svc-x-latency",
             policy_type=PolicyType.LATENCY,
@@ -312,9 +312,7 @@ class TestNodes:
 
     @pytest.mark.asyncio
     async def test_apply_policies_node(self) -> None:
-        policy = SamplingPolicy(
-            name="test-pol", policy_type=PolicyType.ERROR
-        ).model_dump()
+        policy = SamplingPolicy(name="test-pol", policy_type=PolicyType.ERROR).model_dump()
         state: dict = {
             "target_namespace": "default",
             "policies": [policy],
@@ -327,6 +325,7 @@ class TestNodes:
 # ---------------------------------------------------------------------------
 # Graph tests
 # ---------------------------------------------------------------------------
+
 
 class TestGraph:
     def test_should_apply_above_threshold(self) -> None:
@@ -352,6 +351,7 @@ class TestGraph:
 # ---------------------------------------------------------------------------
 # Runner tests
 # ---------------------------------------------------------------------------
+
 
 class TestRunner:
     def test_runner_init(self) -> None:

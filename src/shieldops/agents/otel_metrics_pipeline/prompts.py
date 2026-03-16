@@ -7,15 +7,11 @@ class CardinalityOptimizationResult(BaseModel):
     """Structured output from LLM-assisted cardinality optimization."""
 
     summary: str = Field(description="Brief summary of cardinality analysis")
-    high_impact_metrics: list[str] = Field(
-        description="Metrics with highest cardinality impact"
-    )
+    high_impact_metrics: list[str] = Field(description="Metrics with highest cardinality impact")
     drop_recommendations: list[str] = Field(
         description="Metrics recommended for dropping or aggregation"
     )
-    estimated_savings_pct: float = Field(
-        description="Estimated overall storage savings percentage"
-    )
+    estimated_savings_pct: float = Field(description="Estimated overall storage savings percentage")
 
 
 SYSTEM_DISCOVER = """You are an OpenTelemetry metrics pipeline specialist for ShieldOps.

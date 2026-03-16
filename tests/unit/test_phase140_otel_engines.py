@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from shieldops.observability.log_pipeline_quality_engine import (
     LogPipelineQualityEngine,
     LogQualityDimension,
@@ -22,7 +20,6 @@ from shieldops.observability.unified_telemetry_cost_engine import (
     TelemetrySignal,
     UnifiedTelemetryCostEngine,
 )
-
 
 # ============================================================
 # LogPipelineQualityEngine Tests
@@ -123,10 +120,12 @@ class TestLogPipelineQualityEngine:
         assert len(self.engine._analyses) == 1
 
     def test_compute_pipeline_quality_score(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a", score=90.0,
-                               dimension=LogQualityDimension.PARSE_RATE)
-        self.engine.add_record(name="r2", service="svc-a", score=70.0,
-                               dimension=LogQualityDimension.FORMAT_CONSISTENCY)
+        self.engine.add_record(
+            name="r1", service="svc-a", score=90.0, dimension=LogQualityDimension.PARSE_RATE
+        )
+        self.engine.add_record(
+            name="r2", service="svc-a", score=70.0, dimension=LogQualityDimension.FORMAT_CONSISTENCY
+        )
         result = self.engine.compute_pipeline_quality_score()
         assert len(result) == 1
         assert result[0]["service"] == "svc-a"
@@ -138,25 +137,30 @@ class TestLogPipelineQualityEngine:
         assert result[0]["grade"] == "excellent"
 
     def test_identify_parsing_failures(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               issue=PipelineIssue.PARSE_FAILURE, failure_rate=0.6)
-        self.engine.add_record(name="r2", service="svc-b",
-                               issue=PipelineIssue.MISSING_FIELDS, failure_rate=0.3)
+        self.engine.add_record(
+            name="r1", service="svc-a", issue=PipelineIssue.PARSE_FAILURE, failure_rate=0.6
+        )
+        self.engine.add_record(
+            name="r2", service="svc-b", issue=PipelineIssue.MISSING_FIELDS, failure_rate=0.3
+        )
         result = self.engine.identify_parsing_failures()
         assert len(result) == 1
         assert result[0]["priority"] == "high"
 
     def test_identify_parsing_failures_priority(self) -> None:
-        self.engine.add_record(name="r1", issue=PipelineIssue.PARSE_FAILURE,
-                               failure_rate=0.1, service="svc")
+        self.engine.add_record(
+            name="r1", issue=PipelineIssue.PARSE_FAILURE, failure_rate=0.1, service="svc"
+        )
         result = self.engine.identify_parsing_failures()
         assert result[0]["priority"] == "low"
 
     def test_recommend_format_standardization(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a", score=20.0,
-                               issue=PipelineIssue.FORMAT_MISMATCH)
-        self.engine.add_record(name="r2", service="svc-a", score=25.0,
-                               issue=PipelineIssue.MISSING_FIELDS)
+        self.engine.add_record(
+            name="r1", service="svc-a", score=20.0, issue=PipelineIssue.FORMAT_MISMATCH
+        )
+        self.engine.add_record(
+            name="r2", service="svc-a", score=25.0, issue=PipelineIssue.MISSING_FIELDS
+        )
         result = self.engine.recommend_format_standardization()
         assert len(result) == 1
         assert result[0]["priority"] == "high"
@@ -318,30 +322,34 @@ class TestTraceLogCorrelationQualityEngine:
         assert result[0]["coverage_grade"] == "poor"
 
     def test_identify_correlation_gaps(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               status=InstrumentationStatus.MISSING,
-                               gap=CorrelationGap.NO_TRACE_ID, correlation_pct=10.0)
+        self.engine.add_record(
+            name="r1",
+            service="svc-a",
+            status=InstrumentationStatus.MISSING,
+            gap=CorrelationGap.NO_TRACE_ID,
+            correlation_pct=10.0,
+        )
         result = self.engine.identify_correlation_gaps()
         assert len(result) == 1
         assert result[0]["service"] == "svc-a"
 
     def test_identify_correlation_gaps_empty(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               status=InstrumentationStatus.AUTO, correlation_pct=90.0)
+        self.engine.add_record(
+            name="r1", service="svc-a", status=InstrumentationStatus.AUTO, correlation_pct=90.0
+        )
         result = self.engine.identify_correlation_gaps()
         assert len(result) == 0
 
     def test_recommend_instrumentation_changes(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               status=InstrumentationStatus.MISSING)
+        self.engine.add_record(name="r1", service="svc-a", status=InstrumentationStatus.MISSING)
         result = self.engine.recommend_instrumentation_changes()
         assert len(result) >= 1
         assert result[0]["priority"] == "high"
 
     def test_recommend_instrumentation_changes_manual(self) -> None:
-        self.engine.add_record(name="r1", service="svc-b",
-                               status=InstrumentationStatus.MANUAL,
-                               correlation_pct=40.0)
+        self.engine.add_record(
+            name="r1", service="svc-b", status=InstrumentationStatus.MANUAL, correlation_pct=40.0
+        )
         result = self.engine.recommend_instrumentation_changes()
         assert any(r["issue"] == "low_manual_correlation" for r in result)
 
@@ -473,46 +481,57 @@ class TestUnifiedTelemetryCostEngine:
         assert a.analysis_score == 80.0
 
     def test_compute_cost_by_signal(self) -> None:
-        self.engine.add_record(name="r1", signal=TelemetrySignal.TRACES,
-                               cost_usd=100.0, service="svc")
-        self.engine.add_record(name="r2", signal=TelemetrySignal.LOGS,
-                               cost_usd=200.0, service="svc")
+        self.engine.add_record(
+            name="r1", signal=TelemetrySignal.TRACES, cost_usd=100.0, service="svc"
+        )
+        self.engine.add_record(
+            name="r2", signal=TelemetrySignal.LOGS, cost_usd=200.0, service="svc"
+        )
         result = self.engine.compute_cost_by_signal()
         assert len(result) == 2
         assert result[0]["total_cost_usd"] == 200.0  # logs first (higher)
 
     def test_compute_cost_by_signal_pct(self) -> None:
-        self.engine.add_record(name="r1", signal=TelemetrySignal.TRACES,
-                               cost_usd=50.0, service="svc")
-        self.engine.add_record(name="r2", signal=TelemetrySignal.TRACES,
-                               cost_usd=50.0, service="svc")
+        self.engine.add_record(
+            name="r1", signal=TelemetrySignal.TRACES, cost_usd=50.0, service="svc"
+        )
+        self.engine.add_record(
+            name="r2", signal=TelemetrySignal.TRACES, cost_usd=50.0, service="svc"
+        )
         result = self.engine.compute_cost_by_signal()
         assert result[0]["pct_of_total"] == 100.0
 
     def test_identify_cost_drivers(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a", driver=CostDriver.VOLUME,
-                               cost_usd=1500.0, volume_gb=500.0)
+        self.engine.add_record(
+            name="r1", service="svc-a", driver=CostDriver.VOLUME, cost_usd=1500.0, volume_gb=500.0
+        )
         result = self.engine.identify_cost_drivers()
         assert len(result) == 1
         assert result[0]["priority"] == "high"
 
     def test_identify_cost_drivers_low(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a", driver=CostDriver.VOLUME,
-                               cost_usd=10.0, volume_gb=5.0)
+        self.engine.add_record(
+            name="r1", service="svc-a", driver=CostDriver.VOLUME, cost_usd=10.0, volume_gb=5.0
+        )
         result = self.engine.identify_cost_drivers()
         assert result[0]["priority"] == "low"
 
     def test_recommend_cost_optimizations(self) -> None:
-        self.engine.add_record(name="r1", service="svc-a",
-                               trend=CostTrend.INCREASING, cost_usd=500.0)
+        self.engine.add_record(
+            name="r1", service="svc-a", trend=CostTrend.INCREASING, cost_usd=500.0
+        )
         result = self.engine.recommend_cost_optimizations()
         assert len(result) >= 1
         assert result[0]["priority"] == "high"
 
     def test_recommend_cost_optimizations_volume(self) -> None:
-        self.engine.add_record(name="r1", service="svc-b",
-                               driver=CostDriver.VOLUME, volume_gb=200.0,
-                               trend=CostTrend.STABLE)
+        self.engine.add_record(
+            name="r1",
+            service="svc-b",
+            driver=CostDriver.VOLUME,
+            volume_gb=200.0,
+            trend=CostTrend.STABLE,
+        )
         result = self.engine.recommend_cost_optimizations()
         assert any(r["issue"] == "high_volume" for r in result)
 

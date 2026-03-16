@@ -111,13 +111,17 @@ class TestDomainMethods:
         self, engine: TelemetryFanoutRouterEngine
     ) -> None:
         _add_sample(
-            engine, route_id="inefficient",
-            destination_count=4, delivered_count=2,
+            engine,
+            route_id="inefficient",
+            destination_count=4,
+            delivered_count=2,
             asymmetry_score=0.5,
         )
         _add_sample(
-            engine, route_id="efficient",
-            destination_count=4, delivered_count=4,
+            engine,
+            route_id="efficient",
+            destination_count=4,
+            delivered_count=4,
             asymmetry_score=0.0,
         )
         results = engine.evaluate_fanout_efficiency()
@@ -135,8 +139,11 @@ class TestDomainMethods:
         self, engine: TelemetryFanoutRouterEngine
     ) -> None:
         _add_sample(
-            engine, route_id="skewed", asymmetry_score=0.5,
-            destination_count=2, delivered_count=2,
+            engine,
+            route_id="skewed",
+            asymmetry_score=0.5,
+            destination_count=2,
+            delivered_count=2,
         )
         results = engine.optimize_routing_rules()
         skewed = next((r for r in results if r["route_id"] == "skewed"), None)
