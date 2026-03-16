@@ -9,7 +9,9 @@ from shieldops.agents.soar_orchestration.models import (
     SOAROrchestrationState,
     SOARReasoningStep,
 )
+from shieldops.agents.soar_orchestration.prompts import SYSTEM_TRIAGE, TriageOutput
 from shieldops.agents.soar_orchestration.tools import SOAROrchestrationToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -33,6 +35,31 @@ async def triage_incident(state: SOAROrchestrationState) -> dict[str, Any]:
     toolkit = _get_toolkit()
 
     await toolkit.record_metric("triage_incident", 1.0)
+
+    # LLM enhancement: deeper incident triage classification
+    try:
+        import json as _json
+
+        triage_context = _json.dumps(
+            {
+                "session_id": state.session_id,
+                "orchestration_config": getattr(state, "orchestration_config", {}),
+                "current_step": state.current_step,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_TRIAGE,
+            user_prompt=f"SOAR triage context:\n{triage_context}",
+            schema=TriageOutput,
+        )
+        logger.info(
+            "llm_enhanced",
+            node="triage_incident",
+            severity=getattr(llm_result, "severity", "unknown"),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="triage_incident")
 
     step = SOARReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

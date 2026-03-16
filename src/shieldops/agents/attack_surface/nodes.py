@@ -11,7 +11,9 @@ from shieldops.agents.attack_surface.models import (
     ExposureFinding,
     SurfaceReasoningStep,
 )
+from shieldops.agents.attack_surface.prompts import SYSTEM_ANALYZE, ExposureAnalysisOutput
 from shieldops.agents.attack_surface.tools import AttackSurfaceToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -81,6 +83,34 @@ async def analyze_exposures(state: AttackSurfaceState) -> dict[str, Any]:
 
     risk_scores = [a.risk_score for a in state.discovered_assets]
     avg_risk = round(sum(risk_scores) / len(risk_scores), 2) if risk_scores else 0.0
+
+    # LLM enhancement: deeper exposure analysis
+    try:
+        import json as _json
+
+        exposure_context = _json.dumps(
+            {
+                "scan_id": state.scan_id,
+                "assets": asset_dicts[:15],
+                "findings_count": len(findings),
+                "avg_risk": avg_risk,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_ANALYZE,
+            user_prompt=f"Exposure analysis context:\n{exposure_context}",
+            schema=ExposureAnalysisOutput,
+        )
+        if hasattr(llm_result, "risk_score") and llm_result.risk_score > 0:
+            avg_risk = round((avg_risk + llm_result.risk_score) / 2, 2)
+        logger.info(
+            "llm_enhanced",
+            node="analyze_exposures",
+            llm_risk=getattr(llm_result, "risk_score", 0.0),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="analyze_exposures")
 
     step = SurfaceReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

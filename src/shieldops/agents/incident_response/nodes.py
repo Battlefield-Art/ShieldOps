@@ -12,7 +12,9 @@ from shieldops.agents.incident_response.models import (
     RecoveryTask,
     ResponseReasoningStep,
 )
+from shieldops.agents.incident_response.prompts import SYSTEM_ASSESS, AssessmentOutput
 from shieldops.agents.incident_response.tools import IncidentResponseToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -42,6 +44,34 @@ async def assess_incident(state: IncidentResponseState) -> dict[str, Any]:
     assessment_score = float(severity_scores.get(severity_input, 50))
 
     incident_type = incident_data.get("type", "unknown")
+
+    # LLM enhancement: deeper incident assessment reasoning
+    try:
+        import json as _json
+
+        assess_context = _json.dumps(
+            {
+                "incident_id": state.incident_id,
+                "incident_data": incident_data,
+                "severity_input": severity_input,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_ASSESS,
+            user_prompt=f"Incident assessment context:\n{assess_context}",
+            schema=AssessmentOutput,
+        )
+        if hasattr(llm_result, "incident_type"):
+            incident_type = getattr(llm_result, "incident_type", incident_type)
+            assessment_score = getattr(llm_result, "assessment_score", assessment_score)
+        logger.info(
+            "llm_enhanced",
+            node="assess_incident",
+            llm_severity=getattr(llm_result, "severity", "unknown"),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="assess_incident")
 
     step = ResponseReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

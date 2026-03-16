@@ -1,7 +1,8 @@
 """Node implementations for the IntelligentAutomation Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -9,7 +10,9 @@ from shieldops.agents.intelligent_automation.models import (
     IntelligentAutomationReasoningStep,
     IntelligentAutomationState,
 )
+from shieldops.agents.intelligent_automation.prompts import SYSTEM_EXECUTE, ExecuteOutput
 from shieldops.agents.intelligent_automation.tools import IntelligentAutomationToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -79,11 +82,41 @@ async def execute_automation(state: IntelligentAutomationState) -> dict[str, Any
 
     await toolkit.record_metric("execute_automation", 1.0)
 
+    llm_summary = "Completed execute_automation"
+    try:
+        exec_context = json.dumps(
+            {
+                "current_step": state.current_step,
+                "reasoning_steps": len(state.reasoning_chain),
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ExecuteOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_EXECUTE,
+                user_prompt=f"Automation execution context:\n{exec_context}",
+                schema=ExecuteOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="execute_automation",
+            actions_count=llm_result.actions_count,
+            success_rate=llm_result.success_rate,
+        )
+        llm_summary = (
+            f"Actions: {llm_result.actions_count}, "
+            f"success={llm_result.success_rate:.1f}%. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="execute_automation")
+
     step = IntelligentAutomationReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="execute_automation",
         input_summary="Executing execute_automation",
-        output_summary="Completed execute_automation",
+        output_summary=llm_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="execute_automation",
     )

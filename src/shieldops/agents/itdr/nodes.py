@@ -9,7 +9,9 @@ from shieldops.agents.itdr.models import (
     ITDRReasoningStep,
     ITDRState,
 )
+from shieldops.agents.itdr.prompts import SYSTEM_DETECT, ThreatDetectionOutput
 from shieldops.agents.itdr.tools import ITDRToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -56,6 +58,31 @@ async def detect_threats(state: ITDRState) -> dict[str, Any]:
     toolkit = _get_toolkit()
 
     await toolkit.record_metric("detect_threats", 1.0)
+
+    # LLM enhancement: deeper identity threat detection
+    try:
+        import json as _json
+
+        detect_context = _json.dumps(
+            {
+                "session_id": state.session_id,
+                "detection_config": getattr(state, "detection_config", {}),
+                "current_step": state.current_step,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_DETECT,
+            user_prompt=f"Identity threat detection context:\n{detect_context}",
+            schema=ThreatDetectionOutput,
+        )
+        logger.info(
+            "llm_enhanced",
+            node="detect_threats",
+            threat_count=getattr(llm_result, "threat_count", 0),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="detect_threats")
 
     step = ITDRReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

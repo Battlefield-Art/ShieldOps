@@ -9,7 +9,9 @@ from shieldops.agents.xdr.models import (
     XDRReasoningStep,
     XDRState,
 )
+from shieldops.agents.xdr.prompts import SYSTEM_RESPOND, ResponseOutput
 from shieldops.agents.xdr.tools import XDRToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -56,6 +58,31 @@ async def correlate_threats(state: XDRState) -> dict[str, Any]:
     toolkit = _get_toolkit()
 
     await toolkit.record_metric("correlate_threats", 1.0)
+
+    # LLM enhancement: deeper cross-domain threat correlation
+    try:
+        import json as _json
+
+        correlate_context = _json.dumps(
+            {
+                "session_id": state.session_id,
+                "detection_config": getattr(state, "detection_config", {}),
+                "current_step": state.current_step,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_RESPOND,
+            user_prompt=f"XDR correlation context:\n{correlate_context}",
+            schema=ResponseOutput,
+        )
+        logger.info(
+            "llm_enhanced",
+            node="correlate_threats",
+            actions_count=getattr(llm_result, "actions_count", 0),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="correlate_threats")
 
     step = XDRReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

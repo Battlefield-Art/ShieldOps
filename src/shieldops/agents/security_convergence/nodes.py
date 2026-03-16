@@ -1,7 +1,8 @@
 """Node implementations for the SecurityConvergence Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -9,7 +10,9 @@ from shieldops.agents.security_convergence.models import (
     SecurityConvergenceReasoningStep,
     SecurityConvergenceState,
 )
+from shieldops.agents.security_convergence.prompts import SYSTEM_RESPOND, ResponseOutput
 from shieldops.agents.security_convergence.tools import SecurityConvergenceToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -101,11 +104,41 @@ async def coordinate_response(state: SecurityConvergenceState) -> dict[str, Any]
 
     await toolkit.record_metric("coordinate_response", 1.0)
 
+    llm_summary = "Completed coordinate_response"
+    try:
+        response_context = json.dumps(
+            {
+                "current_step": state.current_step,
+                "reasoning_steps": len(state.reasoning_chain),
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ResponseOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_RESPOND,
+                user_prompt=f"Security convergence context:\n{response_context}",
+                schema=ResponseOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="coordinate_response",
+            actions_count=llm_result.actions_count,
+            success_rate=llm_result.success_rate,
+        )
+        llm_summary = (
+            f"Actions: {llm_result.actions_count}, "
+            f"success={llm_result.success_rate:.1f}%. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="coordinate_response")
+
     step = SecurityConvergenceReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="coordinate_response",
         input_summary="Executing coordinate_response",
-        output_summary="Completed coordinate_response",
+        output_summary=llm_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="coordinate_response",
     )

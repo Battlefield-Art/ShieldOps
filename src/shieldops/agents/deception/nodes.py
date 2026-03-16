@@ -9,7 +9,9 @@ from shieldops.agents.deception.models import (
     DeceptionState,
     ReasoningStep,
 )
+from shieldops.agents.deception.prompts import SYSTEM_BEHAVIOR_ANALYSIS, BehaviorAnalysisOutput
 from shieldops.agents.deception.tools import DeceptionToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -87,6 +89,35 @@ async def analyze_behavior(state: DeceptionState) -> dict[str, Any]:
     toolkit = _get_toolkit()
 
     analysis = await toolkit.analyze_behavior(state.interactions)
+
+    # LLM enhancement: deeper attacker behavior profiling
+    try:
+        import json as _json
+
+        behavior_context = _json.dumps(
+            {
+                "campaign_id": state.campaign_id,
+                "campaign_type": state.campaign_type,
+                "interactions": state.interactions[:20],
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_BEHAVIOR_ANALYSIS,
+            user_prompt=f"Deception interaction context:\n{behavior_context}",
+            schema=BehaviorAnalysisOutput,
+        )
+        if hasattr(llm_result, "sophistication_level"):
+            analysis["sophistication_level"] = llm_result.sophistication_level
+            analysis["llm_techniques"] = getattr(llm_result, "techniques", [])
+            analysis["llm_intent"] = getattr(llm_result, "intent", "unknown")
+        logger.info(
+            "llm_enhanced",
+            node="analyze_behavior",
+            sophistication=getattr(llm_result, "sophistication_level", "unknown"),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="analyze_behavior")
 
     # Determine severity from sophistication
     sophistication = analysis.get("sophistication_level", "unknown")

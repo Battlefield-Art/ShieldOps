@@ -1,7 +1,8 @@
 """Node implementations for the ObservabilityIntelligence Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -9,7 +10,9 @@ from shieldops.agents.observability_intelligence.models import (
     ObservabilityIntelligenceReasoningStep,
     ObservabilityIntelligenceState,
 )
+from shieldops.agents.observability_intelligence.prompts import SYSTEM_ANALYZE, AnalysisOutput
 from shieldops.agents.observability_intelligence.tools import ObservabilityIntelligenceToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -79,11 +82,41 @@ async def analyze_insights(state: ObservabilityIntelligenceState) -> dict[str, A
 
     await toolkit.record_metric("analyze_insights", 1.0)
 
+    llm_summary = "Completed analyze_insights"
+    try:
+        analysis_context = json.dumps(
+            {
+                "current_step": state.current_step,
+                "reasoning_steps": len(state.reasoning_chain),
+            },
+            default=str,
+        )
+        llm_result = cast(
+            AnalysisOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_ANALYZE,
+                user_prompt=f"Observability analysis context:\n{analysis_context}",
+                schema=AnalysisOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="analyze_insights",
+            insight_count=llm_result.insight_count,
+            confidence=llm_result.confidence,
+        )
+        llm_summary = (
+            f"Insights: {llm_result.insight_count}, "
+            f"confidence={llm_result.confidence:.1f}. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="analyze_insights")
+
     step = ObservabilityIntelligenceReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="analyze_insights",
         input_summary="Executing analyze_insights",
-        output_summary="Completed analyze_insights",
+        output_summary=llm_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="analyze_insights",
     )

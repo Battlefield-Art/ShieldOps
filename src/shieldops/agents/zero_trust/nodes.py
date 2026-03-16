@@ -12,7 +12,9 @@ from shieldops.agents.zero_trust.models import (
     ZeroTrustReasoningStep,
     ZeroTrustState,
 )
+from shieldops.agents.zero_trust.prompts import SYSTEM_ENFORCE, PolicyEnforcementOutput
 from shieldops.agents.zero_trust.tools import ZeroTrustToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -116,6 +118,33 @@ async def evaluate_access(state: ZeroTrustState) -> dict[str, Any]:
     evaluations = [AccessEvaluation(**e) for e in raw_evaluations if isinstance(e, dict)]
 
     violations = sum(1 for e in evaluations if e.decision == "deny")
+
+    # LLM enhancement: deeper access policy evaluation
+    try:
+        import json as _json
+
+        access_context = _json.dumps(
+            {
+                "session_id": state.session_id,
+                "identities": identity_dicts[:10],
+                "devices": device_dicts[:10],
+                "evaluations_count": len(evaluations),
+                "violations": violations,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_ENFORCE,
+            user_prompt=f"Zero trust evaluation context:\n{access_context}",
+            schema=PolicyEnforcementOutput,
+        )
+        logger.info(
+            "llm_enhanced",
+            node="evaluate_access",
+            enforced_count=getattr(llm_result, "enforced_count", 0),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="evaluate_access")
 
     step = ZeroTrustReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

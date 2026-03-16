@@ -1,7 +1,8 @@
 """Node implementations for the FinOps Intelligence Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -11,7 +12,9 @@ from shieldops.agents.finops_intelligence.models import (
     FinOpsReasoningStep,
     OptimizationOpportunity,
 )
+from shieldops.agents.finops_intelligence.prompts import SYSTEM_OPTIMIZE, OptimizationOutput
 from shieldops.agents.finops_intelligence.tools import FinOpsIntelligenceToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -83,13 +86,43 @@ async def identify_optimizations(
 
     savings = float(sum(o.estimated_savings for o in opportunities))
 
+    llm_output_summary = (
+        f"Found {len(opportunities)} opportunities, savings_potential=${savings:.2f}"
+    )
+    try:
+        opt_context = json.dumps(
+            {
+                "cost_findings": finding_dicts[:20],
+                "opportunities_count": len(opportunities),
+                "savings_total": savings,
+            },
+            default=str,
+        )
+        llm_result = cast(
+            OptimizationOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_OPTIMIZE,
+                user_prompt=f"FinOps optimization context:\n{opt_context}",
+                schema=OptimizationOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="identify_optimizations",
+            savings_potential=llm_result.savings_potential,
+        )
+        llm_output_summary = (
+            f"Found {len(opportunities)} opportunities, savings_potential=${savings:.2f}. "
+            f"LLM savings estimate=${llm_result.savings_potential:.2f}. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="identify_optimizations")
+
     step = FinOpsReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="identify_optimizations",
         input_summary=f"Analyzing {len(state.cost_findings)} findings",
-        output_summary=(
-            f"Found {len(opportunities)} opportunities, savings_potential=${savings:.2f}"
-        ),
+        output_summary=llm_output_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="optimization_engine",
     )

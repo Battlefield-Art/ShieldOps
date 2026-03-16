@@ -9,7 +9,9 @@ from shieldops.agents.threat_hunter.models import (
     ReasoningStep,
     ThreatHunterState,
 )
+from shieldops.agents.threat_hunter.prompts import SYSTEM_ASSESSMENT, ThreatAssessmentOutput
 from shieldops.agents.threat_hunter.tools import ThreatHunterToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -252,6 +254,35 @@ async def assess_threat(state: ThreatHunterState) -> dict[str, Any]:
         f"severity={severity}, findings={total_findings}, "
         f"correlated={correlated_count}",
     }
+
+    # LLM enhancement: deeper threat assessment reasoning
+    try:
+        import json as _json
+
+        assessment_context = _json.dumps(
+            {
+                "hypothesis": state.hypothesis,
+                "ioc_results": state.ioc_sweep_results[:10],
+                "behavioral_findings": state.behavioral_findings[:10],
+                "mitre_findings": state.mitre_findings[:10],
+                "correlated_count": correlated_count,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_ASSESSMENT,
+            user_prompt=f"Hunt findings context:\n{assessment_context}",
+            schema=ThreatAssessmentOutput,
+        )
+        if hasattr(llm_result, "threat_found"):
+            assessment["summary"] = getattr(llm_result, "summary", assessment["summary"])
+        logger.info(
+            "llm_enhanced",
+            node="assess_threat",
+            llm_severity=getattr(llm_result, "severity", "unknown"),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="assess_threat")
 
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

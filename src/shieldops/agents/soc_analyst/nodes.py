@@ -12,7 +12,9 @@ from shieldops.agents.soc_analyst.models import (
     SOCAnalystState,
     ThreatIntelEnrichment,
 )
+from shieldops.agents.soc_analyst.prompts import SYSTEM_NARRATIVE, AttackNarrativeOutput
 from shieldops.agents.soc_analyst.tools import SOCAnalystToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -149,6 +151,34 @@ async def map_attack_chain(state: SOCAnalystState) -> dict[str, Any]:
                 "severity": event.severity,
             }
         )
+
+    # LLM enhancement: deeper attack chain analysis
+    try:
+        import json as _json
+
+        chain_context = _json.dumps(
+            {
+                "alert_id": state.alert_id,
+                "tier": state.tier,
+                "events": events[:20],
+                "mitre_techniques": mitre_techniques[:10],
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_NARRATIVE,
+            user_prompt=f"Attack chain context:\n{chain_context}",
+            schema=AttackNarrativeOutput,
+        )
+        if hasattr(llm_result, "mitre_techniques") and llm_result.mitre_techniques:
+            mitre_techniques = list({*mitre_techniques, *llm_result.mitre_techniques})
+        logger.info(
+            "llm_enhanced",
+            node="map_attack_chain",
+            severity=getattr(llm_result, "severity", "unknown"),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="map_attack_chain")
 
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,

@@ -1,7 +1,8 @@
 """Node implementations for the Prediction Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 
 import structlog
@@ -13,7 +14,9 @@ from shieldops.agents.prediction.models import (
     PredictionState,
     TrendAnomaly,
 )
+from shieldops.agents.prediction.prompts import SYSTEM_RISK_ASSESSMENT, RiskAssessmentResult
 from shieldops.agents.prediction.tools import PredictionToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -150,11 +153,42 @@ async def assess_risk(state: PredictionState) -> dict[str, Any]:
 
     risk_score = min(anomaly_score + change_score, 1.0)
 
+    llm_risk_factors: list[str] = []
+    try:
+        risk_context = json.dumps(
+            {
+                "anomaly_count": len(state.trend_anomalies),
+                "change_count": len(state.correlated_changes),
+                "anomaly_score": anomaly_score,
+                "change_score": change_score,
+                "high_deviation": high_deviation,
+                "computed_risk": risk_score,
+            },
+            default=str,
+        )
+        llm_result = cast(
+            RiskAssessmentResult,
+            await llm_structured(
+                system_prompt=SYSTEM_RISK_ASSESSMENT,
+                user_prompt=f"Prediction risk assessment context:\n{risk_context}",
+                schema=RiskAssessmentResult,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="assess_risk",
+            overall_risk=llm_result.overall_risk,
+        )
+        llm_risk_factors = llm_result.risk_factors
+    except Exception:
+        logger.warning("llm_fallback", node="assess_risk")
+
     step = {
         "step": "assess_risk",
         "risk_score": risk_score,
         "anomaly_contribution": anomaly_score,
         "change_contribution": change_score,
+        "llm_risk_factors": llm_risk_factors,
         "duration_ms": _elapsed_ms(start),
     }
 

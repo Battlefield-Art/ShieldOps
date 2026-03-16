@@ -1,7 +1,8 @@
 """Node implementations for the ML Governance Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -11,7 +12,9 @@ from shieldops.agents.ml_governance.models import (
     MLGovernanceState,
     ModelAudit,
 )
+from shieldops.agents.ml_governance.prompts import SYSTEM_EVALUATE, FairnessOutput
 from shieldops.agents.ml_governance.tools import MLGovernanceToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -83,11 +86,41 @@ async def evaluate_fairness(state: MLGovernanceState) -> dict[str, Any]:
     risk_scores = [a.compliance_score for a in state.model_audits]
     avg_risk = round(sum(risk_scores) / len(risk_scores), 2) if risk_scores else 0.0
 
+    llm_output_summary = f"Found {len(findings)} findings, avg compliance={avg_risk}"
+    try:
+        eval_context = json.dumps(
+            {
+                "model_audits": audit_dicts[:20],
+                "findings_count": len(findings),
+                "avg_compliance": avg_risk,
+            },
+            default=str,
+        )
+        llm_result = cast(
+            FairnessOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_EVALUATE,
+                user_prompt=f"ML governance evaluation context:\n{eval_context}",
+                schema=FairnessOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="evaluate_fairness",
+            fairness_score=llm_result.fairness_score,
+        )
+        llm_output_summary = (
+            f"Found {len(findings)} findings, avg compliance={avg_risk}, "
+            f"fairness={llm_result.fairness_score:.1f}. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="evaluate_fairness")
+
     step = GovernanceReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="evaluate_fairness",
         input_summary=f"Evaluating {len(state.model_audits)} model audits",
-        output_summary=f"Found {len(findings)} findings, avg compliance={avg_risk}",
+        output_summary=llm_output_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="fairness_evaluator",
     )

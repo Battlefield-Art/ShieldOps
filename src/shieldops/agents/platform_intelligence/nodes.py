@@ -1,7 +1,8 @@
 """Node implementations for the PlatformIntelligence Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -9,7 +10,9 @@ from shieldops.agents.platform_intelligence.models import (
     PlatformIntelligenceReasoningStep,
     PlatformIntelligenceState,
 )
+from shieldops.agents.platform_intelligence.prompts import SYSTEM_STRATEGY, StrategyOutput
 from shieldops.agents.platform_intelligence.tools import PlatformIntelligenceToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -101,11 +104,41 @@ async def generate_strategy(state: PlatformIntelligenceState) -> dict[str, Any]:
 
     await toolkit.record_metric("generate_strategy", 1.0)
 
+    llm_summary = "Completed generate_strategy"
+    try:
+        strategy_context = json.dumps(
+            {
+                "current_step": state.current_step,
+                "reasoning_steps": len(state.reasoning_chain),
+            },
+            default=str,
+        )
+        llm_result = cast(
+            StrategyOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_STRATEGY,
+                user_prompt=f"Platform intelligence context:\n{strategy_context}",
+                schema=StrategyOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="generate_strategy",
+            actions_count=llm_result.actions_count,
+            confidence=llm_result.confidence,
+        )
+        llm_summary = (
+            f"Actions: {llm_result.actions_count}, "
+            f"confidence={llm_result.confidence:.1f}. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="generate_strategy")
+
     step = PlatformIntelligenceReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="generate_strategy",
         input_summary="Executing generate_strategy",
-        output_summary="Completed generate_strategy",
+        output_summary=llm_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="generate_strategy",
     )

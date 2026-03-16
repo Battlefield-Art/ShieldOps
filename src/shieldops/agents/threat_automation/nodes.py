@@ -1,7 +1,8 @@
 """Node implementations for the Threat Automation Agent LangGraph workflow."""
 
+import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -12,7 +13,9 @@ from shieldops.agents.threat_automation.models import (
     ThreatAutomationState,
     ThreatReasoningStep,
 )
+from shieldops.agents.threat_automation.prompts import SYSTEM_ANALYZE, BehaviorAnalysisOutput
 from shieldops.agents.threat_automation.tools import ThreatAutomationToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -84,11 +87,41 @@ async def analyze_behavior(state: ThreatAutomationState) -> dict[str, Any]:
     raw_analyses = await toolkit.analyze_behaviors(threat_dicts)
     analyses = [BehaviorAnalysis(**a) for a in raw_analyses if isinstance(a, dict)]
 
+    llm_output_summary = f"Completed {len(analyses)} behavior analyses"
+    try:
+        behavior_context = json.dumps(
+            {
+                "detected_threats": threat_dicts[:20],
+                "analyses_count": len(analyses),
+                "critical_count": state.critical_count,
+            },
+            default=str,
+        )
+        llm_result = cast(
+            BehaviorAnalysisOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_ANALYZE,
+                user_prompt=f"Threat behavior analysis context:\n{behavior_context}",
+                schema=BehaviorAnalysisOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            node="analyze_behavior",
+            risk_score=llm_result.risk_score,
+        )
+        llm_output_summary = (
+            f"Completed {len(analyses)} behavior analyses, "
+            f"risk={llm_result.risk_score:.1f}. {llm_result.reasoning}"
+        )
+    except Exception:
+        logger.warning("llm_fallback", node="analyze_behavior")
+
     step = ThreatReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="analyze_behavior",
         input_summary=f"Analyzing behavior for {len(state.detected_threats)} threats",
-        output_summary=f"Completed {len(analyses)} behavior analyses",
+        output_summary=llm_output_summary,
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="behavior_analyzer",
     )

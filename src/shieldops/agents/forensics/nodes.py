@@ -9,7 +9,9 @@ from shieldops.agents.forensics.models import (
     ForensicsState,
     ReasoningStep,
 )
+from shieldops.agents.forensics.prompts import SYSTEM_SYNTHESIS, ForensicSynthesisOutput
 from shieldops.agents.forensics.tools import ForensicsToolkit
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -295,6 +297,36 @@ async def synthesize(state: ForensicsState) -> dict[str, Any]:
         parts.append(f"IOCs extracted: {len(state.extracted_iocs)}")
 
     synthesis = ". ".join(parts)
+
+    # LLM enhancement: deeper forensic synthesis
+    try:
+        import json as _json
+
+        synthesis_context = _json.dumps(
+            {
+                "incident_id": state.incident_id,
+                "memory_findings": state.memory_findings[:10],
+                "disk_findings": state.disk_findings[:10],
+                "network_findings": state.network_findings[:10],
+                "timeline_events": len(state.timeline),
+                "iocs_extracted": len(state.extracted_iocs),
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_SYNTHESIS,
+            user_prompt=f"Forensic evidence context:\n{synthesis_context}",
+            schema=ForensicSynthesisOutput,
+        )
+        if hasattr(llm_result, "summary"):
+            synthesis = getattr(llm_result, "summary", synthesis)
+        logger.info(
+            "llm_enhanced",
+            node="synthesize",
+            confidence=getattr(llm_result, "confidence", 0.0),
+        )
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="synthesize")
 
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
