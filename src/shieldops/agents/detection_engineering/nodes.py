@@ -25,7 +25,7 @@ def _to_dict(state: Any) -> dict[str, Any]:
     """Convert state to dict, handling both dict and Pydantic model inputs."""
     if isinstance(state, BaseModel):
         return state.model_dump()
-    return state
+    return state  # type: ignore[no-any-return]
 
 
 async def assess_coverage(
@@ -80,8 +80,8 @@ async def create_rules(
                 "rules_created": len(rules),
                 "gaps_summary": [
                     {
-                        "technique_id": g.technique_id,
-                        "technique_name": g.technique_name,
+                        "technique_id": g.technique_id,  # type: ignore[attr-defined]
+                        "technique_name": g.technique_name,  # type: ignore[attr-defined]
                         "current_coverage": g.current_coverage,
                     }
                     for g in gaps[:20]

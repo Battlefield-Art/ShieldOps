@@ -84,7 +84,7 @@ class SecurityAutomationRunner:
 
         try:
             final_state_dict = await self._app.ainvoke(
-                initial_state.model_dump(),
+                initial_state.model_dump(),  # type: ignore[arg-type]
                 config={
                     "metadata": {
                         "request_id": request_id,

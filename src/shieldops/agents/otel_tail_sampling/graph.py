@@ -30,13 +30,13 @@ def _should_apply(state: Any) -> str:
     return "end"
 
 
-def build_graph(toolkit: OTelTailSamplingToolkit) -> StateGraph:
+def build_graph(toolkit: OTelTailSamplingToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the OTel Tail Sampling agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return state
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
     async def _analyze(state: Any) -> dict[str, Any]:
         return await analyze_traces(_to_dict(state), toolkit)
@@ -72,7 +72,7 @@ def build_graph(toolkit: OTelTailSamplingToolkit) -> StateGraph:
 def create_otel_tail_sampling_graph(
     k8s_client: Any | None = None,
     repository: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create and return the OTel Tail Sampling graph.
 
     This is the main public entry point exported from __init__.py.

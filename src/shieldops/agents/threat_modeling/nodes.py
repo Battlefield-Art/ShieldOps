@@ -41,7 +41,7 @@ def _to_dict(state: Any) -> dict[str, Any]:
     """Convert state to dict, handling both dict and Pydantic model inputs."""
     if isinstance(state, BaseModel):
         return state.model_dump()
-    return state
+    return state  # type: ignore[no-any-return]
 
 
 async def discover_architecture(
@@ -90,7 +90,7 @@ async def analyze_threats(state: dict[str, Any], toolkit: ThreatModelingToolkit)
                 ],
                 "threats_summary": [
                     {
-                        "name": t.name,
+                        "name": t.name,  # type: ignore[attr-defined]
                         "stride_category": t.stride_category,
                         "risk_score": t.risk_score,
                     }

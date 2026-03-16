@@ -219,7 +219,7 @@ class ResourceBudgetTrackerEngine:
 
     def identify_over_budget_consumers(self) -> list[dict[str, Any]]:
         """Find consumers exceeding their budgets."""
-        consumer_data: dict[str, dict[str, float]] = {}
+        consumer_data: dict[str, dict[str, Any]] = {}
         for r in self._records:
             cid = r.consumer_id
             if cid not in consumer_data:

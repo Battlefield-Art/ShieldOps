@@ -29,7 +29,7 @@ def should_continue(state: dict[str, Any]) -> str:
     return "end"  # Single pass by default; multi-pass via runner loop
 
 
-def build_graph(toolkit: AutoLearningToolkit) -> StateGraph:
+def build_graph(toolkit: AutoLearningToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Auto Learning agent graph."""
 
     async def _assess(state: dict[str, Any]) -> dict[str, Any]:
@@ -45,10 +45,10 @@ def build_graph(toolkit: AutoLearningToolkit) -> StateGraph:
         return await evaluate_and_decide(state, toolkit)
 
     graph = StateGraph(AutoLearningState)
-    graph.add_node("assess", _assess)
-    graph.add_node("propose", _propose)
-    graph.add_node("experiment", _experiment)
-    graph.add_node("evaluate", _evaluate)
+    graph.add_node("assess", _assess)  # type: ignore[type-var]
+    graph.add_node("propose", _propose)  # type: ignore[type-var]
+    graph.add_node("experiment", _experiment)  # type: ignore[type-var]
+    graph.add_node("evaluate", _evaluate)  # type: ignore[type-var]
 
     graph.set_entry_point("assess")
     graph.add_edge("assess", "propose")

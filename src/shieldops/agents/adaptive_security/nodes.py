@@ -24,7 +24,7 @@ def _to_dict(state: Any) -> dict[str, Any]:
     """Convert state to dict, handling both dict and Pydantic model inputs."""
     if isinstance(state, BaseModel):
         return state.model_dump()
-    return state
+    return state  # type: ignore[no-any-return]
 
 
 async def compute_baseline(
@@ -124,7 +124,7 @@ async def evaluate_proposals(
                 "accepted": accepted_count,
                 "rejected": total - accepted_count,
                 "proposals_summary": [
-                    {"metric": p.metric_name, "old": p.current_value, "new": p.proposed_value}
+                    {"metric": p.metric_name, "old": p.current_value, "new": p.proposed_value}  # type: ignore[attr-defined]
                     for p in proposals[:20]
                 ],
             },

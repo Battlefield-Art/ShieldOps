@@ -16,7 +16,7 @@ from .nodes import (
 from .tools import RiskScoringToolkit
 
 
-def build_graph(toolkit: RiskScoringToolkit) -> StateGraph:
+def build_graph(toolkit: RiskScoringToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Risk Scoring agent graph."""
 
     async def _collect(state: dict[str, Any]) -> dict[str, Any]:
@@ -32,10 +32,10 @@ def build_graph(toolkit: RiskScoringToolkit) -> StateGraph:
         return await decide_actions(state, toolkit)
 
     graph = StateGraph(RiskScoringState)
-    graph.add_node("collect", _collect)
-    graph.add_node("enrich", _enrich)
-    graph.add_node("aggregate", _aggregate)
-    graph.add_node("decide", _decide)
+    graph.add_node("collect", _collect)  # type: ignore[type-var]
+    graph.add_node("enrich", _enrich)  # type: ignore[type-var]
+    graph.add_node("aggregate", _aggregate)  # type: ignore[type-var]
+    graph.add_node("decide", _decide)  # type: ignore[type-var]
 
     graph.set_entry_point("collect")
     graph.add_edge("collect", "enrich")

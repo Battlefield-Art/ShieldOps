@@ -43,7 +43,7 @@ def _to_dict(state: Any) -> dict[str, Any]:
     """Convert state to dict, handling both dict and Pydantic model inputs."""
     if isinstance(state, BaseModel):
         return state.model_dump()
-    return state
+    return state  # type: ignore[no-any-return]
 
 
 async def intake_and_classify(

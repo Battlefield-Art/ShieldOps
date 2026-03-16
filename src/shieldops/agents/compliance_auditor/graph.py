@@ -18,15 +18,15 @@ from .tools import ComplianceAuditorToolkit
 
 def create_compliance_auditor_graph(
     toolkit: ComplianceAuditorToolkit | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Build the Compliance Auditor agent graph."""
     if toolkit is None:
         toolkit = ComplianceAuditorToolkit()
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return state
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
     async def _scan(state: Any) -> dict[str, Any]:
         return await scan_infrastructure(_to_dict(state), toolkit)

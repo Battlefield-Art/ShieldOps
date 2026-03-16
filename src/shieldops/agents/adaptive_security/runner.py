@@ -55,7 +55,7 @@ class AdaptiveSecurityRunner:
             window_hours=window_hours,
         )
         try:
-            result = await self._app.ainvoke(initial_state)
+            result = await self._app.ainvoke(initial_state)  # type: ignore[arg-type]
             if self._repository:
                 await self._persist(result)
             return result

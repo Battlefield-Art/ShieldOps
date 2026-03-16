@@ -38,7 +38,7 @@ def route_after_monitor(state: IncidentCommanderState) -> str:
     return "coordinate_agents"
 
 
-def create_incident_commander_graph() -> StateGraph:
+def create_incident_commander_graph() -> StateGraph:  # type: ignore[type-arg]
     """Build the Incident Commander Agent LangGraph workflow.
 
     Workflow:

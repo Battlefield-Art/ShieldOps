@@ -416,8 +416,8 @@ class GitOpsToolkit:
         connector = self._router.get("kubernetes")
 
         if action == ReconciliationAction.CREATE or action == ReconciliationAction.UPDATE:
-            await connector.apply_manifest(item.resource_id, item.expected_value)
+            await connector.apply_manifest(item.resource_id, item.expected_value)  # type: ignore[attr-defined]
         elif action == ReconciliationAction.DELETE:
-            await connector.delete_resource(item.resource_id)
+            await connector.delete_resource(item.resource_id)  # type: ignore[attr-defined]
         elif action == ReconciliationAction.ROLLBACK:
             await connector.rollback(item.resource_id)

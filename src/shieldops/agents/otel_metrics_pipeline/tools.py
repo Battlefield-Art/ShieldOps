@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from .models import (
     CardinalityReport,
@@ -362,7 +362,7 @@ class OTelMetricsPipelineToolkit:
             },
         }
 
-        return yaml.dump(
+        return yaml.dump(  # type: ignore[no-any-return]
             collector_config,
             default_flow_style=False,
             sort_keys=False,

@@ -16,12 +16,12 @@ from .nodes import (
 from .tools import SecurityTestingToolkit
 
 
-def build_graph(toolkit: SecurityTestingToolkit) -> StateGraph:
+def build_graph(toolkit: SecurityTestingToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Automated Security Testing agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
+            return state.model_dump()  # type: ignore[no-any-return]
         return dict(state) if not isinstance(state, dict) else state
 
     async def _scope(state: Any) -> dict[str, Any]:
@@ -55,7 +55,7 @@ def create_security_testing_graph(
     scanner_client: Any | None = None,
     config_client: Any | None = None,
     credential_store: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create the Automated Security Testing agent graph with dependencies."""
     toolkit = SecurityTestingToolkit(
         scanner_client=scanner_client,

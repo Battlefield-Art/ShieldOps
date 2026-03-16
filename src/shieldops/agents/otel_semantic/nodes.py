@@ -109,7 +109,7 @@ async def analyze_violations(
                 "warnings": len(warnings),
                 "infos": len(infos),
                 "sample_violations": [
-                    {"attribute": v.attribute, "severity": v.severity, "rule": v.rule_name}
+                    {"attribute": v.attribute, "severity": v.severity, "rule": v.rule_name}  # type: ignore[attr-defined]
                     for v in all_violations[:20]
                 ],
             },

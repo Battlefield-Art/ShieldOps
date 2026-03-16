@@ -34,14 +34,14 @@ def has_more_experiments(state: TelemetryOptimizerState) -> str:
     return END
 
 
-def create_telemetry_optimizer_graph() -> StateGraph:
+def create_telemetry_optimizer_graph() -> StateGraph:  # type: ignore[type-arg]
     """Build the Telemetry Optimizer Agent LangGraph workflow.
 
     Workflow:
         analyze_pipeline → identify_waste → propose_optimizations
             → run_experiments → conditional(more_experiments? propose : END)
     """
-    graph: StateGraph = StateGraph(TelemetryOptimizerState)
+    graph: StateGraph = StateGraph(TelemetryOptimizerState)  # type: ignore[type-arg]
 
     # Add nodes (wrapped with OTEL tracing spans)
     _agent = "telemetry_optimizer"

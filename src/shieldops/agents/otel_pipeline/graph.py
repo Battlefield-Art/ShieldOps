@@ -27,13 +27,13 @@ def should_redeploy(state: Any) -> str:
     return "configure"
 
 
-def build_graph(toolkit: OTelPipelineToolkit) -> StateGraph:
+def build_graph(toolkit: OTelPipelineToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the OTel Pipeline agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return state
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
     async def _discover(state: Any) -> dict[str, Any]:
         return await discover_pipeline(_to_dict(state), toolkit)

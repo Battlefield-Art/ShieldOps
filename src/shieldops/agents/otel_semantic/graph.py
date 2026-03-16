@@ -16,13 +16,13 @@ from .nodes import (
 from .tools import OTelSemanticToolkit
 
 
-def build_graph(toolkit: OTelSemanticToolkit) -> StateGraph:
+def build_graph(toolkit: OTelSemanticToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the OTel Semantic Conventions agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return state
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
     async def _load_rules(state: Any) -> dict[str, Any]:
         return await load_rules(_to_dict(state), toolkit)
@@ -54,7 +54,7 @@ def build_graph(toolkit: OTelSemanticToolkit) -> StateGraph:
 def create_otel_semantic_graph(
     telemetry_client: Any | None = None,
     repository: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create and return the OTel Semantic Conventions graph.
 
     This is the main public entry point exported from __init__.py.

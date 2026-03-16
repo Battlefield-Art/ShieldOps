@@ -17,12 +17,12 @@ from .nodes import (
 from .tools import SOARWorkflowToolkit
 
 
-def build_graph(toolkit: SOARWorkflowToolkit) -> StateGraph:
+def build_graph(toolkit: SOARWorkflowToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the SOAR Workflow Orchestrator agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
+            return state.model_dump()  # type: ignore[no-any-return]
         return dict(state) if not isinstance(state, dict) else state
 
     async def _intake(state: Any) -> dict[str, Any]:
@@ -62,7 +62,7 @@ def create_soar_workflow_graph(
     edr_client: Any | None = None,
     firewall_client: Any | None = None,
     threat_intel_client: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create the SOAR Workflow Orchestrator agent graph with dependencies."""
     toolkit = SOARWorkflowToolkit(
         siem_client=siem_client,

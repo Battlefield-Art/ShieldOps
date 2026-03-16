@@ -37,7 +37,7 @@ class RiskScoringToolkit:
         if self._siem_client is None:
             return []
         try:
-            return await self._siem_client.query_observations(
+            return await self._siem_client.query_observations(  # type: ignore[no-any-return]
                 time_window_hours=time_window_hours,
                 entity=entity,
             )
@@ -88,7 +88,7 @@ class RiskScoringToolkit:
         if self._asset_inventory is None:
             return {"entity": entity, "criticality": 0.5, "environment": "unknown"}
         try:
-            return await self._asset_inventory.get_criticality(entity)
+            return await self._asset_inventory.get_criticality(entity)  # type: ignore[no-any-return]
         except Exception:
             return {"entity": entity, "criticality": 0.5, "environment": "unknown"}
 
@@ -105,7 +105,7 @@ class RiskScoringToolkit:
                 "confidence": 0.0,
             }
         try:
-            return await self._threat_intel.lookup(indicator)
+            return await self._threat_intel.lookup(indicator)  # type: ignore[no-any-return]
         except Exception:
             return {
                 "indicator": indicator,

@@ -344,7 +344,7 @@ class OTelSemanticToolkit:
         """
         if self._telemetry_client is not None:
             try:
-                return await self._telemetry_client.get_service_attributes(service_name)
+                return await self._telemetry_client.get_service_attributes(service_name)  # type: ignore[no-any-return]
             except Exception:
                 logger.exception("otel_semantic.fetch_attributes.error")
 

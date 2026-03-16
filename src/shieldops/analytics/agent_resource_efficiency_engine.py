@@ -241,18 +241,12 @@ class AgentResourceEfficiencyEngine:
         agent_ids = {r.agent_id for r in self._records}
         for aid in agent_ids:
             agent_records = [r for r in self._records if r.agent_id == aid]
-            metric_avg: dict[str, float] = {}
+            metric_vals: dict[str, list[float]] = {}
             for r in agent_records:
-                metric_avg.setdefault(r.resource_metric.value, [])
-            metric_avgs: dict[str, float] = {}
-            for r in agent_records:
-                metric_avgs.setdefault(r.resource_metric.value, []).append(r.usage_value)  # type: ignore[union-attr]
+                metric_vals.setdefault(r.resource_metric.value, []).append(r.usage_value)
             computed: dict[str, float] = {}
-            for m, vals in metric_avgs.items():
-                computed[m] = round(
-                    sum(vals) / len(vals),
-                    2,  # type: ignore[arg-type]
-                )
+            for m, vals in metric_vals.items():
+                computed[m] = round(sum(vals) / len(vals), 2)
             worst_metric = (
                 max(computed, key=computed.get)  # type: ignore[arg-type]
                 if computed

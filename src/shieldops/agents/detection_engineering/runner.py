@@ -47,7 +47,7 @@ class DetectionEngineeringRunner:
             request_id=request_id,
         )
         try:
-            result = await self._app.ainvoke(initial_state)
+            result = await self._app.ainvoke(initial_state)  # type: ignore[arg-type]
             if self._repository:
                 await self._persist(result)
             return result

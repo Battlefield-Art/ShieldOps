@@ -42,7 +42,7 @@ def _to_dict(state: Any) -> dict[str, Any]:
     """Convert state to dict, handling both dict and Pydantic model inputs."""
     if isinstance(state, BaseModel):
         return state.model_dump()
-    return state
+    return state  # type: ignore[no-any-return]
 
 
 async def assess_domains(state: dict[str, Any], toolkit: SecurityPostureToolkit) -> dict[str, Any]:
@@ -115,7 +115,7 @@ async def prioritize_remediation(
                 "gaps_summary": [
                     {
                         "domain": g.domain.value if hasattr(g.domain, "value") else str(g.domain),
-                        "risk_category": g.risk_category,
+                        "risk_category": g.risk_category,  # type: ignore[attr-defined]
                         "effort_hours": g.effort_hours,
                     }
                     for g in prioritized[:20]

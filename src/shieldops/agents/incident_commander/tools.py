@@ -68,7 +68,7 @@ class IncidentCommanderToolkit:
                     alert_id=context.alert_id,
                     severity=triage_result.get("severity", context.severity),
                 )
-                return triage_result
+                return triage_result  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "incident_triage_backend_failed",
@@ -173,7 +173,7 @@ class IncidentCommanderToolkit:
         """
         if self._agent_dispatcher is not None:
             try:
-                return await self._agent_dispatcher.check_status(task_id)
+                return await self._agent_dispatcher.check_status(task_id)  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "agent_status_check_failed",
@@ -213,7 +213,7 @@ class IncidentCommanderToolkit:
                     "incident_escalated_via_backend",
                     level=level.value,
                 )
-                return result
+                return result  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "escalation_backend_failed",
@@ -251,7 +251,7 @@ class IncidentCommanderToolkit:
             try:
                 result = await self._incident_client.resolve(summary=summary)
                 logger.info("incident_resolved_via_backend")
-                return result
+                return result  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "incident_resolve_backend_failed",

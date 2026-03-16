@@ -31,7 +31,7 @@ def should_distribute(state: ThreatIntelState) -> str:
     return END
 
 
-def create_threat_intel_graph() -> StateGraph:
+def create_threat_intel_graph() -> StateGraph:  # type: ignore[type-arg]
     """Build the Threat Intel Agent LangGraph workflow.
 
     Workflow:

@@ -16,12 +16,12 @@ from .nodes import (
 from .tools import ThreatModelingToolkit
 
 
-def build_graph(toolkit: ThreatModelingToolkit) -> StateGraph:
+def build_graph(toolkit: ThreatModelingToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Threat Modeling agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
+            return state.model_dump()  # type: ignore[no-any-return]
         return dict(state) if not isinstance(state, dict) else state
 
     async def _discover(state: Any) -> dict[str, Any]:
@@ -55,7 +55,7 @@ def create_threat_modeling_graph(
     rba_client: Any | None = None,
     architecture_registry: Any | None = None,
     threat_intel: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create the Threat Modeling agent graph with dependencies."""
     toolkit = ThreatModelingToolkit(
         rba_client=rba_client,

@@ -27,12 +27,12 @@ def _should_apply(state: Any) -> str:
     return "end"
 
 
-def build_graph(toolkit: AdaptiveSecurityToolkit) -> StateGraph:
+def build_graph(toolkit: AdaptiveSecurityToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Adaptive Security agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
+            return state.model_dump()  # type: ignore[no-any-return]
         return dict(state) if not isinstance(state, dict) else state
 
     async def _baseline(state: Any) -> dict[str, Any]:
@@ -70,7 +70,7 @@ def create_adaptive_security_graph(
     siem_client: Any | None = None,
     metrics_store: Any | None = None,
     policy_engine: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create the Adaptive Security agent graph with dependencies."""
     toolkit = AdaptiveSecurityToolkit(
         siem_client=siem_client,

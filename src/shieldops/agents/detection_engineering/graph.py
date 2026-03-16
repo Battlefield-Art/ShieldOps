@@ -41,12 +41,12 @@ def _should_deploy(state: Any) -> str:
     return "end"
 
 
-def build_graph(toolkit: DetectionEngineeringToolkit) -> StateGraph:
+def build_graph(toolkit: DetectionEngineeringToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Detection Engineering agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
+            return state.model_dump()  # type: ignore[no-any-return]
         return dict(state) if not isinstance(state, dict) else state
 
     async def _assess(state: Any) -> dict[str, Any]:
@@ -84,7 +84,7 @@ def create_detection_engineering_graph(
     siem_client: Any | None = None,
     mitre_client: Any | None = None,
     rule_store: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create the Detection Engineering agent graph with dependencies."""
     toolkit = DetectionEngineeringToolkit(
         siem_client=siem_client,

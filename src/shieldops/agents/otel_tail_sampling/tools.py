@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from .models import PolicyType, SamplingPolicy, SimulationResult, TraceProfile
 
@@ -284,7 +284,7 @@ class OTelTailSamplingToolkit:
             },
         }
 
-        return yaml.dump(
+        return yaml.dump(  # type: ignore[no-any-return]
             tail_sampling_config,
             default_flow_style=False,
             sort_keys=False,

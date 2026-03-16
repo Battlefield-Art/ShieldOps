@@ -16,12 +16,12 @@ from .nodes import (
 from .tools import SecurityPostureToolkit
 
 
-def build_graph(toolkit: SecurityPostureToolkit) -> StateGraph:
+def build_graph(toolkit: SecurityPostureToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the Security Posture Manager agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
+            return state.model_dump()  # type: ignore[no-any-return]
         return dict(state) if not isinstance(state, dict) else state
 
     async def _assess(state: Any) -> dict[str, Any]:
@@ -56,7 +56,7 @@ def create_security_posture_graph(
     compliance_store: Any | None = None,
     vuln_scanner: Any | None = None,
     threat_intel: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create the Security Posture Manager agent graph with dependencies."""
     toolkit = SecurityPostureToolkit(
         rba_client=rba_client,

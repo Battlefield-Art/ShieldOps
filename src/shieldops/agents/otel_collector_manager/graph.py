@@ -16,13 +16,13 @@ from .nodes import (
 from .tools import OTelCollectorManagerToolkit
 
 
-def build_graph(toolkit: OTelCollectorManagerToolkit) -> StateGraph:
+def build_graph(toolkit: OTelCollectorManagerToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the OTel Collector Manager agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return state
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
     async def _assess(state: Any) -> dict[str, Any]:
         return await assess_requirements(_to_dict(state), toolkit)
@@ -54,7 +54,7 @@ def build_graph(toolkit: OTelCollectorManagerToolkit) -> StateGraph:
 def create_otel_collector_manager_graph(
     k8s_client: Any | None = None,
     repository: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create and return the OTel Collector Manager graph.
 
     This is the main public entry point exported from __init__.py.

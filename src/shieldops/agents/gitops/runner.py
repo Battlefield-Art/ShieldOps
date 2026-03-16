@@ -150,7 +150,7 @@ class GitOpsRunner:
         if self._repository is None:
             return
         try:
-            await self._repository.save_gitops_reconciliation(request_id, state)
+            await self._repository.save_gitops_reconciliation(request_id, state)  # type: ignore[attr-defined]
         except Exception as e:
             logger.error("gitops_persist_failed", id=request_id, error=str(e))
 

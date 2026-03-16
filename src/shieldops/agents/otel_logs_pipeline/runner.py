@@ -38,7 +38,7 @@ class OTelLogsPipelineRunner:
         Args:
             namespace: Kubernetes namespace to discover and configure logs for.
         """
-        initial_state = {
+        initial_state = {  # type: ignore[var-annotated]
             "request_id": "",
             "stage": "discover",
             "target_namespace": namespace,
@@ -54,7 +54,7 @@ class OTelLogsPipelineRunner:
             namespace=namespace,
         )
         try:
-            result = await self._app.ainvoke(initial_state)
+            result = await self._app.ainvoke(initial_state)  # type: ignore[arg-type]
             if self._repository:
                 await self._persist(result)
             return result

@@ -16,13 +16,13 @@ from .nodes import (
 from .tools import OTelDeployerToolkit
 
 
-def build_graph(toolkit: OTelDeployerToolkit) -> StateGraph:
+def build_graph(toolkit: OTelDeployerToolkit) -> StateGraph:  # type: ignore[type-arg]
     """Build the OTel Deployment Orchestrator agent graph."""
 
     def _to_dict(state: Any) -> dict[str, Any]:
         if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return state
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
     async def _plan(state: Any) -> dict[str, Any]:
         return await plan_deployments(_to_dict(state), toolkit)
@@ -54,7 +54,7 @@ def build_graph(toolkit: OTelDeployerToolkit) -> StateGraph:
 def create_otel_deployer_graph(
     k8s_client: Any | None = None,
     repository: Any | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Create and return the OTel Deployment Orchestrator graph.
 
     This is the main public entry point exported from __init__.py.

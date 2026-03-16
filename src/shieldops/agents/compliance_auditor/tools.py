@@ -68,7 +68,7 @@ class ComplianceAuditorToolkit:
         logger.info("compliance_auditor.scan_controls", framework=framework)
         if self._compliance_backend is not None:
             try:
-                return await self._compliance_backend.scan(framework=framework)
+                return await self._compliance_backend.scan(framework=framework)  # type: ignore[no-any-return]
             except Exception:
                 logger.exception("compliance_auditor.scan_controls.error")
                 return []
@@ -105,7 +105,7 @@ class ComplianceAuditorToolkit:
         logger.info("compliance_auditor.collect_evidence", control_id=control_id)
         if self._evidence_store is not None:
             try:
-                return await self._evidence_store.collect(control_id=control_id)
+                return await self._evidence_store.collect(control_id=control_id)  # type: ignore[no-any-return]
             except Exception:
                 logger.exception("compliance_auditor.collect_evidence.error")
                 return []

@@ -35,7 +35,7 @@ class AutoLearningToolkit:
                 "agent_confidence_avg": 0.0,
             }
         try:
-            return await self._metrics_store.get_current_metrics()
+            return await self._metrics_store.get_current_metrics()  # type: ignore[no-any-return]
         except Exception:
             logger.exception("auto_learning.get_baseline_metrics.error")
             return {}

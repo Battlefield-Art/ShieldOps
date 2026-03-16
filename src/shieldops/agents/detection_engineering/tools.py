@@ -205,7 +205,7 @@ class DetectionEngineeringToolkit:
 
         if self._siem_client is not None:
             try:
-                return await self._siem_client.backtest_rule(
+                return await self._siem_client.backtest_rule(  # type: ignore[no-any-return]
                     query=rule.query,
                     days=days,
                 )
@@ -298,7 +298,7 @@ class DetectionEngineeringToolkit:
 
         if self._siem_client is not None:
             try:
-                return await self._siem_client.deploy_rule(rule.model_dump())
+                return await self._siem_client.deploy_rule(rule.model_dump())  # type: ignore[no-any-return]
             except Exception:
                 logger.exception("detection_engineering.deploy_rule.error")
 

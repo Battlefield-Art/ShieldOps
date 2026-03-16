@@ -22,7 +22,7 @@ def should_continue_after_triage(state: SecurityAutomationState) -> str:
     return END
 
 
-def create_security_automation_graph() -> StateGraph:
+def create_security_automation_graph() -> StateGraph:  # type: ignore[type-arg]
     """Build the Security Automation Agent LangGraph workflow.
 
     Workflow:

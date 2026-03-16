@@ -264,7 +264,7 @@ class CollectorResourceLimiterEngine:
 
     def evaluate_limit_headroom(self) -> list[dict[str, Any]]:
         """Evaluate resource headroom per collector and resource type."""
-        collector_data: dict[str, list[CollectorResourceRecord]] = {}
+        collector_data: dict[tuple[str, str], list[CollectorResourceRecord]] = {}
         for r in self._records:
             collector_data.setdefault((r.collector_id, r.resource_type.value), []).append(r)
         results: list[dict[str, Any]] = []

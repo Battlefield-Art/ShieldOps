@@ -39,7 +39,7 @@ class OTelCollectorManagerRunner:
         if isinstance(action, str):
             action = CollectorAction(action)
 
-        initial_state = {
+        initial_state = {  # type: ignore[var-annotated]
             "request_id": "",
             "action": action.value,
             "target_namespace": namespace,
@@ -51,7 +51,7 @@ class OTelCollectorManagerRunner:
             action=action.value,
         )
         try:
-            result = await self._app.ainvoke(initial_state)
+            result = await self._app.ainvoke(initial_state)  # type: ignore[arg-type]
             if self._repository:
                 await self._persist(result)
             return result

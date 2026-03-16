@@ -59,7 +59,7 @@ class OTelTailSamplingRunner:
             budget_pct=budget_pct,
         )
         try:
-            result = await self._app.ainvoke(initial_state)
+            result = await self._app.ainvoke(initial_state)  # type: ignore[arg-type]
             if self._repository:
                 await self._persist(result)
             return result

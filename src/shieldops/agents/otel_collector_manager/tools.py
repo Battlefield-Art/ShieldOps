@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from .models import CollectorConfig, DeploymentMode
 
@@ -88,7 +88,7 @@ class OTelCollectorManagerToolkit:
         if config.extensions:
             otel_config["extensions"] = {ext: None for ext in config.extensions}
 
-        return yaml.dump(otel_config, default_flow_style=False, sort_keys=False)
+        return yaml.dump(otel_config, default_flow_style=False, sort_keys=False)  # type: ignore[no-any-return]
 
     async def deploy_collector(
         self,

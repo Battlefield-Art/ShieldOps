@@ -50,7 +50,7 @@ class TelemetryOptimizerToolkit:
 
         if self._cost_api is not None:
             try:
-                return await self._cost_api.get_namespace_costs(namespace)
+                return await self._cost_api.get_namespace_costs(namespace)  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error("cost_api_query_failed", namespace=namespace, error=str(e))
 
@@ -80,7 +80,7 @@ class TelemetryOptimizerToolkit:
 
         if self._metrics_backend is not None:
             try:
-                return await self._metrics_backend.get_high_cardinality_metrics(service)
+                return await self._metrics_backend.get_high_cardinality_metrics(service)  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "cardinality_detection_failed",
@@ -103,7 +103,7 @@ class TelemetryOptimizerToolkit:
 
         if self._metrics_backend is not None:
             try:
-                return await self._metrics_backend.get_sampling_analysis(service)
+                return await self._metrics_backend.get_sampling_analysis(service)  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "over_sampling_detection_failed",
@@ -126,7 +126,7 @@ class TelemetryOptimizerToolkit:
 
         if self._metrics_backend is not None:
             try:
-                return await self._metrics_backend.find_duplicate_metrics(namespace)
+                return await self._metrics_backend.find_duplicate_metrics(namespace)  # type: ignore[no-any-return]
             except Exception as e:
                 logger.error(
                     "duplicate_detection_failed",
