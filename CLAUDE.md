@@ -100,6 +100,7 @@ The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines ac
 
 ## Tech Stack
 - Python 3.12+, LangGraph, LangChain, Anthropic Claude (primary LLM)
+- Multi-cloud LLM: Anthropic (direct), AWS Bedrock (Strands SDK), Google Vertex AI, Azure OpenAI
 - FastAPI, Pydantic v2, SQLAlchemy (async), PostgreSQL, Redis, Kafka
 - OpenTelemetry, LangSmith, structlog
 - OPA (Open Policy Agent) for policy enforcement
