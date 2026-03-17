@@ -3,6 +3,9 @@
 from shieldops.api.middleware.billing_enforcement import (
     BillingEnforcementMiddleware,
 )
+from shieldops.api.middleware.compliance import (
+    ComplianceMiddleware,
+)
 from shieldops.api.middleware.error_handler import ErrorHandlerMiddleware
 from shieldops.api.middleware.logging import RequestLoggingMiddleware
 from shieldops.api.middleware.metrics import MetricsMiddleware
@@ -24,6 +27,7 @@ from shieldops.api.middleware.versioning import APIVersionMiddleware
 __all__ = [
     "APIVersionMiddleware",
     "BillingEnforcementMiddleware",
+    "ComplianceMiddleware",
     "ErrorHandlerMiddleware",
     "GracefulShutdownMiddleware",
     "MetricsMiddleware",
