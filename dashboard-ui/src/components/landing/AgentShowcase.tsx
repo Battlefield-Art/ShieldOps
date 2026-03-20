@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import clsx from "clsx";
 
 interface ShowcaseCard {
   title: string;
   agent: string;
   status: string;
   statusColor: string;
+  accentBorder: string;
   details: string[];
   metrics: string;
 }
@@ -16,6 +18,7 @@ const SHOWCASE_CARDS: ShowcaseCard[] = [
     agent: "Investigation Agent",
     status: "Resolved",
     statusColor: "bg-emerald-900/60 text-emerald-400",
+    accentBorder: "border-t-emerald-500/70",
     details: [
       "Correlated 47 OOMKilled events with memory spike",
       "Identified Redis connection pool leak in v2.3.1",
@@ -28,6 +31,7 @@ const SHOWCASE_CARDS: ShowcaseCard[] = [
     agent: "Threat Intel Agent",
     status: "Completed",
     statusColor: "bg-cyan-900/60 text-cyan-400",
+    accentBorder: "border-t-cyan-500/70",
     details: [
       "Collected 142 indicators from OSINT feeds",
       "Correlated against internal logs \u2014 3 matches",
@@ -40,6 +44,7 @@ const SHOWCASE_CARDS: ShowcaseCard[] = [
     agent: "Telemetry Optimizer Agent",
     status: "Applied",
     statusColor: "bg-amber-900/60 text-amber-400",
+    accentBorder: "border-t-amber-500/70",
     details: [
       "Identified high-cardinality metrics on 3 services",
       "Proposed label reduction and sampling adjustment",
@@ -66,16 +71,26 @@ export default function AgentShowcase() {
           <Link
             key={card.title}
             to="/app?demo=true"
-            className="group rounded-xl border border-gray-800 bg-gray-900 p-6 transition-colors hover:border-gray-700"
+            className={clsx(
+              "group rounded-xl border border-t-2 border-gray-800 bg-gray-900 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-700",
+              card.accentBorder,
+            )}
           >
             <div className="mb-3 flex items-center justify-between">
               <span className="text-xs uppercase tracking-wider text-gray-500">
                 {card.agent}
               </span>
               <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${card.statusColor}`}
+                className={clsx(
+                  "relative overflow-hidden rounded-full px-2.5 py-0.5 text-xs font-medium",
+                  card.statusColor,
+                )}
               >
                 {card.status}
+                <span
+                  className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/[0.06] to-transparent bg-[length:200%_100%]"
+                  aria-hidden="true"
+                />
               </span>
             </div>
 
@@ -92,7 +107,7 @@ export default function AgentShowcase() {
 
             <div className="mt-4 flex items-center justify-between border-t border-gray-800 pt-3">
               <span className="text-xs text-gray-500">{card.metrics}</span>
-              <ArrowRight className="h-4 w-4 text-gray-600 transition-colors group-hover:text-gray-400" />
+              <ArrowRight className="h-4 w-4 text-gray-600 transition-all duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:text-gray-400" />
             </div>
           </Link>
         ))}

@@ -35,7 +35,12 @@ export default function HeroSection() {
         </p>
 
         {/* Chat input container */}
-        <div className="mt-10 rounded-xl border border-gray-800 bg-gray-900">
+        <div
+          className={clsx(
+            "mt-10 rounded-xl border border-gray-800 bg-gray-900 transition-all duration-200",
+            "focus-within:border-cyan-700/50 focus-within:shadow-[0_0_15px_rgba(8,145,178,0.1)]",
+          )}
+        >
           <textarea
             rows={3}
             value={input}
@@ -53,7 +58,10 @@ export default function HeroSection() {
             </button>
             <Link
               to="/app?demo=true"
-              className="inline-flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-cyan-600"
+              className={clsx(
+                "inline-flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-1.5 text-sm font-medium text-white transition-all hover:bg-cyan-600",
+                input.length > 0 && "shadow-[0_0_12px_rgba(8,145,178,0.25)]",
+              )}
             >
               Send to Agent
               <ArrowUp className="h-4 w-4" />
@@ -70,7 +78,7 @@ export default function HeroSection() {
               onClick={() => setInput(prompt.label)}
               className={clsx(
                 "inline-flex items-center gap-1.5 rounded-full border border-gray-800 bg-gray-900 px-4 py-2 text-sm text-gray-400",
-                "transition-colors hover:border-gray-600 hover:text-gray-200"
+                "transition-all hover:border-gray-600 hover:text-gray-200 active:scale-[0.97]",
               )}
             >
               <prompt.icon className="h-3.5 w-3.5" />

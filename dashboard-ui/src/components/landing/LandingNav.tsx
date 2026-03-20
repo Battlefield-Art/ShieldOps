@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import clsx from "clsx";
@@ -13,6 +13,8 @@ const NAV_LINKS = [
 export default function LandingNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [menuHeight, setMenuHeight] = useState(0);
 
   useEffect(() => {
     function handleScroll() {
@@ -21,6 +23,14 @@ export default function LandingNav() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (mobileOpen && mobileMenuRef.current) {
+      setMenuHeight(mobileMenuRef.current.scrollHeight);
+    } else {
+      setMenuHeight(0);
+    }
+  }, [mobileOpen]);
 
   return (
     <nav
@@ -43,9 +53,10 @@ export default function LandingNav() {
             <Link
               key={link.to}
               to={link.to}
-              className="rounded-md px-3 py-2 text-sm text-gray-400 transition-colors hover:text-gray-200"
+              className="group relative rounded-md px-3 py-2 text-sm text-gray-400 transition-colors hover:text-gray-200"
             >
               {link.label}
+              <span className="absolute bottom-1 left-3 right-3 h-px origin-left scale-x-0 bg-gray-400 transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
           ))}
         </div>
@@ -54,9 +65,10 @@ export default function LandingNav() {
         <div className="hidden items-center gap-4 md:flex">
           <Link
             to="/login"
-            className="text-sm text-gray-400 transition-colors hover:text-gray-200"
+            className="group relative text-sm text-gray-400 transition-colors hover:text-gray-200"
           >
             Sign in
+            <span className="absolute -bottom-0.5 left-0 right-0 h-px origin-left scale-x-0 bg-gray-400 transition-transform duration-200 group-hover:scale-x-100" />
           </Link>
           <Link
             to="/app?demo=true"
@@ -76,9 +88,16 @@ export default function LandingNav() {
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="border-t border-gray-800 bg-gray-950 md:hidden">
+      {/* Mobile menu with smooth height transition */}
+      <div
+        className="overflow-hidden border-t border-gray-800 transition-all duration-300 ease-in-out md:hidden"
+        style={{
+          maxHeight: `${menuHeight}px`,
+          opacity: mobileOpen ? 1 : 0,
+          borderColor: mobileOpen ? undefined : "transparent",
+        }}
+      >
+        <div ref={mobileMenuRef} className="bg-gray-950">
           <div className="mx-auto max-w-6xl px-6 py-6">
             <div className="flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
@@ -111,7 +130,7 @@ export default function LandingNav() {
             </div>
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }

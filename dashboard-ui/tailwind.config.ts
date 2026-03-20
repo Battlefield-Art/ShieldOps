@@ -39,11 +39,16 @@ export default {
           "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "slide-out-right": "slide-out-right 0.3s ease-in",
         "fade-in-up": "fade-in-up 0.5s ease-out",
+        shimmer: "shimmer 2s ease-in-out infinite",
       },
     },
   },

@@ -16,6 +16,26 @@
   ::selection {
     @apply bg-brand-600/30 text-white;
   }
+
+  /* Custom scrollbar for dark theme */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
 }
 
 @layer utilities {
@@ -40,5 +60,10 @@
 
   .animate-blink {
     animation: blink 1.2s step-end infinite;
+  }
+
+  /* Focus ring utility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:ring-offset-2 focus:ring-offset-gray-950;
   }
 }
