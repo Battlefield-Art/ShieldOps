@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { ShieldCheck, Target, AlertTriangle, Rocket, Loader2 } from "lucide-react";
+import { ShieldCheck, Target, AlertTriangle, Rocket } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 const RULES = [
   { name: "Brute Force Login", type: "threshold", technique: "T1110", fpRate: 2.1, status: "active", risk: 85 },
@@ -20,12 +22,7 @@ const TYPE_COLORS: Record<string, string> = {
   sequence: "bg-cyan-500/10 text-cyan-400 ring-cyan-500/20",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: "text-gray-400",
-  testing: "text-amber-400",
-  active: "text-green-400",
-  tuning: "text-blue-400",
-};
+// STATUS_COLORS kept for reference; StatusBadge handles rendering
 
 function riskColor(score: number) {
   if (score > 80) return "text-red-400";
@@ -39,13 +36,10 @@ export default function DetectionEngineering() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Detection Engineering</h1>
-        <button onClick={handleClick} disabled={running} className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50">
-          {running && <Loader2 className="h-4 w-4 animate-spin" />}
-          Assess Coverage
-        </button>
-      </div>
+      <PageHeader
+        title="Detection Engineering"
+        action={{ label: "Assess Coverage", onClick: handleClick, loading: running }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Active Rules" value={42} icon={<ShieldCheck className="h-5 w-5" />} change={8.3} />
@@ -54,29 +48,29 @@ export default function DetectionEngineering() {
         <MetricCard label="Deployed This Week" value={6} icon={<Rocket className="h-5 w-5" />} change={50.0} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
-              <th className="px-4 py-3">Rule Name</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">MITRE Technique</th>
-              <th className="px-4 py-3">FP Rate %</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Risk Score</th>
+              <th className="px-5 py-3.5">Rule Name</th>
+              <th className="px-5 py-3.5">Type</th>
+              <th className="px-5 py-3.5">MITRE Technique</th>
+              <th className="px-5 py-3.5">FP Rate %</th>
+              <th className="px-5 py-3.5">Status</th>
+              <th className="px-5 py-3.5">Risk Score</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {RULES.map((r) => (
-              <tr key={r.name} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{r.name}</td>
-                <td className="px-4 py-3">
+              <tr key={r.name} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{r.name}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", TYPE_COLORS[r.type])}>{r.type}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-300">{r.technique}</td>
-                <td className="px-4 py-3 text-gray-300">{r.fpRate}%</td>
-                <td className={clsx("px-4 py-3 text-sm font-medium", STATUS_COLORS[r.status])}>{r.status}</td>
-                <td className={clsx("px-4 py-3 font-semibold", riskColor(r.risk))}>{r.risk}</td>
+                <td className="px-5 py-3.5 text-gray-300">{r.technique}</td>
+                <td className="px-5 py-3.5 text-gray-300">{r.fpRate}%</td>
+                <td className="px-5 py-3.5"><StatusBadge status={r.status} /></td>
+                <td className={clsx("px-5 py-3.5 font-semibold", riskColor(r.risk))}>{r.risk}</td>
               </tr>
             ))}
           </tbody>

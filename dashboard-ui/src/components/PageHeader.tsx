@@ -28,11 +28,11 @@ export default function PageHeader({ title, description, action, badge }: PageHe
     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-100">{title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-50">{title}</h1>
           {badge && (
             <span
               className={clsx(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
+                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
                 BADGE_VARIANTS[badge.variant],
               )}
             >
@@ -41,7 +41,7 @@ export default function PageHeader({ title, description, action, badge }: PageHe
           )}
         </div>
         {description && (
-          <p className="mt-1 text-sm text-gray-400">{description}</p>
+          <p className="mt-1.5 text-sm text-gray-500">{description}</p>
         )}
       </div>
 
@@ -50,9 +50,7 @@ export default function PageHeader({ title, description, action, badge }: PageHe
           onClick={action.onClick}
           disabled={action.loading}
           className={clsx(
-            "mt-3 inline-flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 transition-all duration-150 sm:mt-0",
-            "hover:border-gray-600 hover:bg-gray-750 hover:text-white",
-            "focus-ring",
+            "btn-secondary mt-3 sm:mt-0",
             action.loading && "cursor-not-allowed opacity-60",
           )}
         >

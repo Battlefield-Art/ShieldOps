@@ -71,7 +71,7 @@ export default function AgentPromptInput({
           "relative rounded-2xl border bg-gray-900/80 backdrop-blur-sm transition-all duration-200",
           disabled
             ? "border-gray-800 opacity-60"
-            : "border-gray-700 shadow-lg shadow-brand-500/5 focus-within:border-brand-500/50 focus-within:shadow-brand-500/10",
+            : "border-gray-700/80 shadow-lg shadow-brand-500/5 focus-within:border-brand-500/40 focus-within:shadow-glow-brand",
         )}
       >
         {/* Context badge */}
@@ -118,7 +118,7 @@ export default function AgentPromptInput({
               </button>
 
               {showContextMenu && (
-                <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl border border-gray-700 bg-gray-900 py-1 shadow-xl">
+                <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl border border-gray-700/80 bg-gray-900 py-1 shadow-elevated">
                   <p className="px-3 py-1.5 text-xs font-medium text-gray-500">
                     Connect to
                   </p>

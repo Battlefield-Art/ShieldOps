@@ -28,7 +28,7 @@ export default function Tooltip({ content, children, side = "top" }: TooltipProp
       {children}
       <span
         className={clsx(
-          "pointer-events-none absolute z-50 whitespace-nowrap rounded-md bg-gray-800 px-2.5 py-1.5 text-xs font-medium text-gray-100 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100",
+          "pointer-events-none absolute z-50 whitespace-nowrap rounded-lg border border-gray-700/40 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-100 opacity-0 shadow-elevated transition-opacity duration-150 group-hover:opacity-100",
           positionClasses[side],
         )}
       >

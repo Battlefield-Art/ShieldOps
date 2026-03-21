@@ -26,8 +26,8 @@ export default function TaskCard({ task, onSelect, compact = false }: TaskCardPr
     <button
       onClick={() => onSelect(task)}
       className={clsx(
-        "group relative flex w-full text-left rounded-xl border border-gray-800 bg-gray-900/60 transition-all duration-200",
-        "hover:border-gray-700 hover:bg-gray-800/60 hover:shadow-lg hover:shadow-black/20",
+        "group relative flex w-full text-left rounded-xl border border-gray-800/80 bg-gray-900/60 shadow-card transition-all duration-200",
+        "hover:border-gray-700/80 hover:bg-gray-800/50 hover:shadow-card-hover",
         "focus:outline-none focus:ring-2 focus:ring-brand-500/30",
         compact ? "p-3" : "p-4",
       )}
@@ -73,7 +73,7 @@ export default function TaskCard({ task, onSelect, compact = false }: TaskCardPr
             {task.tags?.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-gray-800/80 px-2 py-0.5 text-[10px] text-gray-500"
+                className="rounded-md bg-gray-800/60 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-700/30"
               >
                 {tag}
               </span>

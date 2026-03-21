@@ -385,10 +385,10 @@ export default function AgentFactory() {
 
           {/* Title */}
           <div className="max-w-3xl mx-auto text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
               What do you want to automate?
             </h1>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-500 text-sm leading-relaxed">
               Deploy autonomous agents to investigate, remediate, and secure your infrastructure in minutes.
             </p>
           </div>
@@ -462,7 +462,7 @@ export default function AgentFactory() {
                 <button
                   key={run.id}
                   onClick={() => handleRunClick(run)}
-                  className="flex w-full items-center gap-4 rounded-xl border border-gray-800/50 bg-gray-900/40 px-4 py-3 text-left transition-all hover:border-gray-700 hover:bg-gray-800/40 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  className="flex w-full items-center gap-4 rounded-xl border border-gray-800/60 bg-gray-900/40 px-4 py-3.5 text-left shadow-card transition-all duration-150 hover:border-gray-700/80 hover:bg-gray-800/30 hover:shadow-card-hover focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                 >
                   <RunIcon className={`h-4 w-4 shrink-0 ${run.iconColor}`} />
                   <div className="flex-1 min-w-0">
@@ -490,23 +490,23 @@ export default function AgentFactory() {
         </div>
 
         {/* Agent stats footer */}
-        <div className="mt-10 rounded-xl border border-gray-800/30 bg-gray-900/30 p-4">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mt-10 rounded-2xl border border-gray-800/40 bg-gray-900/40 p-6 shadow-card">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             <div className="text-center">
-              <p className="text-xl font-bold text-white">1,247</p>
-              <p className="text-xs text-gray-500">Tasks Completed</p>
+              <p className="text-2xl font-bold tracking-tight text-white">1,247</p>
+              <p className="mt-1 text-xs text-gray-500">Tasks Completed</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-emerald-400">94.2%</p>
-              <p className="text-xs text-gray-500">Success Rate</p>
+              <p className="text-2xl font-bold tracking-tight text-emerald-400">94.2%</p>
+              <p className="mt-1 text-xs text-gray-500">Success Rate</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-brand-400">3.1m</p>
-              <p className="text-xs text-gray-500">Avg Resolution</p>
+              <p className="text-2xl font-bold tracking-tight text-brand-400">3.1m</p>
+              <p className="mt-1 text-xs text-gray-500">Avg Resolution</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-amber-400">847h</p>
-              <p className="text-xs text-gray-500">Hours Saved</p>
+              <p className="text-2xl font-bold tracking-tight text-amber-400">847h</p>
+              <p className="mt-1 text-xs text-gray-500">Hours Saved</p>
             </div>
           </div>
         </div>

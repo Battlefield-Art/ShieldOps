@@ -34,14 +34,14 @@ export default function OTelPipeline() {
         <MetricCard label="Avg Latency" value="12 ms" icon={<Clock className="h-5 w-5" />} change={-1.8} />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
-        <div className="border-b border-gray-800 px-5 py-4">
-          <h2 className="text-lg font-semibold text-gray-100">Discovered Services</h2>
+      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="border-b border-gray-800/60 px-5 py-4">
+          <h2 className="text-lg font-semibold text-gray-50">Discovered Services</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left text-gray-400">
+              <tr className="border-b border-gray-800/60 text-left text-gray-400">
                 <th className="px-5 py-3 font-medium">Service</th>
                 <th className="px-5 py-3 font-medium">Instrumented</th>
                 <th className="px-5 py-3 font-medium">Signal Types</th>
@@ -49,9 +49,9 @@ export default function OTelPipeline() {
                 <th className="px-5 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800/40">
               {MOCK_SERVICES.map((svc) => (
-                <tr key={svc.name} className="text-gray-300 hover:bg-gray-800/50">
+                <tr key={svc.name} className="text-gray-300 hover:bg-gray-800/30">
                   <td className="px-5 py-3 font-medium text-gray-100">{svc.name}</td>
                   <td className="px-5 py-3">
                     <span className={svc.instrumented ? "text-green-400" : "text-gray-500"}>

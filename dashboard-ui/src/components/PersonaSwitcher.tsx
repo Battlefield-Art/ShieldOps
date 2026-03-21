@@ -96,7 +96,7 @@ export default function PersonaSwitcher({ selected, onChange }: PersonaSwitcherP
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-900/60 px-3 py-2 text-sm transition-colors hover:border-gray-700 hover:bg-gray-800/60"
+        className="flex items-center gap-2.5 rounded-xl border border-gray-800/80 bg-gray-900/60 px-3 py-2 text-sm transition-all duration-150 hover:border-gray-700 hover:bg-gray-800/50 hover:shadow-card"
       >
         <div className={clsx("flex h-6 w-6 items-center justify-center rounded-lg", current.bgColor)}>
           <current.icon className={clsx("h-3.5 w-3.5", current.color)} />
@@ -106,7 +106,7 @@ export default function PersonaSwitcher({ selected, onChange }: PersonaSwitcherP
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-gray-700 bg-gray-900 p-1.5 shadow-xl">
+        <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-gray-700/80 bg-gray-900 p-1.5 shadow-elevated">
           <p className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
             Switch Persona
           </p>

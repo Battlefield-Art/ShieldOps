@@ -166,7 +166,7 @@ function CreateKeyModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-900 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Create New API Key
           </h2>
           <button
@@ -409,36 +409,36 @@ export default function APIKeys() {
       </div>
 
       {/* Keys Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left text-xs uppercase tracking-wider text-gray-500">
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Key Prefix</th>
-                <th className="px-4 py-3">Scopes</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Rate Limit</th>
-                <th className="px-4 py-3">Created</th>
-                <th className="px-4 py-3">Last Used</th>
-                <th className="px-4 py-3">Actions</th>
+              <tr className="border-b border-gray-800/60 text-left text-xs uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5">Name</th>
+                <th className="px-5 py-3.5">Key Prefix</th>
+                <th className="px-5 py-3.5">Scopes</th>
+                <th className="px-5 py-3.5">Status</th>
+                <th className="px-5 py-3.5">Rate Limit</th>
+                <th className="px-5 py-3.5">Created</th>
+                <th className="px-5 py-3.5">Last Used</th>
+                <th className="px-5 py-3.5">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800/40">
               {keys.map((k) => (
                 <tr
                   key={k.key_id}
-                  className="transition-colors hover:bg-gray-800/50"
+                  className="transition-colors hover:bg-gray-800/30"
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <span className="font-medium text-gray-100">{k.name}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <code className="rounded bg-gray-800 px-1.5 py-0.5 font-mono text-xs text-gray-300">
                       {k.prefix}...
                     </code>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <div className="flex flex-wrap gap-1">
                       {k.scopes.map((scope) => (
                         <span
@@ -450,25 +450,25 @@ export default function APIKeys() {
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <KeyStatusBadge status={k.status} />
                   </td>
-                  <td className="px-4 py-3 text-gray-400">
+                  <td className="px-5 py-3.5 text-gray-400">
                     {k.rate_limit_per_minute.toLocaleString()}/min
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">
+                  <td className="px-5 py-3.5 text-xs text-gray-500">
                     {formatDistanceToNow(new Date(k.created_at), {
                       addSuffix: true,
                     })}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">
+                  <td className="px-5 py-3.5 text-xs text-gray-500">
                     {k.last_used_at
                       ? formatDistanceToNow(new Date(k.last_used_at), {
                           addSuffix: true,
                         })
                       : "Never"}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     {k.status === "active" && (
                       <button
                         onClick={() => setRevokeTarget(k)}
@@ -489,7 +489,7 @@ export default function APIKeys() {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-12 text-center text-gray-500"
+                    className="px-5 py-12 text-center text-gray-500"
                   >
                     <Key className="mx-auto h-8 w-8 text-gray-600" />
                     <p className="mt-2">No API keys yet.</p>

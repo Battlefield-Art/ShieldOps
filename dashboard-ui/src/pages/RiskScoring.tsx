@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Users, AlertTriangle, Activity, Bell, Loader2 } from "lucide-react";
+import { Users, AlertTriangle, Activity, Bell } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
 
 const ENTITIES = [
   { entity: "admin@corp.io", type: "user", score: 92, factors: 7, tactics: "Initial Access, Privilege Escalation", updated: "2 min ago" },
@@ -42,17 +43,10 @@ export default function RiskScoring() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Risk-Based Alerting</h1>
-        <button
-          onClick={handleAssess}
-          disabled={assessing}
-          className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50"
-        >
-          {assessing && <Loader2 className="h-4 w-4 animate-spin" />}
-          Run Risk Assessment
-        </button>
-      </div>
+      <PageHeader
+        title="Risk-Based Alerting"
+        action={{ label: "Run Risk Assessment", onClick: handleAssess, loading: assessing }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Entities Monitored" value={1284} icon={<Users className="h-5 w-5" />} change={5.2} />
@@ -61,28 +55,28 @@ export default function RiskScoring() {
         <MetricCard label="Notable Events" value={47} icon={<Bell className="h-5 w-5" />} change={8.1} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
-              <th className="px-4 py-3">Entity</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Risk Score</th>
-              <th className="px-4 py-3">Factors</th>
-              <th className="px-4 py-3">MITRE Tactics</th>
-              <th className="px-4 py-3">Last Updated</th>
+              <th className="px-5 py-3.5">Entity</th>
+              <th className="px-5 py-3.5">Type</th>
+              <th className="px-5 py-3.5">Risk Score</th>
+              <th className="px-5 py-3.5">Factors</th>
+              <th className="px-5 py-3.5">MITRE Tactics</th>
+              <th className="px-5 py-3.5">Last Updated</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {ENTITIES.map((e) => {
               const rc = riskColor(e.score);
               return (
-                <tr key={e.entity} className="hover:bg-gray-800/50">
-                  <td className="px-4 py-3 font-medium">{e.entity}</td>
-                  <td className="px-4 py-3">
+                <tr key={e.entity} className="hover:bg-gray-800/30">
+                  <td className="px-5 py-3.5 font-medium">{e.entity}</td>
+                  <td className="px-5 py-3.5">
                     <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", TYPE_COLORS[e.type])}>{e.type}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-16 rounded-full bg-gray-700">
                         <div className={clsx("h-2 rounded-full", rc.bar)} style={{ width: `${e.score}%` }} />
@@ -90,9 +84,9 @@ export default function RiskScoring() {
                       <span className={clsx("text-xs font-semibold", rc.text)}>{e.score}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-300">{e.factors}</td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{e.tactics}</td>
-                  <td className="px-4 py-3 text-gray-400">{e.updated}</td>
+                  <td className="px-5 py-3.5 text-gray-300">{e.factors}</td>
+                  <td className="px-5 py-3.5 text-xs text-gray-400">{e.tactics}</td>
+                  <td className="px-5 py-3.5 text-gray-400">{e.updated}</td>
                 </tr>
               );
             })}
@@ -100,7 +94,7 @@ export default function RiskScoring() {
         </table>
       </div>
 
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
         <h2 className="mb-4 text-lg font-semibold">Recent Notable Events</h2>
         <div className="space-y-3">
           {NOTABLE_EVENTS.map((ev) => {

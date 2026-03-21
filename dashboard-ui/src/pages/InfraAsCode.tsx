@@ -55,7 +55,7 @@ export default function InfraAsCode() {
       </p>
 
       <div className="rounded-lg border border-gray-700 bg-gray-900">
-        <div className="flex items-center justify-between border-b border-gray-700 px-4 py-2">
+        <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-2">
           <span className="text-sm font-medium text-gray-300">main.tf</span>
           <button
             onClick={handleCopy}
@@ -79,7 +79,7 @@ export default function InfraAsCode() {
                 <th className="px-4 py-2 text-left text-gray-400">Endpoints</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-gray-800/40">
               <tr>
                 <td className="px-4 py-2 text-gray-300">Agents</td>
                 <td className="px-4 py-2 font-mono text-xs text-gray-400">

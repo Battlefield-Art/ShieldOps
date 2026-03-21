@@ -43,8 +43,8 @@ export default function SecurityScoreGauge({
           cy="50"
           r="45"
           fill="none"
-          stroke="#374151"
-          strokeWidth="8"
+          stroke="#1f2937"
+          strokeWidth="7"
         />
         {/* Score arc */}
         <circle
@@ -66,7 +66,7 @@ export default function SecurityScoreGauge({
         className="absolute inset-0 flex flex-col items-center justify-center"
         style={{ width: dim, height: dim }}
       >
-        <span className={clsx("font-bold text-gray-100", textSize)}>
+        <span className={clsx("font-bold tracking-tight text-gray-50", textSize)}>
           {clampedScore.toFixed(0)}
         </span>
         <span className={clsx("text-gray-500", labelSize)}>{scoreLabel()}</span>

@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { ShieldCheck, BarChart3, AlertTriangle, Clock, ClipboardCheck } from "lucide-react";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 
 const MOCK_FRAMEWORKS = [
@@ -28,14 +30,15 @@ function scoreColor(score: number): string {
 
 
 export default function ComplianceAudit() {
+  const [running, setRunning] = useState(false);
+  const handleClick = () => { setRunning(true); setTimeout(() => setRunning(false), 2000); };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-100">Compliance Auditor</h1>
-        <button className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
-          <ClipboardCheck className="h-4 w-4" /> Run Audit
-        </button>
-      </div>
+      <PageHeader
+        title="Compliance Auditor"
+        action={{ label: "Run Audit", onClick: handleClick, icon: <ClipboardCheck className="h-4 w-4" />, loading: running }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Frameworks Assessed" value={5} icon={<ShieldCheck className="h-5 w-5" />} change={0} />
@@ -46,7 +49,7 @@ export default function ComplianceAudit() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {MOCK_FRAMEWORKS.map((fw) => (
-          <div key={fw.name} className="rounded-xl border border-gray-800 bg-gray-900 p-5 text-center">
+          <div key={fw.name} className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card text-center">
             <p className="text-sm font-medium text-gray-400">{fw.name}</p>
             <p className={`mt-2 text-3xl font-bold ${scoreColor(fw.score)}`}>{fw.score}%</p>
             <div className="mt-3 h-1.5 rounded-full bg-gray-800">
@@ -59,34 +62,34 @@ export default function ComplianceAudit() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
-        <div className="border-b border-gray-800 px-5 py-4">
-          <h2 className="text-lg font-semibold text-gray-100">Recent Audit Findings</h2>
+      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="border-b border-gray-800/60 px-5 py-4">
+          <h2 className="text-lg font-semibold text-gray-50">Recent Audit Findings</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left text-gray-400">
-                <th className="px-5 py-3 font-medium">Control ID</th>
-                <th className="px-5 py-3 font-medium">Framework</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Evidence</th>
-                <th className="px-5 py-3 font-medium">Gap</th>
+              <tr className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <th className="px-5 py-3.5 font-medium">Control ID</th>
+                <th className="px-5 py-3.5 font-medium">Framework</th>
+                <th className="px-5 py-3.5 font-medium">Status</th>
+                <th className="px-5 py-3.5 font-medium">Evidence</th>
+                <th className="px-5 py-3.5 font-medium">Gap</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800/40">
               {MOCK_FINDINGS.map((f, i) => (
-                <tr key={i} className="text-gray-300 hover:bg-gray-800/50">
-                  <td className="px-5 py-3 font-mono text-xs text-gray-100">{f.controlId}</td>
-                  <td className="px-5 py-3">{f.framework}</td>
-                  <td className="px-5 py-3">
+                <tr key={i} className="text-gray-300 hover:bg-gray-800/30">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-100">{f.controlId}</td>
+                  <td className="px-5 py-3.5">{f.framework}</td>
+                  <td className="px-5 py-3.5">
                     <StatusBadge
                       status={f.status}
                       variant={f.status === "compliant" ? "success" : f.status === "non-compliant" ? "error" : "warning"}
                     />
                   </td>
-                  <td className="px-5 py-3">{f.evidence}</td>
-                  <td className="px-5 py-3 text-gray-400">{f.gap}</td>
+                  <td className="px-5 py-3.5">{f.evidence}</td>
+                  <td className="px-5 py-3.5 text-gray-400">{f.gap}</td>
                 </tr>
               ))}
             </tbody>

@@ -284,7 +284,7 @@ export default function FleetOverview() {
       {/* Section 2 — Agent Health Grid */}
       <div>
         <div className="mb-4 flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Agent Health
           </h2>
           <LiveIndicator active={isLive} />
@@ -327,7 +327,7 @@ export default function FleetOverview() {
       {/* Section 3 — Recent Investigations */}
       <div>
         <div className="mb-4 flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Recent Investigations
           </h2>
           <LiveIndicator active={isLive} />
@@ -344,7 +344,7 @@ export default function FleetOverview() {
       {/* Section 4 — Recent Remediations */}
       <div>
         <div className="mb-4 flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Recent Remediations
           </h2>
           <LiveIndicator active={isLive} />

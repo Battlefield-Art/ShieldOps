@@ -60,8 +60,8 @@ export default function WarRoom() {
   return (
     <div className="flex h-full">
       {/* Left: War room list */}
-      <div className="w-80 shrink-0 border-r border-gray-800 flex flex-col">
-        <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
+      <div className="w-80 shrink-0 border-r border-gray-800/60 flex flex-col">
+        <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-3">
           <div className="flex items-center gap-2">
             <Siren className="h-4 w-4 text-red-400" />
             <h2 className="text-sm font-semibold text-gray-200">War Rooms</h2>
@@ -164,8 +164,8 @@ export default function WarRoom() {
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 h-full">
             {/* Timeline */}
-            <div className="lg:col-span-2 border-r border-gray-800 p-4">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-4">
+            <div className="lg:col-span-2 border-r border-gray-800/60 p-4">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-200 mb-4">
                 <Activity className="h-4 w-4 text-gray-500" />
                 Incident Timeline
               </h3>
@@ -201,7 +201,7 @@ export default function WarRoom() {
 
               {/* Agent activities */}
               <div className="mt-6">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-200 mb-3">
                   <Shield className="h-4 w-4 text-brand-400" />
                   Active Agents
                 </h3>
@@ -238,7 +238,7 @@ export default function WarRoom() {
 
             {/* Responders sidebar */}
             <div className="p-4">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-4">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-200 mb-4">
                 <Users className="h-4 w-4 text-gray-500" />
                 Responders ({room.responders.length})
               </h3>

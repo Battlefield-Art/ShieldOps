@@ -1,13 +1,10 @@
+import { useState } from "react";
 import { FileCheck, CheckCircle, AlertTriangle, Wrench, ScanSearch } from "lucide-react";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 type ComplianceStatus = "compliant" | "partial" | "non-compliant";
-
-const STATUS_CLASSES: Record<ComplianceStatus, string> = {
-  compliant: "bg-green-500/10 text-green-400 ring-green-500/20",
-  partial: "bg-yellow-500/10 text-yellow-400 ring-yellow-500/20",
-  "non-compliant": "bg-red-500/10 text-red-400 ring-red-500/20",
-};
 
 const MOCK_SERVICES = [
   { service: "checkout-api", scope: "resource", violations: 0, complianceScore: 100, status: "compliant" as ComplianceStatus },
@@ -19,14 +16,20 @@ const MOCK_SERVICES = [
 ];
 
 export default function OTelSemantic() {
+  const [scanning, setScanning] = useState(false);
+  const handleScan = () => { setScanning(true); setTimeout(() => setScanning(false), 2000); };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-100">OTel Semantic Conventions</h1>
-        <button className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
-          <ScanSearch className="h-4 w-4" /> Scan Services
-        </button>
-      </div>
+      <PageHeader
+        title="OTel Semantic Conventions"
+        action={{
+          label: "Scan Services",
+          onClick: handleScan,
+          icon: <ScanSearch className="h-4 w-4" />,
+          loading: scanning,
+        }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Services Scanned" value={86} icon={<FileCheck className="h-5 w-5" />} change={2.4} />
@@ -35,32 +38,30 @@ export default function OTelSemantic() {
         <MetricCard label="Auto-Fixable" value={22} icon={<Wrench className="h-5 w-5" />} change={6.7} />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
-        <div className="border-b border-gray-800 px-5 py-4">
-          <h2 className="text-lg font-semibold text-gray-100">Service Compliance</h2>
+      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="border-b border-gray-800/60 px-5 py-4">
+          <h2 className="text-lg font-semibold text-gray-50">Service Compliance</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left text-gray-400">
-                <th className="px-5 py-3 font-medium">Service</th>
-                <th className="px-5 py-3 font-medium">Scope</th>
-                <th className="px-5 py-3 font-medium">Violations</th>
-                <th className="px-5 py-3 font-medium">Compliance Score</th>
-                <th className="px-5 py-3 font-medium">Status</th>
+              <tr className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <th className="px-5 py-3.5 font-medium">Service</th>
+                <th className="px-5 py-3.5 font-medium">Scope</th>
+                <th className="px-5 py-3.5 font-medium">Violations</th>
+                <th className="px-5 py-3.5 font-medium">Compliance Score</th>
+                <th className="px-5 py-3.5 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800/40">
               {MOCK_SERVICES.map((s, i) => (
-                <tr key={i} className="text-gray-300 hover:bg-gray-800/50">
-                  <td className="px-5 py-3 font-mono text-xs text-gray-100">{s.service}</td>
-                  <td className="px-5 py-3">{s.scope}</td>
-                  <td className="px-5 py-3">{s.violations}</td>
-                  <td className="px-5 py-3">{s.complianceScore}%</td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${STATUS_CLASSES[s.status]}`}>
-                      {s.status}
-                    </span>
+                <tr key={i} className="text-gray-300 hover:bg-gray-800/30">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-100">{s.service}</td>
+                  <td className="px-5 py-3.5">{s.scope}</td>
+                  <td className="px-5 py-3.5">{s.violations}</td>
+                  <td className="px-5 py-3.5">{s.complianceScore}%</td>
+                  <td className="px-5 py-3.5">
+                    <StatusBadge status={s.status === "non-compliant" ? "non_compliant" : s.status} />
                   </td>
                 </tr>
               ))}

@@ -133,42 +133,42 @@ export default function PipelineRuns() {
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-12 text-center">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 text-center shadow-card">
           <p className="text-sm text-gray-500">No pipeline runs match your filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-800">
+        <div className="overflow-hidden rounded-xl border border-gray-800/80">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 bg-gray-900">
-                <th className="w-8 px-4 py-3" />
+              <tr className="border-b border-gray-800/60 bg-gray-900">
+                <th className="w-8 px-5 py-3.5" />
                 <th
-                  className="cursor-pointer px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 select-none"
+                  className="cursor-pointer px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 select-none"
                   onClick={() => handleSort("status")}
                 >
                   Status{sortIndicator("status")}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Alert Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Namespace
                 </th>
                 <th
-                  className="cursor-pointer px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 select-none"
+                  className="cursor-pointer px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 select-none"
                   onClick={() => handleSort("started_at")}
                 >
                   Started{sortIndicator("started_at")}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Duration
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800 bg-gray-950">
+            <tbody className="divide-y divide-gray-800/40 bg-gray-950">
               {filtered.map((run) => {
                 const isExpanded = expandedRunId === run.id;
                 return (
@@ -210,27 +210,27 @@ function RunRow({
         onClick={onToggle}
         className="cursor-pointer transition-colors hover:bg-gray-900"
       >
-        <td className="px-4 py-3 text-gray-500">
+        <td className="px-5 py-3.5 text-gray-500">
           {isExpanded ? (
             <ChevronDown className="h-4 w-4" />
           ) : (
             <ChevronRight className="h-4 w-4" />
           )}
         </td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-3.5">
           <StatusBadge status={run.status} />
         </td>
-        <td className="px-4 py-3 font-medium text-gray-100">{run.alert_name}</td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-3.5 font-medium text-gray-100">{run.alert_name}</td>
+        <td className="px-5 py-3.5">
           <span className="font-mono text-xs text-gray-400">{run.namespace}/{run.service}</span>
         </td>
-        <td className="px-4 py-3 text-xs text-gray-400">
+        <td className="px-5 py-3.5 text-xs text-gray-400">
           {formatDistanceToNow(new Date(run.started_at), { addSuffix: true })}
         </td>
-        <td className="px-4 py-3 text-xs text-gray-400">
+        <td className="px-5 py-3.5 text-xs text-gray-400">
           {formatDuration(run.duration_seconds)}
         </td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-3.5">
           {run.status === "awaiting_approval" && (
             <button
               onClick={(e) => {

@@ -47,29 +47,29 @@ export default function LogsPipeline() {
         <MetricCard label="Volume/Min" value={"24.5K"} icon={<Activity className="h-5 w-5" />} change={8.3} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-xs uppercase text-gray-400">
             <tr>
-              <th className="px-4 py-3">Service</th>
-              <th className="px-4 py-3">Source</th>
-              <th className="px-4 py-3">Format</th>
-              <th className="px-4 py-3">Volume/Min</th>
-              <th className="px-4 py-3">Parse %</th>
-              <th className="px-4 py-3">Correlated %</th>
+              <th className="px-5 py-3.5">Service</th>
+              <th className="px-5 py-3.5">Source</th>
+              <th className="px-5 py-3.5">Format</th>
+              <th className="px-5 py-3.5">Volume/Min</th>
+              <th className="px-5 py-3.5">Parse %</th>
+              <th className="px-5 py-3.5">Correlated %</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {LOG_SOURCES.map((l) => (
-              <tr key={l.service} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{l.service}</td>
-                <td className="px-4 py-3">
+              <tr key={l.service} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{l.service}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", SOURCE_COLORS[l.source])}>{l.source}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-300">{l.format}</td>
-                <td className="px-4 py-3 text-gray-300">{l.volume.toLocaleString()}</td>
-                <td className={clsx("px-4 py-3 font-medium", parseColor(l.parse))}>{l.parse}%</td>
-                <td className={clsx("px-4 py-3 font-medium", parseColor(l.correlated))}>{l.correlated}%</td>
+                <td className="px-5 py-3.5 text-gray-300">{l.format}</td>
+                <td className="px-5 py-3.5 text-gray-300">{l.volume.toLocaleString()}</td>
+                <td className={clsx("px-5 py-3.5 font-medium", parseColor(l.parse))}>{l.parse}%</td>
+                <td className={clsx("px-5 py-3.5 font-medium", parseColor(l.correlated))}>{l.correlated}%</td>
               </tr>
             ))}
           </tbody>

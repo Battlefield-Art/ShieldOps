@@ -421,39 +421,39 @@ export default function ScheduledTasks() {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-800">
+        <div className="overflow-x-auto rounded-xl border border-gray-800/80 shadow-card">
           <table className="w-full min-w-[800px] text-sm">
             <thead>
-              <tr className="border-b border-gray-800 bg-gray-900">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <tr className="border-b border-gray-800/60 bg-gray-900">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Task
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Frequency
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Last Run
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Next Run
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Runs
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800 bg-gray-950">
+            <tbody className="divide-y divide-gray-800/40 bg-gray-950">
               {tasks.map((task) => {
                 const badge = FREQUENCY_BADGE[task.frequency];
                 return (
                   <tr key={task.id} className="transition-colors hover:bg-gray-900/50">
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <div>
                         <p className="font-medium text-gray-100">{task.name}</p>
                         <p className="mt-0.5 line-clamp-1 text-xs text-gray-500">{task.prompt}</p>
@@ -462,7 +462,7 @@ export default function ScheduledTasks() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${badge.bg} ${badge.text}`}
                       >
@@ -474,7 +474,7 @@ export default function ScheduledTasks() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <button
                         type="button"
                         onClick={() => handleToggle(task)}
@@ -508,18 +508,18 @@ export default function ScheduledTasks() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-400">
+                    <td className="px-5 py-3.5 text-xs text-gray-400">
                       {task.last_run_at ? formatRelativeTime(task.last_run_at) : "--"}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-400">
+                    <td className="px-5 py-3.5 text-xs text-gray-400">
                       {task.enabled && task.next_run_at
                         ? formatRelativeTime(task.next_run_at)
                         : "--"}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-400">
+                    <td className="px-5 py-3.5 text-xs text-gray-400">
                       {task.run_count.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
@@ -562,8 +562,8 @@ export default function ScheduledTasks() {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" role="dialog" aria-modal="true" aria-label={editingTask ? "Edit schedule" : "Create schedule"}>
           <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-100">
+            <div className="flex items-center justify-between border-b border-gray-800/60 px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-50">
                 {editingTask ? "Edit Schedule" : "Create Schedule"}
               </h2>
               <button
@@ -663,7 +663,7 @@ export default function ScheduledTasks() {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-end gap-3 border-t border-gray-800 px-6 py-4">
+            <div className="flex items-center justify-end gap-3 border-t border-gray-800/60 px-6 py-4">
               <button
                 type="button"
                 onClick={closeModal}

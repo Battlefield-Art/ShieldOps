@@ -79,7 +79,7 @@ function InviteModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-900 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Invite User
           </h2>
           <button
@@ -364,24 +364,24 @@ export default function UserManagement() {
       </div>
 
       {/* Users Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-800 text-left text-xs uppercase tracking-wider text-gray-500">
-              <th className="px-4 py-3">User</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Actions</th>
+            <tr className="border-b border-gray-800/60 text-left text-xs uppercase tracking-wider text-gray-500">
+              <th className="px-5 py-3.5">User</th>
+              <th className="px-5 py-3.5">Role</th>
+              <th className="px-5 py-3.5">Status</th>
+              <th className="px-5 py-3.5">Created</th>
+              <th className="px-5 py-3.5">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {users.map((u) => (
               <tr
                 key={u.id}
-                className="transition-colors hover:bg-gray-800/50"
+                className="transition-colors hover:bg-gray-800/30"
               >
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <div className="font-medium text-gray-100">
                     {u.name}
                   </div>
@@ -389,7 +389,7 @@ export default function UserManagement() {
                     {u.email}
                   </div>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <select
                     value={u.role}
                     onChange={(e) =>
@@ -414,7 +414,7 @@ export default function UserManagement() {
                     ))}
                   </select>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <span
                     className={clsx(
                       "rounded-full px-2.5 py-0.5",
@@ -427,14 +427,14 @@ export default function UserManagement() {
                     {u.is_active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-500">
+                <td className="px-5 py-3.5 text-xs text-gray-500">
                   {u.created_at
                     ? new Date(
                         u.created_at
                       ).toLocaleDateString()
                     : "--"}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   {u.id !== currentUser?.id && (
                     <button
                       onClick={() => handleToggleActive(u)}
@@ -458,7 +458,7 @@ export default function UserManagement() {
               <tr>
                 <td
                   colSpan={5}
-                  className="px-4 py-12 text-center text-gray-500"
+                  className="px-5 py-12 text-center text-gray-500"
                 >
                   <Users className="mx-auto h-8 w-8 text-gray-600" />
                   <p className="mt-2">

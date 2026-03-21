@@ -27,7 +27,7 @@ export default function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-12 text-center">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 text-center shadow-card">
         <p className="text-sm text-gray-500">{emptyMessage}</p>
       </div>
     );
@@ -42,13 +42,13 @@ export default function DataTable<T>({
             key={keyExtractor(row)}
             onClick={() => onRowClick?.(row)}
             className={clsx(
-              "rounded-xl border border-gray-800 bg-gray-900 p-4",
-              onRowClick && "cursor-pointer hover:border-gray-700",
+              "rounded-xl border border-gray-800/80 bg-gray-900 p-4 shadow-card",
+              onRowClick && "cursor-pointer hover:border-gray-700 hover:shadow-card-hover",
             )}
           >
             {columns.map((col) => (
               <div key={col.key} className="flex items-baseline justify-between py-1.5">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                   {col.header}
                 </span>
                 <span className={clsx("text-sm text-gray-200", col.className)}>
@@ -62,17 +62,17 @@ export default function DataTable<T>({
     );
   }
 
-  // Desktop: standard table
+  // Desktop: premium table
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-800">
-      <table className="w-full text-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-800/80 shadow-card">
+      <table className="table-premium w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-800 bg-gray-900">
+          <tr className="border-b border-gray-800/60 bg-gray-900/80">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={clsx(
-                  "px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500",
+                  "px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400",
                   col.className,
                 )}
               >
@@ -81,18 +81,20 @@ export default function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-800 bg-gray-950">
+        <tbody className="divide-y divide-gray-800/40 bg-gray-950">
           {data.map((row) => (
             <tr
               key={keyExtractor(row)}
               onClick={() => onRowClick?.(row)}
               className={clsx(
-                "transition-colors",
-                onRowClick && "cursor-pointer hover:bg-gray-900",
+                "transition-colors duration-150",
+                onRowClick
+                  ? "cursor-pointer hover:bg-gray-900/60"
+                  : "hover:bg-gray-900/40",
               )}
             >
               {columns.map((col) => (
-                <td key={col.key} className={clsx("px-4 py-3", col.className)}>
+                <td key={col.key} className={clsx("px-5 py-3.5", col.className)}>
                   {col.render(row)}
                 </td>
               ))}

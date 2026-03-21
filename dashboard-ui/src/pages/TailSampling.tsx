@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Filter, Activity, DollarSign, Shield, Loader2 } from "lucide-react";
+import { Filter, Activity, DollarSign, Shield } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 const POLICIES = [
   { name: "High Latency Capture", type: "latency", threshold: "500ms", rate: 100, traces: 1240, status: "active" },
@@ -19,24 +21,20 @@ const TYPE_COLORS: Record<string, string> = {
   composite: "bg-sky-500/10 text-sky-400 ring-sky-500/20",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active: "text-green-400",
-  paused: "text-gray-400",
-};
-
 export default function TailSampling() {
   const [running, setRunning] = useState(false);
   const handleClick = () => { setRunning(true); setTimeout(() => setRunning(false), 2000); };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tail-Based Sampling</h1>
-        <button onClick={handleClick} disabled={running} className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50">
-          {running && <Loader2 className="h-4 w-4 animate-spin" />}
-          Design Policies
-        </button>
-      </div>
+      <PageHeader
+        title="Tail-Based Sampling"
+        action={{
+          label: "Design Policies",
+          onClick: handleClick,
+          loading: running,
+        }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Active Policies" value={5} icon={<Filter className="h-5 w-5" />} change={1.0} />
@@ -45,29 +43,29 @@ export default function TailSampling() {
         <MetricCard label="Coverage Score" value={94} icon={<Shield className="h-5 w-5" />} change={1.5} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
-              <th className="px-4 py-3">Policy Name</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Threshold</th>
-              <th className="px-4 py-3">Sample Rate %</th>
-              <th className="px-4 py-3">Traces/Min</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-5 py-3.5">Policy Name</th>
+              <th className="px-5 py-3.5">Type</th>
+              <th className="px-5 py-3.5">Threshold</th>
+              <th className="px-5 py-3.5">Sample Rate %</th>
+              <th className="px-5 py-3.5">Traces/Min</th>
+              <th className="px-5 py-3.5">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {POLICIES.map((p) => (
-              <tr key={p.name} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{p.name}</td>
-                <td className="px-4 py-3">
+              <tr key={p.name} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{p.name}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", TYPE_COLORS[p.type])}>{p.type}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-300">{p.threshold}</td>
-                <td className="px-4 py-3 text-gray-300">{p.rate}%</td>
-                <td className="px-4 py-3 text-gray-300">{p.traces.toLocaleString()}</td>
-                <td className={clsx("px-4 py-3 text-sm font-medium", STATUS_COLORS[p.status])}>{p.status}</td>
+                <td className="px-5 py-3.5 text-gray-300">{p.threshold}</td>
+                <td className="px-5 py-3.5 text-gray-300">{p.rate}%</td>
+                <td className="px-5 py-3.5 text-gray-300">{p.traces.toLocaleString()}</td>
+                <td className="px-5 py-3.5"><StatusBadge status={p.status} /></td>
               </tr>
             ))}
           </tbody>

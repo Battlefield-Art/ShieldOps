@@ -53,17 +53,17 @@ export default function Login() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-brand-500/10">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/10 ring-1 ring-brand-500/20 shadow-glow-brand">
             <Shield className="h-8 w-8 text-brand-500" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-gray-100">ShieldOps</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="mt-4 text-2xl font-bold text-gray-50">ShieldOps</h1>
+          <p className="mt-1.5 text-sm text-gray-500">
             Autonomous SRE Platform
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-6">
+        <div className="rounded-2xl border border-gray-800/80 bg-gray-900 p-6 shadow-elevated">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
@@ -80,7 +80,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                className="w-full rounded-lg border border-gray-700/80 bg-gray-800/80 px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
 
@@ -99,7 +99,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                className="w-full rounded-lg border border-gray-700/80 bg-gray-800/80 px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
 
@@ -114,7 +114,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-glow-brand transition-all duration-150 hover:bg-brand-500 hover:shadow-glow-brand-lg disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {loading ? "Signing in..." : "Sign In"}
@@ -122,17 +122,17 @@ export default function Login() {
           </form>
 
           {/* SSO Divider */}
-          <div className="my-4 flex items-center gap-3">
-            <div className="h-px flex-1 bg-gray-700" />
-            <span className="text-xs text-gray-500">or</span>
-            <div className="h-px flex-1 bg-gray-700" />
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-gray-800" />
+            <span className="text-xs text-gray-600">or</span>
+            <div className="h-px flex-1 bg-gray-800" />
           </div>
 
           {/* SSO Button */}
           <button
             type="button"
             onClick={handleSSOLogin}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:border-gray-600 hover:bg-gray-750 hover:text-gray-100"
+            className="btn-secondary w-full justify-center py-2.5"
           >
             <KeyRound className="h-4 w-4" />
             Sign in with SSO

@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Play, AlertTriangle, ShieldAlert, CheckCircle, Loader2 } from "lucide-react";
+import { Play, AlertTriangle, ShieldAlert, CheckCircle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 const FINDINGS = [
   { finding: "SQL Injection in /api/v1/users", category: "vulnerability", severity: "critical", resource: "payment-api", cve: "CVE-2024-3271", remediation: "Parameterize query" },
@@ -33,13 +35,10 @@ export default function SecurityTesting() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Security Testing</h1>
-        <button onClick={handleClick} disabled={running} className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50">
-          {running && <Loader2 className="h-4 w-4 animate-spin" />}
-          Run Security Test
-        </button>
-      </div>
+      <PageHeader
+        title="Security Testing"
+        action={{ label: "Run Security Test", onClick: handleClick, loading: running }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Tests Run" value={156} icon={<Play className="h-5 w-5" />} change={12.0} />
@@ -48,31 +47,34 @@ export default function SecurityTesting() {
         <MetricCard label="Pass Rate %" value={91} icon={<CheckCircle className="h-5 w-5" />} change={3.4} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
-              <th className="px-4 py-3">Finding</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Severity</th>
-              <th className="px-4 py-3">Resource</th>
-              <th className="px-4 py-3">CVE ID</th>
-              <th className="px-4 py-3">Remediation</th>
+              <th className="px-5 py-3.5">Finding</th>
+              <th className="px-5 py-3.5">Category</th>
+              <th className="px-5 py-3.5">Severity</th>
+              <th className="px-5 py-3.5">Resource</th>
+              <th className="px-5 py-3.5">CVE ID</th>
+              <th className="px-5 py-3.5">Remediation</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {FINDINGS.map((f) => (
-              <tr key={f.finding} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{f.finding}</td>
-                <td className="px-4 py-3">
+              <tr key={f.finding} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{f.finding}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", CATEGORY_COLORS[f.category])}>{f.category}</span>
                 </td>
-                <td className="px-4 py-3">
-                  <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", SEVERITY_COLORS[f.severity])}>{f.severity}</span>
+                <td className="px-5 py-3.5">
+                  <StatusBadge
+                    status={f.severity}
+                    variant={f.severity === "critical" ? "error" : f.severity === "high" ? "warning" : f.severity === "medium" ? "info" : "success"}
+                  />
                 </td>
-                <td className="px-4 py-3 text-gray-300">{f.resource}</td>
-                <td className="px-4 py-3 text-gray-400">{f.cve}</td>
-                <td className="px-4 py-3 text-gray-400">{f.remediation}</td>
+                <td className="px-5 py-3.5 text-gray-300">{f.resource}</td>
+                <td className="px-5 py-3.5 text-gray-400">{f.cve}</td>
+                <td className="px-5 py-3.5 text-gray-400">{f.remediation}</td>
               </tr>
             ))}
           </tbody>

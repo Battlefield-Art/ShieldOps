@@ -18,6 +18,7 @@ import { Activity, CheckCircle, Clock, Bot, BarChart3, Globe } from "lucide-reac
 import { get } from "../api/client";
 import type { AnalyticsSummary, Agent } from "../api/types";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -151,11 +152,11 @@ function MttrTrendChart() {
     })) ?? [];
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-blue-400" />
-          <h2 className="text-lg font-semibold text-gray-100">MTTR Trend</h2>
+          <h2 className="text-lg font-semibold text-gray-50">MTTR Trend</h2>
         </div>
         {data && data.current_mttr_minutes > 0 && (
           <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
@@ -242,11 +243,11 @@ function ResolutionRateChart() {
     : [];
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CheckCircle className="h-5 w-5 text-emerald-400" />
-          <h2 className="text-lg font-semibold text-gray-100">Resolution Rate</h2>
+          <h2 className="text-lg font-semibold text-gray-50">Resolution Rate</h2>
         </div>
         {data && data.total_incidents > 0 && (
           <span className="rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-gray-400">
@@ -341,10 +342,10 @@ function AgentAccuracyGauge() {
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
       <div className="mb-4 flex items-center gap-2">
         <Bot className="h-5 w-5 text-sky-400" />
-        <h2 className="text-lg font-semibold text-gray-100">Agent Accuracy</h2>
+        <h2 className="text-lg font-semibold text-gray-50">Agent Accuracy</h2>
       </div>
 
       {isLoading && (
@@ -458,7 +459,7 @@ function ApiUsageSection() {
       {/* Divider heading */}
       <div className="flex items-center gap-2">
         <Globe className="h-5 w-5 text-cyan-400" />
-        <h2 className="text-lg font-semibold text-gray-100">API Usage (last 24h)</h2>
+        <h2 className="text-lg font-semibold text-gray-50">API Usage (last 24h)</h2>
       </div>
 
       {/* Summary cards */}
@@ -482,7 +483,7 @@ function ApiUsageSection() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Top endpoints table */}
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-gray-300">Top Endpoints</h3>
           {endpoints.length === 0 ? (
             <p className="py-8 text-center text-sm text-gray-500">No endpoint data yet.</p>
@@ -490,7 +491,7 @@ function ApiUsageSection() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-gray-800 text-xs text-gray-500">
+                  <tr className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                     <th className="pb-2 pr-4">Endpoint</th>
                     <th className="pb-2 pr-4 text-right">Calls</th>
                     <th className="pb-2 text-right">Avg Latency</th>
@@ -498,7 +499,7 @@ function ApiUsageSection() {
                 </thead>
                 <tbody>
                   {endpoints.map((ep) => (
-                    <tr key={ep.endpoint} className="border-b border-gray-800/50">
+                    <tr key={ep.endpoint} className="border-b border-gray-800/30">
                       <td className="py-2 pr-4 font-mono text-xs text-gray-300">
                         {ep.endpoint}
                       </td>
@@ -517,7 +518,7 @@ function ApiUsageSection() {
         </div>
 
         {/* Hourly volume line chart */}
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-gray-300">Hourly Volume</h3>
           {hourlyData.length === 0 ? (
             <p className="py-8 text-center text-sm text-gray-500">No hourly data yet.</p>
@@ -561,21 +562,21 @@ function ApiUsageSection() {
 
       {/* Per-org breakdown table (admin only — hidden when 403) */}
       {orgQuery.isSuccess && orgData.length > 0 && (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-gray-300">
             Usage by Organization
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-gray-800 text-xs text-gray-500">
+                <tr className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                   <th className="pb-2 pr-4">Organization</th>
                   <th className="pb-2 text-right">Total Calls</th>
                 </tr>
               </thead>
               <tbody>
                 {orgData.map((org) => (
-                  <tr key={org.org_id} className="border-b border-gray-800/50">
+                  <tr key={org.org_id} className="border-b border-gray-800/30">
                     <td className="py-2 pr-4 text-gray-300">
                       {org.org_id === "_anonymous" ? "(anonymous)" : org.org_id}
                     </td>
@@ -637,12 +638,10 @@ export default function Analytics() {
   return (
     <div className="space-y-8">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-100">Analytics</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Platform performance and resolution metrics
-        </p>
-      </div>
+      <PageHeader
+        title="Analytics"
+        description="Platform performance and resolution metrics"
+      />
 
       {/* Section 1 — Summary Metrics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -671,8 +670,8 @@ export default function Analytics() {
       {/* Section 2 + 3 — Pie Charts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Investigations by Status */}
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-          <h2 className="mb-4 text-lg font-semibold text-gray-100">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+          <h2 className="mb-4 text-lg font-semibold text-gray-50">
             Investigations by Status
           </h2>
           {investigationPieData.length === 0 ? (
@@ -710,8 +709,8 @@ export default function Analytics() {
         </div>
 
         {/* Remediations by Status */}
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-          <h2 className="mb-4 text-lg font-semibold text-gray-100">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+          <h2 className="mb-4 text-lg font-semibold text-gray-50">
             Remediations by Status
           </h2>
           {remediationPieData.length === 0 ? (

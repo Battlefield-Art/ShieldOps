@@ -5,7 +5,6 @@ import {
   Scan,
   AlertTriangle,
   Clock,
-  Loader2,
   Shield,
   Bug,
 } from "lucide-react";
@@ -29,6 +28,7 @@ import type { Column } from "../components/DataTable";
 import MetricCard from "../components/MetricCard";
 import DataTable from "../components/DataTable";
 import StatusBadge from "../components/StatusBadge";
+import PageHeader from "../components/PageHeader";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const TABS = ["Overview", "Vulnerabilities", "Compliance", "Scans"] as const;
@@ -137,33 +137,25 @@ export default function Security() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-100">Security</h1>
-        <button
-          onClick={() => runScan.mutate()}
-          disabled={runScan.isPending}
-          className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-60"
-        >
-          {runScan.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Scan className="h-4 w-4" />
-          )}
-          Run Scan
-        </button>
-      </div>
+      <PageHeader
+        title="Security"
+        action={{
+          label: "Run Scan",
+          onClick: () => runScan.mutate(),
+          icon: <Scan className="h-4 w-4" />,
+          loading: runScan.isPending,
+        }}
+      />
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-gray-800/50 p-1">
+      <div className="tab-bar">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={clsx(
-              "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors",
-              activeTab === tab
-                ? "bg-gray-700 text-gray-100"
-                : "text-gray-400 hover:text-gray-200"
+              "tab-item",
+              activeTab === tab && "tab-item-active",
             )}
           >
             {tab}
@@ -201,8 +193,8 @@ export default function Security() {
           {/* Charts */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Severity Distribution */}
-            <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+              <h3 className="section-heading mb-4">
                 Severity Distribution
               </h3>
               <ResponsiveContainer width="100%" height={250}>
@@ -245,8 +237,8 @@ export default function Security() {
             </div>
 
             {/* Status Distribution */}
-            <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+              <h3 className="section-heading mb-4">
                 Status Distribution
               </h3>
               <ResponsiveContainer width="100%" height={280}>
@@ -303,8 +295,8 @@ export default function Security() {
 
       {/* ── Compliance tab ────────────────────────────────────────────── */}
       {activeTab === "Compliance" && (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-          <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+          <h3 className="section-heading mb-4">
             Compliance Frameworks
           </h3>
           <p className="text-sm text-gray-400">

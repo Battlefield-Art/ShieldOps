@@ -178,7 +178,7 @@ function TemplateCard({
   return (
     <div
       className={clsx(
-        "group flex flex-col rounded-xl border border-gray-800 bg-gray-900",
+        "group flex flex-col rounded-xl border border-gray-800/80 bg-gray-900 shadow-card",
         "transition-all hover:border-gray-700 hover:shadow-lg hover:shadow-black/20"
       )}
     >
@@ -267,7 +267,7 @@ function TemplateCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 border-t border-gray-800 p-3">
+      <div className="flex items-center gap-2 border-t border-gray-800/60 p-3">
         <button
           onClick={() => onPreview(template)}
           className={clsx(
@@ -345,7 +345,7 @@ function DeployModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-800 p-6">
+        <div className="flex items-start justify-between border-b border-gray-800/60 p-6">
           <div>
             <h2 className="text-xl font-bold text-gray-100">
               {deployResult ? "Deployment Successful" : `Deploy: ${template.name}`}
@@ -447,7 +447,7 @@ function DeployModal({
             {/* Parameters */}
             {template.parameters.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-300">
+                <h3 className="text-sm font-semibold text-gray-200">
                   Parameters
                 </h3>
                 {template.parameters.map((p) => (
@@ -569,7 +569,7 @@ function PreviewModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-800 p-6">
+        <div className="flex items-start justify-between border-b border-gray-800/60 p-6">
           <div className="flex items-start gap-4">
             <div
               className={clsx(
@@ -728,7 +728,7 @@ function PreviewModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 border-t border-gray-800 p-6">
+        <div className="flex items-center gap-3 border-t border-gray-800/60 p-6">
           <button
             onClick={onClose}
             className="flex-1 rounded-lg border border-gray-700 py-2 text-sm font-medium text-gray-400 hover:border-gray-600 hover:text-gray-300"
@@ -777,7 +777,7 @@ function FilterSidebar({
   return (
     <div className="w-56 shrink-0 space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-200">
           <Filter className="h-4 w-4" />
           Filters
         </h3>
@@ -977,7 +977,7 @@ export default function Marketplace() {
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-8">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-8 shadow-card">
         <div className="flex items-center gap-3">
           <Store className="h-8 w-8 text-brand-400" />
           <h1 className="text-2xl font-bold text-gray-100">
@@ -1053,7 +1053,7 @@ export default function Marketplace() {
         {/* Template grid */}
         <div className="flex-1">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800 bg-gray-900 py-16">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800/80 bg-gray-900 py-16 shadow-card">
               <Store className="h-10 w-10 text-gray-600" />
               <p className="mt-3 text-gray-400">
                 {searchTerm || selectedCategories.size > 0

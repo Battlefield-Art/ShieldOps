@@ -54,7 +54,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
       />
 
       {/* Drawer */}
-      <aside className="absolute left-0 top-0 h-full w-72 animate-slide-in-left border-r border-gray-800 bg-gray-900">
+      <aside className="absolute left-0 top-0 h-full w-72 animate-slide-in-left border-r border-gray-800/60 bg-gray-900">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-5">
           <Logo />
@@ -108,10 +108,10 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                       end={to === "/app"}
                       className={({ isActive }) =>
                         clsx(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500/40",
                           isActive
-                            ? "bg-brand-600/20 text-brand-400"
-                            : "text-gray-400 hover:bg-gray-800 hover:text-gray-200",
+                            ? "bg-brand-500/10 text-brand-400"
+                            : "text-gray-400 hover:bg-gray-800/70 hover:text-gray-200",
                         )
                       }
                     >

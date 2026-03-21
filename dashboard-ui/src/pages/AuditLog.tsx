@@ -173,42 +173,42 @@ export default function AuditLog() {
 
       {/* Table */}
       {!isLoading && !isError && (
-        <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+        <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left text-xs uppercase tracking-wider text-gray-500">
-                <th className="px-4 py-3">Timestamp</th>
-                <th className="px-4 py-3">Agent</th>
-                <th className="px-4 py-3">Action</th>
-                <th className="px-4 py-3">Target</th>
-                <th className="px-4 py-3">Env</th>
-                <th className="px-4 py-3">Risk</th>
-                <th className="px-4 py-3">Outcome</th>
-                <th className="px-4 py-3">Actor</th>
+              <tr className="border-b border-gray-800/60 text-left text-xs uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5">Timestamp</th>
+                <th className="px-5 py-3.5">Agent</th>
+                <th className="px-5 py-3.5">Action</th>
+                <th className="px-5 py-3.5">Target</th>
+                <th className="px-5 py-3.5">Env</th>
+                <th className="px-5 py-3.5">Risk</th>
+                <th className="px-5 py-3.5">Outcome</th>
+                <th className="px-5 py-3.5">Actor</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800/40">
               {entries.map((entry) => (
                 <tr
                   key={entry.id}
-                  className="transition-colors hover:bg-gray-800/50"
+                  className="transition-colors hover:bg-gray-800/30"
                 >
-                  <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-400">
+                  <td className="whitespace-nowrap px-5 py-3.5 text-xs text-gray-400">
                     {formatTimestamp(entry.timestamp)}
                   </td>
-                  <td className="px-4 py-3 capitalize text-gray-300">
+                  <td className="px-5 py-3.5 capitalize text-gray-300">
                     {entry.agent_type}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-200">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-200">
                     {entry.action}
                   </td>
-                  <td className="max-w-[200px] truncate px-4 py-3 text-gray-400">
+                  <td className="max-w-[200px] truncate px-5 py-3.5 text-gray-400">
                     {entry.target_resource}
                   </td>
-                  <td className="px-4 py-3 text-gray-400">
+                  <td className="px-5 py-3.5 text-gray-400">
                     {entry.environment}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <span
                       className={clsx(
                         "font-semibold capitalize",
@@ -218,7 +218,7 @@ export default function AuditLog() {
                       {entry.risk_level}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <span
                       className={clsx(
                         "rounded-full px-2 py-0.5 text-xs font-medium",
@@ -228,7 +228,7 @@ export default function AuditLog() {
                       {entry.outcome.replace(/_/g, " ")}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">
+                  <td className="px-5 py-3.5 text-xs text-gray-400">
                     {entry.actor}
                   </td>
                 </tr>
@@ -237,7 +237,7 @@ export default function AuditLog() {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-12 text-center text-gray-500"
+                    className="px-5 py-12 text-center text-gray-500"
                   >
                     <FileText className="mx-auto mb-2 h-8 w-8 text-gray-600" />
                     No audit log entries found.

@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 const VARIANT_CLASSES: Record<string, string> = {
   success: "bg-green-500/10 text-green-400 ring-green-500/20",
-  warning: "bg-yellow-500/10 text-yellow-400 ring-yellow-500/20",
+  warning: "bg-amber-500/10 text-amber-400 ring-amber-500/20",
   error: "bg-red-500/10 text-red-400 ring-red-500/20",
   info: "bg-blue-500/10 text-blue-400 ring-blue-500/20",
   cyan: "bg-cyan-500/10 text-cyan-400 ring-cyan-500/20",
@@ -66,9 +66,9 @@ export default function StatusBadge({ status, size = "sm", variant }: StatusBadg
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1.5 rounded-full font-medium ring-1 ring-inset",
-        size === "sm" && "px-2 py-0.5 text-xs",
-        size === "md" && "px-2.5 py-1 text-sm",
+        "inline-flex items-center gap-1.5 rounded-md font-medium ring-1 ring-inset",
+        size === "sm" && "px-2 py-0.5 text-[11px]",
+        size === "md" && "px-2.5 py-1 text-xs",
         VARIANT_CLASSES[v],
       )}
     >
@@ -76,9 +76,9 @@ export default function StatusBadge({ status, size = "sm", variant }: StatusBadg
         <span className="relative flex h-1.5 w-1.5">
           <span
             className={clsx(
-              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
+              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-60",
               v === "success" && "bg-green-400",
-              v === "warning" && "bg-yellow-400",
+              v === "warning" && "bg-amber-400",
               v === "error" && "bg-red-400",
             )}
           />
@@ -86,7 +86,7 @@ export default function StatusBadge({ status, size = "sm", variant }: StatusBadg
             className={clsx(
               "relative inline-flex h-1.5 w-1.5 rounded-full",
               v === "success" && "bg-green-400",
-              v === "warning" && "bg-yellow-400",
+              v === "warning" && "bg-amber-400",
               v === "error" && "bg-red-400",
             )}
           />

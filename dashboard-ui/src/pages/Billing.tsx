@@ -170,7 +170,7 @@ export default function Billing() {
       </div>
 
       {/* Current Plan Summary */}
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <section className="rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-gray-400">Current Plan</p>
@@ -212,8 +212,8 @@ export default function Billing() {
 
       {/* Usage Meters */}
       {usage && (
-        <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-          <h2 className="mb-5 text-lg font-semibold text-gray-100">
+        <section className="rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
+          <h2 className="mb-5 text-lg font-semibold text-gray-50">
             Current Usage
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -235,7 +235,7 @@ export default function Billing() {
 
       {/* Plan Comparison Cards */}
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-gray-100">
+        <h2 className="mb-4 text-lg font-semibold text-gray-50">
           Available Plans
         </h2>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -281,7 +281,7 @@ export default function Billing() {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-50">
                       {plan.name}
                     </h3>
                     <p className="text-xs text-gray-500">
@@ -350,10 +350,10 @@ export default function Billing() {
       </section>
 
       {/* Billing History (placeholder) */}
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <section className="rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
         <div className="flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Billing History
           </h2>
         </div>

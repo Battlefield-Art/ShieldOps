@@ -105,7 +105,6 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
       setQuery("");
       setResults([]);
       setSelectedIndex(0);
-      // Small delay to ensure modal is rendered
       const timer = setTimeout(() => inputRef.current?.focus(), 50);
       return () => clearTimeout(timer);
     }
@@ -211,19 +210,19 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-xl border border-gray-700 bg-gray-900 shadow-2xl">
+      <div className="relative z-10 w-full max-w-xl animate-fade-in-up overflow-hidden rounded-2xl border border-gray-700/80 bg-gray-900 shadow-elevated">
         {/* Search Input */}
-        <div className="flex items-center gap-3 border-b border-gray-800 px-4 py-3">
-          <Search className="h-5 w-5 shrink-0 text-gray-400" />
+        <div className="flex items-center gap-3 border-b border-gray-800/60 px-5 py-4">
+          <Search className="h-5 w-5 shrink-0 text-gray-500" />
           <input
             ref={inputRef}
             type="text"
@@ -236,11 +235,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             spellCheck={false}
           />
           {isLoading && (
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-gray-400" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-400" />
           )}
           <button
             onClick={onClose}
-            className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
+            className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-800 hover:text-gray-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -253,19 +252,19 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         >
           {/* Empty state: no query yet */}
           {query.length < 2 && results.length === 0 && (
-            <div className="px-4 py-6">
+            <div className="px-5 py-6">
               {recentSearches.length > 0 ? (
                 <div>
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                     Recent Searches
                   </p>
                   {recentSearches.map((recent) => (
                     <button
                       key={recent}
                       onClick={() => setQuery(recent)}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-gray-400 transition-colors hover:bg-gray-800/60 hover:text-gray-200"
                     >
-                      <Search className="h-3.5 w-3.5" />
+                      <Search className="h-3.5 w-3.5 text-gray-600" />
                       {recent}
                     </button>
                   ))}
@@ -280,9 +279,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
           {/* Empty state: no results */}
           {query.length >= 2 && !isLoading && results.length === 0 && (
-            <div className="px-4 py-8 text-center">
-              <Search className="mx-auto mb-2 h-8 w-8 text-gray-600" />
-              <p className="text-sm text-gray-400">No results found</p>
+            <div className="px-5 py-10 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-800/60">
+                <Search className="h-5 w-5 text-gray-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-400">No results found</p>
               <p className="mt-1 text-xs text-gray-600">
                 Try different keywords or check for typos
               </p>
@@ -298,12 +299,12 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             return (
               <div key={entityType}>
                 {/* Group header */}
-                <div className="sticky top-0 flex items-center gap-2 bg-gray-900/95 px-4 py-2 backdrop-blur">
+                <div className="sticky top-0 flex items-center gap-2 border-b border-gray-800/30 bg-gray-900/95 px-5 py-2.5 backdrop-blur-sm">
                   <Icon className={clsx("h-3.5 w-3.5", color)} />
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                     {label}s
                   </span>
-                  <span className="text-xs text-gray-600">
+                  <span className="text-[11px] text-gray-600">
                     ({items.length})
                   </span>
                 </div>
@@ -321,10 +322,10 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                       onClick={() => handleResultClick(result)}
                       onMouseEnter={() => setSelectedIndex(currentIndex)}
                       className={clsx(
-                        "flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors",
+                        "flex w-full items-start gap-3 px-5 py-3 text-left transition-colors duration-100",
                         isSelected
-                          ? "bg-gray-800"
-                          : "hover:bg-gray-800/50",
+                          ? "bg-brand-500/5 border-l-2 border-l-brand-400"
+                          : "border-l-2 border-l-transparent hover:bg-gray-800/40",
                       )}
                     >
                       <Icon
@@ -338,7 +339,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                           <span className="truncate text-sm font-medium text-gray-200">
                             {result.title}
                           </span>
-                          <span className="shrink-0 rounded bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
+                          <span className="shrink-0 rounded-md bg-gray-800/80 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-700/40">
                             {result.status}
                           </span>
                         </div>
@@ -355,29 +356,29 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-800 px-4 py-2">
-          <div className="flex items-center gap-3 text-xs text-gray-600">
-            <span className="flex items-center gap-1">
-              <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 font-mono text-[10px]">
+        <div className="flex items-center justify-between border-t border-gray-800/60 px-5 py-2.5">
+          <div className="flex items-center gap-4 text-[11px] text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <kbd className="rounded border border-gray-700/60 bg-gray-800/80 px-1.5 py-0.5 font-mono text-[10px]">
                 ↑↓
               </kbd>
               navigate
             </span>
-            <span className="flex items-center gap-1">
-              <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 font-mono text-[10px]">
+            <span className="flex items-center gap-1.5">
+              <kbd className="rounded border border-gray-700/60 bg-gray-800/80 px-1.5 py-0.5 font-mono text-[10px]">
                 ↵
               </kbd>
               select
             </span>
-            <span className="flex items-center gap-1">
-              <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 font-mono text-[10px]">
+            <span className="flex items-center gap-1.5">
+              <kbd className="rounded border border-gray-700/60 bg-gray-800/80 px-1.5 py-0.5 font-mono text-[10px]">
                 esc
               </kbd>
               close
             </span>
           </div>
           {results.length > 0 && (
-            <span className="text-xs text-gray-600">
+            <span className="text-[11px] text-gray-600">
               {results.length} result{results.length !== 1 ? "s" : ""}
             </span>
           )}

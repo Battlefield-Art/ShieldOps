@@ -33,17 +33,21 @@ function GroupItems({
             end={to === "/app"}
             className={({ isActive }) =>
               clsx(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
+                "group/item flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150",
+                "focus:outline-none focus:ring-2 focus:ring-brand-500/40",
                 collapsed && "justify-center px-2",
                 isActive
-                  ? "border-l-2 border-brand-400 bg-brand-600/20 text-brand-400"
-                  : "border-l-2 border-transparent text-gray-400 hover:bg-gray-800 hover:text-gray-200",
+                  ? "bg-brand-500/10 text-brand-400 shadow-sm shadow-brand-500/5"
+                  : "text-gray-400 hover:bg-gray-800/70 hover:text-gray-200",
               )
             }
             title={collapsed ? label : undefined}
           >
-            <Icon className="h-4 w-4 shrink-0" />
+            <Icon className={clsx(
+              "h-4 w-4 shrink-0 transition-colors duration-150",
+            )} />
             {!collapsed && <span className="truncate">{label}</span>}
+            {/* Active indicator bar */}
           </NavLink>
         ))}
       </div>
@@ -78,16 +82,16 @@ export default function Sidebar() {
   return (
     <aside
       className={clsx(
-        "flex h-full flex-col rounded-r-lg border-r border-gray-800 bg-gray-900 shadow-[inset_-1px_0_0_rgba(255,255,255,0.02)] transition-all duration-200",
+        "flex h-full flex-col border-r border-gray-800/60 bg-gray-900/95 transition-all duration-200",
         collapsed ? "w-16" : "w-60",
       )}
     >
       {/* Logo */}
-      <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-5">
+      <div className="flex items-center justify-between border-b border-gray-800/40 px-4 py-5">
         <Logo size={collapsed ? "sm" : "md"} showText={!collapsed} />
         <button
           onClick={toggleCollapsed}
-          className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+          className="rounded-lg p-1.5 text-gray-500 transition-colors duration-150 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -100,7 +104,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav aria-label="Main navigation" className="flex-1 overflow-y-auto px-2 py-1">
+      <nav aria-label="Main navigation" className="flex-1 overflow-y-auto px-2 py-2">
         {NAV_GROUPS.map((group, groupIdx) => {
           const isExpanded = expandedGroups.has(group.id);
           const isGroupActive = group.items.some(
@@ -112,16 +116,17 @@ export default function Sidebar() {
           return (
             <div key={group.id}>
               {groupIdx > 0 && (
-                <div className="mx-2 my-1 border-t border-gray-800/40" />
+                <div className="mx-3 my-1.5 border-t border-gray-800/30" />
               )}
-              <div className="mb-1">
+              <div className="mb-0.5">
                 {/* Group header */}
                 <button
                   onClick={() => toggleGroup(group.id)}
                   className={clsx(
-                    "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
+                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wider transition-colors duration-150",
+                    "focus:outline-none focus:ring-2 focus:ring-brand-500/40",
                     isGroupActive
-                      ? `${group.color} bg-gray-800/50`
+                      ? `${group.color}`
                       : "text-gray-500 hover:text-gray-400",
                   )}
                   aria-expanded={isExpanded}
@@ -150,8 +155,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-800 px-4 py-3">
-        {!collapsed && <p className="text-xs text-gray-500">ShieldOps v0.1.0</p>}
+      <div className="border-t border-gray-800/40 px-4 py-3">
+        {!collapsed && (
+          <p className="text-[11px] text-gray-600">ShieldOps v0.1.0</p>
+        )}
       </div>
     </aside>
   );

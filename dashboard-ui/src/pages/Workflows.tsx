@@ -246,7 +246,7 @@ function ExpandableRunRow({ run }: { run: WorkflowRun }) {
         onClick={() => setExpanded(!expanded)}
         className="cursor-pointer border-b border-gray-800 transition-colors hover:bg-gray-900"
       >
-        <td className="px-4 py-3">
+        <td className="px-5 py-3.5">
           <div className="flex items-center gap-1.5">
             {expanded ? (
               <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
@@ -258,15 +258,15 @@ function ExpandableRunRow({ run }: { run: WorkflowRun }) {
             </span>
           </div>
         </td>
-        <td className="px-4 py-3 text-xs text-gray-400">{run.trigger_type}</td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-3.5 text-xs text-gray-400">{run.trigger_type}</td>
+        <td className="px-5 py-3.5">
           <StatusBadge status={run.status} />
         </td>
-        <td className="px-4 py-3 text-xs text-gray-400">{stepsProgress(run.steps)}</td>
-        <td className="px-4 py-3 text-xs text-gray-400">
+        <td className="px-5 py-3.5 text-xs text-gray-400">{stepsProgress(run.steps)}</td>
+        <td className="px-5 py-3.5 text-xs text-gray-400">
           {formatDistanceToNow(new Date(run.started_at), { addSuffix: true })}
         </td>
-        <td className="px-4 py-3 text-xs text-gray-400">
+        <td className="px-5 py-3.5 text-xs text-gray-400">
           {formatDuration(run.started_at, run.completed_at)}
         </td>
       </tr>
@@ -441,26 +441,26 @@ export default function Workflows() {
             <p className="text-sm text-gray-500">No runs match this filter.</p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-800">
+          <div className="overflow-hidden rounded-xl border border-gray-800/80 shadow-card">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800 bg-gray-900">
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <tr className="border-b border-gray-800/60 bg-gray-900">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Workflow
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Trigger
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Steps
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Started
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Duration
                   </th>
                 </tr>
@@ -480,38 +480,38 @@ export default function Workflows() {
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-500">
           Escalation Policies
         </h2>
-        <div className="overflow-hidden rounded-xl border border-gray-800">
+        <div className="overflow-hidden rounded-xl border border-gray-800/80 shadow-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 bg-gray-900">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <tr className="border-b border-gray-800/60 bg-gray-900">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Severity
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Auto-Remediate
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Notify Channels
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Page On-Call
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800 bg-gray-950">
+            <tbody className="divide-y divide-gray-800/40 bg-gray-950">
               {ESCALATION_POLICIES.map((policy) => (
                 <tr key={policy.severity}>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <StatusBadge status={policy.severity} />
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">
+                  <td className="px-5 py-3.5 text-xs text-gray-400">
                     {policy.auto_remediate ? (
                       <span className="text-green-400">Yes</span>
                     ) : (
                       <span className="text-gray-500">No</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <div className="flex flex-wrap gap-1">
                       {policy.notify_channels.map((ch) => (
                         <span
@@ -523,7 +523,7 @@ export default function Workflows() {
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">
+                  <td className="px-5 py-3.5 text-xs text-gray-400">
                     {policy.page_oncall ? (
                       <span className="text-yellow-400">Yes</span>
                     ) : (

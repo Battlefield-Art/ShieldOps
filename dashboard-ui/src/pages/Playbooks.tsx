@@ -85,7 +85,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
   return (
     <div
       className={clsx(
-        "rounded-xl border border-gray-800 bg-gray-900",
+        "rounded-xl border border-gray-800/80 bg-gray-900 shadow-card",
         "transition-colors hover:border-gray-700"
       )}
     >
@@ -160,7 +160,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
           "flex w-full items-center justify-center gap-1",
           "border-t border-gray-800 py-2 text-xs",
           "text-gray-500 transition-colors",
-          "hover:bg-gray-800/50 hover:text-gray-300"
+          "hover:bg-gray-800/30 hover:text-gray-300"
         )}
       >
         {expanded ? (
@@ -316,7 +316,7 @@ export default function Playbooks() {
 
       {/* Results */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800 bg-gray-900 py-16">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800/80 bg-gray-900 shadow-card py-16">
           <BookOpen className="h-10 w-10 text-gray-600" />
           <p className="mt-3 text-gray-400">
             {searchTerm

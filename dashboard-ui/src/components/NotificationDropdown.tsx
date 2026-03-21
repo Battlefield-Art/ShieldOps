@@ -152,10 +152,10 @@ export default function NotificationDropdown() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-xl border border-gray-700 bg-gray-900 shadow-xl z-50" role="region" aria-label="Notifications">
+        <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-2xl border border-gray-700/80 bg-gray-900 shadow-elevated z-50" role="region" aria-label="Notifications">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
-            <h3 className="text-sm font-semibold text-gray-200">Notifications</h3>
+          <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-3">
+            <h3 className="text-sm font-semibold text-gray-100">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
@@ -182,8 +182,8 @@ export default function NotificationDropdown() {
                     key={n.id}
                     onClick={() => handleNotificationClick(n)}
                     className={clsx(
-                      "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-800/50",
-                      !n.read && "bg-gray-800/20",
+                      "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-gray-800/40",
+                      !n.read && "bg-brand-500/[0.03]",
                     )}
                   >
                     <div className={clsx("mt-0.5 rounded-lg p-1.5", config.bg)}>
@@ -217,7 +217,7 @@ export default function NotificationDropdown() {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="border-t border-gray-800 px-4 py-2">
+            <div className="border-t border-gray-800/60 px-4 py-2.5">
               <button
                 onClick={() => { setOpen(false); navigate("/app/agent-history"); }}
                 className="w-full text-center text-xs text-gray-500 hover:text-brand-400 transition-colors py-1"

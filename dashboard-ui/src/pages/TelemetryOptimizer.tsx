@@ -1,18 +1,14 @@
 import { useState } from "react";
-import { DollarSign, TrendingDown, AlertTriangle, Activity, Loader2 } from "lucide-react";
+import { DollarSign, TrendingDown, AlertTriangle, Activity } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 const WASTE_COLORS: Record<string, string> = {
   high_cardinality: "bg-red-500/10 text-red-400 ring-red-500/20",
   over_sampling: "bg-amber-500/10 text-amber-400 ring-amber-500/20",
   duplicate: "bg-slate-500/10 text-slate-400 ring-slate-500/20",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  proposed: "bg-gray-500/10 text-gray-400 ring-gray-500/20",
-  accepted: "bg-cyan-500/10 text-cyan-400 ring-cyan-500/20",
-  applied: "bg-green-500/10 text-green-400 ring-green-500/20",
 };
 
 const PROPOSALS = [
@@ -35,17 +31,10 @@ export default function TelemetryOptimizer() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Telemetry Cost Optimizer</h1>
-        <button
-          onClick={handleScan}
-          disabled={scanning}
-          className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50"
-        >
-          {scanning && <Loader2 className="h-4 w-4 animate-spin" />}
-          Run Optimization Scan
-        </button>
-      </div>
+      <PageHeader
+        title="Telemetry Cost Optimizer"
+        action={{ label: "Run Optimization Scan", onClick: handleScan, loading: scanning }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Monthly Cost" value="$15,440" icon={<DollarSign className="h-5 w-5" />} change={-8.3} />
@@ -54,38 +43,36 @@ export default function TelemetryOptimizer() {
         <MetricCard label="Sampling Efficiency" value="87%" icon={<Activity className="h-5 w-5" />} change={4.1} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
-              <th className="px-4 py-3">Service</th>
-              <th className="px-4 py-3">Waste Category</th>
-              <th className="px-4 py-3">Monthly Cost</th>
-              <th className="px-4 py-3">Proposed Savings</th>
-              <th className="px-4 py-3">Risk Level</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-5 py-3.5">Service</th>
+              <th className="px-5 py-3.5">Waste Category</th>
+              <th className="px-5 py-3.5">Monthly Cost</th>
+              <th className="px-5 py-3.5">Proposed Savings</th>
+              <th className="px-5 py-3.5">Risk Level</th>
+              <th className="px-5 py-3.5">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {PROPOSALS.map((p) => (
-              <tr key={p.service} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{p.service}</td>
-                <td className="px-4 py-3">
+              <tr key={p.service} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{p.service}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", WASTE_COLORS[p.waste])}>
                     {p.waste.replace(/_/g, " ")}
                   </span>
                 </td>
-                <td className="px-4 py-3">${p.cost.toLocaleString()}</td>
-                <td className="px-4 py-3 text-green-400">{p.savings}%</td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">${p.cost.toLocaleString()}</td>
+                <td className="px-5 py-3.5 text-green-400">{p.savings}%</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("text-xs font-medium", p.risk === "high" ? "text-red-400" : p.risk === "medium" ? "text-amber-400" : "text-green-400")}>
                     {p.risk}
                   </span>
                 </td>
-                <td className="px-4 py-3">
-                  <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", STATUS_COLORS[p.status])}>
-                    {p.status}
-                  </span>
+                <td className="px-5 py-3.5">
+                  <StatusBadge status={p.status} />
                 </td>
               </tr>
             ))}

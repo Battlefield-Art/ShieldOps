@@ -121,7 +121,7 @@ export default function Learning() {
 
       {/* Recent Learning Cycles */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-gray-100">Recent Learning Cycles</h2>
+        <h2 className="mb-3 text-lg font-semibold text-gray-50">Recent Learning Cycles</h2>
         {cyclesLoading ? (
           <LoadingSpinner size="sm" className="py-12" />
         ) : (
@@ -138,13 +138,13 @@ export default function Learning() {
       <section>
         <div className="mb-3 flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-100">Playbook Library</h2>
+          <h2 className="text-lg font-semibold text-gray-50">Playbook Library</h2>
         </div>
 
         {playbooksLoading ? (
           <LoadingSpinner size="sm" className="py-12" />
         ) : playbooks.length === 0 ? (
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-12 text-center">
+          <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 shadow-card text-center">
             <Brain className="mx-auto h-10 w-10 text-gray-600" />
             <p className="mt-3 text-sm text-gray-500">
               No playbooks yet. Playbooks are automatically created and refined as the learning
@@ -169,7 +169,7 @@ function PlaybookCard({ playbook }: { playbook: Playbook }) {
   const successPercent = Math.round(playbook.success_rate * 100);
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
       {/* Name + description */}
       <h3 className="font-semibold text-gray-100">{playbook.name}</h3>
       <p className="mt-1 text-sm text-gray-400">{playbook.description}</p>

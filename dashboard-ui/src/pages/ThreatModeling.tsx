@@ -73,29 +73,29 @@ export default function ThreatModeling() {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-xs uppercase text-gray-400">
             <tr>
-              <th className="px-4 py-3">Threat</th>
-              <th className="px-4 py-3">STRIDE Category</th>
-              <th className="px-4 py-3">Component</th>
-              <th className="px-4 py-3">Likelihood</th>
-              <th className="px-4 py-3">Risk Score</th>
-              <th className="px-4 py-3">Mitigation</th>
+              <th className="px-5 py-3.5">Threat</th>
+              <th className="px-5 py-3.5">STRIDE Category</th>
+              <th className="px-5 py-3.5">Component</th>
+              <th className="px-5 py-3.5">Likelihood</th>
+              <th className="px-5 py-3.5">Risk Score</th>
+              <th className="px-5 py-3.5">Mitigation</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {THREATS.map((t) => (
-              <tr key={t.threat} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{t.threat}</td>
-                <td className="px-4 py-3">
+              <tr key={t.threat} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{t.threat}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", STRIDE_BADGE[t.stride])}>{t.stride}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-300">{t.component}</td>
-                <td className="px-4 py-3 text-gray-300">{t.likelihood}</td>
-                <td className={clsx("px-4 py-3 font-semibold", riskColor(t.risk))}>{t.risk}</td>
-                <td className={clsx("px-4 py-3 text-sm font-medium", MITIGATION_COLORS[t.mitigation])}>{t.mitigation.replace("_", " ")}</td>
+                <td className="px-5 py-3.5 text-gray-300">{t.component}</td>
+                <td className="px-5 py-3.5 text-gray-300">{t.likelihood}</td>
+                <td className={clsx("px-5 py-3.5 font-semibold", riskColor(t.risk))}>{t.risk}</td>
+                <td className={clsx("px-5 py-3.5 text-sm font-medium", MITIGATION_COLORS[t.mitigation])}>{t.mitigation.replace("_", " ")}</td>
               </tr>
             ))}
           </tbody>

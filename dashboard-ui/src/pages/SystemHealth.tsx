@@ -166,7 +166,7 @@ function DependencyCard({
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-gray-800 p-2">
@@ -349,10 +349,10 @@ export default function SystemHealth() {
       </div>
 
       {/* Uptime section */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-blue-400" />
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-50">
             Server Uptime
           </h2>
         </div>

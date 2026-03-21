@@ -332,9 +332,9 @@ function NotificationsTab() {
   return (
     <div className="space-y-6">
       {/* Notification Channels overview */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900">
-        <div className="border-b border-gray-800 px-5 py-4">
-          <h3 className="font-semibold text-gray-100">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="border-b border-gray-800/60 px-5 py-4">
+          <h3 className="font-semibold text-gray-50">
             Notification Channels
           </h3>
           <p className="mt-1 text-sm text-gray-500">
@@ -347,7 +347,7 @@ function NotificationsTab() {
             </p>
           )}
         </div>
-        <ul className="divide-y divide-gray-800">
+        <ul className="divide-y divide-gray-800/40">
           {channels.map((channel) => (
             <li
               key={channel.type}
@@ -385,10 +385,10 @@ function NotificationsTab() {
       </div>
 
       {/* Notification Preferences grid */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900">
-        <div className="flex items-center justify-between border-b border-gray-800 px-5 py-4">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="flex items-center justify-between border-b border-gray-800/60 px-5 py-4">
           <div>
-            <h3 className="font-semibold text-gray-100">
+            <h3 className="font-semibold text-gray-50">
               Notification Preferences
             </h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -429,7 +429,7 @@ function NotificationsTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800">
+                <tr className="border-b border-gray-800/60">
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Event
                   </th>
@@ -528,8 +528,8 @@ function ApiTab() {
   return (
     <div className="space-y-4">
       {/* API Endpoints */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-        <h3 className="font-semibold text-gray-100">API Endpoints</h3>
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <h3 className="font-semibold text-gray-50">API Endpoints</h3>
         <p className="mt-1 text-sm text-gray-500">
           Use these endpoints to integrate with the ShieldOps API.
         </p>
@@ -577,8 +577,8 @@ function ApiTab() {
       </div>
 
       {/* Token section */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-        <h3 className="font-semibold text-gray-100">Your Token</h3>
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <h3 className="font-semibold text-gray-50">Your Token</h3>
         <p className="mt-1 text-sm text-gray-500">
           Use this bearer token to authenticate API requests.
         </p>
@@ -608,8 +608,8 @@ function ApiTab() {
       </div>
 
       {/* Swagger link */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
-        <h3 className="font-semibold text-gray-100">Interactive Documentation</h3>
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <h3 className="font-semibold text-gray-50">Interactive Documentation</h3>
         <p className="mt-1 text-sm text-gray-500">
           Explore and test API endpoints using the interactive Swagger UI.
         </p>

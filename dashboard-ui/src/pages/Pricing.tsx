@@ -62,7 +62,7 @@ export default function Pricing() {
       {PRICING.map((product) => (
         <section key={product.productName} className="px-6 py-12">
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-8 text-center text-2xl font-bold text-gray-100">
+            <h2 className="mb-8 text-center text-2xl font-bold text-gray-50">
               {product.productName}
             </h2>
 
@@ -71,18 +71,18 @@ export default function Pricing() {
                 <div
                   key={tier.name}
                   className={clsx(
-                    "flex h-full flex-col rounded-xl border p-6 transition-colors",
+                    "flex h-full flex-col rounded-2xl border p-6 shadow-card transition-all duration-200",
                     tier.highlighted
-                      ? "border-brand-500/50 bg-brand-500/5"
-                      : "border-gray-800 bg-gray-900 hover:border-gray-700",
+                      ? "border-brand-500/40 bg-brand-500/5 shadow-glow-brand"
+                      : "border-gray-800/80 bg-gray-900 hover:border-gray-700 hover:shadow-card-hover",
                   )}
                 >
                   {tier.highlighted && (
-                    <div className="mb-4 text-xs font-semibold uppercase tracking-wider text-brand-400">
+                    <div className="mb-4 inline-flex self-start rounded-full bg-brand-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-brand-400 ring-1 ring-inset ring-brand-500/20">
                       Most Popular
                     </div>
                   )}
-                  <h3 className="text-lg font-semibold text-gray-100">{tier.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-50">{tier.name}</h3>
                   <p className="mt-1 text-sm text-gray-500">{tier.description}</p>
 
                   <div className="mt-4">
@@ -114,8 +114,8 @@ export default function Pricing() {
                         className={clsx(
                           "block rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-all",
                           tier.highlighted
-                            ? "bg-brand-600 text-white hover:bg-brand-500"
-                            : "border border-gray-700 text-gray-300 hover:border-gray-500 hover:bg-gray-800/50 hover:text-white",
+                            ? "bg-brand-600 text-white hover:bg-brand-500 shadow-glow-brand"
+                            : "border border-gray-700/80 text-gray-300 hover:border-gray-600 hover:bg-gray-800/40 hover:text-white",
                         )}
                       >
                         {tier.cta}
@@ -139,7 +139,7 @@ export default function Pricing() {
       {/* FAQ */}
       <section className="px-6 py-16">
         <div className="mx-auto max-w-3xl">
-          <h2 className="mb-8 text-center text-2xl font-bold text-gray-100">
+          <h2 className="mb-8 text-center text-2xl font-bold text-gray-50">
             Frequently asked questions
           </h2>
 
@@ -148,7 +148,7 @@ export default function Pricing() {
               <button
                 key={i}
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full rounded-xl border border-gray-800 bg-gray-900 px-6 py-4 text-left transition-colors hover:border-gray-700"
+                className="w-full rounded-xl border border-gray-800/80 bg-gray-900 px-6 py-4 text-left shadow-card transition-all duration-150 hover:border-gray-700 hover:shadow-card-hover"
                 aria-expanded={openFaq === i}
               >
                 <div className="flex items-center justify-between">

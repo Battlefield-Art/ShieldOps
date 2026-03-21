@@ -105,7 +105,7 @@ export default function Cost() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-100">Cost Analysis</h1>
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-12 text-center">
+        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 text-center shadow-card">
           <ServerCrash className="mx-auto h-12 w-12 text-gray-600" />
           <h2 className="mt-4 text-lg font-semibold text-gray-200">
             Cost analysis not configured
@@ -169,8 +169,8 @@ export default function Cost() {
       {/* Cost by Service bar chart */}
       {chartData.length > 0 && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-gray-100">Cost by Service</h2>
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+          <h2 className="mb-3 text-lg font-semibold text-gray-50">Cost by Service</h2>
+          <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
             <ResponsiveContainer width="100%" height={Math.max(chartData.length * 40, 200)}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
                 <XAxis
@@ -202,7 +202,7 @@ export default function Cost() {
 
       {/* Cost Anomalies */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-gray-100">Cost Anomalies</h2>
+        <h2 className="mb-3 text-lg font-semibold text-gray-50">Cost Anomalies</h2>
         <DataTable
           columns={anomalyColumns}
           data={summary.anomalies}

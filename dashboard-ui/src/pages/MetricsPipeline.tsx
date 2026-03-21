@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Activity, BarChart3, AlertTriangle, Gauge, Loader2 } from "lucide-react";
+import { Activity, BarChart3, AlertTriangle, Gauge } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 const SERVICES = [
   { service: "payment-api", source: "prometheus", metrics: 342, cardinality: 12400, interval: "15s", status: "healthy" },
@@ -19,25 +21,20 @@ const SOURCE_COLORS: Record<string, string> = {
   statsd: "bg-green-500/10 text-green-400 ring-green-500/20",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  healthy: "text-green-400",
-  high_cardinality: "text-amber-400",
-  degraded: "text-red-400",
-};
-
 export default function MetricsPipeline() {
   const [running, setRunning] = useState(false);
   const handleClick = () => { setRunning(true); setTimeout(() => setRunning(false), 2000); };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">OTel Metrics Pipeline</h1>
-        <button onClick={handleClick} disabled={running} className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50">
-          {running && <Loader2 className="h-4 w-4 animate-spin" />}
-          Discover Endpoints
-        </button>
-      </div>
+      <PageHeader
+        title="OTel Metrics Pipeline"
+        action={{
+          label: "Discover Endpoints",
+          onClick: handleClick,
+          loading: running,
+        }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Metric Endpoints" value={23} icon={<Activity className="h-5 w-5" />} change={4.5} />
@@ -46,29 +43,29 @@ export default function MetricsPipeline() {
         <MetricCard label="Golden Signals %" value={96} icon={<Gauge className="h-5 w-5" />} change={2.1} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800 text-xs uppercase text-gray-400">
+          <thead className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
-              <th className="px-4 py-3">Service</th>
-              <th className="px-4 py-3">Source</th>
-              <th className="px-4 py-3">Metrics Count</th>
-              <th className="px-4 py-3">Cardinality</th>
-              <th className="px-4 py-3">Scrape Interval</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-5 py-3.5">Service</th>
+              <th className="px-5 py-3.5">Source</th>
+              <th className="px-5 py-3.5">Metrics Count</th>
+              <th className="px-5 py-3.5">Cardinality</th>
+              <th className="px-5 py-3.5">Scrape Interval</th>
+              <th className="px-5 py-3.5">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/40">
             {SERVICES.map((s) => (
-              <tr key={s.service} className="hover:bg-gray-800/50">
-                <td className="px-4 py-3 font-medium">{s.service}</td>
-                <td className="px-4 py-3">
+              <tr key={s.service} className="hover:bg-gray-800/30">
+                <td className="px-5 py-3.5 font-medium">{s.service}</td>
+                <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", SOURCE_COLORS[s.source])}>{s.source}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-300">{s.metrics}</td>
-                <td className="px-4 py-3 text-gray-300">{s.cardinality.toLocaleString()}</td>
-                <td className="px-4 py-3 text-gray-300">{s.interval}</td>
-                <td className={clsx("px-4 py-3 text-sm font-medium", STATUS_COLORS[s.status])}>{s.status.replace("_", " ")}</td>
+                <td className="px-5 py-3.5 text-gray-300">{s.metrics}</td>
+                <td className="px-5 py-3.5 text-gray-300">{s.cardinality.toLocaleString()}</td>
+                <td className="px-5 py-3.5 text-gray-300">{s.interval}</td>
+                <td className="px-5 py-3.5"><StatusBadge status={s.status} /></td>
               </tr>
             ))}
           </tbody>

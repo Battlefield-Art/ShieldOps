@@ -144,7 +144,7 @@ export default function IncidentTimeline() {
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-800 bg-gray-900 p-4">
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-800/80 bg-gray-900 p-4 shadow-card">
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <Filter className="h-4 w-4" />
           <span className="font-medium">Filters</span>

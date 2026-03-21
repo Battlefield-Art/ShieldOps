@@ -142,7 +142,7 @@ export default function AIChatSidebar() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg transition-all hover:bg-brand-500 hover:shadow-xl"
+          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg shadow-brand-500/20 transition-all duration-200 hover:bg-brand-500 hover:shadow-xl hover:shadow-brand-500/25 hover:scale-105"
           aria-label="Open AI assistant"
         >
           <MessageSquare className="h-5 w-5" />
@@ -152,18 +152,18 @@ export default function AIChatSidebar() {
       {/* Chat panel */}
       <div
         className={clsx(
-          "fixed bottom-0 right-0 z-50 flex h-[min(600px,85vh)] w-[380px] flex-col rounded-tl-xl border-l border-t border-gray-700 bg-gray-900 shadow-2xl transition-transform duration-300",
+          "fixed bottom-0 right-0 z-50 flex h-[min(600px,85vh)] w-[380px] flex-col rounded-tl-2xl border-l border-t border-gray-700/80 bg-gray-900 shadow-elevated transition-transform duration-300",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-500/20">
+        <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/15 ring-1 ring-brand-500/20">
               <Sparkles className="h-4 w-4 text-brand-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-100">
+              <h3 className="text-sm font-semibold text-gray-50">
                 ShieldOps AI
               </h3>
               <p className="text-[10px] text-gray-500">Security assistant</p>
@@ -210,7 +210,7 @@ export default function AIChatSidebar() {
                   <button
                     key={suggestion}
                     onClick={() => sendMessage(suggestion)}
-                    className="rounded-lg border border-gray-800 px-3 py-2 text-left text-xs text-gray-400 transition-colors hover:border-gray-700 hover:bg-gray-800/50 hover:text-gray-300"
+                    className="rounded-xl border border-gray-800/60 px-3 py-2.5 text-left text-xs text-gray-400 transition-all duration-150 hover:border-gray-700 hover:bg-gray-800/40 hover:text-gray-300"
                   >
                     {suggestion}
                   </button>
@@ -265,8 +265,8 @@ export default function AIChatSidebar() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-800 p-3">
-          <div className="flex items-end gap-2 rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-2">
+        <div className="border-t border-gray-800/60 p-3">
+          <div className="flex items-end gap-2 rounded-xl border border-gray-700/60 bg-gray-800/40 px-3 py-2.5">
             <textarea
               ref={inputRef}
               value={input}

@@ -199,7 +199,7 @@ function CategoryCard({
         : "text-red-400";
 
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900 p-4">
+    <div className="flex items-center gap-4 rounded-xl border border-gray-800/80 bg-gray-900 p-4 shadow-card">
       <div
         className={clsx(
           "flex h-10 w-10 items-center justify-center rounded-lg",
@@ -298,10 +298,10 @@ function ControlRow({ control }: { control: ComplianceControl }) {
   };
 
   return (
-    <div className="border-b border-gray-800 last:border-b-0">
+    <div className="border-b border-gray-800/60 last:border-b-0">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-gray-800/50"
+        className="flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-gray-800/30"
       >
         {expanded ? (
           <ChevronDown className="h-4 w-4 shrink-0 text-gray-500" />
@@ -411,9 +411,9 @@ function TrendChart({ trend }: { trend: ComplianceTrend }) {
         : "text-gray-400";
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-300">
+        <h3 className="text-sm font-semibold text-gray-200">
           Compliance Trend ({trend.period_days} days)
         </h3>
         <div className={clsx("flex items-center gap-1 text-sm", trendColor)}>
@@ -595,7 +595,7 @@ export default function ComplianceDashboard() {
       {/* Score + Summary Cards */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Overall Score */}
-        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800 bg-gray-900 p-6">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
           <ScoreGauge score={report.overall_score} />
           <div className="mt-4 flex items-center gap-6 text-center">
             <div>
@@ -628,7 +628,7 @@ export default function ComplianceDashboard() {
 
         {/* Category Breakdown */}
         <div className="col-span-2 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-300">
+          <h3 className="text-sm font-semibold text-gray-200">
             Trust Service Categories
           </h3>
           {categories.map(([cat, score]) => (
@@ -641,9 +641,9 @@ export default function ComplianceDashboard() {
       {trend && <TrendChart trend={trend} />}
 
       {/* Controls Table */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900">
-        <div className="flex items-center justify-between border-b border-gray-800 px-5 py-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+      <div className="rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="flex items-center justify-between border-b border-gray-800/60 px-5 py-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-200">
             <Filter className="h-4 w-4" />
             Controls ({filteredControls.length} of {report.total_controls})
           </h3>

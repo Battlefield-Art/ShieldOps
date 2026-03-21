@@ -1,13 +1,8 @@
+import { useState } from "react";
 import { Shield, Database, ShieldBan, Rss, Radar } from "lucide-react";
 import MetricCard from "../components/MetricCard";
-
-type Confidence = "confirmed" | "probable" | "unverified";
-
-const CONFIDENCE_CLASSES: Record<Confidence, string> = {
-  confirmed: "bg-green-500/10 text-green-400 ring-green-500/20",
-  probable: "bg-yellow-500/10 text-yellow-400 ring-yellow-500/20",
-  unverified: "bg-gray-500/10 text-gray-400 ring-gray-500/20",
-};
+import PageHeader from "../components/PageHeader";
+import StatusBadge from "../components/StatusBadge";
 
 const MOCK_INDICATORS = [
   { value: "185.220.101.34", type: "IP", source: "AlienVault OTX", confidence: "confirmed" as Confidence, relevance: "High" },
@@ -20,14 +15,15 @@ const MOCK_INDICATORS = [
 ];
 
 export default function ThreatIntel() {
+  const [running, setRunning] = useState(false);
+  const handleClick = () => { setRunning(true); setTimeout(() => setRunning(false), 2000); };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-100">Threat Intelligence</h1>
-        <button className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
-          <Radar className="h-4 w-4" /> Run Intel Scan
-        </button>
-      </div>
+      <PageHeader
+        title="Threat Intelligence"
+        action={{ label: "Run Intel Scan", onClick: handleClick, icon: <Radar className="h-4 w-4" />, loading: running }}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Total IOCs" value={1_247} icon={<Database className="h-5 w-5" />} change={8.2} />
@@ -36,33 +32,34 @@ export default function ThreatIntel() {
         <MetricCard label="Feed Sources" value={9} icon={<Rss className="h-5 w-5" />} change={0} />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
-        <div className="border-b border-gray-800 px-5 py-4">
-          <h2 className="text-lg font-semibold text-gray-100">Recent Threat Indicators</h2>
+      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="border-b border-gray-800/60 px-5 py-4">
+          <h2 className="text-lg font-semibold text-gray-50">Recent Threat Indicators</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left text-gray-400">
-                <th className="px-5 py-3 font-medium">Value</th>
-                <th className="px-5 py-3 font-medium">Type</th>
-                <th className="px-5 py-3 font-medium">Source</th>
-                <th className="px-5 py-3 font-medium">Confidence</th>
-                <th className="px-5 py-3 font-medium">Relevance</th>
+              <tr className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <th className="px-5 py-3.5 font-medium">Value</th>
+                <th className="px-5 py-3.5 font-medium">Type</th>
+                <th className="px-5 py-3.5 font-medium">Source</th>
+                <th className="px-5 py-3.5 font-medium">Confidence</th>
+                <th className="px-5 py-3.5 font-medium">Relevance</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800/40">
               {MOCK_INDICATORS.map((ioc, i) => (
-                <tr key={i} className="text-gray-300 hover:bg-gray-800/50">
-                  <td className="px-5 py-3 font-mono text-xs text-gray-100">{ioc.value}</td>
-                  <td className="px-5 py-3">{ioc.type}</td>
-                  <td className="px-5 py-3">{ioc.source}</td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${CONFIDENCE_CLASSES[ioc.confidence]}`}>
-                      {ioc.confidence}
-                    </span>
+                <tr key={i} className="text-gray-300 hover:bg-gray-800/30">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-100">{ioc.value}</td>
+                  <td className="px-5 py-3.5">{ioc.type}</td>
+                  <td className="px-5 py-3.5">{ioc.source}</td>
+                  <td className="px-5 py-3.5">
+                    <StatusBadge
+                      status={ioc.confidence}
+                      variant={ioc.confidence === "confirmed" ? "success" : ioc.confidence === "probable" ? "warning" : "neutral"}
+                    />
                   </td>
-                  <td className="px-5 py-3">{ioc.relevance}</td>
+                  <td className="px-5 py-3.5">{ioc.relevance}</td>
                 </tr>
               ))}
             </tbody>
