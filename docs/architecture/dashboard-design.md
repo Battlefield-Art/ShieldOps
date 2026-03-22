@@ -246,6 +246,75 @@ Agent Events (Kafka) → WebSocket Gateway (FastAPI) → React Dashboard
                        - security.patch_applied
 ```
 
+## Design System (v2 — Surface-Based Architecture)
+
+The dashboard uses a premium dark-theme design system inspired by Linear, Vercel, and Raycast.
+
+### Color Tokens
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `surface-0` | `#0a0e17` | Page background, deepest layer |
+| `surface-1` | `#0f1420` | Sidebar, header, recessed panels |
+| `surface-2` | `#151b2b` | Cards, modals, elevated surfaces |
+| `surface-3` | `#1c2333` | Dropdowns, hover states, active surfaces |
+| `surface-4` | `#232b3e` | Highest elevation (tooltips, popovers) |
+| `brand-400` | `#22d3ee` | Primary accent (active states, links) |
+| `brand-600` | `#0891b2` | Buttons, interactive elements |
+
+### Border System
+
+Borders use white opacity rather than hard gray values for a premium feel:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--border-subtle` | `rgba(255,255,255,0.06)` | Dividers, section separators |
+| `--border-default` | `rgba(255,255,255,0.08)` | Card borders, input borders |
+| `--border-strong` | `rgba(255,255,255,0.12)` | Hover states, active borders |
+
+### Component Classes
+
+| Class | Description |
+|-------|-------------|
+| `btn-primary` | Gradient button with inset highlight + glow hover |
+| `btn-secondary` | Surface-3 background with depth shadow |
+| `btn-ghost` | Transparent with hover background |
+| `card-surface` | Static card with surface-2 bg + gradient border |
+| `card-interactive` | Clickable card with hover-lift effect |
+| `tab-bar` / `tab-item` | Segmented control with surface-1 inset |
+| `section-heading` | 11px uppercase tracking label |
+| `metric-value` | Tabular-nums with tight tracking |
+| `text-gradient-brand` | Cyan gradient text |
+| `text-gradient-white` | White-to-gray gradient heading text |
+| `bg-hero-mesh` | Multi-stop radial gradient for hero sections |
+| `nav-active-line` | Left-side cyan indicator bar for active nav items |
+| `hover-lift` | Subtle translateY(-1px) on hover |
+
+### Typography
+
+- **Display/Headings**: Inter, bold, tight tracking, `text-gradient-white`
+- **Body**: Inter, regular, gray-400 to gray-100
+- **Labels**: Inter, 11px, uppercase, `tracking-[0.08em]`, gray-500/600
+- **Code/Mono**: JetBrains Mono, `tabular-nums`
+
+### Shadows
+
+| Name | Usage |
+|------|-------|
+| `shadow-depth` | Default card shadow (0 0 0 1px white/0.03 + 0 1px 2px black/0.4) |
+| `shadow-card-hover` | Elevated hover state |
+| `shadow-elevated` | Modals, dropdowns |
+| `shadow-glow-brand` | Focus/active state glow |
+| `shadow-inner-light` | Inset top highlight for buttons |
+
+### Animation Principles
+
+- **Transitions**: 150-200ms for interactions, 250ms for state changes
+- **Easing**: ease-out for entries, ease-in for exits
+- **Stagger**: 40ms delay per item for list animations (`stagger-item`)
+- **No** scroll hijacking, heavy glassmorphism, or distracting background effects
+- **Functional only**: animations serve navigation and state feedback
+
 ## Accessibility Requirements
 - WCAG 2.1 AA compliance
 - Keyboard navigation for all interactive elements

@@ -9,15 +9,15 @@ interface LogoProps {
 /** Custom ShieldOps logo mark — geometric shield with security heartbeat pulse. */
 export default function Logo({ size = "md", showText = true, className }: LogoProps) {
   const sizes = {
-    sm: { icon: "h-5 w-5", text: "text-sm" },
-    md: { icon: "h-7 w-7", text: "text-lg" },
-    lg: { icon: "h-10 w-10", text: "text-2xl" },
+    sm: { icon: "h-5 w-5", text: "text-sm", gap: "gap-1.5" },
+    md: { icon: "h-6 w-6", text: "text-base", gap: "gap-2" },
+    lg: { icon: "h-9 w-9", text: "text-xl", gap: "gap-2.5" },
   };
 
   const s = sizes[size];
 
   return (
-    <span className={clsx("inline-flex items-center gap-2", className)}>
+    <span className={clsx("inline-flex items-center", s.gap, className)}>
       <svg
         viewBox="0 0 36 36"
         fill="none"
@@ -36,33 +36,33 @@ export default function Logo({ size = "md", showText = true, className }: LogoPr
           </filter>
           {/* Gradient for outer shield facet */}
           <linearGradient id="shield-face" x1="18" y1="2" x2="18" y2="34" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#0e9fb8" />
+            <stop offset="0%" stopColor="#22d3ee" />
             <stop offset="100%" stopColor="#0891b2" />
           </linearGradient>
         </defs>
 
-        {/* Outer shield — clean geometric form with flat top edge */}
+        {/* Outer shield */}
         <path
           d="M18 2L5 8.5v9c0 8.2 5.6 15.2 13 17.5 7.4-2.3 13-9.3 13-17.5v-9L18 2z"
           fill="url(#shield-face)"
         />
 
-        {/* Inner shield — darker inset creating depth */}
+        {/* Inner shield */}
         <path
           d="M18 5.5L8 10.5v7c0 6.4 4.2 12 10 14.2 5.8-2.2 10-7.8 10-14.2v-7L18 5.5z"
-          fill="#083344"
+          fill="#0a0e17"
         />
 
         {/* Subtle mid-layer edge highlight */}
         <path
           d="M18 5.5L8 10.5v7c0 6.4 4.2 12 10 14.2 5.8-2.2 10-7.8 10-14.2v-7L18 5.5z"
           fill="none"
-          stroke="#0891b2"
-          strokeWidth="0.5"
-          opacity="0.4"
+          stroke="#22d3ee"
+          strokeWidth="0.4"
+          opacity="0.3"
         />
 
-        {/* Security heartbeat pulse — sharp, precise angles */}
+        {/* Security heartbeat pulse */}
         <path
           d="M8.5 18.5h3.5l1.8-3.5 2.2 7 2.5-7 1.8 3.5H24"
           stroke="#22d3ee"
@@ -73,7 +73,7 @@ export default function Logo({ size = "md", showText = true, className }: LogoPr
           filter="url(#shieldops-glow)"
         />
 
-        {/* Tiny keyhole notch at shield top-center for brand identity */}
+        {/* Keyhole notch */}
         <circle cx="18" cy="12" r="1.4" fill="#0891b2" />
         <rect x="17.4" y="12" width="1.2" height="2.4" rx="0.4" fill="#0891b2" />
       </svg>

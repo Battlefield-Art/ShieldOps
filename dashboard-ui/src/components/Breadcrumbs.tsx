@@ -43,7 +43,6 @@ function getLabel(segment: string): string {
 }
 
 function isId(segment: string): boolean {
-  // UUIDs, numeric IDs, or common ID patterns
   return /^[0-9a-f-]{8,}$/i.test(segment) || /^\d+$/.test(segment);
 }
 
@@ -63,23 +62,23 @@ export default function Breadcrumbs() {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1 text-sm">
+    <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-[13px]">
       <Link
         to="/app"
-        className="flex items-center text-gray-500 transition-colors hover:text-gray-300"
+        className="flex items-center text-gray-600 transition-colors hover:text-gray-400"
       >
         <Home className="h-3.5 w-3.5" />
       </Link>
 
       {crumbs.slice(1).map(({ path, label, isLast }) => (
-        <span key={path} className="flex items-center gap-1">
-          <ChevronRight className="h-3.5 w-3.5 text-gray-600" />
+        <span key={path} className="flex items-center gap-1.5">
+          <ChevronRight className="h-3 w-3 text-gray-700" />
           {isLast ? (
-            <span className="font-medium text-gray-200">{label}</span>
+            <span className="font-medium text-gray-300">{label}</span>
           ) : (
             <Link
               to={path}
-              className="text-gray-500 transition-colors hover:text-gray-300"
+              className="text-gray-600 transition-colors hover:text-gray-400"
             >
               {label}
             </Link>

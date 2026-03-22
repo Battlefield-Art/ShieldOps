@@ -39,26 +39,26 @@ interface MetricsBarProps {
 
 export default function MetricsBar({ className }: MetricsBarProps) {
   return (
-    <div className={clsx("flex items-center gap-6", className)}>
+    <div className={clsx("flex items-center gap-5", className)}>
       {METRICS.map((metric) => (
-        <div key={metric.label} className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-800/60">
-            <metric.icon className="h-4 w-4 text-gray-400" />
+        <div key={metric.label} className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.03]">
+            <metric.icon className="h-3.5 w-3.5 text-gray-600" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-gray-100">{metric.value}</span>
+              <span className="metric-value text-[13px] font-bold text-gray-200">{metric.value}</span>
               <span
                 className={clsx(
-                  "inline-flex items-center gap-0.5 text-xs font-medium",
+                  "inline-flex items-center gap-0.5 text-[11px] font-medium",
                   metric.improved ? "text-emerald-400" : "text-red-400",
                 )}
               >
-                <ArrowDown className="h-3 w-3" />
+                <ArrowDown className="h-2.5 w-2.5" />
                 {metric.change}
               </span>
             </div>
-            <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.08em]">
               {metric.label}
             </p>
           </div>

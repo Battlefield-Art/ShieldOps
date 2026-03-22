@@ -27,8 +27,8 @@ export default function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 text-center shadow-card">
-        <p className="text-sm text-gray-500">{emptyMessage}</p>
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-12 text-center">
+        <p className="text-sm text-gray-600">{emptyMessage}</p>
       </div>
     );
   }
@@ -36,19 +36,19 @@ export default function DataTable<T>({
   // Mobile: stacked cards
   if (isMobile) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
         {data.map((row) => (
           <div
             key={keyExtractor(row)}
             onClick={() => onRowClick?.(row)}
             className={clsx(
-              "rounded-xl border border-gray-800/80 bg-gray-900 p-4 shadow-card",
-              onRowClick && "cursor-pointer hover:border-gray-700 hover:shadow-card-hover",
+              "rounded-xl border border-white/[0.06] bg-surface-2 p-4",
+              onRowClick && "cursor-pointer hover:border-white/[0.1] hover:bg-surface-3 transition-all",
             )}
           >
             {columns.map((col) => (
               <div key={col.key} className="flex items-baseline justify-between py-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-600">
                   {col.header}
                 </span>
                 <span className={clsx("text-sm text-gray-200", col.className)}>
@@ -64,15 +64,15 @@ export default function DataTable<T>({
 
   // Desktop: premium table
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-800/80 shadow-card">
+    <div className="overflow-hidden rounded-xl border border-white/[0.06]">
       <table className="table-premium w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-800/60 bg-gray-900/80">
+          <tr className="border-b border-white/[0.04]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={clsx(
-                  "px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400",
+                  "bg-surface-2 px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-600",
                   col.className,
                 )}
               >
@@ -81,7 +81,7 @@ export default function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-800/40 bg-gray-950">
+        <tbody className="divide-y divide-white/[0.03] bg-surface-1">
           {data.map((row) => (
             <tr
               key={keyExtractor(row)}
@@ -89,8 +89,8 @@ export default function DataTable<T>({
               className={clsx(
                 "transition-colors duration-150",
                 onRowClick
-                  ? "cursor-pointer hover:bg-gray-900/60"
-                  : "hover:bg-gray-900/40",
+                  ? "cursor-pointer hover:bg-white/[0.02]"
+                  : "hover:bg-white/[0.01]",
               )}
             >
               {columns.map((col) => (

@@ -27,7 +27,7 @@ export const PERSONAS: Persona[] = [
     description: "Incident response, reliability, scaling",
     icon: Server,
     color: "text-brand-400",
-    bgColor: "bg-brand-500/10",
+    bgColor: "bg-brand-500/[0.08]",
   },
   {
     id: "security",
@@ -35,7 +35,7 @@ export const PERSONAS: Persona[] = [
     description: "Threat hunting, vulnerability management",
     icon: Shield,
     color: "text-red-400",
-    bgColor: "bg-red-500/10",
+    bgColor: "bg-red-500/[0.08]",
   },
   {
     id: "finops",
@@ -43,7 +43,7 @@ export const PERSONAS: Persona[] = [
     description: "Cost optimization, budget management",
     icon: DollarSign,
     color: "text-emerald-400",
-    bgColor: "bg-emerald-500/10",
+    bgColor: "bg-emerald-500/[0.08]",
   },
   {
     id: "devops",
@@ -51,7 +51,7 @@ export const PERSONAS: Persona[] = [
     description: "CI/CD, deployments, infrastructure",
     icon: Code,
     color: "text-sky-400",
-    bgColor: "bg-sky-500/10",
+    bgColor: "bg-sky-500/[0.08]",
   },
   {
     id: "manager",
@@ -59,7 +59,7 @@ export const PERSONAS: Persona[] = [
     description: "Team metrics, capacity, planning",
     icon: UserCog,
     color: "text-amber-400",
-    bgColor: "bg-amber-500/10",
+    bgColor: "bg-amber-500/[0.08]",
   },
   {
     id: "observer",
@@ -67,7 +67,7 @@ export const PERSONAS: Persona[] = [
     description: "Read-only compliance and audit views",
     icon: Eye,
     color: "text-gray-400",
-    bgColor: "bg-gray-500/10",
+    bgColor: "bg-white/[0.04]",
   },
 ];
 
@@ -96,18 +96,18 @@ export default function PersonaSwitcher({ selected, onChange }: PersonaSwitcherP
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2.5 rounded-xl border border-gray-800/80 bg-gray-900/60 px-3 py-2 text-sm transition-all duration-150 hover:border-gray-700 hover:bg-gray-800/50 hover:shadow-card"
+        className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-surface-2 px-3 py-2 text-sm transition-all duration-150 hover:border-white/[0.1] hover:bg-surface-3"
       >
         <div className={clsx("flex h-6 w-6 items-center justify-center rounded-lg", current.bgColor)}>
           <current.icon className={clsx("h-3.5 w-3.5", current.color)} />
         </div>
-        <span className="text-gray-300 font-medium">{current.label}</span>
-        <ChevronDown className={clsx("h-3.5 w-3.5 text-gray-500 transition-transform", open && "rotate-180")} />
+        <span className="text-gray-300 font-medium text-[13px]">{current.label}</span>
+        <ChevronDown className={clsx("h-3.5 w-3.5 text-gray-600 transition-transform", open && "rotate-180")} />
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-gray-700/80 bg-gray-900 p-1.5 shadow-elevated">
-          <p className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-white/[0.08] bg-surface-3 p-1.5 shadow-elevated animate-fade-in">
+          <p className="px-3 py-2 section-heading">
             Switch Persona
           </p>
           {PERSONAS.map((persona) => (
@@ -118,18 +118,18 @@ export default function PersonaSwitcher({ selected, onChange }: PersonaSwitcherP
                 setOpen(false);
               }}
               className={clsx(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-colors",
                 selected === persona.id
-                  ? "bg-gray-800 text-white"
-                  : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200",
+                  ? "bg-white/[0.04] text-white"
+                  : "text-gray-500 hover:bg-white/[0.03] hover:text-gray-300",
               )}
             >
               <div className={clsx("flex h-8 w-8 items-center justify-center rounded-lg", persona.bgColor)}>
                 <persona.icon className={clsx("h-4 w-4", persona.color)} />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium">{persona.label}</p>
-                <p className="text-xs text-gray-500">{persona.description}</p>
+                <p className="text-[13px] font-medium">{persona.label}</p>
+                <p className="text-[11px] text-gray-600">{persona.description}</p>
               </div>
             </button>
           ))}

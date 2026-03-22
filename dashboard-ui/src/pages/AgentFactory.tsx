@@ -332,10 +332,10 @@ const PERSONA_TASKS: Record<string, string[]> = {
 // ── Recent agent runs (from centralized demo data) ──────────────────────
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  completed: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Completed" },
-  running: { bg: "bg-brand-500/10", text: "text-brand-400", label: "Running" },
-  failed: { bg: "bg-red-500/10", text: "text-red-400", label: "Failed" },
-  "awaiting-approval": { bg: "bg-amber-500/10", text: "text-amber-400", label: "Needs Approval" },
+  completed: { bg: "bg-emerald-500/[0.08]", text: "text-emerald-400", label: "Completed" },
+  running: { bg: "bg-brand-500/[0.08]", text: "text-brand-400", label: "Running" },
+  failed: { bg: "bg-red-500/[0.08]", text: "text-red-400", label: "Failed" },
+  "awaiting-approval": { bg: "bg-amber-500/[0.08]", text: "text-amber-400", label: "Needs Approval" },
 };
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -355,7 +355,6 @@ export default function AgentFactory() {
   }, [suggestedTasks]);
 
   function handlePromptSubmit(prompt: string, context?: string) {
-    // Navigate to the agent task execution page
     const params = new URLSearchParams({ prompt });
     if (context) params.set("context", context);
     navigate(`/app/agent-task?${params.toString()}`);
@@ -373,10 +372,7 @@ export default function AgentFactory() {
     <div className="min-h-full">
       {/* Hero section */}
       <div className="relative overflow-hidden">
-        {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-transparent" />
-
-        <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
+        <div className="relative px-2 pt-6 pb-4 sm:px-4 lg:px-6">
           {/* Top row: persona + metrics */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
             <PersonaSwitcher selected={persona} onChange={setPersona} />
@@ -385,11 +381,11 @@ export default function AgentFactory() {
 
           {/* Title */}
           <div className="max-w-3xl mx-auto text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gradient-white mb-3">
               What do you want to automate?
             </h1>
-            <p className="text-gray-500 text-sm leading-relaxed">
-              Deploy autonomous agents to investigate, remediate, and secure your infrastructure in minutes.
+            <p className="text-gray-600 text-sm leading-relaxed max-w-xl mx-auto">
+              Deploy autonomous agents to investigate, remediate, and secure your infrastructure.
             </p>
           </div>
 
@@ -402,16 +398,18 @@ export default function AgentFactory() {
       </div>
 
       {/* Task cards */}
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="px-2 py-6 sm:px-4 lg:px-6">
         {/* Suggested for persona */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-4 w-4 text-brand-400" />
-            <h2 className="text-sm font-semibold text-gray-300">Suggested for you</h2>
+            <Sparkles className="h-3.5 w-3.5 text-brand-400" />
+            <h2 className="text-[13px] font-semibold text-gray-400">Suggested for you</h2>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {suggestedTasks.map((task) => (
-              <TaskCard key={task.id} task={task} onSelect={handleTaskSelect} />
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {suggestedTasks.map((task, i) => (
+              <div key={task.id} className="stagger-item" style={{ animationDelay: `${i * 50}ms` }}>
+                <TaskCard task={task} onSelect={handleTaskSelect} />
+              </div>
             ))}
           </div>
         </div>
@@ -420,20 +418,22 @@ export default function AgentFactory() {
         <div>
           <button
             onClick={() => setShowAllTasks(!showAllTasks)}
-            className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-400 hover:text-gray-300 transition-colors"
+            className="flex items-center gap-2 mb-4 text-[13px] font-medium text-gray-500 hover:text-gray-400 transition-colors"
           >
             {showAllTasks ? (
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp className="h-3.5 w-3.5" />
             ) : (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-3.5 w-3.5" />
             )}
-            {showAllTasks ? "Show less" : "More tasks"}
+            {showAllTasks ? "Show less" : `${moreTasks.length} more tasks`}
           </button>
 
           {showAllTasks && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {moreTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onSelect={handleTaskSelect} compact />
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+              {moreTasks.map((task, i) => (
+                <div key={task.id} className="stagger-item" style={{ animationDelay: `${i * 30}ms` }}>
+                  <TaskCard task={task} onSelect={handleTaskSelect} compact />
+                </div>
               ))}
             </div>
           )}
@@ -441,42 +441,43 @@ export default function AgentFactory() {
 
         {/* Recent runs */}
         <div className="mt-10">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-gray-500" />
-              <h2 className="text-sm font-semibold text-gray-300">Recent Agent Runs</h2>
+              <Activity className="h-3.5 w-3.5 text-gray-600" />
+              <h2 className="text-[13px] font-semibold text-gray-400">Recent Agent Runs</h2>
             </div>
             <Link
               to="/app/agent-history"
-              className="text-xs text-gray-500 hover:text-brand-400 transition-colors"
+              className="text-[11px] font-medium text-gray-600 hover:text-brand-400 transition-colors"
             >
               View all
             </Link>
           </div>
 
-          <div className="space-y-2">
-            {DEMO_RECENT_RUNS.map((run) => {
+          <div className="space-y-1.5">
+            {DEMO_RECENT_RUNS.map((run, i) => {
               const status = STATUS_STYLES[run.status];
               const RunIcon = resolveIcon(run.icon);
               return (
                 <button
                   key={run.id}
                   onClick={() => handleRunClick(run)}
-                  className="flex w-full items-center gap-4 rounded-xl border border-gray-800/60 bg-gray-900/40 px-4 py-3.5 text-left shadow-card transition-all duration-150 hover:border-gray-700/80 hover:bg-gray-800/30 hover:shadow-card-hover focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                  className="stagger-item flex w-full items-center gap-3.5 rounded-xl border border-white/[0.04] bg-surface-1 px-4 py-3 text-left transition-all duration-150 hover:border-white/[0.08] hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30"
+                  style={{ animationDelay: `${i * 40}ms` }}
                 >
                   <RunIcon className={`h-4 w-4 shrink-0 ${run.iconColor}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-300 truncate">{run.title}</p>
+                    <p className="text-[13px] text-gray-300 truncate">{run.title}</p>
                     <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-xs text-gray-600">{run.startedAt}</span>
-                      <span className="text-xs text-gray-600">
+                      <span className="text-[11px] text-gray-700">{run.startedAt}</span>
+                      <span className="text-[11px] text-gray-700">
                         <Clock className="inline h-3 w-3 mr-0.5" />
                         {run.duration}
                       </span>
                     </div>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${status.bg} ${status.text}`}
                   >
                     {run.status === "running" && (
                       <Zap className="inline h-3 w-3 mr-1 animate-pulse" />
@@ -490,24 +491,21 @@ export default function AgentFactory() {
         </div>
 
         {/* Agent stats footer */}
-        <div className="mt-10 rounded-2xl border border-gray-800/40 bg-gray-900/40 p-6 shadow-card">
+        <div className="mt-10 rounded-2xl border border-white/[0.04] bg-surface-1 p-6">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold tracking-tight text-white">1,247</p>
-              <p className="mt-1 text-xs text-gray-500">Tasks Completed</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold tracking-tight text-emerald-400">94.2%</p>
-              <p className="mt-1 text-xs text-gray-500">Success Rate</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold tracking-tight text-brand-400">3.1m</p>
-              <p className="mt-1 text-xs text-gray-500">Avg Resolution</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold tracking-tight text-amber-400">847h</p>
-              <p className="mt-1 text-xs text-gray-500">Hours Saved</p>
-            </div>
+            {[
+              { value: "1,247", label: "Tasks Completed", color: "text-white" },
+              { value: "94.2%", label: "Success Rate", color: "text-emerald-400" },
+              { value: "3.1m", label: "Avg Resolution", color: "text-brand-400" },
+              { value: "847h", label: "Hours Saved", color: "text-amber-400" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className={`metric-value text-2xl font-bold tracking-tight ${stat.color}`}>
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-[11px] text-gray-600">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -35,9 +35,9 @@ export default function LandingNav() {
   return (
     <nav
       className={clsx(
-        "fixed top-0 z-50 w-full transition-colors duration-200",
+        "fixed top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "border-b border-gray-800/60 bg-gray-950/95 backdrop-blur-sm"
+          ? "border-b border-white/[0.04] bg-surface-0/90 backdrop-blur-xl"
           : "border-b border-transparent bg-transparent",
       )}
     >
@@ -48,15 +48,15 @@ export default function LandingNav() {
         </Link>
 
         {/* Desktop center links */}
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-0.5 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className="group relative rounded-md px-3 py-2 text-sm text-gray-400 transition-colors hover:text-gray-200"
+              className="group relative rounded-lg px-3 py-2 text-[13px] font-medium text-gray-500 transition-colors hover:text-gray-200"
             >
               {link.label}
-              <span className="absolute bottom-1 left-3 right-3 h-px origin-left scale-x-0 bg-gray-400 transition-transform duration-200 group-hover:scale-x-100" />
+              <span className="absolute bottom-1.5 left-3 right-3 h-px origin-left scale-x-0 bg-brand-400/50 transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
           ))}
         </div>
@@ -65,14 +65,13 @@ export default function LandingNav() {
         <div className="hidden items-center gap-4 md:flex">
           <Link
             to="/login"
-            className="group relative text-sm text-gray-400 transition-colors hover:text-gray-200"
+            className="text-[13px] font-medium text-gray-500 transition-colors hover:text-gray-200"
           >
             Sign in
-            <span className="absolute -bottom-0.5 left-0 right-0 h-px origin-left scale-x-0 bg-gray-400 transition-transform duration-200 group-hover:scale-x-100" />
           </Link>
           <Link
             to="/app?demo=true"
-            className="rounded-md bg-cyan-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cyan-600"
+            className="btn-primary rounded-lg px-4 py-2 text-[13px]"
           >
             Get Started
           </Link>
@@ -81,7 +80,7 @@ export default function LandingNav() {
         {/* Mobile hamburger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-900 hover:text-white md:hidden"
+          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-white/[0.04] hover:text-white md:hidden"
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -90,14 +89,14 @@ export default function LandingNav() {
 
       {/* Mobile menu with smooth height transition */}
       <div
-        className="overflow-hidden border-t border-gray-800 transition-all duration-300 ease-in-out md:hidden"
+        className="overflow-hidden border-t transition-all duration-300 ease-in-out md:hidden"
         style={{
           maxHeight: `${menuHeight}px`,
           opacity: mobileOpen ? 1 : 0,
-          borderColor: mobileOpen ? undefined : "transparent",
+          borderColor: mobileOpen ? "rgba(255,255,255,0.04)" : "transparent",
         }}
       >
-        <div ref={mobileMenuRef} className="bg-gray-950">
+        <div ref={mobileMenuRef} className="bg-surface-0/95 backdrop-blur-xl">
           <div className="mx-auto max-w-6xl px-6 py-6">
             <div className="flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
@@ -105,7 +104,7 @@ export default function LandingNav() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-sm text-gray-300 transition-colors hover:bg-gray-900 hover:text-white"
+                  className="rounded-lg px-3 py-2.5 text-sm text-gray-400 transition-colors hover:bg-white/[0.04] hover:text-white"
                 >
                   {link.label}
                 </Link>
@@ -113,17 +112,17 @@ export default function LandingNav() {
               <Link
                 to="/login"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-md px-3 py-2.5 text-sm text-gray-300 transition-colors hover:bg-gray-900 hover:text-white"
+                className="rounded-lg px-3 py-2.5 text-sm text-gray-400 transition-colors hover:bg-white/[0.04] hover:text-white"
               >
                 Sign in
               </Link>
             </div>
 
-            <div className="mt-4 border-t border-gray-800 pt-4">
+            <div className="mt-4 border-t border-white/[0.04] pt-4">
               <Link
                 to="/app?demo=true"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-md bg-cyan-700 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-cyan-600"
+                className="btn-primary block w-full rounded-lg py-2.5 text-center text-sm"
               >
                 Get Started
               </Link>

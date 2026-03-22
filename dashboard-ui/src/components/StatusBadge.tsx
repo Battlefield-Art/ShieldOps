@@ -1,12 +1,12 @@
 import clsx from "clsx";
 
 const VARIANT_CLASSES: Record<string, string> = {
-  success: "bg-green-500/10 text-green-400 ring-green-500/20",
-  warning: "bg-amber-500/10 text-amber-400 ring-amber-500/20",
-  error: "bg-red-500/10 text-red-400 ring-red-500/20",
-  info: "bg-blue-500/10 text-blue-400 ring-blue-500/20",
-  cyan: "bg-cyan-500/10 text-cyan-400 ring-cyan-500/20",
-  neutral: "bg-gray-500/10 text-gray-400 ring-gray-500/20",
+  success: "bg-emerald-500/[0.08] text-emerald-400 ring-emerald-500/15",
+  warning: "bg-amber-500/[0.08] text-amber-400 ring-amber-500/15",
+  error: "bg-red-500/[0.08] text-red-400 ring-red-500/15",
+  info: "bg-blue-500/[0.08] text-blue-400 ring-blue-500/15",
+  cyan: "bg-brand-500/[0.08] text-brand-400 ring-brand-500/15",
+  neutral: "bg-white/[0.04] text-gray-400 ring-white/[0.06]",
 };
 
 // Map common statuses to variants
@@ -76,8 +76,8 @@ export default function StatusBadge({ status, size = "sm", variant }: StatusBadg
         <span className="relative flex h-1.5 w-1.5">
           <span
             className={clsx(
-              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-60",
-              v === "success" && "bg-green-400",
+              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-50",
+              v === "success" && "bg-emerald-400",
               v === "warning" && "bg-amber-400",
               v === "error" && "bg-red-400",
             )}
@@ -85,7 +85,7 @@ export default function StatusBadge({ status, size = "sm", variant }: StatusBadg
           <span
             className={clsx(
               "relative inline-flex h-1.5 w-1.5 rounded-full",
-              v === "success" && "bg-green-400",
+              v === "success" && "bg-emerald-400",
               v === "warning" && "bg-amber-400",
               v === "error" && "bg-red-400",
             )}

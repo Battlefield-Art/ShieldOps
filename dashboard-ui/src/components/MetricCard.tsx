@@ -20,36 +20,38 @@ export default function MetricCard({ label, value, change, icon, description }: 
   return (
     <div
       className={clsx(
-        "group relative overflow-hidden rounded-xl border bg-gray-900 p-5 transition-all duration-200",
-        "shadow-card hover:shadow-card-hover",
-        trend === "up" && "border-gray-800/80 hover:border-green-500/30",
-        trend === "down" && "border-gray-800/80 hover:border-red-500/30",
-        trend === "neutral" && "border-gray-800/80 hover:border-gray-700",
+        "group relative overflow-hidden rounded-xl border p-5 transition-all duration-200",
+        "bg-surface-2 shadow-depth hover-lift",
+        trend === "up" && "border-white/[0.06] hover:border-emerald-500/20",
+        trend === "down" && "border-white/[0.06] hover:border-red-500/20",
+        trend === "neutral" && "border-white/[0.06] hover:border-white/[0.1]",
       )}
     >
-      {/* Subtle top gradient accent */}
+      {/* Subtle top accent line */}
       <div
         className={clsx(
           "absolute inset-x-0 top-0 h-px",
-          trend === "up" && "bg-gradient-to-r from-transparent via-green-500/40 to-transparent",
-          trend === "down" && "bg-gradient-to-r from-transparent via-red-500/40 to-transparent",
-          trend === "neutral" && "bg-gradient-to-r from-transparent via-gray-700/40 to-transparent",
+          trend === "up" && "bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent",
+          trend === "down" && "bg-gradient-to-r from-transparent via-red-500/30 to-transparent",
+          trend === "neutral" && "bg-gradient-to-r from-transparent via-white/[0.06] to-transparent",
         )}
       />
 
       <div className="flex items-start justify-between">
-        <p className="text-[13px] font-medium text-gray-400">{label}</p>
+        <p className="text-[13px] font-medium text-gray-500">{label}</p>
         {icon && (
-          <div className="rounded-lg bg-gray-800/60 p-2 text-gray-500 transition-colors duration-200 group-hover:text-gray-400">
+          <div className="rounded-lg bg-white/[0.03] p-1.5 text-gray-600 transition-colors duration-200 group-hover:text-gray-500">
             {icon}
           </div>
         )}
       </div>
 
-      <p className="metric-value mt-3 text-3xl font-semibold tracking-tight text-gray-50">{value}</p>
+      <p className="metric-value mt-2.5 text-[28px] font-semibold leading-none tracking-tight text-gray-50">
+        {value}
+      </p>
 
       {description && (
-        <p className="mt-1 text-xs text-gray-500">{description}</p>
+        <p className="mt-1.5 text-xs text-gray-600">{description}</p>
       )}
 
       {change !== undefined && (
@@ -57,9 +59,9 @@ export default function MetricCard({ label, value, change, icon, description }: 
           <div
             className={clsx(
               "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium",
-              trend === "up" && "bg-green-500/10 text-green-400",
-              trend === "down" && "bg-red-500/10 text-red-400",
-              trend === "neutral" && "bg-gray-500/10 text-gray-500",
+              trend === "up" && "bg-emerald-500/[0.08] text-emerald-400",
+              trend === "down" && "bg-red-500/[0.08] text-red-400",
+              trend === "neutral" && "bg-white/[0.04] text-gray-500",
             )}
           >
             {trend === "up" && <TrendingUp className="h-3 w-3" />}

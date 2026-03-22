@@ -26,36 +26,37 @@ export default function TaskCard({ task, onSelect, compact = false }: TaskCardPr
     <button
       onClick={() => onSelect(task)}
       className={clsx(
-        "group relative flex w-full text-left rounded-xl border border-gray-800/80 bg-gray-900/60 shadow-card transition-all duration-200",
-        "hover:border-gray-700/80 hover:bg-gray-800/50 hover:shadow-card-hover",
-        "focus:outline-none focus:ring-2 focus:ring-brand-500/30",
+        "group relative flex w-full text-left rounded-xl border bg-surface-2 transition-all duration-200",
+        "border-white/[0.06] shadow-depth",
+        "hover:border-white/[0.1] hover:bg-surface-3 hover:shadow-card-hover",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30",
+        "hover-lift",
         compact ? "p-3" : "p-4",
       )}
     >
       {/* Icon */}
       <div
         className={clsx(
-          "flex shrink-0 items-center justify-center rounded-xl",
-          compact ? "h-9 w-9 mr-3" : "h-10 w-10 mr-4",
+          "flex shrink-0 items-center justify-center rounded-lg",
+          compact ? "h-9 w-9 mr-3" : "h-10 w-10 mr-3.5",
           task.iconBg,
         )}
       >
-        <task.icon className={clsx("h-5 w-5", task.iconColor)} />
+        <task.icon className={clsx(compact ? "h-4 w-4" : "h-[18px] w-[18px]", task.iconColor)} />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <h3
           className={clsx(
-            "font-semibold text-gray-200 group-hover:text-white transition-colors",
-            compact ? "text-sm" : "text-sm",
+            "font-semibold text-gray-200 group-hover:text-white transition-colors text-[13px]",
           )}
         >
           {task.title}
         </h3>
         <p
           className={clsx(
-            "text-gray-500 group-hover:text-gray-400 transition-colors line-clamp-2",
+            "text-gray-500 group-hover:text-gray-400 transition-colors line-clamp-2 leading-relaxed",
             compact ? "text-xs mt-0.5" : "text-xs mt-1",
           )}
         >
@@ -64,7 +65,7 @@ export default function TaskCard({ task, onSelect, compact = false }: TaskCardPr
 
         {/* Tags & time */}
         {!compact && (task.tags || task.estimatedTime) && (
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2.5 flex items-center gap-2">
             {task.estimatedTime && (
               <span className="text-[10px] font-medium text-gray-600">
                 ~{task.estimatedTime}
@@ -73,7 +74,7 @@ export default function TaskCard({ task, onSelect, compact = false }: TaskCardPr
             {task.tags?.map((tag) => (
               <span
                 key={tag}
-                className="rounded-md bg-gray-800/60 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-gray-700/30"
+                className="rounded-md bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-inset ring-white/[0.06]"
               >
                 {tag}
               </span>
@@ -83,7 +84,7 @@ export default function TaskCard({ task, onSelect, compact = false }: TaskCardPr
       </div>
 
       {/* Arrow */}
-      <ArrowRight className="h-4 w-4 shrink-0 text-gray-700 transition-all group-hover:text-brand-400 group-hover:translate-x-0.5 mt-1" />
+      <ArrowRight className="h-4 w-4 shrink-0 text-gray-700 transition-all duration-200 group-hover:text-brand-400 group-hover:translate-x-0.5 mt-0.5" />
     </button>
   );
 }

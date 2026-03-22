@@ -21,7 +21,7 @@ export default function Layout() {
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-gray-950">
+    <div className="flex h-screen flex-col overflow-hidden bg-surface-0">
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
@@ -43,9 +43,9 @@ export default function Layout() {
           <Header onMenuClick={openMobile} />
           <main
             id="main-content"
-            className="flex-1 overflow-y-auto bg-gray-950 bg-grid p-4 sm:p-6 lg:p-8"
+            className="flex-1 overflow-y-auto bg-surface-0 p-4 sm:p-5 lg:p-6"
           >
-            <div className="mx-auto max-w-[1600px]">
+            <div className="mx-auto max-w-[1400px]">
               <Breadcrumbs />
               <ErrorBoundary>
                 <Outlet />

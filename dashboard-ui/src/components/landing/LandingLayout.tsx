@@ -4,7 +4,7 @@ import Footer from "./Footer";
 
 export default function LandingLayout() {
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-surface-0 text-gray-100">
       <LandingNav />
       <Outlet />
       <Footer />

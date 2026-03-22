@@ -2,10 +2,10 @@ import clsx from "clsx";
 import { Loader2 } from "lucide-react";
 
 const BADGE_VARIANTS = {
-  info: "bg-blue-500/10 text-blue-400 ring-blue-500/20",
-  success: "bg-green-500/10 text-green-400 ring-green-500/20",
-  warning: "bg-yellow-500/10 text-yellow-400 ring-yellow-500/20",
-  error: "bg-red-500/10 text-red-400 ring-red-500/20",
+  info: "bg-blue-500/[0.08] text-blue-400 ring-blue-500/15",
+  success: "bg-emerald-500/[0.08] text-emerald-400 ring-emerald-500/15",
+  warning: "bg-amber-500/[0.08] text-amber-400 ring-amber-500/15",
+  error: "bg-red-500/[0.08] text-red-400 ring-red-500/15",
 } as const;
 
 interface PageHeaderProps {
@@ -28,11 +28,11 @@ export default function PageHeader({ title, description, action, badge }: PageHe
     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-50">{title}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-gray-50 sm:text-2xl">{title}</h1>
           {badge && (
             <span
               className={clsx(
-                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+                "inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset",
                 BADGE_VARIANTS[badge.variant],
               )}
             >
@@ -41,7 +41,7 @@ export default function PageHeader({ title, description, action, badge }: PageHe
           )}
         </div>
         {description && (
-          <p className="mt-1.5 text-sm text-gray-500">{description}</p>
+          <p className="mt-1 text-[13px] text-gray-600">{description}</p>
         )}
       </div>
 

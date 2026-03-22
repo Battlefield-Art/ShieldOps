@@ -21,11 +21,11 @@ function GroupItems({
     <div
       className="overflow-hidden transition-all duration-200 ease-in-out"
       style={{
-        maxHeight: isExpanded ? `${(items.length * 40) + 4}px` : "0px",
+        maxHeight: isExpanded ? `${(items.length * 38) + 4}px` : "0px",
         opacity: isExpanded ? 1 : 0,
       }}
     >
-      <div ref={contentRef} className="mt-0.5 space-y-0.5">
+      <div ref={contentRef} className="mt-0.5 space-y-px">
         {items.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -33,21 +33,18 @@ function GroupItems({
             end={to === "/app"}
             className={({ isActive }) =>
               clsx(
-                "group/item flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150",
-                "focus:outline-none focus:ring-2 focus:ring-brand-500/40",
+                "group/item flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] font-medium transition-all duration-150",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40",
                 collapsed && "justify-center px-2",
                 isActive
-                  ? "bg-brand-500/10 text-brand-400 shadow-sm shadow-brand-500/5"
-                  : "text-gray-400 hover:bg-gray-800/70 hover:text-gray-200",
+                  ? "nav-active-line bg-brand-500/[0.08] text-brand-300"
+                  : "text-gray-500 hover:bg-white/[0.03] hover:text-gray-300",
               )
             }
             title={collapsed ? label : undefined}
           >
-            <Icon className={clsx(
-              "h-4 w-4 shrink-0 transition-colors duration-150",
-            )} />
+            <Icon className="h-[15px] w-[15px] shrink-0 transition-colors duration-150" />
             {!collapsed && <span className="truncate">{label}</span>}
-            {/* Active indicator bar */}
           </NavLink>
         ))}
       </div>
@@ -82,16 +79,16 @@ export default function Sidebar() {
   return (
     <aside
       className={clsx(
-        "flex h-full flex-col border-r border-gray-800/60 bg-gray-900/95 transition-all duration-200",
-        collapsed ? "w-16" : "w-60",
+        "flex h-full flex-col border-r border-white/[0.04] bg-surface-1 transition-all duration-200",
+        collapsed ? "w-16" : "w-[236px]",
       )}
     >
       {/* Logo */}
-      <div className="flex items-center justify-between border-b border-gray-800/40 px-4 py-5">
+      <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-4">
         <Logo size={collapsed ? "sm" : "md"} showText={!collapsed} />
         <button
           onClick={toggleCollapsed}
-          className="rounded-lg p-1.5 text-gray-500 transition-colors duration-150 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+          className="rounded-md p-1 text-gray-600 transition-colors duration-150 hover:bg-white/[0.04] hover:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -116,18 +113,18 @@ export default function Sidebar() {
           return (
             <div key={group.id}>
               {groupIdx > 0 && (
-                <div className="mx-3 my-1.5 border-t border-gray-800/30" />
+                <div className="mx-3 my-2 h-px bg-white/[0.04]" />
               )}
               <div className="mb-0.5">
                 {/* Group header */}
                 <button
                   onClick={() => toggleGroup(group.id)}
                   className={clsx(
-                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wider transition-colors duration-150",
-                    "focus:outline-none focus:ring-2 focus:ring-brand-500/40",
+                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-150",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40",
                     isGroupActive
                       ? `${group.color}`
-                      : "text-gray-500 hover:text-gray-400",
+                      : "text-gray-600 hover:text-gray-500",
                   )}
                   aria-expanded={isExpanded}
                   aria-label={`${group.label} section`}
@@ -155,9 +152,9 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-800/40 px-4 py-3">
+      <div className="border-t border-white/[0.04] px-4 py-3">
         {!collapsed && (
-          <p className="text-[11px] text-gray-600">ShieldOps v0.1.0</p>
+          <p className="text-[10px] font-medium text-gray-700">ShieldOps v0.1.0</p>
         )}
       </div>
     </aside>

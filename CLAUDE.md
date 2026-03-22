@@ -96,6 +96,7 @@ The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines ac
 ### API & Dashboard
 - FastAPI at `src/shieldops/api/` — RESTful, versioned `/api/v1/`, JWT auth, OpenAPI auto-gen
 - React + TypeScript + Tailwind dashboard at `dashboard-ui/`
+- **Design System**: Surface-based depth hierarchy (surface-0 through surface-4), opacity-based borders (`rgba(255,255,255,0.XX)`), brand cyan accent, Inter + JetBrains Mono typography. Premium component library: `btn-primary` (gradient + glow), `btn-secondary`, `card-surface`, `card-interactive` (hover-lift), `tab-bar`, `section-heading`. CSS custom properties for `--border-subtle/default/strong` and `--surface-*` tokens.
 - Notification integrations: Slack, Teams, PagerDuty, email, SMS, voice, webhooks
 
 ## Tech Stack
