@@ -37,6 +37,7 @@ nav:
     - Connector Layer: architecture/connectors.md
     - Policy Engine: architecture/policy-engine.md
     - Safety Model: architecture/safety-model.md
+    - ADR-005 AI Security Control Plane: architecture/adr-005-ai-security-control-plane.md
   - Agents:
     - SRE Core:
       - Investigation Agent: agents/investigation.md
@@ -64,6 +65,11 @@ nav:
       - Threat Automation Agent: agents/threat-automation.md
       - Security Convergence Agent: agents/security-convergence.md
       - Compliance Auditor: agents/compliance-auditor.md
+    - AI Security:
+      - Agent Firewall: agents/agent-firewall.md
+      - NHI Registry: agents/nhi-registry.md
+      - MCP Security: agents/mcp-security.md
+      - SOC Brain: agents/soc-brain.md
     - Observability:
       - OTel Pipeline Agent: agents/otel-pipeline.md
       - Telemetry Optimizer Agent: agents/telemetry-optimizer.md

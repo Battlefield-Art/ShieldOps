@@ -80,9 +80,18 @@ dashboard = [
     "streamlit>=1.41.0",
     "plotly>=5.24.0",
 ]
+sdk = [
+    "httpx>=0.27",
+    "opentelemetry-api>=1.25",
+    "opentelemetry-sdk>=1.25",
+    "opentelemetry-exporter-otlp-proto-http>=1.25",
+]
 
 [project.scripts]
 shieldops = "shieldops.cli.main:cli"
+
+[project.entry-points."shieldops.sdk"]
+default = "shieldops.sdk"
 
 [tool.ruff]
 line-length = 100
