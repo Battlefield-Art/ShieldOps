@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUp, Paperclip, Search, Shield, Activity, GitBranch, BarChart3 } from "lucide-react";
+import { ArrowUp, Paperclip, Search, Shield, Plug, KeyRound, FileText } from "lucide-react";
 import clsx from "clsx";
 
 const examplePrompts = [
-  { label: "Investigate CPU spike on prod", icon: Search },
-  { label: "Optimize telemetry costs", icon: BarChart3 },
-  { label: "Run threat intelligence scan", icon: Shield },
-  { label: "Detect infrastructure drift", icon: GitBranch },
-  { label: "Analyze SLO burn rate", icon: Activity },
+  { label: "Scan my LangChain agent for prompt injection", icon: Shield },
+  { label: "Find shadow AI in our cloud accounts", icon: Search },
+  { label: "Audit MCP server permissions", icon: Plug },
+  { label: "Block over-privileged service accounts", icon: KeyRound },
+  { label: "Generate compliance audit report", icon: FileText },
 ];
 
 export default function HeroSection() {
@@ -20,26 +20,27 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-hero-mesh pointer-events-none" />
 
       <div className="relative mx-auto max-w-3xl text-center">
-        {/* Private Beta badge */}
+        {/* Badge */}
         <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] px-3.5 py-1.5 text-xs font-medium text-gray-400">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-60" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-400" />
           </span>
-          Private Beta
+          AI Security Platform
         </div>
 
         {/* Heading */}
         <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]">
-          <span className="text-gradient-white">What should we</span>
+          <span className="text-gradient-white">The security control plane for</span>
           <br />
-          <span className="text-gradient-brand">investigate?</span>
+          <span className="text-gradient-brand">AI agents</span>
         </h1>
 
         {/* Subheading */}
         <p className="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-gray-500">
-          ShieldOps deploys autonomous AI agents that investigate incidents,
-          remediate infrastructure issues, and learn from outcomes — in minutes, not hours.
+          ShieldOps intercepts every tool call, governs non-human identities,
+          secures MCP ecosystems, and automates SOC operations — so your AI
+          agents can't go rogue.
         </p>
 
         {/* Chat input container */}
@@ -102,7 +103,7 @@ export default function HeroSection() {
 
         {/* Trust signals */}
         <p className="mt-10 text-[11px] tracking-wide text-gray-700">
-          No signup required &middot; 50 autonomous agents &middot; SOC 2 compliant
+          No signup required &middot; 61 AI agents &middot; SOC 2 compliant &middot; Works with CrowdStrike &amp; Defender
         </p>
       </div>
     </section>

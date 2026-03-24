@@ -10,6 +10,24 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   {
+    title: "Security",
+    integrations: [
+      { name: "CrowdStrike", description: "EDR telemetry, threat intelligence, and incident response" },
+      { name: "Microsoft Defender", description: "XDR alerts, identity protection, and cloud security" },
+      { name: "Wiz", description: "Cloud security posture, vulnerability findings, and attack paths" },
+      { name: "OPA", description: "Policy evaluation on all agent actions" },
+    ],
+  },
+  {
+    title: "AI / Agent SDKs",
+    integrations: [
+      { name: "LangChain", description: "Agent monitoring, tool call interception, and guardrails" },
+      { name: "CrewAI", description: "Multi-agent crew governance and behavioral analysis" },
+      { name: "LlamaIndex", description: "RAG pipeline security and data access auditing" },
+      { name: "MCP Servers", description: "Model Context Protocol server discovery and security" },
+    ],
+  },
+  {
     title: "Cloud",
     integrations: [
       { name: "AWS", description: "EC2, ECS, Lambda, CloudWatch, IAM" },
@@ -49,14 +67,13 @@ const CATEGORIES: Category[] = [
       { name: "PostgreSQL", description: "Query performance and replication" },
       { name: "Redis", description: "Cache health and memory management" },
       { name: "GitHub Actions", description: "CI/CD pipeline integration" },
-      { name: "OPA", description: "Policy evaluation on all agent actions" },
     ],
   },
 ];
 
 export default function IntegrationsSection() {
   return (
-    <section id="integrations" className="border-y border-gray-800 bg-gray-900 px-6 py-20">
+    <section id="integrations" className="border-y border-white/[0.06] bg-surface-1 px-6 py-20">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-50">
@@ -77,7 +94,7 @@ export default function IntegrationsSection() {
                   <span
                     key={integration.name}
                     title={integration.description}
-                    className="cursor-default rounded-md border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-cyan-700 hover:text-white"
+                    className="cursor-default rounded-md border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-brand-500/30 hover:text-white"
                   >
                     {integration.name}
                   </span>

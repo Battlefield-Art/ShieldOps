@@ -1,0 +1,115 @@
+# ShieldOps AI Security Recording Rules
+# Pre-compute AI security metrics for dashboards and alerting.
+# Imported via rule_files in prometheus.yml
+
+groups:
+  - name: ai_security_recording_rules
+    interval: 30s
+    rules:
+      # ── Agent Firewall Metrics ─────────────────────────────────────
+      - record: shieldops:agent_firewall:calls_intercepted:rate5m
+        expr: rate(shieldops_agent_firewall_calls_total[5m])
+
+      - record: shieldops:agent_firewall:calls_blocked:rate5m
+        expr: rate(shieldops_agent_firewall_calls_blocked_total[5m])
+
+      - record: shieldops:agent_firewall:block_rate:ratio
+        expr: >
+          shieldops:agent_firewall:calls_blocked:rate5m
+          /
+          clamp_min(shieldops:agent_firewall:calls_intercepted:rate5m, 1)
+
+      - record: shieldops:agent_firewall:anomalies_detected:rate5m
+        expr: rate(shieldops_agent_firewall_anomalies_total[5m])
+
+      - record: shieldops:agent_firewall:circuit_breakers_open
+        expr: shieldops_agent_firewall_circuit_breakers{state="open"}
+
+      - record: shieldops:agent_firewall:latency_overhead:p95
+        expr: >
+          histogram_quantile(0.95,
+            sum by (le) (rate(shieldops_agent_firewall_intercept_duration_seconds_bucket[5m]))
+          )
+
+      - record: shieldops:agent_firewall:kill_switch_active
+        expr: shieldops_agent_firewall_kill_switch{state="active"}
+
+      # ── NHI Registry Metrics ───────────────────────────────────────
+      - record: shieldops:nhi:total_identities
+        expr: shieldops_nhi_registry_identities_total
+
+      - record: shieldops:nhi:orphaned_count
+        expr: shieldops_nhi_registry_identities_total{status="orphaned"}
+
+      - record: shieldops:nhi:shadow_ai_detected
+        expr: shieldops_nhi_shadow_ai_detections_total
+
+      - record: shieldops:nhi:over_privileged_count
+        expr: >
+          shieldops_nhi_registry_identities_total{risk="critical"}
+          +
+          shieldops_nhi_registry_identities_total{risk="high"}
+
+      - record: shieldops:nhi:stale_credentials_count
+        expr: shieldops_nhi_registry_identities_total{credential_status="stale"}
+
+      - record: shieldops:nhi:discovery_rate:rate5m
+        expr: rate(shieldops_nhi_discovery_scans_total[5m])
+
+      - record: shieldops:nhi:jit_credentials_issued:rate5m
+        expr: rate(shieldops_nhi_jit_credentials_issued_total[5m])
+
+      # ── MCP Security Metrics ───────────────────────────────────────
+      - record: shieldops:mcp:servers_monitored
+        expr: shieldops_mcp_servers_total
+
+      - record: shieldops:mcp:god_keys_detected
+        expr: shieldops_mcp_god_keys_total
+
+      - record: shieldops:mcp:supply_chain_vulns
+        expr: shieldops_mcp_supply_chain_vulnerabilities_total
+
+      - record: shieldops:mcp:zero_trust_compliance_pct
+        expr: >
+          shieldops_mcp_zero_trust_compliant_total
+          /
+          clamp_min(shieldops_mcp_servers_total, 1) * 100
+
+      - record: shieldops:mcp:gateway_requests:rate5m
+        expr: rate(shieldops_mcp_gateway_requests_total[5m])
+
+      - record: shieldops:mcp:gateway_blocked:rate5m
+        expr: rate(shieldops_mcp_gateway_requests_total{action="blocked"}[5m])
+
+      - record: shieldops:mcp:tool_poisoning_attempts:rate5m
+        expr: rate(shieldops_mcp_tool_poisoning_attempts_total[5m])
+
+      # ── SOC Brain Metrics ──────────────────────────────────────────
+      - record: shieldops:soc:situations_active
+        expr: >
+          shieldops_soc_situations_total{status=~"new|triaging|investigating|containing"}
+
+      - record: shieldops:soc:mttd_seconds:avg
+        expr: avg(shieldops_soc_situation_mttd_seconds)
+
+      - record: shieldops:soc:mtta_seconds:avg
+        expr: avg(shieldops_soc_situation_mtta_seconds)
+
+      - record: shieldops:soc:mttr_seconds:avg
+        expr: avg(shieldops_soc_situation_mttr_seconds)
+
+      - record: shieldops:soc:auto_resolved_pct
+        expr: >
+          shieldops_soc_situations_auto_resolved_total
+          /
+          clamp_min(shieldops_soc_situations_resolved_total, 1) * 100
+
+      - record: shieldops:soc:correlation_rate:rate5m
+        expr: rate(shieldops_soc_correlations_total[5m])
+
+      - record: shieldops:soc:evidence_chains:avg_length
+        expr: avg(shieldops_soc_evidence_chain_length)
+
+      - record: shieldops:soc:vendor_ingestion:rate5m
+        expr: >
+          sum by (vendor) (rate(shieldops_soc_vendor_events_total[5m]))

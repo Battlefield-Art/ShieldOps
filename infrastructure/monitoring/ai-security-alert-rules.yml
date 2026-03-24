@@ -1,0 +1,193 @@
+# ShieldOps AI Security Alerting Rules
+# Imported via rule_files in prometheus.yml
+
+groups:
+  # ── Agent Firewall Alerts ──────────────────────────────────────────
+  - name: shieldops.agent_firewall
+    rules:
+      - alert: AgentFirewallHighBlockRate
+        expr: shieldops:agent_firewall:block_rate:ratio > 0.3
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-agent-firewall
+        annotations:
+          summary: "Agent Firewall blocking >30% of calls"
+          description: >
+            The Agent Firewall is blocking {{ $value | printf "%.1f" }}% of
+            intercepted agent calls over the last 5 minutes. This may indicate
+            a compromised agent, misconfigured policy, or active attack.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/firewall-high-block-rate"
+
+      - alert: CircuitBreakerTripped
+        expr: shieldops:agent_firewall:circuit_breakers_open > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+          service: shieldops-agent-firewall
+        annotations:
+          summary: "{{ $value }} agent circuit breaker(s) in OPEN state"
+          description: >
+            One or more agent circuit breakers have tripped to the OPEN state,
+            meaning agent calls to downstream services are being blocked. This
+            is a protective measure but indicates a serious underlying issue.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/circuit-breaker-tripped"
+
+      - alert: AgentFirewallKillSwitchActive
+        expr: shieldops:agent_firewall:kill_switch_active > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: security
+          service: shieldops-agent-firewall
+        annotations:
+          summary: "Agent Firewall kill switch has been activated"
+          description: >
+            The global agent kill switch is active. All agent actions are
+            blocked. This requires immediate human review to determine
+            whether the activation was intentional or triggered automatically.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/kill-switch-active"
+
+  # ── NHI Registry Alerts ────────────────────────────────────────────
+  - name: shieldops.nhi_registry
+    rules:
+      - alert: ShadowAIDetected
+        expr: increase(shieldops_nhi_shadow_ai_detections_total[1h]) > 0
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-nhi-registry
+        annotations:
+          summary: "New shadow AI agent detected in environment"
+          description: >
+            The NHI Registry has detected one or more unregistered AI agents
+            operating in the environment. Shadow AI agents bypass governance
+            controls and pose a risk to data security and compliance.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/shadow-ai-detected"
+
+      - alert: NHIOverPrivilegedCritical
+        expr: shieldops:nhi:over_privileged_count > 10
+        for: 10m
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-nhi-registry
+        annotations:
+          summary: "{{ $value }} over-privileged NHIs detected"
+          description: >
+            There are {{ $value | printf "%.0f" }} non-human identities with
+            critical or high risk privilege levels. These should be reviewed
+            and scoped down to least-privilege immediately.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/nhi-over-privileged"
+
+      - alert: NHIOrphanedIdentitiesHigh
+        expr: shieldops:nhi:orphaned_count > 20
+        for: 30m
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-nhi-registry
+        annotations:
+          summary: "{{ $value }} orphaned NHIs detected"
+          description: >
+            There are {{ $value | printf "%.0f" }} orphaned non-human identities
+            with no active owner. Orphaned identities are a common attack
+            vector and should be deactivated or reassigned.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/nhi-orphaned"
+
+  # ── MCP Security Alerts ────────────────────────────────────────────
+  - name: shieldops.mcp_security
+    rules:
+      - alert: MCPGodKeyDetected
+        expr: shieldops:mcp:god_keys_detected > 0
+        for: 5m
+        labels:
+          severity: critical
+          team: security
+          service: shieldops-mcp-security
+        annotations:
+          summary: "{{ $value }} MCP server(s) with God Key access risk"
+          description: >
+            One or more MCP servers have overly broad credentials (God Keys)
+            that grant unrestricted access. This violates zero-trust principles
+            and must be remediated by scoping permissions.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/mcp-god-key"
+
+      - alert: ZeroTrustComplianceLow
+        expr: shieldops:mcp:zero_trust_compliance_pct < 80
+        for: 30m
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-mcp-security
+        annotations:
+          summary: "MCP zero-trust compliance below 80% ({{ $value | printf \"%.1f\" }}%)"
+          description: >
+            Only {{ $value | printf "%.1f" }}% of MCP servers meet zero-trust
+            compliance requirements. Review server configurations for missing
+            mTLS, credential rotation, or access controls.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/mcp-zero-trust-low"
+
+      - alert: MCPSupplyChainVulnerabilities
+        expr: shieldops:mcp:supply_chain_vulns > 0
+        for: 10m
+        labels:
+          severity: critical
+          team: security
+          service: shieldops-mcp-security
+        annotations:
+          summary: "{{ $value }} MCP supply chain vulnerabilities detected"
+          description: >
+            Supply chain vulnerabilities have been detected in MCP server
+            dependencies. These could allow tool poisoning or data exfiltration.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/mcp-supply-chain"
+
+  # ── SOC Brain Alerts ───────────────────────────────────────────────
+  - name: shieldops.soc_brain
+    rules:
+      - alert: SOCBrainHighMTTR
+        expr: shieldops:soc:mttr_seconds:avg > 3600
+        for: 15m
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-soc-brain
+        annotations:
+          summary: "SOC Brain average MTTR exceeds 1 hour"
+          description: >
+            The average mean time to resolve (MTTR) across active situations
+            is {{ $value | printf "%.0f" }} seconds. Investigate whether
+            correlation rules are stale, playbooks are failing, or analyst
+            capacity is insufficient.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/soc-high-mttr"
+
+      - alert: SOCBrainHighSituationCount
+        expr: shieldops:soc:situations_active > 50
+        for: 10m
+        labels:
+          severity: warning
+          team: security
+          service: shieldops-soc-brain
+        annotations:
+          summary: "{{ $value }} active SOC situations — possible alert storm"
+          description: >
+            An unusually high number of active situations may indicate an
+            alert storm, misconfigured correlation rules, or an ongoing
+            large-scale attack.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/soc-situation-storm"
+
+      - alert: SOCBrainLowAutoResolution
+        expr: shieldops:soc:auto_resolved_pct < 40
+        for: 1h
+        labels:
+          severity: info
+          team: security
+          service: shieldops-soc-brain
+        annotations:
+          summary: "SOC Brain auto-resolution rate below 40%"
+          description: >
+            Only {{ $value | printf "%.1f" }}% of situations are being
+            auto-resolved. Review playbook coverage and confidence thresholds.
+          runbook_url: "https://runbooks.shieldops.internal/ai-security/soc-low-auto-resolve"

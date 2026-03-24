@@ -23,6 +23,11 @@ import {
   Upload,
   Link2,
   Hash,
+  Flame,
+  Fingerprint,
+  Network,
+  Brain,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
@@ -48,6 +53,14 @@ interface IntegrationConfig {
   fields: Record<string, string>;
 }
 
+interface AiSecurityModuleConfig {
+  enabled: boolean;
+  sdkSnippet?: boolean; // Agent Firewall: show SDK setup
+  cloudProviders?: string[]; // NHI Registry: selected cloud providers
+  mcpEndpoint?: string; // MCP Security: server endpoint
+  vendorConnectors?: Record<string, boolean>; // SOC Brain: vendor toggles
+}
+
 interface AgentConfig {
   investigation: boolean;
   remediation: boolean;
@@ -57,6 +70,11 @@ interface AgentConfig {
   maxPods: number;
   maxServices: number;
   slackChannel: string;
+  // AI Security Modules
+  agentFirewall: AiSecurityModuleConfig;
+  nhiRegistry: AiSecurityModuleConfig;
+  mcpSecurity: AiSecurityModuleConfig;
+  socBrain: AiSecurityModuleConfig;
 }
 
 type LaunchPhase = "idle" | "deploying" | "scanning" | "ready";
@@ -299,6 +317,10 @@ export default function OnboardingWizard() {
     maxPods: 5,
     maxServices: 3,
     slackChannel: "#ops-alerts",
+    agentFirewall: { enabled: false },
+    nhiRegistry: { enabled: false, cloudProviders: [] },
+    mcpSecurity: { enabled: false, mcpEndpoint: "" },
+    socBrain: { enabled: false, vendorConnectors: { crowdstrike: false, defender: false, wiz: false } },
   });
 
   // Step 6: Launch state
@@ -327,7 +349,7 @@ export default function OnboardingWizard() {
         case 3:
           return Object.values(infrastructure).some((i) => i.connected);
         case 4:
-          return [agents.investigation, agents.remediation, agents.security, agents.learning].some(Boolean);
+          return [agents.investigation, agents.remediation, agents.security, agents.learning, agents.agentFirewall.enabled, agents.nhiRegistry.enabled, agents.mcpSecurity.enabled, agents.socBrain.enabled].some(Boolean);
         case 5:
           return true;
         default:
@@ -1096,6 +1118,255 @@ function AgentStep({
           />
         </div>
       </div>
+
+      {/* ── AI Security Modules ── */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-gray-200">AI Security Modules</h3>
+        <p className="text-xs text-gray-500">
+          Enable AI-specific security capabilities for your agent fleet.
+        </p>
+
+        {/* Agent Firewall */}
+        <AiSecurityToggle
+          icon={Flame}
+          color="text-orange-400"
+          label="Agent Firewall"
+          description="Monitor and control AI agent tool calls in real-time"
+          enabled={agents.agentFirewall.enabled}
+          onToggle={() =>
+            setAgents((prev) => ({
+              ...prev,
+              agentFirewall: { ...prev.agentFirewall, enabled: !prev.agentFirewall.enabled },
+            }))
+          }
+        >
+          {agents.agentFirewall.enabled && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs font-medium text-gray-400">SDK Setup</p>
+              <div className="rounded-lg bg-gray-900 p-3 font-mono text-xs text-gray-300">
+                <code>
+                  <span className="text-brand-400">import</span> {"{"} ShieldOpsFirewall {"}"}{" "}
+                  <span className="text-brand-400">from</span>{" "}
+                  <span className="text-emerald-400">&apos;@shieldops/agent-firewall&apos;</span>;{"\n\n"}
+                  <span className="text-brand-400">const</span> firewall ={" "}
+                  <span className="text-brand-400">new</span> ShieldOpsFirewall({"{"}
+                  {"\n"}{"  "}apiKey: process.env.SHIELDOPS_API_KEY,
+                  {"\n"}{"  "}mode: <span className="text-emerald-400">&apos;audit&apos;</span>,
+                  {"\n"}{"  "}policyEndpoint: <span className="text-emerald-400">&apos;https://api.shieldops.io/v1/policies&apos;</span>,
+                  {"\n"}{"}"});{"\n\n"}
+                  agent.use(firewall.middleware());
+                </code>
+              </div>
+            </div>
+          )}
+        </AiSecurityToggle>
+
+        {/* NHI Registry */}
+        <AiSecurityToggle
+          icon={Fingerprint}
+          color="text-cyan-400"
+          label="NHI Registry"
+          description="Discover and govern non-human identities across clouds"
+          enabled={agents.nhiRegistry.enabled}
+          onToggle={() =>
+            setAgents((prev) => ({
+              ...prev,
+              nhiRegistry: { ...prev.nhiRegistry, enabled: !prev.nhiRegistry.enabled },
+            }))
+          }
+        >
+          {agents.nhiRegistry.enabled && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs font-medium text-gray-400">Cloud Providers to Scan</p>
+              <div className="flex flex-wrap gap-2">
+                {(["AWS", "GCP", "Azure", "GitHub", "Kubernetes"] as const).map((cp) => {
+                  const key = cp.toLowerCase();
+                  const selected = agents.nhiRegistry.cloudProviders?.includes(key) ?? false;
+                  return (
+                    <button
+                      key={cp}
+                      onClick={() =>
+                        setAgents((prev) => {
+                          const current = prev.nhiRegistry.cloudProviders ?? [];
+                          const next = selected
+                            ? current.filter((p) => p !== key)
+                            : [...current, key];
+                          return {
+                            ...prev,
+                            nhiRegistry: { ...prev.nhiRegistry, cloudProviders: next },
+                          };
+                        })
+                      }
+                      className={clsx(
+                        "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                        selected
+                          ? "bg-brand-500/20 text-brand-400 ring-1 ring-brand-500/50"
+                          : "bg-gray-700 text-gray-400 hover:text-gray-200",
+                      )}
+                    >
+                      {cp}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </AiSecurityToggle>
+
+        {/* MCP Security */}
+        <AiSecurityToggle
+          icon={Network}
+          color="text-violet-400"
+          label="MCP Security"
+          description="Secure MCP server ecosystem with zero-trust enforcement"
+          enabled={agents.mcpSecurity.enabled}
+          onToggle={() =>
+            setAgents((prev) => ({
+              ...prev,
+              mcpSecurity: { ...prev.mcpSecurity, enabled: !prev.mcpSecurity.enabled },
+            }))
+          }
+        >
+          {agents.mcpSecurity.enabled && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs font-medium text-gray-400">MCP Server Endpoint</p>
+              <input
+                type="text"
+                value={agents.mcpSecurity.mcpEndpoint ?? ""}
+                onChange={(e) =>
+                  setAgents((prev) => ({
+                    ...prev,
+                    mcpSecurity: { ...prev.mcpSecurity, mcpEndpoint: e.target.value },
+                  }))
+                }
+                placeholder="sse://mcp-gateway.internal:8080"
+                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+              <p className="text-xs text-gray-600">
+                Enter the primary MCP gateway URL. Additional servers can be configured after setup.
+              </p>
+            </div>
+          )}
+        </AiSecurityToggle>
+
+        {/* SOC Brain */}
+        <AiSecurityToggle
+          icon={Brain}
+          color="text-pink-400"
+          label="SOC Brain"
+          description="AI-driven cross-vendor security operations"
+          enabled={agents.socBrain.enabled}
+          onToggle={() =>
+            setAgents((prev) => ({
+              ...prev,
+              socBrain: { ...prev.socBrain, enabled: !prev.socBrain.enabled },
+            }))
+          }
+        >
+          {agents.socBrain.enabled && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs font-medium text-gray-400">Vendor Connectors</p>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { key: "crowdstrike", label: "CrowdStrike" },
+                  { key: "defender", label: "Microsoft Defender" },
+                  { key: "wiz", label: "Wiz" },
+                ] as const).map((vendor) => {
+                  const enabled =
+                    agents.socBrain.vendorConnectors?.[vendor.key] ?? false;
+                  return (
+                    <button
+                      key={vendor.key}
+                      onClick={() =>
+                        setAgents((prev) => ({
+                          ...prev,
+                          socBrain: {
+                            ...prev.socBrain,
+                            vendorConnectors: {
+                              ...prev.socBrain.vendorConnectors,
+                              [vendor.key]: !enabled,
+                            },
+                          },
+                        }))
+                      }
+                      className={clsx(
+                        "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                        enabled
+                          ? "bg-brand-500/20 text-brand-400 ring-1 ring-brand-500/50"
+                          : "bg-gray-700 text-gray-400 hover:text-gray-200",
+                      )}
+                    >
+                      {enabled ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        <Plus className="h-3 w-3" />
+                      )}
+                      {vendor.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </AiSecurityToggle>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AI Security Module Toggle (reusable wrapper)
+// ---------------------------------------------------------------------------
+
+function AiSecurityToggle({
+  icon: Icon,
+  color,
+  label,
+  description,
+  enabled,
+  onToggle,
+  children,
+}: {
+  icon: typeof Flame;
+  color: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  onToggle: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={clsx(
+        "rounded-xl border p-4 transition-all",
+        enabled
+          ? "border-brand-500 bg-brand-500/10"
+          : "border-gray-700 bg-gray-800 hover:border-gray-600",
+      )}
+    >
+      <button onClick={onToggle} className="flex w-full items-center justify-between text-left">
+        <div className="flex items-center gap-3">
+          <Icon className={clsx("h-5 w-5", color)} />
+          <div>
+            <span className="text-sm font-medium text-gray-100">{label}</span>
+            <p className="text-xs text-gray-500">{description}</p>
+          </div>
+        </div>
+        <div
+          className={clsx(
+            "flex h-5 w-9 items-center rounded-full px-0.5 transition-colors",
+            enabled ? "bg-brand-500" : "bg-gray-600",
+          )}
+        >
+          <div
+            className={clsx(
+              "h-4 w-4 rounded-full bg-white shadow transition-transform",
+              enabled ? "translate-x-4" : "translate-x-0",
+            )}
+          />
+        </div>
+      </button>
+      {children}
     </div>
   );
 }
@@ -1130,9 +1401,13 @@ function ReviewStep({
   const connectedInfra = Object.entries(infrastructure)
     .filter(([, v]) => v.connected)
     .map(([k]) => k);
-  const enabledAgents = (
-    ["investigation", "remediation", "security", "learning"] as const
-  ).filter((k) => agents[k]);
+  const enabledAgents = [
+    ...(["investigation", "remediation", "security", "learning"] as const).filter((k) => agents[k]),
+    ...(agents.agentFirewall.enabled ? ["agent-firewall" as const] : []),
+    ...(agents.nhiRegistry.enabled ? ["nhi-registry" as const] : []),
+    ...(agents.mcpSecurity.enabled ? ["mcp-security" as const] : []),
+    ...(agents.socBrain.enabled ? ["soc-brain" as const] : []),
+  ];
 
   if (launchPhase !== "idle") {
     return <LaunchProgress phase={launchPhase} />;

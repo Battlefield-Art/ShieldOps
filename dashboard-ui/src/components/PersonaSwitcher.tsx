@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   ChevronDown,
   Shield,
+  ShieldAlert,
   Server,
   DollarSign,
   Code,
@@ -60,6 +61,14 @@ export const PERSONAS: Persona[] = [
     icon: UserCog,
     color: "text-amber-400",
     bgColor: "bg-amber-500/[0.08]",
+  },
+  {
+    id: "ai_security",
+    label: "AI Security",
+    description: "Agent firewall, NHI, MCP security, SOC",
+    icon: ShieldAlert,
+    color: "text-red-400",
+    bgColor: "bg-red-500/[0.08]",
   },
   {
     id: "observer",

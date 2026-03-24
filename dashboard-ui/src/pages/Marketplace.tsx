@@ -17,6 +17,12 @@ import {
   CheckCircle,
   Star,
   ChevronDown,
+  KeyRound,
+  Plug,
+  Brain,
+  ShieldCheck,
+  Target,
+  Download,
 } from "lucide-react";
 import clsx from "clsx";
 import { get, post } from "../api/client";
@@ -96,6 +102,11 @@ const CATEGORY_CONFIG: Record<
     color: "bg-brand-500/20 text-brand-400 border-brand-500/30",
     icon: Search,
   },
+  "ai-security": {
+    label: "AI Security",
+    color: "bg-red-500/20 text-red-400 border-red-500/30",
+    icon: Shield,
+  },
 };
 
 const CLOUD_CONFIG: Record<string, { label: string; color: string }> = {
@@ -111,6 +122,163 @@ const RISK_CONFIG: Record<string, { label: string; color: string }> = {
   medium: { label: "Medium Risk", color: "bg-yellow-500/20 text-yellow-400" },
   high: { label: "High Risk", color: "bg-red-500/20 text-red-400" },
 };
+
+// ── AI Security Marketplace Agents (static) ─────────────────────
+
+interface MarketplaceAgent {
+  id: string;
+  name: string;
+  icon: typeof Shield;
+  category: string;
+  description: string;
+  installs: string;
+  rating: number;
+  featured: boolean;
+}
+
+const AI_SECURITY_AGENTS: MarketplaceAgent[] = [
+  {
+    id: "agent-firewall",
+    name: "Agent Firewall",
+    icon: Shield,
+    category: "ai-security",
+    description:
+      "Runtime interception for AI agent tool calls with behavioral baselines and circuit breakers",
+    installs: "2.4K",
+    rating: 4.9,
+    featured: true,
+  },
+  {
+    id: "nhi-registry",
+    name: "NHI Registry",
+    icon: KeyRound,
+    category: "ai-security",
+    description:
+      "Discover and govern non-human identities across your cloud infrastructure",
+    installs: "1.8K",
+    rating: 4.8,
+    featured: false,
+  },
+  {
+    id: "mcp-security-gateway",
+    name: "MCP Security Gateway",
+    icon: Plug,
+    category: "ai-security",
+    description:
+      "Secure MCP ecosystem with God Key detection and zero-trust enforcement",
+    installs: "1.2K",
+    rating: 4.7,
+    featured: false,
+  },
+  {
+    id: "soc-brain",
+    name: "SOC Brain",
+    icon: Brain,
+    category: "ai-security",
+    description:
+      "AI-driven cross-vendor security operations with outcome-centric situations queue",
+    installs: "2.1K",
+    rating: 4.9,
+    featured: true,
+  },
+  {
+    id: "ai-red-team",
+    name: "AI Red Team",
+    icon: Target,
+    category: "ai-security",
+    description:
+      "Continuous adversarial probing of your environment with MITRE ATT&CK techniques",
+    installs: "950",
+    rating: 4.6,
+    featured: false,
+  },
+  {
+    id: "ai-blue-team",
+    name: "AI Blue Team",
+    icon: ShieldCheck,
+    category: "ai-security",
+    description:
+      "Automated defense hardening based on red team findings",
+    installs: "890",
+    rating: 4.6,
+    featured: false,
+  },
+];
+
+function MarketplaceAgentCard({ agent }: { agent: MarketplaceAgent }) {
+  const [installed, setInstalled] = useState(false);
+  const AgentIcon = agent.icon;
+
+  return (
+    <div
+      className={clsx(
+        "group flex flex-col rounded-xl border border-gray-800/80 bg-gray-900 shadow-card",
+        "transition-all hover:border-gray-700 hover:shadow-lg hover:shadow-black/20",
+      )}
+    >
+      <div className="flex-1 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/20 text-red-400">
+            <AgentIcon className="h-5 w-5" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            {agent.featured && (
+              <span className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
+                <Star className="h-3 w-3" />
+                Featured
+              </span>
+            )}
+            <span className="rounded-full border bg-red-500/20 text-red-400 border-red-500/30 px-2 py-0.5 text-xs font-medium">
+              Security
+            </span>
+          </div>
+        </div>
+
+        <h3 className="mt-3 text-base font-semibold text-gray-100">
+          {agent.name}
+        </h3>
+        <p className="mt-1.5 line-clamp-2 text-sm text-gray-400">
+          {agent.description}
+        </p>
+
+        <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+          <span className="flex items-center gap-1">
+            <Download className="h-3.5 w-3.5" />
+            {agent.installs} installs
+          </span>
+          <span className="flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 text-amber-400" />
+            {agent.rating}
+          </span>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-800/60 p-3">
+        <button
+          onClick={() => setInstalled(!installed)}
+          className={clsx(
+            "flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors",
+            installed
+              ? "border border-green-500/30 bg-green-500/10 text-green-400"
+              : "bg-brand-600 text-white hover:bg-brand-700",
+          )}
+        >
+          {installed ? (
+            <>
+              <CheckCircle className="h-4 w-4" />
+              Installed
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              Install
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ── Sub-Components ──────────────────────────────────────────────
 
@@ -1090,6 +1258,36 @@ export default function Marketplace() {
           )}
         </div>
       </div>
+
+      {/* AI Security Agents Section */}
+      {(!activeCategory || activeCategory === "ai-security") && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Shield className="h-5 w-5 text-red-400" />
+            <h2 className="text-lg font-semibold text-gray-100">
+              AI Security Agents
+            </h2>
+            <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
+              New
+            </span>
+          </div>
+          <p className="text-sm text-gray-400">
+            Purpose-built agents for securing AI systems, non-human identities, MCP ecosystems, and SOC operations.
+          </p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {AI_SECURITY_AGENTS.filter((agent) => {
+              if (!searchTerm) return true;
+              const q = searchTerm.toLowerCase();
+              return (
+                agent.name.toLowerCase().includes(q) ||
+                agent.description.toLowerCase().includes(q)
+              );
+            }).map((agent) => (
+              <MarketplaceAgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {previewTemplate && (

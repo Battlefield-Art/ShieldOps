@@ -287,3 +287,68 @@ monitoring:
     path: /metrics
     # -- Additional labels for ServiceMonitor (e.g., release: prometheus)
     additionalLabels: {}
+
+# =============================================================================
+# AI Security Control Plane
+# =============================================================================
+aiSecurity:
+  enabled: true
+
+  agentFirewall:
+    enabled: true
+    mode: audit  # audit | enforce
+    autoTripThreshold: 0.85
+    cooldownSeconds: 300
+    maxCallsPerMinute: 100
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  nhiRegistry:
+    enabled: true
+    scanSchedule: "0 */6 * * *"  # Every 6 hours
+    staleThresholdDays: 90
+    shadowAIDetection: true
+    providers:
+      - aws
+      - gcp
+      - azure
+      - kubernetes
+
+  mcpSecurity:
+    enabled: true
+    gatewayMode: enforce  # audit | enforce
+    zeroTrustLevel: strict  # permissive | moderate | strict
+    supplyChainScanFrequency: daily
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  socBrain:
+    enabled: true
+    autoExecuteThreshold: 0.85
+    approvalTimeoutMinutes: 30
+    vendors:
+      crowdstrike:
+        enabled: false
+        clientId: ""
+        clientSecret: ""
+      defender:
+        enabled: false
+        tenantId: ""
+        clientId: ""
+        clientSecret: ""
+      wiz:
+        enabled: false
+        clientId: ""
+        clientSecret: ""

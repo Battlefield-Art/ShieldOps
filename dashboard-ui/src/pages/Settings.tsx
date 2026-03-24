@@ -13,6 +13,10 @@ import {
   Webhook,
   Save,
   Loader2,
+  ShieldAlert,
+  KeyRound,
+  Plug,
+  Brain,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import clsx from "clsx";
@@ -24,12 +28,13 @@ import StatusBadge from "../components/StatusBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useAuthStore } from "../store/auth";
 
-type SettingsTab = "agents" | "notifications" | "api";
+type SettingsTab = "agents" | "notifications" | "api" | "ai-security";
 
 const TABS: { key: SettingsTab; label: string; icon: React.ReactNode }[] = [
   { key: "agents", label: "Agents", icon: <Bot className="h-4 w-4" /> },
   { key: "notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
   { key: "api", label: "API", icon: <Key className="h-4 w-4" /> },
+  { key: "ai-security", label: "AI Security", icon: <ShieldAlert className="h-4 w-4" /> },
 ];
 
 export default function Settings() {
@@ -63,6 +68,486 @@ export default function Settings() {
       {activeTab === "agents" && <AgentsTab />}
       {activeTab === "notifications" && <NotificationsTab />}
       {activeTab === "api" && <ApiTab />}
+      {activeTab === "ai-security" && <AISecurityTab />}
+    </div>
+  );
+}
+
+// ── AI Security Tab ──────────────────────────────────────────────────────
+
+interface AISecurityState {
+  // Agent Firewall
+  firewallMode: "audit" | "enforce" | "learning";
+  autoTripThreshold: number;
+  circuitBreakerCooldown: number;
+  maxCallsPerMinute: number;
+  killSwitchSlack: boolean;
+  killSwitchTeams: boolean;
+  killSwitchPagerDuty: boolean;
+  killSwitchEmail: boolean;
+  // NHI Registry
+  scanSchedule: string;
+  staleCredentialThreshold: number;
+  shadowAIDetection: boolean;
+  scanAWS: boolean;
+  scanGCP: boolean;
+  scanAzure: boolean;
+  scanKubernetes: boolean;
+  scanGitHub: boolean;
+  // MCP Security
+  gatewayMode: "audit" | "enforce" | "disabled";
+  zeroTrustLevel: "permissive" | "moderate" | "strict";
+  supplyChainScanFreq: string;
+  autoBlockGodKey: boolean;
+  // SOC Brain
+  autoExecuteThreshold: number;
+  approvalTimeout: number;
+  crowdStrikeEnabled: boolean;
+  crowdStrikeKey: string;
+  defenderEnabled: boolean;
+  defenderKey: string;
+  wizEnabled: boolean;
+  wizKey: string;
+  defaultEscalationTier: string;
+}
+
+const DEFAULT_AI_SECURITY: AISecurityState = {
+  firewallMode: "audit",
+  autoTripThreshold: 0.85,
+  circuitBreakerCooldown: 300,
+  maxCallsPerMinute: 100,
+  killSwitchSlack: true,
+  killSwitchTeams: false,
+  killSwitchPagerDuty: true,
+  killSwitchEmail: false,
+  scanSchedule: "every-6-hours",
+  staleCredentialThreshold: 90,
+  shadowAIDetection: true,
+  scanAWS: true,
+  scanGCP: true,
+  scanAzure: true,
+  scanKubernetes: true,
+  scanGitHub: false,
+  gatewayMode: "audit",
+  zeroTrustLevel: "moderate",
+  supplyChainScanFreq: "daily",
+  autoBlockGodKey: false,
+  autoExecuteThreshold: 0.85,
+  approvalTimeout: 30,
+  crowdStrikeEnabled: false,
+  crowdStrikeKey: "",
+  defenderEnabled: false,
+  defenderKey: "",
+  wizEnabled: false,
+  wizKey: "",
+  defaultEscalationTier: "tier-2",
+};
+
+function AISecurityTab() {
+  const [state, setState] = useState<AISecurityState>(DEFAULT_AI_SECURITY);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const update = <K extends keyof AISecurityState>(key: K, value: AISecurityState[K]) => {
+    setState((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = () => {
+    setToastMessage("AI Security settings saved successfully.");
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 3000);
+  };
+
+  const sectionHeading = "text-base font-semibold text-gray-100 mb-1";
+  const sectionDesc = "text-sm text-gray-400 mb-4";
+  const labelClass = "block text-sm font-medium text-gray-300 mb-1.5";
+  const inputClass =
+    "w-full rounded-lg border border-white/[0.06] bg-surface-1 px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500";
+  const cardClass =
+    "rounded-xl border border-white/[0.06] bg-surface-1 p-6 shadow-card";
+
+  return (
+    <div className="space-y-6 relative">
+      {/* Toast notification */}
+      {toastVisible && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 shadow-lg">
+          <Check className="h-4 w-4" />
+          {toastMessage}
+        </div>
+      )}
+
+      {/* ── Agent Firewall Settings ────────────────────────────────── */}
+      <div className={cardClass}>
+        <div className="flex items-center gap-2 mb-1">
+          <ShieldAlert className="h-5 w-5 text-red-400" />
+          <h3 className={sectionHeading}>Agent Firewall Settings</h3>
+        </div>
+        <p className={sectionDesc}>
+          Runtime interception controls for AI agent tool calls and behavioral baselines.
+        </p>
+
+        {/* Default monitoring mode */}
+        <div className="mb-5">
+          <label className={labelClass}>Default Monitoring Mode</label>
+          <div className="flex gap-4">
+            {(["audit", "enforce", "learning"] as const).map((mode) => (
+              <label key={mode} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="firewallMode"
+                  checked={state.firewallMode === mode}
+                  onChange={() => update("firewallMode", mode)}
+                  className="text-brand-500 focus:ring-brand-500 border-gray-600 bg-surface-2"
+                />
+                <span className="text-sm text-gray-300 capitalize">{mode}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Auto-trip risk threshold */}
+        <div className="mb-5">
+          <label className={labelClass}>
+            Auto-Trip Risk Threshold: <span className="text-brand-400">{state.autoTripThreshold.toFixed(2)}</span>
+          </label>
+          <input
+            type="range"
+            min="0.5"
+            max="1.0"
+            step="0.01"
+            value={state.autoTripThreshold}
+            onChange={(e) => update("autoTripThreshold", parseFloat(e.target.value))}
+            className="w-full accent-brand-500"
+          />
+          <div className="flex justify-between text-xs text-gray-600 mt-1">
+            <span>0.50</span>
+            <span>1.00</span>
+          </div>
+        </div>
+
+        {/* Circuit breaker cooldown */}
+        <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Circuit Breaker Cooldown (seconds)</label>
+            <input
+              type="number"
+              value={state.circuitBreakerCooldown}
+              onChange={(e) => update("circuitBreakerCooldown", parseInt(e.target.value) || 0)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Max Calls Per Minute Per Agent</label>
+            <input
+              type="number"
+              value={state.maxCallsPerMinute}
+              onChange={(e) => update("maxCallsPerMinute", parseInt(e.target.value) || 0)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        {/* Kill switch notification channels */}
+        <div>
+          <label className={labelClass}>Kill Switch Notification Channels</label>
+          <div className="flex flex-wrap gap-4">
+            {([
+              { key: "killSwitchSlack" as const, label: "Slack" },
+              { key: "killSwitchTeams" as const, label: "Teams" },
+              { key: "killSwitchPagerDuty" as const, label: "PagerDuty" },
+              { key: "killSwitchEmail" as const, label: "Email" },
+            ]).map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={state[key]}
+                  onChange={(e) => update(key, e.target.checked)}
+                  className="rounded border-gray-600 bg-surface-2 text-brand-500 focus:ring-brand-500"
+                />
+                <span className="text-sm text-gray-300">{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── NHI Registry Settings ──────────────────────────────────── */}
+      <div className={cardClass}>
+        <div className="flex items-center gap-2 mb-1">
+          <KeyRound className="h-5 w-5 text-amber-400" />
+          <h3 className={sectionHeading}>NHI Registry Settings</h3>
+        </div>
+        <p className={sectionDesc}>
+          Discover and govern non-human identities across your cloud infrastructure.
+        </p>
+
+        <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Scan Schedule</label>
+            <select
+              value={state.scanSchedule}
+              onChange={(e) => update("scanSchedule", e.target.value)}
+              className={inputClass}
+            >
+              <option value="every-hour">Every hour</option>
+              <option value="every-6-hours">Every 6 hours</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>Stale Credential Threshold (days)</label>
+            <input
+              type="number"
+              value={state.staleCredentialThreshold}
+              onChange={(e) => update("staleCredentialThreshold", parseInt(e.target.value) || 0)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        {/* Shadow AI detection toggle */}
+        <div className="mb-5 flex items-center justify-between rounded-lg border border-white/[0.06] bg-surface-2 px-4 py-3">
+          <div>
+            <p className="text-sm font-medium text-gray-200">Shadow AI Detection</p>
+            <p className="text-xs text-gray-400">Detect unregistered AI agent API calls in your environment</p>
+          </div>
+          <button
+            onClick={() => update("shadowAIDetection", !state.shadowAIDetection)}
+            className={clsx(
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+              state.shadowAIDetection ? "bg-brand-500" : "bg-gray-700",
+            )}
+          >
+            <span
+              className={clsx(
+                "inline-block h-4 w-4 rounded-full bg-white transition-transform",
+                state.shadowAIDetection ? "translate-x-6" : "translate-x-1",
+              )}
+            />
+          </button>
+        </div>
+
+        {/* Cloud providers to scan */}
+        <div>
+          <label className={labelClass}>Cloud Providers to Scan</label>
+          <div className="flex flex-wrap gap-4">
+            {([
+              { key: "scanAWS" as const, label: "AWS" },
+              { key: "scanGCP" as const, label: "GCP" },
+              { key: "scanAzure" as const, label: "Azure" },
+              { key: "scanKubernetes" as const, label: "Kubernetes" },
+              { key: "scanGitHub" as const, label: "GitHub" },
+            ]).map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={state[key]}
+                  onChange={(e) => update(key, e.target.checked)}
+                  className="rounded border-gray-600 bg-surface-2 text-brand-500 focus:ring-brand-500"
+                />
+                <span className="text-sm text-gray-300">{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── MCP Security Settings ──────────────────────────────────── */}
+      <div className={cardClass}>
+        <div className="flex items-center gap-2 mb-1">
+          <Plug className="h-5 w-5 text-sky-400" />
+          <h3 className={sectionHeading}>MCP Security Settings</h3>
+        </div>
+        <p className={sectionDesc}>
+          Secure MCP ecosystem with God Key detection and zero-trust enforcement.
+        </p>
+
+        {/* Gateway mode */}
+        <div className="mb-5">
+          <label className={labelClass}>Gateway Mode</label>
+          <div className="flex gap-4">
+            {(["audit", "enforce", "disabled"] as const).map((mode) => (
+              <label key={mode} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="gatewayMode"
+                  checked={state.gatewayMode === mode}
+                  onChange={() => update("gatewayMode", mode)}
+                  className="text-brand-500 focus:ring-brand-500 border-gray-600 bg-surface-2"
+                />
+                <span className="text-sm text-gray-300 capitalize">{mode}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Zero-trust enforcement level */}
+        <div className="mb-5">
+          <label className={labelClass}>Zero-Trust Enforcement Level</label>
+          <div className="flex gap-4">
+            {(["permissive", "moderate", "strict"] as const).map((level) => (
+              <label key={level} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="zeroTrustLevel"
+                  checked={state.zeroTrustLevel === level}
+                  onChange={() => update("zeroTrustLevel", level)}
+                  className="text-brand-500 focus:ring-brand-500 border-gray-600 bg-surface-2"
+                />
+                <span className="text-sm text-gray-300 capitalize">{level}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <label className={labelClass}>Supply Chain Scan Frequency</label>
+          <select
+            value={state.supplyChainScanFreq}
+            onChange={(e) => update("supplyChainScanFreq", e.target.value)}
+            className={inputClass}
+          >
+            <option value="on-demand">On demand</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+          </select>
+        </div>
+
+        {/* Auto-block God Key servers toggle */}
+        <div className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-surface-2 px-4 py-3">
+          <div>
+            <p className="text-sm font-medium text-gray-200">Auto-Block God Key Servers</p>
+            <p className="text-xs text-gray-400">Automatically block MCP servers with access to more than 20 downstream resources</p>
+          </div>
+          <button
+            onClick={() => update("autoBlockGodKey", !state.autoBlockGodKey)}
+            className={clsx(
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+              state.autoBlockGodKey ? "bg-brand-500" : "bg-gray-700",
+            )}
+          >
+            <span
+              className={clsx(
+                "inline-block h-4 w-4 rounded-full bg-white transition-transform",
+                state.autoBlockGodKey ? "translate-x-6" : "translate-x-1",
+              )}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* ── SOC Brain Settings ─────────────────────────────────────── */}
+      <div className={cardClass}>
+        <div className="flex items-center gap-2 mb-1">
+          <Brain className="h-5 w-5 text-brand-400" />
+          <h3 className={sectionHeading}>SOC Brain Settings</h3>
+        </div>
+        <p className={sectionDesc}>
+          AI-driven cross-vendor security operations configuration.
+        </p>
+
+        {/* Auto-execute confidence threshold */}
+        <div className="mb-5">
+          <label className={labelClass}>
+            Auto-Execute Confidence Threshold: <span className="text-brand-400">{state.autoExecuteThreshold.toFixed(2)}</span>
+          </label>
+          <input
+            type="range"
+            min="0.5"
+            max="1.0"
+            step="0.01"
+            value={state.autoExecuteThreshold}
+            onChange={(e) => update("autoExecuteThreshold", parseFloat(e.target.value))}
+            className="w-full accent-brand-500"
+          />
+          <div className="flex justify-between text-xs text-gray-600 mt-1">
+            <span>0.50</span>
+            <span>1.00</span>
+          </div>
+        </div>
+
+        <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Approval Timeout (minutes)</label>
+            <input
+              type="number"
+              value={state.approvalTimeout}
+              onChange={(e) => update("approvalTimeout", parseInt(e.target.value) || 0)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Default Escalation Tier</label>
+            <select
+              value={state.defaultEscalationTier}
+              onChange={(e) => update("defaultEscalationTier", e.target.value)}
+              className={inputClass}
+            >
+              <option value="tier-1">Tier 1</option>
+              <option value="tier-2">Tier 2</option>
+              <option value="tier-3">Tier 3</option>
+              <option value="ciso">CISO</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Vendor Connectors */}
+        <div>
+          <label className={labelClass}>Vendor Connectors</label>
+          <div className="space-y-3">
+            {([
+              { enabledKey: "crowdStrikeEnabled" as const, keyField: "crowdStrikeKey" as const, label: "CrowdStrike" },
+              { enabledKey: "defenderEnabled" as const, keyField: "defenderKey" as const, label: "Microsoft Defender" },
+              { enabledKey: "wizEnabled" as const, keyField: "wizKey" as const, label: "Wiz" },
+            ]).map(({ enabledKey, keyField, label }) => (
+              <div
+                key={enabledKey}
+                className="flex items-center gap-4 rounded-lg border border-white/[0.06] bg-surface-2 px-4 py-3"
+              >
+                <button
+                  onClick={() => update(enabledKey, !state[enabledKey])}
+                  className={clsx(
+                    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                    state[enabledKey] ? "bg-brand-500" : "bg-gray-700",
+                  )}
+                >
+                  <span
+                    className={clsx(
+                      "inline-block h-4 w-4 rounded-full bg-white transition-transform",
+                      state[enabledKey] ? "translate-x-6" : "translate-x-1",
+                    )}
+                  />
+                </button>
+                <span className="text-sm font-medium text-gray-200 w-36">{label}</span>
+                <input
+                  type="password"
+                  placeholder={state[enabledKey] ? "Enter API key..." : "Disabled"}
+                  disabled={!state[enabledKey]}
+                  value={state[keyField]}
+                  onChange={(e) => update(keyField, e.target.value)}
+                  className={clsx(
+                    inputClass,
+                    "flex-1",
+                    !state[enabledKey] && "opacity-50 cursor-not-allowed",
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Save button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleSave}
+          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-500"
+        >
+          <Save className="h-4 w-4" />
+          Save Changes
+        </button>
+      </div>
     </div>
   );
 }

@@ -52,3 +52,30 @@ export {
   getIncidents,
   getCustomPlaybooks,
 } from "./misc";
+
+// AI Security fixtures
+export {
+  DEMO_FIREWALL_AGENTS,
+  DEMO_FIREWALL_ANOMALIES,
+  DEMO_FIREWALL_POLICIES,
+  DEMO_FIREWALL_AUDIT_LOG,
+  DEMO_FIREWALL_METRICS,
+} from "./agentFirewall";
+export {
+  DEMO_NHI_IDENTITIES,
+  DEMO_SHADOW_AI,
+  DEMO_NHI_METRICS,
+} from "./nhiRegistry";
+export {
+  DEMO_MCP_SERVERS,
+  DEMO_GOD_KEYS,
+  DEMO_SUPPLY_CHAIN,
+  DEMO_ZERO_TRUST,
+  DEMO_MCP_METRICS,
+} from "./mcpSecurity";
+export {
+  DEMO_SITUATIONS,
+  DEMO_EVIDENCE_CHAIN,
+  DEMO_APPROVAL_QUEUE,
+  DEMO_SOC_METRICS,
+} from "./socBrain";

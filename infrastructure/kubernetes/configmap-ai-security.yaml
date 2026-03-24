@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shieldops-ai-security-config
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: ai-security
+data:
+  # ── Agent Firewall ───────────────────────────────────────────────
+  AGENT_FIREWALL_MODE: "monitor"
+  AGENT_FIREWALL_ANOMALY_THRESHOLD: "2.5"
+  AGENT_FIREWALL_CIRCUIT_BREAKER_THRESHOLD: "0.5"
+  AGENT_FIREWALL_CIRCUIT_BREAKER_TIMEOUT: "60"
+  AGENT_FIREWALL_CIRCUIT_BREAKER_HALF_OPEN_MAX: "3"
+  AGENT_FIREWALL_POLICY_BUNDLE: "agent-firewall"
+  AGENT_FIREWALL_AUDIT_RETENTION_DAYS: "90"
+  AGENT_FIREWALL_KILL_SWITCH_ENABLED: "false"
+  AGENT_FIREWALL_SIDECAR_IMAGE: "shieldops/agent-firewall-sidecar:latest"
+
+  # ── NHI Registry ────────────────────────────────────────────────
+  NHI_SCAN_INTERVAL_HOURS: "6"
+  NHI_STALE_THRESHOLD_DAYS: "90"
+  NHI_SHADOW_AI_DETECTION: "true"
+  NHI_SHADOW_AI_HEURISTIC_SENSITIVITY: "medium"
+  NHI_JIT_DEFAULT_TTL_SECONDS: "3600"
+  NHI_JIT_MAX_TTL_SECONDS: "86400"
+  NHI_RISK_SCORE_CRITICAL_THRESHOLD: "0.85"
+  NHI_RISK_SCORE_HIGH_THRESHOLD: "0.7"
+  NHI_AUTO_DEACTIVATE_ORPHANED: "false"
+  NHI_CREDENTIAL_ROTATION_MAX_DAYS: "90"
+
+  # ── MCP Security ────────────────────────────────────────────────
+  MCP_GATEWAY_MODE: "monitor"
+  MCP_GATEWAY_PORT: "8443"
+  MCP_ZERO_TRUST_LEVEL: "standard"
+  MCP_SUPPLY_CHAIN_SCAN_INTERVAL: "24h"
+  MCP_CREDENTIAL_ROTATION_MAX_DAYS: "90"
+  MCP_TOOL_POISONING_DETECTION: "true"
+  MCP_GOD_KEY_AUTO_REMEDIATE: "false"
+  MCP_REQUIRE_MTLS: "true"
+
+  # ── SOC Brain ───────────────────────────────────────────────────
+  SOC_AUTO_EXECUTE_THRESHOLD: "0.85"
+  SOC_ESCALATION_THRESHOLD: "0.5"
+  SOC_APPROVAL_TIMEOUT_SECONDS: "1800"
+  SOC_CORRELATION_WINDOW_SECONDS: "300"
+  SOC_MAX_ACTIVE_SITUATIONS: "100"
+  SOC_EVIDENCE_RETENTION_DAYS: "365"
+  SOC_VENDOR_POLL_INTERVAL_SECONDS: "60"
+  SOC_APPROVAL_CHANNEL: "slack"
+  SOC_SLACK_CHANNEL: "#soc-approvals"
+  SOC_PAGERDUTY_ESCALATION_POLICY: ""
+
+  # ── Vendor Connectors ──────────────────────────────────────────
+  SOC_CROWDSTRIKE_ENABLED: "false"
+  SOC_DEFENDER_ENABLED: "false"
+  SOC_WIZ_ENABLED: "false"
+  SOC_CORTEX_ENABLED: "false"
+  SOC_SENTINELONE_ENABLED: "false"

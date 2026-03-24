@@ -26,6 +26,13 @@ services:
       - SHIELDOPS_OTEL_EXPORTER_ENDPOINT=http://jaeger:4317
       - SHIELDOPS_JAEGER_URL=http://jaeger:16686
       - SHIELDOPS_ENVIRONMENT=development
+      - CROWDSTRIKE_CLIENT_ID=${CROWDSTRIKE_CLIENT_ID:-}
+      - CROWDSTRIKE_CLIENT_SECRET=${CROWDSTRIKE_CLIENT_SECRET:-}
+      - DEFENDER_TENANT_ID=${DEFENDER_TENANT_ID:-}
+      - DEFENDER_CLIENT_ID=${DEFENDER_CLIENT_ID:-}
+      - DEFENDER_CLIENT_SECRET=${DEFENDER_CLIENT_SECRET:-}
+      - WIZ_CLIENT_ID=${WIZ_CLIENT_ID:-}
+      - WIZ_CLIENT_SECRET=${WIZ_CLIENT_SECRET:-}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -108,5 +115,46 @@ services:
     environment:
       - API_URL=http://api:8000
 
+  # AI Security Control Plane services
+  agent-firewall-proxy:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    command: ["python", "-m", "shieldops.sdk.interceptor", "--mode=proxy", "--port=8445"]
+    ports:
+      - "8445:8445"
+    environment:
+      - SHIELDOPS_API_URL=http://api:8000
+      - FIREWALL_MODE=enforce
+      - AUTO_TRIP_THRESHOLD=0.85
+      - CIRCUIT_BREAKER_COOLDOWN=300
+    depends_on:
+      - api
+      - redis
+    networks:
+      - shieldops
+
+  mcp-security-gateway:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    command: ["python", "-m", "shieldops.security.mcp_security_gateway", "--port=8446"]
+    ports:
+      - "8446:8446"
+    environment:
+      - SHIELDOPS_API_URL=http://api:8000
+      - GATEWAY_MODE=enforce
+      - ZERO_TRUST_LEVEL=strict
+      - MCP_AUDIT_LOG=true
+    depends_on:
+      - api
+      - redis
+    networks:
+      - shieldops
+
 volumes:
   pgdata:
+
+networks:
+  shieldops:
+    driver: bridge

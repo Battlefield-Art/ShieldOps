@@ -1,0 +1,206 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shieldops-mcp-security-gateway
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: mcp-security-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shieldops
+      component: mcp-security-gateway
+  template:
+    metadata:
+      labels:
+        app: shieldops
+        component: mcp-security-gateway
+    spec:
+      serviceAccountName: shieldops-agent
+      containers:
+        - name: mcp-gateway
+          image: shieldops/mcp-security-gateway:latest
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+              name: gateway
+            - containerPort: 9090
+              protocol: TCP
+              name: metrics
+          envFrom:
+            - secretRef:
+                name: shieldops-secrets
+            - configMapRef:
+                name: shieldops-ai-security-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: gateway-tls
+              mountPath: /etc/gateway/certs
+              readOnly: true
+            - name: gateway-policies
+              mountPath: /etc/gateway/policies
+              readOnly: true
+      volumes:
+        - name: gateway-tls
+          secret:
+            secretName: shieldops-mcp-gateway-tls
+        - name: gateway-policies
+          configMap:
+            name: shieldops-mcp-gateway-policies
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shieldops-mcp-security-gateway
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: mcp-security-gateway
+spec:
+  selector:
+    app: shieldops
+    component: mcp-security-gateway
+  ports:
+    - port: 8443
+      targetPort: 8443
+      protocol: TCP
+      name: gateway
+    - port: 9090
+      targetPort: 9090
+      protocol: TCP
+      name: metrics
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mcp-gateway-ingress
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: mcp-security-gateway
+spec:
+  podSelector:
+    matchLabels:
+      app: shieldops
+      component: mcp-security-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: shieldops
+              component: api
+        - podSelector:
+            matchLabels:
+              app: shieldops
+              component: agent-firewall
+      ports:
+        - protocol: TCP
+          port: 8443
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shieldops-mcp-gateway-policies
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: mcp-security-gateway
+data:
+  default-policy.json: |
+    {
+      "version": "1.0",
+      "default_action": "monitor",
+      "rules": [
+        {
+          "name": "block-god-keys",
+          "description": "Block connections using overly broad credentials",
+          "condition": "credential.scope == '*' || credential.permissions.length > 50",
+          "action": "block"
+        },
+        {
+          "name": "require-mtls",
+          "description": "Require mutual TLS for all MCP connections",
+          "condition": "connection.tls.mutual == false",
+          "action": "block",
+          "enforcement_level": "strict"
+        },
+        {
+          "name": "rate-limit-tools",
+          "description": "Rate limit tool invocations per server",
+          "condition": "tools.invocations_per_minute > 100",
+          "action": "throttle"
+        }
+      ]
+    }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: shieldops-mcp-security-gateway
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: mcp-security-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: shieldops-mcp-security-gateway
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60

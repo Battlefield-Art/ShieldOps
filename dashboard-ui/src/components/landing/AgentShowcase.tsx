@@ -14,6 +14,45 @@ interface ShowcaseCard {
 
 const SHOWCASE_CARDS: ShowcaseCard[] = [
   {
+    title: "Blocked prompt injection attack on customer-support-bot",
+    agent: "Agent Firewall",
+    status: "Blocked",
+    statusColor: "bg-red-900/60 text-red-400",
+    accentBorder: "border-t-red-500/70",
+    details: [
+      "Detected encoded payload in tool call arguments",
+      "Matched behavioral anomaly — bot attempted file system access",
+      "Circuit breaker triggered, session terminated in 12ms",
+    ],
+    metrics: "Latency: 12ms · Confidence: 97%",
+  },
+  {
+    title: "Discovered 3 shadow AI agents calling OpenAI API",
+    agent: "NHI Registry",
+    status: "Investigating",
+    statusColor: "bg-amber-900/60 text-amber-400",
+    accentBorder: "border-t-amber-500/70",
+    details: [
+      "Network scan revealed 3 unregistered API keys hitting OpenAI",
+      "Traced to marketing team's internal Slack bot and 2 cron jobs",
+      "Flagged for governance review — no OPA policies attached",
+    ],
+    metrics: "Shadow identities: 3 · Risk: High",
+  },
+  {
+    title: "God Key detected: postgres-mcp has access to 47 resources",
+    agent: "MCP Security",
+    status: "Critical",
+    statusColor: "bg-red-900/60 text-red-400",
+    accentBorder: "border-t-red-500/70",
+    details: [
+      "Scanned 12 MCP server configurations across staging and prod",
+      "postgres-mcp granted wildcard read/write on 47 database tables",
+      "Recommended JIT credential rotation with 15-min TTL",
+    ],
+    metrics: "Servers scanned: 12 · Over-privileged: 4",
+  },
+  {
     title: "Payment service crash — resolved in 4 minutes",
     agent: "Investigation Agent",
     status: "Resolved",
@@ -24,7 +63,7 @@ const SHOWCASE_CARDS: ShowcaseCard[] = [
       "Identified Redis connection pool leak in v2.3.1",
       "Rolled back to v2.3.0, pods recovered",
     ],
-    metrics: "MTTR: 4m 12s \u00b7 Confidence: 91%",
+    metrics: "MTTR: 4m 12s · Confidence: 91%",
   },
   {
     title: "Threat intel scan — 3 IOCs blocked",
@@ -34,10 +73,10 @@ const SHOWCASE_CARDS: ShowcaseCard[] = [
     accentBorder: "border-t-cyan-500/70",
     details: [
       "Collected 142 indicators from OSINT feeds",
-      "Correlated against internal logs \u2014 3 matches",
+      "Correlated against internal logs — 3 matches",
       "Blocked 2 IPs and 1 domain at firewall",
     ],
-    metrics: "Sources: 5 feeds \u00b7 Relevance: 0.87",
+    metrics: "Sources: 5 feeds · Relevance: 0.87",
   },
   {
     title: "Telemetry costs reduced by 34%",
@@ -50,7 +89,7 @@ const SHOWCASE_CARDS: ShowcaseCard[] = [
       "Proposed label reduction and sampling adjustment",
       "Experiment confirmed 34% cost reduction, no SLO impact",
     ],
-    metrics: "Savings: $2,400/mo \u00b7 SLO impact: none",
+    metrics: "Savings: $2,400/mo · SLO impact: none",
   },
 ];
 
@@ -72,7 +111,7 @@ export default function AgentShowcase() {
             key={card.title}
             to="/app?demo=true"
             className={clsx(
-              "group rounded-xl border border-t-2 border-gray-800 bg-gray-900 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-700",
+              "group rounded-xl border border-t-2 border-white/[0.06] bg-surface-1 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.1]",
               card.accentBorder,
             )}
           >
@@ -105,7 +144,7 @@ export default function AgentShowcase() {
               ))}
             </ul>
 
-            <div className="mt-4 flex items-center justify-between border-t border-gray-800 pt-3">
+            <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
               <span className="text-xs text-gray-500">{card.metrics}</span>
               <ArrowRight className="h-4 w-4 text-gray-600 transition-all duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:text-gray-400" />
             </div>

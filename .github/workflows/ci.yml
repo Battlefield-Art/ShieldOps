@@ -98,6 +98,46 @@ jobs:
         with:
           file: coverage.xml
 
+      - name: Run AI Security unit tests
+        run: |
+          python3 -m pytest tests/unit/test_agent_behavioral_firewall.py \
+            tests/unit/test_agent_kill_switch.py \
+            tests/unit/test_agent_session_revoker.py \
+            tests/unit/test_jit_credential_issuer.py \
+            tests/unit/test_credential_policy_engine.py \
+            tests/unit/test_mcp_config_auditor.py \
+            tests/unit/test_mcp_dependency_scanner.py \
+            tests/unit/test_mcp_permission_analyzer.py \
+            tests/unit/test_soc_evidence_chain.py \
+            tests/unit/test_response_approval_workflow.py \
+            tests/unit/test_nhi_registry_engine.py \
+            tests/unit/test_shadow_ai_discovery.py \
+            tests/unit/test_mcp_security_gateway.py \
+            -v --tb=short
+
+      - name: Run AI Security integration tests
+        run: |
+          python3 -m pytest tests/integration/test_agent_firewall_graph.py \
+            tests/integration/test_nhi_registry_graph.py \
+            tests/integration/test_mcp_security_graph.py \
+            tests/integration/test_soc_brain_graph.py \
+            -v --tb=short
+
+      - name: Security gate check
+        run: |
+          python3 -c "
+          from shieldops.integrations.ci_cd.security_gate import SecurityGate
+          gate = SecurityGate(checks=['prompt_injection', 'credential_scan'])
+          result = gate.run_all_checks({'source_dirs': ['src/shieldops/']})
+          if not result['passed']:
+              print('Security gate FAILED')
+              for r in result['results']:
+                  if not r.get('passed', True):
+                      print(f'  FAIL: {r[\"check\"]}: {r.get(\"summary\", \"\")}')
+              exit(1)
+          print('Security gate PASSED')
+          "
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -115,6 +155,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run test
+
+      - name: Verify dashboard build (includes AI Security pages)
+        run: npx vite build
 
   e2e:
     needs: [test, frontend]

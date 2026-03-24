@@ -25,6 +25,10 @@ import {
   ChevronDown,
   ChevronUp,
   Zap,
+  Shield,
+  Plug,
+  Target,
+  FileText,
 } from "lucide-react";
 import AgentPromptInput from "../components/AgentPromptInput";
 import TaskCard, { type TaskTemplate } from "../components/TaskCard";
@@ -298,6 +302,78 @@ const ALL_TASKS: TaskTemplate[] = [
     estimatedTime: "2-5 min",
     tags: ["multi-region", "DR"],
   },
+
+  // AI Security
+  {
+    id: "scan-agent-injection",
+    title: "Scan Agent for Prompt Injection",
+    description:
+      "Analyze your AI agent's prompt pipeline for injection vulnerabilities, jailbreak patterns, and data exfiltration risks.",
+    icon: Shield,
+    iconBg: "bg-red-500/10",
+    iconColor: "text-red-400",
+    category: "security",
+    prompt:
+      "Run a comprehensive prompt injection scan on all active AI agents. Test for direct injection, indirect injection, jailbreak, role-play attacks, and encoding bypass. Generate a security report with remediation recommendations.",
+    estimatedTime: "2-5 min",
+    tags: ["injection", "LLM security"],
+  },
+  {
+    id: "discover-shadow-ai",
+    title: "Discover Shadow AI Agents",
+    description:
+      "Scan cloud accounts, network traffic, and billing data for unauthorized AI agent API calls to OpenAI, Anthropic, and other providers.",
+    icon: Search,
+    iconBg: "bg-amber-500/10",
+    iconColor: "text-amber-400",
+    category: "security",
+    prompt:
+      "Scan all cloud accounts and network logs for shadow AI usage. Detect unregistered API calls to OpenAI, Anthropic, Azure OpenAI, AWS Bedrock, and other LLM providers. Report findings with calling services, estimated costs, and registration recommendations.",
+    estimatedTime: "3-8 min",
+    tags: ["shadow AI", "NHI"],
+  },
+  {
+    id: "audit-mcp-servers",
+    title: "Audit MCP Server Permissions",
+    description:
+      "Scan all MCP server connections for excessive permissions, God Key risks, and zero-trust compliance violations.",
+    icon: Plug,
+    iconBg: "bg-sky-500/10",
+    iconColor: "text-sky-400",
+    category: "security",
+    prompt:
+      "Audit all MCP server connections. Check for God Key risks (servers with access to >20 downstream resources), missing authentication, unencrypted transport, and excessive tool permissions. Generate a zero-trust compliance report.",
+    estimatedTime: "2-5 min",
+    tags: ["MCP", "zero-trust"],
+  },
+  {
+    id: "run-red-team",
+    title: "Run AI Red Team Assessment",
+    description:
+      "Execute automated adversarial testing against your AI agents using MITRE ATT&CK techniques. Identify vulnerabilities before attackers do.",
+    icon: Target,
+    iconBg: "bg-red-500/10",
+    iconColor: "text-red-400",
+    category: "security",
+    prompt:
+      "Run a comprehensive AI red team assessment. Generate attack scenarios, probe network segmentation, test credential spray, privilege escalation, lateral movement, and data exfiltration paths. Chain any discovered vulnerabilities into exploit chains.",
+    estimatedTime: "5-15 min",
+    tags: ["red team", "MITRE"],
+  },
+  {
+    id: "nhi-compliance-report",
+    title: "Generate NHI Compliance Report",
+    description:
+      "Produce a comprehensive report of all non-human identities with risk scores, orphaned credentials, and least-privilege recommendations.",
+    icon: FileText,
+    iconBg: "bg-emerald-500/10",
+    iconColor: "text-emerald-400",
+    category: "compliance",
+    prompt:
+      "Generate a full NHI compliance report. Inventory all service accounts, AI agents, CI/CD tokens, OAuth apps, API keys, and MCP connections. Score each for risk, flag orphaned and over-privileged identities, and provide least-privilege recommendations.",
+    estimatedTime: "3-5 min",
+    tags: ["NHI", "compliance"],
+  },
 ];
 
 // Filter tasks by persona relevance
@@ -326,6 +402,11 @@ const PERSONA_TASKS: Record<string, string[]> = {
   observer: [
     "compliance-check", "drift-detection", "cost-optimization", "multi-region-check",
     "splunk-errors",
+  ],
+  ai_security: [
+    "scan-agent-injection", "discover-shadow-ai", "audit-mcp-servers",
+    "run-red-team", "nhi-compliance-report", "threat-hunt", "credential-rotation",
+    "compliance-check", "scan-vulnerabilities",
   ],
 };
 

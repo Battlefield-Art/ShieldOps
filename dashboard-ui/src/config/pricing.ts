@@ -1,352 +1,120 @@
 export interface PricingTier {
   name: string;
+  price: string; // display string e.g. "Free", "$499/mo + usage", "Custom"
   description: string;
-  monthlyPrice: number | null; // null = "Contact us"
-  annualPrice: number | null;
   features: string[];
   highlighted?: boolean;
   cta: string;
+  ctaHref: string;
+  usageLine?: string; // optional usage detail shown under price
 }
 
-export interface ProductPricing {
-  productName: string;
-  tiers: PricingTier[];
+export const TIERS: PricingTier[] = [
+  {
+    name: "Starter",
+    price: "Free",
+    description: "Get started with basic AI security monitoring at no cost.",
+    features: [
+      "1 AI app monitored",
+      "Audit mode only (observe, no enforce)",
+      "1,000 intercepted calls/mo",
+      "Basic NHI scanning",
+      "Community support",
+    ],
+    cta: "Start free",
+    ctaHref: "/app?demo=true",
+  },
+  {
+    name: "Pro",
+    price: "$499",
+    usageLine: "/mo + usage",
+    description: "Full enforcement, unlimited apps, and deep visibility into your AI stack.",
+    features: [
+      "Unlimited AI apps monitored",
+      "Enforce mode (block + rewrite)",
+      "$0.005 per intercepted call",
+      "Full NHI registry + shadow AI detection",
+      "MCP scanning (5 servers)",
+      "10 SOC Brain situations/mo",
+      "Email support",
+    ],
+    highlighted: true,
+    cta: "Start trial",
+    ctaHref: "/app?demo=true",
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    description: "Everything in Pro plus advanced integrations, unlimited scale, and dedicated support.",
+    features: [
+      "Everything in Pro",
+      "SOC Brain (unlimited situations)",
+      "Unlimited MCP servers",
+      "CrowdStrike, Defender & Wiz connectors",
+      "JIT credentials & ephemeral tokens",
+      "Custom SLAs",
+      "HITL approval workflows",
+      "Dedicated CSM",
+    ],
+    cta: "Contact sales",
+    ctaHref: "mailto:founders@shieldops.io",
+  },
+];
+
+export interface FeatureRow {
+  feature: string;
+  starter: boolean | string;
+  pro: boolean | string;
+  enterprise: boolean | string;
 }
 
-export const PRICING: ProductPricing[] = [
-  {
-    productName: "SRE Intelligence",
-    tiers: [
-      {
-        name: "Starter",
-        description: "For small teams getting started with AI-driven SRE",
-        monthlyPrice: 499,
-        annualPrice: 399,
-        features: [
-          "Up to 50 services monitored",
-          "5 AI investigation agents",
-          "Basic auto-remediation",
-          "Email notifications",
-          "7-day data retention",
-        ],
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Pro",
-        description: "For growing teams managing production at scale",
-        monthlyPrice: 1499,
-        annualPrice: 1199,
-        features: [
-          "Up to 500 services monitored",
-          "Unlimited AI agents",
-          "Advanced auto-remediation",
-          "PagerDuty + Slack integration",
-          "30-day data retention",
-          "Predictive analytics",
-          "Custom playbooks",
-        ],
-        highlighted: true,
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Enterprise",
-        description: "For large organizations with complex requirements",
-        monthlyPrice: null,
-        annualPrice: null,
-        features: [
-          "Unlimited services",
-          "Unlimited AI agents",
-          "Multi-cloud + on-prem",
-          "SSO / SAML",
-          "90-day data retention",
-          "Dedicated support",
-          "Custom integrations",
-          "SLA guarantee",
-        ],
-        cta: "Contact Sales",
-      },
-    ],
-  },
-  {
-    productName: "Security Operations",
-    tiers: [
-      {
-        name: "Starter",
-        description: "Essential security monitoring and alerting",
-        monthlyPrice: 599,
-        annualPrice: 479,
-        features: [
-          "Vulnerability scanning",
-          "Basic threat detection",
-          "Security dashboards",
-          "Email alerts",
-          "5 playbooks",
-        ],
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Pro",
-        description: "Advanced threat hunting and response",
-        monthlyPrice: 1799,
-        annualPrice: 1439,
-        features: [
-          "Advanced threat hunting",
-          "MITRE ATT&CK mapping",
-          "Incident correlation",
-          "Unlimited playbooks",
-          "SIEM integration",
-          "Attack surface monitoring",
-        ],
-        highlighted: true,
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Enterprise",
-        description: "Full SOC automation for large teams",
-        monthlyPrice: null,
-        annualPrice: null,
-        features: [
-          "Everything in Pro",
-          "Autonomous SOC agents",
-          "Forensics capabilities",
-          "Deception technology",
-          "Custom detection rules",
-          "24/7 threat monitoring",
-          "Compliance mapping",
-        ],
-        cta: "Contact Sales",
-      },
-    ],
-  },
-  {
-    productName: "FinOps Intelligence",
-    tiers: [
-      {
-        name: "Starter",
-        description: "Basic cost visibility and alerts",
-        monthlyPrice: 299,
-        annualPrice: 239,
-        features: [
-          "Cost dashboards",
-          "Budget alerts",
-          "Tag compliance",
-          "1 cloud provider",
-          "Monthly reports",
-        ],
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Pro",
-        description: "Advanced optimization and forecasting",
-        monthlyPrice: 899,
-        annualPrice: 719,
-        features: [
-          "Multi-cloud support",
-          "AI cost anomaly detection",
-          "Resource right-sizing",
-          "Budget forecasting",
-          "RI/SP optimization",
-          "Custom allocation rules",
-        ],
-        highlighted: true,
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Enterprise",
-        description: "Full FinOps automation",
-        monthlyPrice: null,
-        annualPrice: null,
-        features: [
-          "Everything in Pro",
-          "Chargeback engine",
-          "Unit economics",
-          "Executive dashboards",
-          "API access",
-          "Custom integrations",
-        ],
-        cta: "Contact Sales",
-      },
-    ],
-  },
-  {
-    productName: "Compliance Automation",
-    tiers: [
-      {
-        name: "Starter",
-        description: "Basic compliance tracking",
-        monthlyPrice: 399,
-        annualPrice: 319,
-        features: [
-          "1 compliance framework",
-          "Manual evidence upload",
-          "Basic audit trail",
-          "Compliance dashboard",
-          "Quarterly reports",
-        ],
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Pro",
-        description: "Automated compliance operations",
-        monthlyPrice: 1199,
-        annualPrice: 959,
-        features: [
-          "5 compliance frameworks",
-          "Automated evidence collection",
-          "Continuous monitoring",
-          "Gap analysis",
-          "Policy enforcement",
-          "Integration support",
-        ],
-        highlighted: true,
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Enterprise",
-        description: "Enterprise-grade compliance",
-        monthlyPrice: null,
-        annualPrice: null,
-        features: [
-          "Unlimited frameworks",
-          "Full evidence automation",
-          "Regulatory change tracking",
-          "Custom controls",
-          "Auditor access portal",
-          "GRC integration",
-          "Dedicated CSM",
-        ],
-        cta: "Contact Sales",
-      },
-    ],
-  },
-  {
-    productName: "API Platform",
-    tiers: [
-      {
-        name: "Developer",
-        description: "For individual developers and small projects",
-        monthlyPrice: 99,
-        annualPrice: 79,
-        features: [
-          "1,000 API calls/month",
-          "3 API keys",
-          "Community support",
-          "OpenAPI playground",
-          "Basic rate limiting",
-        ],
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Team",
-        description: "For teams building integrations at scale",
-        monthlyPrice: 499,
-        annualPrice: 399,
-        features: [
-          "50,000 API calls/month",
-          "Unlimited API keys",
-          "Webhook delivery",
-          "Priority support",
-          "Custom rate limits",
-          "SDK access",
-        ],
-        highlighted: true,
-        cta: "Start Free Trial",
-      },
-      {
-        name: "Enterprise",
-        description: "For platform teams with custom requirements",
-        monthlyPrice: null,
-        annualPrice: null,
-        features: [
-          "Unlimited API calls",
-          "Dedicated endpoints",
-          "SLA guarantee",
-          "Custom SDKs",
-          "On-premise deployment",
-          "Terraform provider",
-          "Dedicated support",
-        ],
-        cta: "Contact Sales",
-      },
-    ],
-  },
-  {
-    productName: "Agent Marketplace",
-    tiers: [
-      {
-        name: "Free",
-        description: "Access community agents and playbooks",
-        monthlyPrice: 0,
-        annualPrice: 0,
-        features: [
-          "Browse all listings",
-          "Install free agents",
-          "Community playbooks",
-          "Basic support",
-          "Public reviews",
-        ],
-        cta: "Get Started",
-      },
-      {
-        name: "Publisher",
-        description: "Publish and monetize your agents",
-        monthlyPrice: 199,
-        annualPrice: 159,
-        features: [
-          "Publish unlimited agents",
-          "Revenue sharing (80/20)",
-          "Analytics dashboard",
-          "Priority review",
-          "Publisher badge",
-          "Promotion placement",
-        ],
-        highlighted: true,
-        cta: "Start Publishing",
-      },
-      {
-        name: "Enterprise",
-        description: "Private marketplace for your organization",
-        monthlyPrice: null,
-        annualPrice: null,
-        features: [
-          "Private marketplace",
-          "Custom approval workflows",
-          "Internal-only agents",
-          "Compliance scanning",
-          "SSO integration",
-          "Dedicated catalog",
-          "Volume licensing",
-        ],
-        cta: "Contact Sales",
-      },
-    ],
-  },
+export const COMPARISON: FeatureRow[] = [
+  { feature: "AI apps monitored", starter: "1", pro: "Unlimited", enterprise: "Unlimited" },
+  { feature: "Intercepted calls", starter: "1,000/mo", pro: "Pay per call", enterprise: "Volume pricing" },
+  { feature: "Enforcement mode", starter: false, pro: true, enterprise: true },
+  { feature: "NHI registry", starter: "Basic scan", pro: "Full registry", enterprise: "Full registry" },
+  { feature: "Shadow AI detection", starter: false, pro: true, enterprise: true },
+  { feature: "MCP server scanning", starter: false, pro: "5 servers", enterprise: "Unlimited" },
+  { feature: "SOC Brain situations", starter: false, pro: "10/mo", enterprise: "Unlimited" },
+  { feature: "CrowdStrike connector", starter: false, pro: false, enterprise: true },
+  { feature: "Defender connector", starter: false, pro: false, enterprise: true },
+  { feature: "Wiz connector", starter: false, pro: false, enterprise: true },
+  { feature: "JIT credentials", starter: false, pro: false, enterprise: true },
+  { feature: "HITL approval workflows", starter: false, pro: false, enterprise: true },
+  { feature: "Custom SLAs", starter: false, pro: false, enterprise: true },
+  { feature: "Dedicated CSM", starter: false, pro: false, enterprise: true },
+  { feature: "Support", starter: "Community", pro: "Email", enterprise: "Dedicated" },
 ];
 
 export const FAQ = [
   {
-    question: "Can I try ShieldOps for free?",
+    question: "How does usage-based pricing work on the Pro plan?",
     answer:
-      "Yes! All Starter and Pro plans include a 14-day free trial with full access. No credit card required.",
+      "You pay a flat $499/mo base fee plus $0.005 for every intercepted AI agent call beyond the included allowance. The usage calculator on this page lets you estimate your monthly cost based on expected call volume.",
   },
   {
-    question: "What happens when I exceed my plan limits?",
+    question: "What counts as an intercepted call?",
     answer:
-      "We'll notify you when you're approaching limits and help you choose the right plan. Service continues uninterrupted.",
+      "Every tool call, API request, or function invocation made by an AI agent that passes through the ShieldOps Agent Firewall counts as one intercepted call. Duplicate retries within a 5-second window are de-duplicated.",
   },
   {
-    question: "Can I mix products from different tiers?",
+    question: "Can I start with Starter and upgrade later?",
     answer:
-      "Absolutely. Each product is priced independently, so you can choose Starter for FinOps and Enterprise for SRE, for example.",
+      "Absolutely. Your Starter account preserves all audit history and configuration. Upgrading to Pro or Enterprise is seamless with zero downtime.",
   },
   {
-    question: "Do you offer annual discounts?",
+    question: "What is the difference between audit mode and enforce mode?",
     answer:
-      "Yes, annual billing saves 20% compared to monthly billing across all products and tiers.",
+      "Audit mode logs every agent action for visibility but never blocks execution. Enforce mode actively evaluates policies and can block, rewrite, or escalate calls that violate your security rules.",
   },
   {
-    question: "Is there a platform bundle discount?",
+    question: "Do you offer annual billing?",
     answer:
-      "Yes. Organizations purchasing 3+ products receive an additional 15% bundle discount. Contact sales for details.",
+      "Yes. Annual commitments on Pro and Enterprise receive a 20% discount on the base fee. Usage charges remain pay-as-you-go regardless of billing cycle.",
+  },
+  {
+    question: "How do I get started with the Enterprise plan?",
+    answer:
+      "Contact our sales team at founders@shieldops.io. We will schedule a discovery call, run a proof-of-value in your environment, and build a custom pricing package based on your scale and compliance needs.",
   },
 ];

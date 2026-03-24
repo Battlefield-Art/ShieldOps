@@ -1,0 +1,160 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shieldops-agent-firewall
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: agent-firewall
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shieldops-agent-firewall
+  labels:
+    app: shieldops
+    component: agent-firewall
+rules:
+  # Required for sidecar injection via mutating webhook
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: shieldops-agent-firewall
+  labels:
+    app: shieldops
+    component: agent-firewall
+subjects:
+  - kind: ServiceAccount
+    name: shieldops-agent-firewall
+    namespace: shieldops
+roleRef:
+  kind: ClusterRole
+  name: shieldops-agent-firewall
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shieldops-agent-firewall
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: agent-firewall
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shieldops
+      component: agent-firewall
+  template:
+    metadata:
+      labels:
+        app: shieldops
+        component: agent-firewall
+    spec:
+      serviceAccountName: shieldops-agent-firewall
+      containers:
+        - name: agent-firewall
+          image: shieldops/agent-firewall:latest
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+              name: webhook
+            - containerPort: 9090
+              protocol: TCP
+              name: metrics
+          envFrom:
+            - secretRef:
+                name: shieldops-secrets
+            - configMapRef:
+                name: shieldops-ai-security-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: shieldops-agent-firewall-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shieldops-agent-firewall
+  namespace: shieldops
+  labels:
+    app: shieldops
+    component: agent-firewall
+spec:
+  selector:
+    app: shieldops
+    component: agent-firewall
+  ports:
+    - port: 443
+      targetPort: 8443
+      protocol: TCP
+      name: webhook
+    - port: 9090
+      targetPort: 9090
+      protocol: TCP
+      name: metrics
+  type: ClusterIP
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: shieldops-agent-firewall-injector
+  labels:
+    app: shieldops
+    component: agent-firewall
+webhooks:
+  - name: agent-firewall.shieldops.io
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    clientConfig:
+      service:
+        name: shieldops-agent-firewall
+        namespace: shieldops
+        path: /inject-sidecar
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    namespaceSelector:
+      matchLabels:
+        shieldops.io/agent-firewall: "enabled"
+    failurePolicy: Ignore
+    timeoutSeconds: 10
