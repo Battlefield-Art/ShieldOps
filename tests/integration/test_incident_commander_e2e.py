@@ -152,7 +152,6 @@ async def test_incident_commander_escalates_sev1(sev1_critical_incident):
         runner = IncidentCommanderRunner()
 
         # Patch the toolkit's check_agent_status to return in-progress
-        original_check = runner._toolkit.check_agent_status
 
         async def _in_progress(task_id):
             return {"task_id": task_id, "status": "in_progress", "findings": []}

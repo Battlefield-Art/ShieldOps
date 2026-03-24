@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: shieldops
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: shieldops
+spec:
+  description: ShieldOps AI Security Control Plane
+  sourceRepos:
+    - https://github.com/ghantakiran/ShieldOps.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: shieldops
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: networking.k8s.io
+      kind: IngressClass
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: policy
+      kind: PodDisruptionBudget
+    - group: batch
+      kind: Job
+    - group: external-secrets.io
+      kind: ExternalSecret
+  roles:
+    - name: admin
+      description: Full access to ShieldOps project
+      policies:
+        - p, proj:shieldops:admin, applications, *, shieldops/*, allow
+      groups:
+        - shieldops-admins
+    - name: readonly
+      description: Read-only access to ShieldOps project
+      policies:
+        - p, proj:shieldops:readonly, applications, get, shieldops/*, allow
+      groups:
+        - shieldops-viewers

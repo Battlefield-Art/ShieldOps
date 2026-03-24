@@ -7,7 +7,6 @@ injecting trace IDs into logs and metrics labels.
 
 from __future__ import annotations
 
-import time
 import uuid
 from typing import Any
 

@@ -267,7 +267,7 @@ class ObservabilityIngestClient:
     ) -> list[dict[str, Any]]:
         """Query metrics from local store. Scans all metric streams."""
         results: list[dict[str, Any]] = []
-        for stream_name, buf in self._local_store.items():
+        for _stream_name, buf in self._local_store.items():
             for rec in buf:
                 if rec.get("_signal_type") != SignalType.METRICS:
                     continue

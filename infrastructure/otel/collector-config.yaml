@@ -1,0 +1,97 @@
+# ShieldOps OpenTelemetry Collector Configuration
+# Main collector handling OTLP ingestion, processing, and export
+# for traces and metrics from ShieldOps agents and SDK.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Receive from ShieldOps SDK
+  otlp/sdk:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4319
+        cors:
+          allowed_origins: ["*"]
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1000
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  attributes/security:
+    actions:
+      - key: shieldops.component
+        value: ai-security
+        action: upsert
+      - key: deployment.environment
+        from_attribute: DEPLOYMENT_ENV
+        action: upsert
+
+  filter/security_events:
+    spans:
+      include:
+        match_type: regexp
+        attributes:
+          - key: shieldops.agent_id
+            value: ".*"
+
+  resource/metadata:
+    attributes:
+      - key: service.namespace
+        value: shieldops
+        action: upsert
+      - key: service.version
+        from_attribute: SHIELDOPS_VERSION
+        action: upsert
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: shieldops
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+  logging:
+    loglevel: info
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, zpages]
+
+  pipelines:
+    traces/security:
+      receivers: [otlp, otlp/sdk]
+      processors: [memory_limiter, batch, attributes/security, filter/security_events, resource/metadata]
+      exporters: [otlp/jaeger, logging]
+
+    metrics/security:
+      receivers: [otlp, otlp/sdk]
+      processors: [memory_limiter, batch, attributes/security, resource/metadata]
+      exporters: [prometheus]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

@@ -7,13 +7,13 @@ Produces structured security events compatible with:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
 import structlog
+from pydantic import BaseModel, Field
 
 logger = structlog.get_logger()
 
@@ -41,7 +41,7 @@ class SecurityEvent(BaseModel):
     outcome: str  # success / failure
     source_ip: str = ""
     details: dict[str, Any] = {}
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     correlation_id: str = ""
     compliance_frameworks: list[str] = []
 

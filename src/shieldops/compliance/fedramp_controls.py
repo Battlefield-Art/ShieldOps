@@ -6,12 +6,12 @@ Checks: access control, audit, identification, system integrity.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel
 import structlog
+from pydantic import BaseModel
 
 logger = structlog.get_logger()
 
@@ -181,7 +181,7 @@ class FedRAMPValidator:
         partial = sum(1 for c in all_checks if c.status == "partial")
 
         return {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "total_controls": total,
             "passed": passed,
             "failed": failed,

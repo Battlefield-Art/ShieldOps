@@ -104,3 +104,9 @@ class GitOpsState(BaseModel):
     current_step: str = "init"
     started_at: datetime | None = None
     duration_ms: int = 0
+
+    # AI Security GitOps
+    opa_policies_synced: list[dict[str, Any]] = Field(default_factory=list)
+    firewall_policies_synced: list[dict[str, Any]] = Field(default_factory=list)
+    mcp_configs_synced: list[dict[str, Any]] = Field(default_factory=list)
+    security_config_drifts: list[dict[str, Any]] = Field(default_factory=list)

@@ -135,9 +135,7 @@ class ProcessorChain:
         if len(self._batch_buffer) >= self._batch_config.send_batch_size:
             return True
         elapsed = time.time() - self._last_flush
-        if elapsed >= self._batch_config.timeout_seconds:
-            return True
-        return False
+        return elapsed >= self._batch_config.timeout_seconds
 
     def _flush_batch(self) -> list[dict[str, Any]]:
         """Flush the batch buffer."""

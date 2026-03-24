@@ -16,7 +16,6 @@ from shieldops.integrations.datadog.monitors import (
     DatadogMonitorManager,
 )
 
-
 # ---------------------------------------------------------------------------
 # Model tests
 # ---------------------------------------------------------------------------
@@ -281,12 +280,7 @@ class TestPackageImports:
     def test_import_all_from_package(self) -> None:
         from shieldops.integrations.datadog import (
             DatadogClient,
-            DatadogLogEntry,
-            DatadogMetricPoint,
-            DatadogMetricType,
-            DatadogMonitor,
             DatadogMonitorManager,
-            DatadogSpan,
         )
 
         assert DatadogClient is not None

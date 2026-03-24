@@ -5,13 +5,12 @@ protected health information (PHI/HIPAA), and payment card data (PCI-DSS).
 Redacts or masks sensitive data before logging/storage.
 """
 
-import json
 import re
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel
 import structlog
+from pydantic import BaseModel
 
 logger = structlog.get_logger()
 

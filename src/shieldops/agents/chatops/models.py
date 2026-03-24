@@ -119,3 +119,7 @@ class ChatOpsState(BaseModel):
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     current_step: str = "init"
     error: str | None = None
+
+    # AI Security ChatOps
+    security_commands_handled: list[dict[str, Any]] = Field(default_factory=list)
+    pending_approvals: list[dict[str, Any]] = Field(default_factory=list)

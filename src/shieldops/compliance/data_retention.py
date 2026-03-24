@@ -9,11 +9,10 @@ Enforces data retention policies per compliance framework:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Any
 
-from pydantic import BaseModel
 import structlog
+from pydantic import BaseModel
 
 logger = structlog.get_logger()
 

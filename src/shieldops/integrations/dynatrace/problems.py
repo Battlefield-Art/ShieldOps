@@ -15,7 +15,7 @@ from enum import StrEnum
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 logger = structlog.get_logger()
 

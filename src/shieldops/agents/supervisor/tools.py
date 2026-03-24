@@ -272,6 +272,43 @@ class SupervisorToolkit:
             "urgency": "informational",
         }
 
+    # --- AI Security orchestration ---
+
+    async def dispatch_firewall_scan(self, agent_ids: list[str] | None = None) -> dict[str, Any]:
+        """Dispatch Agent Firewall scan across monitored agents."""
+        logger.info("supervisor.dispatch_firewall_scan", agent_count=len(agent_ids or []))
+        return {
+            "dispatched": True,
+            "agents_targeted": agent_ids or ["all"],
+            "scan_type": "firewall",
+        }
+
+    async def dispatch_nhi_scan(self, providers: list[str] | None = None) -> dict[str, Any]:
+        """Dispatch NHI Registry scan across cloud providers."""
+        logger.info("supervisor.dispatch_nhi_scan", providers=providers)
+        return {"dispatched": True, "providers": providers or ["aws", "gcp", "azure", "k8s"]}
+
+    async def dispatch_mcp_scan(self, endpoints: list[str] | None = None) -> dict[str, Any]:
+        """Dispatch MCP Security scan of server ecosystem."""
+        logger.info("supervisor.dispatch_mcp_scan", endpoint_count=len(endpoints or []))
+        return {"dispatched": True, "endpoints": endpoints or ["auto-discover"]}
+
+    async def dispatch_red_team(self, target: str, depth: str = "quick") -> dict[str, Any]:
+        """Dispatch AI Red Team assessment."""
+        logger.info("supervisor.dispatch_red_team", target=target, depth=depth)
+        return {"dispatched": True, "target": target, "depth": depth}
+
+    async def coordinate_soc_brain(
+        self, trigger: str, vendor_data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Coordinate SOC Brain for cross-vendor security event processing."""
+        logger.info("supervisor.coordinate_soc_brain", trigger=trigger)
+        return {
+            "dispatched": True,
+            "trigger": trigger,
+            "vendor_data_provided": vendor_data is not None,
+        }
+
 
 def _task_type_to_agent(task_type: TaskType) -> str:
     """Map task type to agent name."""

@@ -1,0 +1,87 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: shieldops
+
+resources:
+  - ../../base
+
+commonLabels:
+  app.kubernetes.io/environment: production
+
+patches:
+  # Production: 3 replicas, enforce mode
+  - target:
+      kind: Deployment
+      name: shieldops
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  # Agent firewall in enforce mode with 3 replicas
+  - target:
+      kind: Deployment
+      name: shieldops-agent-firewall
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: FIREWALL_MODE
+          value: "enforce"
+  # MCP gateway HA
+  - target:
+      kind: Deployment
+      name: shieldops-mcp-security-gateway
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  # Production resource limits
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+  # Production ingress with TLS
+  - target:
+      kind: Ingress
+    patch: |
+      - op: replace
+        path: /spec/rules/0/host
+        value: app.shieldops.io
+      - op: add
+        path: /spec/tls
+        value:
+          - hosts:
+              - app.shieldops.io
+            secretName: shieldops-tls
+  # HPA production scaling
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+  # PDB: at least 2 pods always available
+  - target:
+      kind: PodDisruptionBudget
+    patch: |
+      - op: replace
+        path: /spec/minAvailable
+        value: 2

@@ -7,8 +7,8 @@ database records. Supports key rotation via Fernet's MultiFernet.
 import copy
 from typing import Any
 
-from cryptography.fernet import Fernet, InvalidToken
 import structlog
+from cryptography.fernet import Fernet
 
 logger = structlog.get_logger()
 

@@ -247,10 +247,7 @@ class OTelTraceSamplingOptimizerEngine:
             return {"status": "no_data", "projected_savings_usd": 0.0}
         total_current_cost = sum(r.cost_per_day_usd for r in self._records)
         avg_current_rate = sum(r.current_rate for r in self._records) / len(self._records)
-        if avg_current_rate > 0:
-            reduction_factor = 1.0 - (target_rate / avg_current_rate)
-        else:
-            reduction_factor = 0.0
+        reduction_factor = 1.0 - target_rate / avg_current_rate if avg_current_rate > 0 else 0.0
         projected_savings = round(max(0.0, total_current_cost * reduction_factor), 2)
         return {
             "current_total_cost_per_day_usd": round(total_current_cost, 2),

@@ -169,10 +169,7 @@ class OTelResourceAttributionEngine:
             mid = len(records) // 2
             older_avg = sum(r.cost_usd for r in records[:mid]) / mid
             recent_avg = sum(r.cost_usd for r in records[mid:]) / (len(records) - mid)
-            if older_avg > 0:
-                change_pct = ((recent_avg - older_avg) / older_avg) * 100
-            else:
-                change_pct = 0.0
+            change_pct = (recent_avg - older_avg) / older_avg * 100 if older_avg > 0 else 0.0
             if abs(change_pct) > 100:
                 trend = CostTrend.ANOMALOUS
             elif change_pct > 20:

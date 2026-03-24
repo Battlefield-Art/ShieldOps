@@ -1,0 +1,91 @@
+# ShieldOps AI Security Pipeline
+# Dedicated OTel Collector pipeline for security events with tail sampling.
+# High-risk, blocked, and anomalous traces are always captured;
+# normal traffic is sampled at 10%.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4320
+
+processors:
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 50000
+    expected_new_traces_per_sec: 100
+    policies:
+      - name: high-risk-always
+        type: numeric_attribute
+        numeric_attribute:
+          key: shieldops.risk_score
+          min_value: 0.7
+
+      - name: blocked-always
+        type: string_attribute
+        string_attribute:
+          key: shieldops.decision
+          values: [block, kill_switch]
+
+      - name: anomaly-always
+        type: string_attribute
+        string_attribute:
+          key: shieldops.anomaly_type
+          values: [rate_spike, data_volume_spike, scope_violation]
+
+      - name: god-key-always
+        type: string_attribute
+        string_attribute:
+          key: shieldops.mcp.god_key
+          values: ["true"]
+
+      - name: circuit-breaker-always
+        type: string_attribute
+        string_attribute:
+          key: shieldops.circuit_breaker
+          values: [open, half_open]
+
+      - name: sample-normal
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+  attributes/enrich:
+    actions:
+      - key: shieldops.pipeline
+        value: ai-security
+        action: upsert
+      - key: shieldops.sampled_at
+        from_context: timestamp
+        action: upsert
+
+  batch:
+    timeout: 5s
+    send_batch_size: 500
+
+exporters:
+  otlp/shieldops:
+    endpoint: shieldops-api:4317
+    headers:
+      authorization: "Bearer ${SHIELDOPS_API_KEY}"
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+  logging:
+    loglevel: warn
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13134
+
+service:
+  extensions: [health_check]
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [tail_sampling, attributes/enrich, batch]
+      exporters: [otlp/shieldops, logging]

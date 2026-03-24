@@ -1,0 +1,41 @@
+# ShieldOps SDK Auto-Instrumentation
+# Kubernetes OpenTelemetry Operator resource for automatic
+# instrumentation of the ShieldOps Python agent SDK.
+
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: shieldops-sdk
+  namespace: shieldops
+  labels:
+    app.kubernetes.io/name: shieldops-sdk
+    app.kubernetes.io/part-of: shieldops
+    app.kubernetes.io/component: instrumentation
+spec:
+  exporter:
+    endpoint: http://otel-collector:4318
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    type: parentbased_traceidratio
+    argument: "1.0"
+  python:
+    image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-python:latest
+    env:
+      - name: OTEL_SERVICE_NAME
+        value: shieldops-agent-firewall
+      - name: OTEL_TRACES_EXPORTER
+        value: otlp
+      - name: OTEL_METRICS_EXPORTER
+        value: otlp
+      - name: OTEL_LOGS_EXPORTER
+        value: otlp
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-collector:4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: http/protobuf
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: "shieldops.component=sdk,shieldops.version=0.1.0"
+      - name: OTEL_PYTHON_DISABLED_INSTRUMENTATIONS
+        value: ""

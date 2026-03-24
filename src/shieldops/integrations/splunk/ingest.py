@@ -10,7 +10,6 @@ Auth: X-SF-Token header
 from __future__ import annotations
 
 import time
-import uuid
 from enum import StrEnum
 from typing import Any
 

@@ -1,524 +1,209 @@
-# ShieldOps
+<p align="center">
+  <img src="dashboard-ui/public/favicon.svg" width="48" height="48" alt="ShieldOps" />
+</p>
 
-**AI-Powered Autonomous SRE Platform**
+<h1 align="center">ShieldOps</h1>
+<p align="center"><strong>The security control plane for AI agents</strong></p>
 
-> Your infrastructure never sleeps. Neither should its intelligence.
-
-ShieldOps deploys autonomous AI agents that investigate incidents, execute remediations, enforce security policies, and learn from outcomes — across multi-cloud (AWS/GCP/Azure), Kubernetes, on-premise Linux, and Windows environments.
-
-Unlike existing tools that only *analyze*, ShieldOps agents *act* — with policy-gated safety, full audit trails, and one-click rollback.
+<p align="center">
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#product-modules">Modules</a> ·
+  <a href="#sdk">SDK</a> ·
+  <a href="#deployment">Deploy</a> ·
+  <a href="#docs">Docs</a>
+</p>
 
 ---
 
-## Why ShieldOps?
+## Why ShieldOps
 
-| Problem | ShieldOps Solution |
-|---------|-------------------|
-| SRE teams handle 50+ alerts/day manually | Agents auto-investigate and resolve incidents 24/7 |
-| MTTR averages 2+ hours for P1 incidents | Root cause in minutes, remediation in seconds |
-| 70% of enterprises lack DevSecOps expertise | Security policies enforced continuously by agents |
-| Multi-cloud complexity growing 3x faster than teams | One agent works across AWS, GCP, Azure, K8s, Linux, and Windows |
-| Alert fatigue causes burnout and missed incidents | Intelligent triage reduces noise, escalates what matters |
+AI agents are bypassing traditional EDR and endpoint controls because they operate through APIs, not executables. Non-human identities (service accounts, API keys, OAuth tokens) now outnumber human users 100:1, yet most security tools ignore them entirely. The Model Context Protocol (MCP) creates "God Key" risks where a single compromised tool server grants lateral access across your entire stack.
 
-## How It Works
+ShieldOps intercepts every AI agent tool call at runtime, governs non-human identity sprawl, secures MCP server ecosystems, and unifies security operations across vendors — giving your SOC team full visibility and control over autonomous AI workloads.
 
-```
-Alert Fires → Investigation Agent → Root Cause Hypothesis
-                                          │
-                              confidence > 0.85?
-                             ╱                  ╲
-                          Yes                     No
-                           │                       │
-                    Remediation Agent         Escalate to Human
-                           │                  (with full context)
-                    Policy Check (OPA)
-                           │
-                    Execute + Validate
-                           │
-                    Success → Learn
-                    Failure → Rollback + Escalate
-```
+## Product Modules
 
-## Architecture
+| Module | What It Does | Key Features |
+|--------|-------------|--------------|
+| **Agent Firewall** | Runtime interception of AI agent tool calls | Behavioral baselines, circuit breaker, kill switch, audit reports |
+| **NHI Registry** | Discover and govern non-human identities | Shadow AI detection, posture monitoring, JIT credentials |
+| **MCP Security** | Secure MCP server ecosystem | God Key detection, supply chain scanning, zero-trust transport |
+| **SOC Brain** | Cross-vendor AI-driven security operations | Situations queue, CrowdStrike/Defender/Wiz integration, HITL approval |
 
-ShieldOps is built on a four-layer stack:
+## Quick Start
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Layer 4: Policy & Safety                           │
-│  OPA policies · Approval workflows · Rollback       │
-│  Compliance reporting · Blast-radius limits          │
-├─────────────────────────────────────────────────────┤
-│  Layer 3: Agent Orchestration (LangGraph)           │
-│  Investigation · Remediation · Security · Learning  │
-│  Cost · Prediction · Supervisor · Custom agents      │
-│  SOC Analyst · Threat Hunter · Forensics · Deception │
-│  Incident Response · Attack Surface                   │
-│  ML Governance · FinOps Intelligence                  │
-├─────────────────────────────────────────────────────┤
-│  Layer 2: Observability Ingestion                   │
-│  OpenTelemetry · Splunk · Datadog · Prometheus      │
-│  CloudWatch · New Relic · Elastic · Jaeger           │
-├─────────────────────────────────────────────────────┤
-│  Layer 1: Multi-Environment Connectors              │
-│  AWS · GCP · Azure · Kubernetes · Linux · Windows   │
-│  Unified interface · Write once, deploy anywhere     │
-└─────────────────────────────────────────────────────┘
-```
-
-### Agent Types
-
-| Agent | Role | Actions |
-|-------|------|---------|
-| **Investigation** | Root cause analysis | Query logs, metrics, traces; correlate events; generate hypotheses |
-| **Remediation** | Infrastructure execution | Restart pods, scale services, rollback deployments, patch systems |
-| **Security** | Continuous security posture | CVE patching, credential rotation, compliance monitoring |
-| **Learning** | Continuous improvement | Update playbooks, refine thresholds, learn from outcomes |
-| **Cost** | Cloud cost optimization | Analyze spend, identify waste, recommend savings |
-| **Prediction** | Proactive incident prevention | Detect trends, forecast anomalies, generate predictions |
-| **Supervisor** | Orchestration | Delegates to specialists, manages escalation, chains workflows |
-| **SOC Analyst** | Autonomous SOC Tier 1/2/3 | Triage alerts, correlate events, generate attack narratives, recommend containment |
-| **Threat Hunter** | Proactive threat hunting | Hypothesis-driven hunts, MITRE ATT&CK campaigns, IOC sweeps, behavioral analysis |
-| **Forensics** | Digital forensics | Evidence preservation, integrity verification, memory/disk/network analysis, timeline reconstruction |
-| **Deception** | Honeypot/honeytoken management | Deploy deception assets, monitor interactions, profile attackers |
-| **Incident Response** | Autonomous incident response | Containment, eradication, recovery, validation workflows |
-| **Attack Surface** | Attack surface management | Asset discovery, exposure analysis, remediation prioritization |
-| **ML Governance** | ML model governance | Drift detection, fairness scoring, adversarial testing, retraining pipelines |
-| **FinOps Intelligence** | Cost intelligence | Anomaly detection, root cause analysis, RI optimization, budget-aware scaling |
-| **Zero Trust** | Zero trust architecture | Identity verification, device posture, access evaluation, policy enforcement |
-| **Threat Automation** | Threat detection & hunting | Threat detection, behavior analysis, intel correlation, automated response |
-| **SOAR Orchestration** | Security orchestration & response | Incident triage, playbook execution, response validation |
-| **ITDR** | Identity threat detection & response | Identity scanning, attack path analysis, credential compromise detection |
-| **Auto-Remediation** | Autonomous remediation | Issue assessment, remediation planning, fix execution, verification |
-| **Observability Intelligence** | Multi-signal observability analysis | Signal collection, correlation, insights, recommendations |
-| **XDR** | Extended detection & response | Cross-domain telemetry, threat correlation, attack stories, coordinated response |
-| **Intelligent Automation** | ML-driven automation & self-healing | Situation assessment, strategy selection, automation execution, validation |
-| **Platform Intelligence** | Platform-wide data analytics | Telemetry gathering, pattern analysis, insight computation, strategy generation |
-| **Security Convergence** | Unified security defense | Posture collection, signal unification, defense evaluation, response coordination |
-| **Autonomous Defense** | Autonomous security defense | Threat assessment, defense selection, countermeasure deployment, protection validation |
-
-### Safety Model (Defense in Depth)
-
-Every agent action passes through five safety layers:
-
-1. **Policy Gate (OPA)** — Rego policies evaluate every action before execution
-2. **Risk Classification** — Actions rated Low/Medium/High/Critical with approval requirements
-3. **Snapshot & Rollback** — State captured before every change; one-click rollback
-4. **Validation Loop** — Health checks confirm success; auto-rollback on failure
-5. **Human Escalation** — Graceful degradation from autonomous → approval → manual
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Language | Python 3.12+ |
-| Agent Framework | LangGraph |
-| LLM | Anthropic Claude (primary), OpenAI (fallback) |
-| API | FastAPI |
-| Dashboard | React + TypeScript + Tailwind CSS + shadcn/ui |
-| Database | PostgreSQL (state), Redis (coordination) |
-| Messaging | Apache Kafka |
-| Infrastructure | Kubernetes, Terraform |
-| Observability | OpenTelemetry, LangSmith |
-| Policy Engine | Open Policy Agent (OPA) |
-| Logging | structlog (structured logging) |
-| Validation | Pydantic v2 |
-| CI/CD | GitHub Actions |
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.12+
-- Docker & Docker Compose
-- An Anthropic API key ([get one here](https://console.anthropic.com/))
-
-### Quick Start
+### SDK
 
 ```bash
-# Clone the repo
+pip install shieldops-sdk
+```
+
+```python
+from shieldops.sdk.langchain import ShieldOpsCallbackHandler
+
+agent = create_agent(
+    callbacks=[ShieldOpsCallbackHandler(api_key="sk-...")]
+)
+```
+
+The callback handler intercepts all tool calls, enforces policies, and streams audit events to your ShieldOps tenant.
+
+### Self-Hosted
+
+```bash
 git clone https://github.com/ghantakiran/ShieldOps.git
 cd ShieldOps
 
-# Configure environment
 cp .env.example .env
-# Edit .env and add your SHIELDOPS_ANTHROPIC_API_KEY
+# Add your ANTHROPIC_API_KEY and other secrets to .env
 
-# Start backing services (PostgreSQL, Redis, Kafka, OPA)
 docker compose -f infrastructure/docker/docker-compose.yml up -d
+```
 
-# Install Python dependencies
+Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/docs` for the API.
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                        Dashboard (React)                     │
+│              Agent Monitor · SOC Queue · NHI Registry         │
+├──────────────────────────────────────────────────────────────┤
+│                      API Gateway (FastAPI)                    │
+│         JWT Auth · Rate Limiting · Tenant Isolation           │
+├────────────────┬─────────────────┬───────────────────────────┤
+│  Agent Firewall│   SOC Brain     │      MCP Security         │
+│  Intercept     │   Investigate   │      Scan & Govern        │
+│  Evaluate      │   Correlate     │      Detect God Keys      │
+│  Enforce       │   Respond       │      Zero-Trust Transport │
+├────────────────┴─────────────────┴───────────────────────────┤
+│                   Policy Engine (OPA)                         │
+│        Rego Policies · Approval Workflows · Rollback          │
+├──────────────────────────────────────────────────────────────┤
+│               Agent Orchestration (LangGraph)                │
+│    50 Autonomous Agents · Supervisor · Confidence Routing     │
+├──────────────────────────────────────────────────────────────┤
+│              Observability Ingestion (OpenTelemetry)          │
+│     Splunk · Datadog · Prometheus · CloudWatch · Elastic      │
+├──────────────────────────────────────────────────────────────┤
+│              Multi-Cloud Connectors                          │
+│       AWS · GCP · Azure · Kubernetes · Linux · Windows        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+## Tech Stack
+
+Python 3.12 · LangGraph · FastAPI · React · TypeScript · Tailwind CSS · PostgreSQL · Redis · Kafka · OPA · OpenTelemetry · Pydantic v2 · structlog · Anthropic Claude
+
+## Platform Stats
+
+| Metric | Count |
+|--------|-------|
+| Autonomous AI agents | 50 |
+| Security & analytics engines | 1,562+ |
+| Cloud connectors | 9 (AWS, GCP, Azure, K8s, Linux, Windows, Splunk, Datadog, Prometheus) |
+| Dashboard pages | 69 |
+| API endpoints | 700+ |
+| OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
+| Unit tests | 62,000+ |
+
+## Deployment
+
+### Docker Compose (recommended for evaluation)
+
+```bash
+docker compose -f infrastructure/docker/docker-compose.yml up -d
+```
+
+### Kubernetes (Helm)
+
+```bash
+helm install shieldops infrastructure/helm/ \
+  --namespace shieldops \
+  --create-namespace \
+  --values infrastructure/helm/values-production.yaml
+```
+
+### Railway (PaaS)
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/shieldops)
+
+One-click deploy with managed PostgreSQL, Redis, and auto-scaling.
+
+## Development
+
+```bash
+# Install dependencies
 pip install -e ".[dev]"
 
-# Start the API server
-shieldops serve --reload
-```
+# Run tests
+python3 -m pytest tests/ -v --tb=short
 
-The API is now running at `http://localhost:8000`. View the interactive docs at `http://localhost:8000/api/v1/docs`.
+# Run tests with coverage
+python3 -m pytest tests/ -v --cov=src/shieldops
 
-### Run Tests
-
-```bash
-pytest tests/ -v --cov=src/shieldops
-```
-
-### Lint & Type Check
-
-```bash
-ruff check src/ tests/
+# Lint and format
+ruff check src/ tests/ --fix
 ruff format src/ tests/
+
+# Type check
 mypy src/shieldops/
+
+# Security scan
+bandit -c pyproject.toml -ll -r src/
+
+# Pre-commit hooks
+pre-commit run --all-files
+
+# Start API server (dev mode)
+uvicorn shieldops.api.main:app --reload
+
+# Start dashboard (dev mode)
+cd dashboard-ui && npm install && npm run dev
 ```
 
-## Project Structure
+## GitOps
+
+ShieldOps supports GitOps-driven deployment via ArgoCD and Kustomize.
 
 ```
-ShieldOps/
-├── CLAUDE.md                          # Project conventions & architecture
-├── pyproject.toml                     # Python package configuration
-├── .env.example                       # Environment variable template
-│
-├── src/shieldops/
-│   ├── agents/                        # AI agent implementations
-│   │   ├── investigation/             # Root cause analysis agent
-│   │   ├── remediation/               # Infrastructure execution agent
-│   │   ├── security/                  # Security posture agent
-│   │   ├── learning/                  # Continuous improvement agent
-│   │   ├── cost/                      # Cloud cost optimization agent
-│   │   ├── prediction/                # Predictive incident detection
-│   │   ├── supervisor/                # Multi-agent orchestrator
-│   │   ├── custom/                    # Custom agent builder
-│   │   ├── knowledge/                 # RAG over incidents & runbooks
-│   │   ├── soc_analyst/                # SOC Analyst agent (Tier 1/2/3 triage)
-│   │   ├── threat_hunter/              # Threat Hunter agent (proactive hunting)
-│   │   ├── forensics/                  # Digital Forensics agent
-│   │   ├── deception/                  # Deception/Honeypot agent
-│   │   ├── incident_response/          # Incident Response agent
-│   │   ├── attack_surface/             # Attack Surface agent
-│   │   ├── ml_governance/              # ML Governance agent
-│   │   ├── finops_intelligence/        # FinOps Intelligence agent
-│   │   ├── calibration/               # Agent confidence calibration
-│   │   └── registry.py                # Agent fleet registry
-│   ├── connectors/                    # Multi-cloud abstraction layer
-│   │   ├── base.py                    #   Connector interface & router
-│   │   ├── kubernetes/                #   Kubernetes
-│   │   ├── aws/                       #   AWS (EC2, ECS, Lambda)
-│   │   ├── gcp/                       #   GCP
-│   │   ├── azure/                     #   Azure
-│   │   ├── linux/                     #   Bare-metal SSH/Ansible
-│   │   └── windows/                   #   Windows WinRM
-│   ├── observability/                 # Telemetry ingestion
-│   │   ├── splunk/                    #   Splunk integration
-│   │   ├── datadog/                   #   Datadog integration
-│   │   ├── prometheus/                #   Prometheus integration
-│   │   ├── cloudwatch/                #   AWS CloudWatch
-│   │   ├── newrelic/                  #   New Relic integration
-│   │   ├── elastic/                   #   Elastic/OpenSearch integration
-│   │   └── otel/                      #   OpenTelemetry native
-│   ├── policy/                        # Safety & governance
-│   │   ├── opa/client.py              #   OPA policy evaluation
-│   │   ├── approval/workflow.py       #   Human approval workflows
-│   │   └── rollback/                  #   Rollback mechanisms
-│   ├── orchestration/                 # Agent orchestration utilities
-│   ├── compliance/                    # SOC2, PCI-DSS, HIPAA engines
-│   ├── analytics/                     # Anomaly detection, capacity planning
-│   ├── auth/                          # OIDC/SSO authentication
-│   ├── billing/                       # Stripe billing & plan enforcement
-│   ├── sla/                           # SLA management engine
-│   ├── topology/                      # Service dependency mapping
-│   ├── vulnerability/                 # Posture aggregation & reporting
-│   ├── workers/                       # Background task queue
-│   ├── integrations/                  # CVE sources, scanners, billing, ITSM
-│   ├── scheduler/                     # Job scheduling (learning, scans)
-│   ├── changes/                       # Change tracking / deployment correlation
-│   ├── cache/                         # Redis cache layer
-│   ├── plugins/                       # Plugin SDK & extension framework
-│   ├── playbooks/                     # Playbook loader, AI generator, auto-applier
-│   ├── api/                           # FastAPI application
-│   │   ├── app.py                     #   App factory & middleware
-│   │   ├── auth/                      #   JWT auth, RBAC
-│   │   ├── routes/                    #   API endpoints
-│   │   ├── middleware/                #   Rate limiting, security headers
-│   │   └── ws/                        #   WebSocket routes
-│   ├── models/base.py                 # Core Pydantic models
-│   ├── config/settings.py             # Environment configuration
-│   └── cli.py                         # CLI entry point
-│
-├── playbooks/                         # Remediation playbooks (YAML)
-│   └── policies/                      # Default OPA policies
-│
-├── infrastructure/
-│   ├── docker/                        # Dockerfile & docker-compose
-│   └── kubernetes/                    # K8s manifests with RBAC
-│
-├── dashboard-ui/                      # React + TypeScript dashboard
-│
-├── tests/
-│   ├── unit/                          # Unit tests (~59,740+ tests)
-│   └── integration/                   # Integration tests
-│
-├── docs/
-│   ├── prd/                           # Product Requirements Documents
-│   ├── architecture/                  # ADRs & design specs
-│   └── business/                      # Pitch deck, GTM, financials
-│
-└── .github/workflows/ci.yml          # CI pipeline
+infrastructure/gitops/
+  argocd/            # ArgoCD Application & AppProject
+  kustomize/
+    base/            # Base manifests (refs to kubernetes/)
+    overlays/
+      staging/       # Staging patches (audit mode, 1 replica)
+      production/    # Production patches (enforce mode, 3 replicas, TLS)
 ```
 
-## API Endpoints
+ArgoCD watches the `main` branch and auto-syncs with self-heal enabled. Kustomize overlays patch replica counts, resource limits, ingress hosts, and firewall modes per environment. See `infrastructure/gitops/` for the full configuration.
 
-| Category | Key Endpoints |
-|----------|--------------|
-| **Health** | `GET /health`, `GET /ready`, `GET /metrics` |
-| **Agents** | `GET /api/v1/agents`, `GET /api/v1/agents/{id}` |
-| **Investigations** | `GET /api/v1/investigations`, `POST /api/v1/investigations` |
-| **Remediations** | `GET /api/v1/remediations`, `POST /api/v1/remediations/{id}/approve` |
-| **Security** | `GET /api/v1/security/posture`, `GET /api/v1/security/compliance/{framework}` |
-| **Vulnerabilities** | `GET /api/v1/vulnerabilities`, `GET /api/v1/vulnerabilities/{id}` |
-| **Compliance** | `GET /api/v1/compliance/soc2`, `GET /api/v1/compliance/pci-dss`, `GET /api/v1/compliance/hipaa` |
-| **Cost** | `GET /api/v1/cost/analysis`, `GET /api/v1/cost/recommendations` |
-| **Learning** | `GET /api/v1/learning/cycles`, `GET /api/v1/learning/recommendations` |
-| **Predictions** | `POST /api/v1/predictions/run`, `GET /api/v1/predictions/active` |
-| **Playbooks** | `GET /api/v1/playbooks`, `POST /api/v1/playbooks/ai/generate` |
-| **Billing** | `GET /api/v1/billing/usage`, `POST /api/v1/billing/subscribe` |
-| **Webhooks** | `POST /api/v1/webhooks/subscriptions`, `GET /api/v1/webhooks/subscriptions` |
-| **Plugins** | `GET /api/v1/plugins`, `POST /api/v1/plugins/install` |
-| **SOC Analyst** | `POST /api/v1/soc/analyze`, `GET /api/v1/soc/results/{id}` |
-| **Incident Response** | `POST /api/v1/incident-response/respond`, `GET /api/v1/incident-response/results/{id}` |
-| **Attack Surface** | `POST /api/v1/attack-surface/scan`, `GET /api/v1/attack-surface/results/{id}` |
-| **ML Governance** | `POST /api/v1/ml-governance/evaluate`, `GET /api/v1/ml-governance/results/{id}` |
-| **FinOps Intelligence** | `POST /api/v1/finops/analyze`, `GET /api/v1/finops/results/{id}` |
-| **Zero Trust** | `POST /api/v1/zero-trust/assess`, `GET /api/v1/zero-trust/results/{id}` |
-| **Threat Automation** | `POST /api/v1/threat-automation/hunt`, `GET /api/v1/threat-automation/results/{id}` |
-| **SOAR Orchestration** | `POST /api/v1/soar/orchestrate`, `GET /api/v1/soar/results/{id}` |
-| **ITDR** | `POST /api/v1/itdr/detect`, `GET /api/v1/itdr/results/{id}` |
-| **Auto-Remediation** | `POST /api/v1/auto-remediation/execute`, `GET /api/v1/auto-remediation/results/{id}` |
-| **Observability Intelligence** | `POST /api/v1/observability-intelligence/analyze`, `GET /api/v1/observability-intelligence/results/{id}` |
-| **XDR** | `POST /api/v1/xdr/investigate`, `GET /api/v1/xdr/results/{id}` |
-| **Intelligent Automation** | `POST /api/v1/intelligent-automation/execute`, `GET /api/v1/intelligent-automation/results/{id}` |
-| **Platform Intelligence** | `POST /api/v1/platform-intelligence/analyze`, `GET /api/v1/platform-intelligence/results/{id}` |
-| **Security Convergence** | `POST /api/v1/security-convergence/evaluate`, `GET /api/v1/security-convergence/results/{id}` |
-| **Autonomous Defense** | `POST /api/v1/autonomous-defense/protect`, `GET /api/v1/autonomous-defense/results/{id}` |
-| **Analytics** | `GET /api/v1/analytics/mttr`, `GET /api/v1/analytics/resolution-rate` |
-| **Tenant Isolation** | `POST /api/v1/tenant-isolation`, `GET /api/v1/tenant-isolation/{id}` |
-| **Alert Noise** | `POST /api/v1/alert-noise/alerts`, `POST /api/v1/alert-noise/analyze` |
-| **Threshold Tuning** | `POST /api/v1/threshold-tuner/thresholds`, `POST /api/v1/threshold-tuner/recommendations/generate` |
-| **Severity Prediction** | `POST /api/v1/severity-predictor/predict`, `GET /api/v1/severity-predictor/accuracy` |
-| **Impact Analysis** | `POST /api/v1/impact-analyzer/simulate`, `GET /api/v1/impact-analyzer/critical-services` |
-| **Config Audit** | `POST /api/v1/config-audit/changes`, `GET /api/v1/config-audit/history` |
-| **Deployment Velocity** | `POST /api/v1/deployment-velocity/events`, `GET /api/v1/deployment-velocity/velocity` |
-| **Compliance Automation** | `POST /api/v1/compliance-automation/rules`, `POST /api/v1/compliance-automation/violations` |
-| **Knowledge Base** | `POST /api/v1/knowledge-articles`, `GET /api/v1/knowledge-articles/search` |
-| **On-Call Fatigue** | `POST /api/v1/oncall-fatigue/pages`, `GET /api/v1/oncall-fatigue/burnout-risks` |
-| **Backup Verification** | `POST /api/v1/backup-verification/backups`, `GET /api/v1/backup-verification/recovery-readiness` |
-| **Cost Tag Enforcement** | `POST /api/v1/cost-tag-enforcer/policies`, `GET /api/v1/cost-tag-enforcer/compliance-summary` |
-| **DR Readiness** | `POST /api/v1/dr-readiness/plans`, `GET /api/v1/dr-readiness/readiness/{service}` |
-| **Service Catalog** | `POST /api/v1/service-catalog/services`, `POST /api/v1/service-catalog/validate` |
-| **Contract Testing** | `POST /api/v1/contract-testing/schemas`, `POST /api/v1/contract-testing/check` |
-| **Orphan Detector** | `POST /api/v1/orphan-detector/orphans`, `GET /api/v1/orphan-detector/summary` |
-| **Latency Profiler** | `POST /api/v1/latency-profiler/samples`, `POST /api/v1/latency-profiler/regressions` |
-| **License Scanner** | `POST /api/v1/license-scanner/dependencies`, `POST /api/v1/license-scanner/evaluate/{project}` |
-| **Release Manager** | `POST /api/v1/release-manager/releases`, `POST /api/v1/release-manager/{id}/approve` |
-| **Budget Manager** | `POST /api/v1/budget-manager/budgets`, `GET /api/v1/budget-manager/alerts` |
-| **Config Parity** | `POST /api/v1/config-parity/configs`, `POST /api/v1/config-parity/compare` |
-| **Incident Dedup** | `POST /api/v1/incident-dedup/incidents`, `POST /api/v1/incident-dedup/{id}/auto-merge` |
-| **Access Certification** | `POST /api/v1/access-certification/grants`, `POST /api/v1/access-certification/campaigns` |
-| **Toil Tracker** | `POST /api/v1/toil-tracker/entries`, `GET /api/v1/toil-tracker/candidates` |
+## Environment Variables
 
-Full interactive API documentation is available at `/api/v1/docs` when the server is running.
+| Variable | Purpose |
+|----------|---------|
+| `ANTHROPIC_API_KEY` | Claude API key (primary LLM) |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `KAFKA_BROKERS` | Kafka broker list |
+| `OPA_ENDPOINT` | OPA policy engine URL |
+| `LANGSMITH_API_KEY` | Agent tracing |
+| `STRIPE_SECRET_KEY` | Billing integration |
+| `SLACK_BOT_TOKEN` | ChatOps approvals |
+| `PAGERDUTY_API_KEY` | Alert ingestion |
 
-## Remediation Playbooks
-
-Playbooks define how agents investigate and remediate specific incident types:
-
-```yaml
-# playbooks/pod-crash-loop.yaml
-name: pod-crash-loop
-trigger:
-  alert_type: "KubePodCrashLooping"
-
-investigation:
-  steps:
-    - check_pod_status
-    - check_pod_logs
-    - check_recent_deployments
-    - check_resource_usage
-
-remediation:
-  decision_tree:
-    - condition: "OOMKilled"
-      action: increase_memory_limit
-    - condition: "recent_deployment"
-      action: rollback_deployment
-    - condition: "dependency_unhealthy"
-      action: restart_pod_with_backoff
-```
-
-## OPA Policies
-
-Default policies ship with the platform and can be customized per environment:
-
-- **`no_delete_data`** — Agents cannot delete databases or persistent volumes
-- **`prod_requires_approval`** — All production writes require human approval
-- **`max_blast_radius`** — Limit affected resources per action (dev: 50, staging: 20, prod: 5)
-- **`rate_limit_actions`** — Max actions per hour per environment
-- **`change_freeze_window`** — Block changes during configured freeze windows
-
-## Development Phases
-
-| Phase | Theme | Status |
-|-------|-------|--------|
-| Phase 1 | Project scaffolding & core architecture | Completed |
-| Phase 2 | Investigation Agent (AWS + K8s + Splunk + Prometheus) | Completed |
-| Phase 3 | Remediation Agent with OPA policy gates | Completed |
-| Phase 4 | Unified Dashboard (React + TypeScript) | Completed |
-| Phase 5 | Multi-Cloud Connectors (GCP, Azure, Windows) | Completed |
-| Phase 6 | Security Agent + CVE management | Completed |
-| Phase 7 | Learning Agent + Cost Agent | Completed |
-| Phase 8 | Enterprise features (SSO, RBAC, billing, multi-tenant) | Completed |
-| Phase 9 | Production-scale ops (scheduler, webhooks, GraphQL) | Completed |
-| Phase 10 | Production-scale ops (caching, workers, ITSM, mobile push) | Completed |
-| Phase 11 | Security Platform Sophistication (SBOM, MITRE ATT&CK, EPSS) | Completed |
-| Phase 12 | Autonomous Intelligence & Platform Ecosystem | Completed |
-| Phase 13 | Advanced Observability & Platform Hardening | Completed |
-| Phase 14 | Enterprise Scalability & Developer Experience | Completed |
-| Phase 15 | Operational Intelligence & Reliability Engineering | Completed |
-| Phase 16 | Operational Resilience & Intelligent Automation | Completed |
-| Phase 17 | Incident Intelligence & FinOps Automation | Completed |
-| Phase 18 | Advanced Security & Intelligent Operations | Completed |
-| Phase 19 | Intelligent Automation & Governance | Completed |
-| Phase 20 | Platform Intelligence & Enterprise Hardening | Completed |
-| Phase 21 | Disaster Recovery, Service Intelligence & Resource Governance | Completed |
-| Phase 22 | Proactive Intelligence & Security Operations | Completed |
-| Phase 23 | Infrastructure Intelligence & Resource Optimization | Completed |
-| Phase 24 | Autonomous Resilience & Platform Hardening | Completed |
-| Phase 25 | Chaos Engineering & Operational Intelligence | Completed |
-| Phase 26 | Platform Intelligence & Operational Excellence | Completed |
-| Phase 27 | Advanced Reliability & Cost Governance | Completed |
-| Phase 28 | Predictive Operations & Intelligent Governance | Completed |
-| Phase 29 | Predictive Intelligence & Platform Resilience | Completed |
-| Phase 30 | Adaptive Platform Intelligence & Autonomous Operations | Completed |
-| Phase 31 | Intelligent Signal Management & Operational Excellence | Completed |
-| Phase 32 | Developer Productivity & Service Mesh Intelligence | Completed |
-| Phase 33 | Incident Self-Healing & Platform Governance Intelligence | Completed |
-| Phase 34 | Proactive Intelligence & Cross-Functional Analytics | Completed |
-| Phase 35 | Platform Economics & Governance Intelligence | Completed |
-| Phase 36 | Multi-Channel Communication & Multi-Agent Intelligence | Completed |
-| Phase 37 | Security Automation & Autonomous Remediation | Completed |
-| Phase 38 | Intelligent Operations & Platform Resilience | Completed |
-| Phase 39 | Advanced Platform Intelligence & Operational Excellence | Completed |
-| Phase 40 | Platform Observability & Release Intelligence | Completed |
-| Phase 41 | Platform Economics & Governance Intelligence | Completed |
-| Phase 42 | Intelligent Automation & Predictive Operations | Completed |
-| Phase 43 | Advanced Resilience & Operational Excellence | Completed |
-| Phase 44 | Intelligent Risk & Platform Optimization | Completed |
-| Phase 45 | Predictive Operations & Platform Intelligence | Completed |
-| Phase 46 | Intelligent Operations & Infrastructure Analytics | Completed |
-| Phase 47 | Cross-Domain Intelligence & Operational Maturity | Completed |
-| Phase 48 | Operational Quality & Organizational Intelligence | Completed |
-| Phase 49 | Advanced Platform Intelligence & Automation | Completed |
-| Phase 50 | Comprehensive Platform Maturity | Completed |
-| Phase 51 | Enterprise Governance & Intelligent Automation | Completed |
-| Phase 52 | Advanced Operational Intelligence | Completed |
-| Phase 53 | Enterprise Intelligence & Proactive Governance | Completed |
-| Phase 54 | Intelligent Analytics & Operational Governance | Completed |
-| Phase 55 | Predictive Analytics & Compliance Automation | Completed |
-| Phase 56 | Advanced Scoring & Operational Analytics | Completed |
-| Phase 57 | Intelligent Monitoring & Cross-Domain Optimization | Completed |
-| Phase 58 | Advanced Platform Intelligence & Resilience Engineering | Completed |
-| Phase 59 | SOC Foundation — MITRE ATT&CK, SOAR, Threat Intel, Alert Enrichment | Completed |
-| Phase 60 | SOC Analyst Agent — Autonomous Tier 1/2/3 SOC Analyst | Completed |
-| Phase 61 | Threat Hunter Agent — Proactive Hypothesis-Driven Hunting | Completed |
-| Phase 62 | Forensics & Deception Agents — Digital Forensics, Honeypots | Completed |
-| Phase 63 | Advanced Defense — Ransomware, DLP, APT, Zero-Day Detection | Completed |
-| Phase 64 | Risk & Compliance — FAIR, Privacy Impact, Vendor Risk, GRC | Completed |
-| Phase 65 | Incident Response Automation — Containment, Eradication, Recovery | Completed |
-| Phase 66 | Threat Intelligence Platform — Feed Normalization, Campaign Attribution | Completed |
-| Phase 67 | Attack Surface Management — Asset Discovery, Exposure Analysis | Completed |
-| Phase 68 | SOC Operations Intelligence — Alert Lifecycle, Detection Engineering | Completed |
-| Phase 69 | Advanced Analytics & Behavioral — UEBA, Entity Profiling, Risk Scoring | Completed |
-| Phase 70 | Compliance & Governance Automation — Policy Enforcement, Maturity Assessment | Completed |
-| Phase 71 | ML Model Governance & AI Safety — Drift Detection, Fairness, Adversarial Testing | Completed |
-| Phase 72 | Supply Chain Security — SBOM, Dependency Scanning, Build Verification | Completed |
-| Phase 73 | Advanced FinOps & Cost Intelligence — Anomaly Detection, RI Optimization | Completed |
-| Phase 74 | Privacy & Data Governance — PII Classification, Consent, GDPR/CCPA | Completed |
-| Phase 75 | Organizational Intelligence — Team Health, Burnout Detection, Knowledge Gaps | Completed |
-| Phase 76 | Platform Resilience & Chaos Engineering — Failure Injection, DR Testing | Completed |
-| Phase 77 | Zero Trust Architecture & Identity Security — Microsegmentation, MFA, JIT | Completed |
-| Phase 78 | Cloud Native Security & Container Defense — K8s RBAC, Admission, Runtime | Completed |
-| Phase 79 | Advanced Threat Detection & Hunting — Ransomware, C2, Lateral Movement | Completed |
-| Phase 80 | Security Operations Automation — MTTD/MTTR, Alert Quality, SOC Perf | Completed |
-| Phase 81 | Critical Asset Protection & Data Security — Crown Jewel, Encryption, DLP | Completed |
-| Phase 82 | Security Governance & Compliance — Policy Conflict, Evidence, Controls | Completed |
-| Phase 83 | Advanced Threat Intelligence — Campaign Attribution, Strategic Landscape | Completed |
-| Phase 84 | Attack Surface Management — External Discovery, Exposure Analysis | Completed |
-| Phase 85 | Security Alert Intelligence — Lifecycle, Tuning, Workflow Automation | Completed |
-| Phase 86 | Supply Chain Security — Credential Abuse, Lateral Movement, SBOM | Completed |
-| Phase 87 | Zero Trust Deep Defense — Microsegmentation, Identity Verification | Completed |
-| Phase 88 | Advanced Malware Defense — Ransomware, C2, Fileless Detection | Completed |
-| Phase 89 | Observability Intelligence Platform — Multi-Signal Correlation | Completed |
-| Phase 90 | Advanced Observability Engineering — eBPF, Dashboard Intelligence | Completed |
-| Phase 91 | Extended Detection & Response (XDR) — Cross-Domain Threat Correlation | Completed |
-| Phase 92 | Security Operations Optimization — SOC Workflow, Purple Team | Completed |
-| Phase 93 | Intelligent Automation & Self-Healing — ML-Driven Ops, Autonomous Healing | Completed |
-| Phase 94 | Autonomous Operations & Optimization — Fleet Management, Chaos Intelligence | Completed |
-| Phase 95 | Platform Intelligence & Data Analytics — Telemetry Lake, Signal Intelligence | Completed |
-| Phase 96 | Advanced Threat Intelligence Platform — Adversary Modeling, Dark Web Intel | Completed |
-| Phase 97 | Security Convergence & Unified Defense — Converged Detection, Mesh Security | Completed |
-| Phase 98 | Predictive Operations Intelligence — Failure Prediction, Capacity Planning | Completed |
-| Phase 99 | Autonomous Security & Defense — Self-Defending Networks, Attack Disruption | Completed |
-| Phase 100 | Platform Maturity & Optimization — Excellence Scoring, Evolution Planning | Completed |
-| Phase 101 | ChatOps Agent — Slack/Teams Integration, Natural Language Commands | Completed |
-| Phase 102 | Enterprise Integration Agent — ITSM, SIEM, CMDB Bidirectional Sync | Completed |
-| Phase 103 | Automation Orchestrator Agent — Rule Engine, Workflow Chaining, Approval Gates | Completed |
-| Phase 104 | Advanced Observability — eBPF Network Flow, ML Anomaly Detection, Streaming Analytics | Completed |
-| Phase 105 | Security Operations — Purple Team Campaigns, SOAR Workflow Intelligence, Identity Analytics | Completed |
-| Phase 106 | GitOps & Infrastructure Intelligence — Reconciliation, IaC Validation, DORA Metrics | Completed |
-| Phase 107 | AIOps & Cognitive Automation — ML Root Cause, Causal Inference, Self-Learning Anomaly Detection | Completed |
-| Phase 108 | Developer Experience & Platform Engineering — Service Catalog, API Lifecycle, Developer Portal | Completed |
-| Phase 109 | Resilience Engineering & Chaos Intelligence — Chaos Experiments, Game Days, Fault Propagation | Completed |
-| Phase 110 | Next-Gen Observability & Telemetry Intelligence — Edge Telemetry, ROI Optimization, Distributed Query | Completed |
-| Phase 111 | Security Intelligence & Threat Automation — Threat Prediction, Adversary Emulation, Knowledge Graph | Completed |
-| Phase 112 | Autonomous Operations & Intelligent Automation — Incident Command, Predictive Maintenance, Workflow Intelligence | Completed |
-| Phase 113 | Auto-Learning & Intelligent Agent Optimization — Experiment Loops, Self-Tuning, Knowledge Distillation | Completed |
-| Phase 114 | OpenTelemetry Tooling & Pipeline Intelligence — Kafka Pipeline, Collector Orchestration, Auto-Instrumentation | Completed |
-| Phase 115 | Risk-Based Security Alerting — Entity Risk Scoring, MITRE Risk Mapping, Alert Risk Enrichment | Completed |
-| Phase 116 | Intelligent Incident Lifecycle & Recovery — State Tracking, Blast Radius, Cascade Analysis | Completed |
-| Phase 117 | Advanced Compliance Intelligence & Audit Automation — Evidence Freshness, Framework Mapping | Completed |
-| Phase 118 | Platform Reliability & Performance Intelligence — Golden Signals, Error Budget, Capacity Forecasting | Completed |
-| Phase 119 | Intelligent Alerting & Notification Intelligence — Fatigue Detection, Smart Routing, On-Call Burden | Completed |
-| Phase 120 | Cloud Cost Intelligence & FinOps Automation — Spend Forecasting, Waste Classification, Chargeback | Completed |
-| Phase 121 | Service Mesh & API Intelligence — API Health, Circuit Breaker, Traffic Patterns, Rate Limits | Completed |
-| Phase 122 | Event-Driven Architecture & Message Intelligence — Schema Registry, Queue Health, DLQ Forensics | Completed |
-| Phase 123 | Infrastructure-as-Code Intelligence & Policy Automation — Terraform Analysis, Drift Remediation | Completed |
-| Phase 124 | Team Intelligence & Organizational Analytics — Velocity, Knowledge Silos, Cognitive Load | Completed |
-| Phase 125 | Cognitive Agent Self-Optimization & Reinforcement Learning — Reward Engineering, Curriculum Learning, Transfer Learning | Completed |
-| Phase 126 | Advanced Distributed Tracing & Telemetry Analytics — Trace Anomaly Detection, Span Criticality, Root Cause Analysis | Completed |
-| Phase 127 | Behavioral Risk Analytics & Advanced Threat Scoring — Insider Threat, Lateral Movement, Multi-Vector Correlation | Completed |
-| Phase 128 | Self-Evolving Agent Intelligence (Dr. Zero) — Proposer-Solver Co-Evolution, Difficulty Rewards, Curriculum Progression | Completed |
-| Phase 129 | Multi-Hop Investigation & Reasoning Intelligence — Root Cause Chains, Bridge Entities, Reasoning Decomposition | Completed |
-| Phase 130 | Policy Optimization & Format Intelligence (HRPO) — Grouped Policy Optimization, Advantage Estimation, Format Rewards | Completed |
-
-## Documentation
+## Docs
 
 | Document | Description |
 |----------|-------------|
-| [PRD-001: Investigation Agent](docs/prd/PRD-001-investigation-agent.md) | Autonomous root cause analysis |
-| [PRD-002: Remediation Agent](docs/prd/PRD-002-remediation-agent.md) | Policy-gated infrastructure execution |
-| [PRD-003: Security Agent](docs/prd/PRD-003-security-agent.md) | Continuous security posture management |
-| [PRD-004: Unified Dashboard](docs/prd/PRD-004-unified-dashboard.md) | Real-time agent monitoring command center |
-| [PRD-005: Multi-Cloud Connectors](docs/prd/PRD-005-multi-cloud-connectors.md) | Unified abstraction layer |
-| [PRD-006: Policy Engine](docs/prd/PRD-006-policy-engine.md) | OPA-powered action governance |
-| [PRD-007: Learning Agent](docs/prd/PRD-007-learning-agent.md) | Continuous improvement from outcomes |
-| [ADR-001: LangGraph Selection](docs/architecture/adr-001-langgraph-selection.md) | Why LangGraph over CrewAI/AutoGen |
-| [ADR-002: Multi-Cloud Abstraction](docs/architecture/adr-002-multi-cloud-abstraction.md) | Connector architecture |
-| [ADR-003: Agent Safety Model](docs/architecture/adr-003-agent-safety-model.md) | Five-layer defense in depth |
 | [Architecture Overview](docs/architecture/overview.md) | Four-layer architecture design |
-| [Dashboard Design](docs/architecture/dashboard-design.md) | Wireframes & component hierarchy |
+| [ADR-001: LangGraph](docs/architecture/adr-001-langgraph-selection.md) | Why LangGraph over CrewAI/AutoGen |
+| [ADR-002: Multi-Cloud](docs/architecture/adr-002-multi-cloud-abstraction.md) | Connector architecture |
+| [ADR-003: Safety Model](docs/architecture/adr-003-agent-safety-model.md) | Five-layer defense in depth |
+| [Production Runbook](docs/PRODUCTION_LAUNCH_RUNBOOK.md) | 8-phase deployment guide |
+| [API Docs](http://localhost:8000/api/v1/docs) | Interactive OpenAPI (when running) |
 
 ## Contributing
-
-We're building in the open. To contribute:
 
 1. Fork the repository
 2. Create a feature branch (`feat/your-feature`)
@@ -530,10 +215,10 @@ Please follow [conventional commits](https://www.conventionalcommits.org/) for c
 
 ## License
 
-Proprietary. All rights reserved.
+Apache 2.0 — see [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
-  <strong>ShieldOps</strong> — Stop firefighting infrastructure. Start letting AI handle it.
+  <strong>ShieldOps</strong> — The security control plane for AI agents.
 </p>

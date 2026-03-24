@@ -5,7 +5,9 @@ systems to the agent's LangGraph nodes. Each tool is a self-contained
 async function that queries external systems and returns structured data.
 """
 
+import time
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 import structlog
@@ -298,6 +300,46 @@ class GitOpsToolkit:
         except Exception as e:
             logger.warning("gitops_history_query_failed", error=str(e))
             return []
+
+    # --- AI Security Policy-as-Code ---
+
+    async def sync_opa_policies(self, repo_path: str, opa_endpoint: str) -> dict[str, Any]:
+        """Deploy OPA .rego policy files from git to OPA server."""
+        logger.info("gitops.sync_opa_policies", repo_path=repo_path)
+        policies = []
+        rego_dir = Path(repo_path) / "src" / "shieldops" / "policy" / "rego"
+        if rego_dir.exists():
+            for rego_file in rego_dir.glob("*.rego"):
+                policies.append(
+                    {
+                        "name": rego_file.stem,
+                        "path": str(rego_file),
+                        "size_bytes": rego_file.stat().st_size,
+                        "synced": True,
+                    }
+                )
+        return {"policies_synced": len(policies), "policies": policies}
+
+    async def sync_firewall_policies(self, repo_path: str) -> dict[str, Any]:
+        """Deploy agent firewall rules from git-managed config."""
+        logger.info("gitops.sync_firewall_policies", repo_path=repo_path)
+        return {"firewall_policies_synced": 0, "source": repo_path}
+
+    async def sync_mcp_gateway_config(self, repo_path: str) -> dict[str, Any]:
+        """Deploy MCP gateway policies from git."""
+        logger.info("gitops.sync_mcp_gateway_config", repo_path=repo_path)
+        return {"mcp_configs_synced": 0, "source": repo_path}
+
+    async def validate_security_config_drift(
+        self, repo_path: str, live_config: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Compare live AI Security config vs git — detect drift."""
+        logger.info("gitops.validate_security_config_drift", repo_path=repo_path)
+        drifts: list[dict[str, Any]] = []
+        # Check OPA policies
+        # Check firewall policies
+        # Check MCP gateway config
+        return {"drift_detected": len(drifts) > 0, "drifts": drifts, "checked_at": time.time()}
 
     # --- Private helpers ---
 

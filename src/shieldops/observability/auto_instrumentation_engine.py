@@ -269,7 +269,7 @@ class AutoInstrumentationEngine:
         fully = 0
         partial = 0
         none_count = 0
-        for svc, coverages in service_coverage.items():
+        for _svc, coverages in service_coverage.items():
             avg = sum(coverages) / len(coverages)
             avg_per_service.append(avg)
             if avg >= 90.0:

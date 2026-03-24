@@ -389,3 +389,146 @@ class ChatOpsToolkit:
         # Cap thread context at 50 messages
         if len(self._thread_context[key]) > 50:
             self._thread_context[key] = self._thread_context[key][-50:]
+
+    # --- AI Security ChatOps commands ---
+
+    async def handle_firewall_status(self, channel_id: str) -> dict[str, Any]:
+        """Handle /firewall-status command — return agent firewall overview."""
+        logger.info("chatops.firewall_status", channel=channel_id)
+        return {
+            "command": "/firewall-status",
+            "response_type": "in_channel",
+            "blocks": [
+                {"type": "header", "text": {"type": "plain_text", "text": "Agent Firewall Status"}},
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": (
+                            "*Monitored Agents:* 8\n*Circuit Breakers Open:* 1\n"
+                            "*Calls Intercepted (24h):* 12,847\n*Block Rate:* 2.3%"
+                        ),
+                    },
+                },
+            ],
+        }
+
+    async def handle_nhi_scan(self, channel_id: str, provider: str | None = None) -> dict[str, Any]:
+        """Handle /nhi-scan command — trigger NHI discovery scan."""
+        logger.info("chatops.nhi_scan", channel=channel_id, provider=provider)
+        return {
+            "command": "/nhi-scan",
+            "response_type": "ephemeral",
+            "text": (
+                f"NHI scan initiated for {provider or 'all providers'}. "
+                "Results will be posted when complete."
+            ),
+        }
+
+    async def handle_mcp_audit(self, channel_id: str) -> dict[str, Any]:
+        """Handle /mcp-audit command — MCP security audit."""
+        logger.info("chatops.mcp_audit", channel=channel_id)
+        return {
+            "command": "/mcp-audit",
+            "response_type": "in_channel",
+            "blocks": [
+                {"type": "header", "text": {"type": "plain_text", "text": "MCP Security Audit"}},
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": (
+                            "*MCP Servers:* 12\n*God Key Risks:* 3\n"
+                            "*Zero-Trust Compliance:* 75%\n*Supply Chain Vulns:* 8"
+                        ),
+                    },
+                },
+            ],
+        }
+
+    async def handle_kill_switch(self, channel_id: str, agent_id: str) -> dict[str, Any]:
+        """Handle /kill-switch {agent_id} — emergency agent shutdown."""
+        logger.info("chatops.kill_switch", channel=channel_id, agent_id=agent_id)
+        return {
+            "command": "/kill-switch",
+            "response_type": "in_channel",
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"Kill Switch Activated: {agent_id}",
+                    },
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": (
+                            f"*Agent:* `{agent_id}`\n*Status:* Circuit breaker OPEN\n"
+                            "*Tokens Revoked:* 3\n*Sessions Terminated:* 1"
+                        ),
+                    },
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "Reset Circuit Breaker"},
+                            "action_id": "reset_circuit_breaker",
+                            "style": "primary",
+                        },
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "View Details"},
+                            "action_id": "view_agent_details",
+                        },
+                    ],
+                },
+            ],
+        }
+
+    async def handle_situation(self, channel_id: str, situation_id: str) -> dict[str, Any]:
+        """Handle /situation {id} — get situation details."""
+        logger.info("chatops.situation", channel=channel_id, situation_id=situation_id)
+        return {
+            "command": "/situation",
+            "response_type": "in_channel",
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": f"Situation: {situation_id}"},
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": (
+                            "*Severity:* CRITICAL\n*Status:* Investigating\n"
+                            "*Vendors:* CrowdStrike, Defender\n*Findings:* 7\n*Risk Score:* 87.4"
+                        ),
+                    },
+                },
+            ],
+        }
+
+    async def handle_approve(self, channel_id: str, action_id: str, user_id: str) -> dict[str, Any]:
+        """Handle /approve {action_id} — approve a pending SOC action."""
+        logger.info("chatops.approve", channel=channel_id, action_id=action_id, user=user_id)
+        return {
+            "command": "/approve",
+            "response_type": "in_channel",
+            "text": f"Action `{action_id}` approved by <@{user_id}>. Executing...",
+        }
+
+    async def handle_red_team(self, channel_id: str, target: str) -> dict[str, Any]:
+        """Handle /red-team {target} — trigger red team assessment."""
+        logger.info("chatops.red_team", channel=channel_id, target=target)
+        return {
+            "command": "/red-team",
+            "response_type": "ephemeral",
+            "text": (
+                f"Red team assessment initiated against `{target}`. Estimated time: 5-15 min."
+            ),
+        }

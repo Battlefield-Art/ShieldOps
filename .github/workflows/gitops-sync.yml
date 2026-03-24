@@ -5,8 +5,10 @@ on:
     branches: [main]
     paths:
       - "infrastructure/kubernetes/**"
+      - "infrastructure/gitops/**"
       - "playbooks/policies/**"
       - "infrastructure/terraform/**"
+      - "src/shieldops/policy/rego/**"
 
 concurrency:
   group: gitops-${{ github.ref }}
@@ -22,6 +24,7 @@ jobs:
     outputs:
       k8s: ${{ steps.filter.outputs.k8s }}
       policies: ${{ steps.filter.outputs.policies }}
+      kustomize: ${{ steps.filter.outputs.kustomize }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
@@ -32,6 +35,83 @@ jobs:
               - 'infrastructure/kubernetes/**'
             policies:
               - 'playbooks/policies/**'
+              - 'src/shieldops/policy/rego/**'
+            kustomize:
+              - 'infrastructure/gitops/**'
+              - 'infrastructure/kubernetes/**'
+
+  validate-kustomize:
+    name: Validate Kustomize Builds
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kustomize == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        overlay: [staging, production]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Kustomize
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Build ${{ matrix.overlay }} overlay
+        run: |
+          echo "Building ${{ matrix.overlay }} overlay..."
+          kustomize build infrastructure/gitops/kustomize/overlays/${{ matrix.overlay }} > /tmp/rendered-${{ matrix.overlay }}.yaml
+          echo "Rendered manifest line count: $(wc -l < /tmp/rendered-${{ matrix.overlay }}.yaml)"
+
+      - name: Validate rendered manifests
+        run: |
+          wget -q https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval-linux-amd64.tar.gz
+          chmod +x kubeval
+          echo "Validating rendered ${{ matrix.overlay }} manifests..."
+          ./kubeval /tmp/rendered-${{ matrix.overlay }}.yaml --strict || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: rendered-${{ matrix.overlay }}
+          path: /tmp/rendered-${{ matrix.overlay }}.yaml
+          retention-days: 14
+
+  validate-opa-policies:
+    name: Validate OPA Policies
+    needs: detect-changes
+    if: needs.detect-changes.outputs.policies == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install OPA
+        run: |
+          curl -fsSL -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+
+      - name: Check playbook policies
+        run: |
+          for f in playbooks/policies/*.rego; do
+            echo "Checking $f..."
+            ./opa check "$f"
+          done
+
+      - name: Check source Rego policies
+        run: |
+          if [ -d src/shieldops/policy/rego ]; then
+            echo "Validating src/shieldops/policy/rego/..."
+            ./opa check src/shieldops/policy/rego/
+          else
+            echo "No source rego directory found — skipping"
+          fi
+
+      - name: Run OPA policy tests
+        run: |
+          if ls playbooks/policies/*_test.rego 1>/dev/null 2>&1; then
+            ./opa test playbooks/policies/ -v
+          else
+            echo "No policy tests found — skipping"
+          fi
 
   sync-k8s-manifests:
     name: Sync Kubernetes Manifests
@@ -105,10 +185,43 @@ jobs:
           path: infrastructure/kubernetes/opa-policies-configmap.yaml
           retention-days: 30
 
+  argocd-sync:
+    name: ArgoCD Sync Check
+    needs: [validate-kustomize, validate-opa-policies]
+    if: always() && (needs.validate-kustomize.result == 'success' || needs.validate-opa-policies.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check ArgoCD connectivity
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          if [ -n "$ARGOCD_SERVER" ] && [ -n "$ARGOCD_AUTH_TOKEN" ]; then
+            echo "ArgoCD server configured — triggering sync..."
+            curl -fsSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            chmod +x argocd
+            ./argocd app sync shieldops \
+              --server "$ARGOCD_SERVER" \
+              --auth-token "$ARGOCD_AUTH_TOKEN" \
+              --grpc-web \
+              --prune \
+              --timeout 300
+            ./argocd app wait shieldops \
+              --server "$ARGOCD_SERVER" \
+              --auth-token "$ARGOCD_AUTH_TOKEN" \
+              --grpc-web \
+              --timeout 300
+          else
+            echo "ArgoCD not configured — sync skipped (manifests validated only)"
+            echo "Set ARGOCD_SERVER and ARGOCD_AUTH_TOKEN secrets to enable auto-sync"
+          fi
+
   summary:
     name: GitOps Summary
-    needs: [sync-k8s-manifests, sync-opa-policies]
-    if: always() && (needs.sync-k8s-manifests.result == 'success' || needs.sync-opa-policies.result == 'success')
+    needs: [sync-k8s-manifests, sync-opa-policies, validate-kustomize, validate-opa-policies, argocd-sync]
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Summary
@@ -119,3 +232,6 @@ jobs:
           echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| K8s Manifests | ${{ needs.sync-k8s-manifests.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| OPA Policies | ${{ needs.sync-opa-policies.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kustomize Validation | ${{ needs.validate-kustomize.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| OPA Policy Validation | ${{ needs.validate-opa-policies.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ArgoCD Sync | ${{ needs.argocd-sync.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY

@@ -466,10 +466,7 @@ class ThreatModelingToolkit:
 
             # For high-risk threats, include all templates;
             # for lower risk, include the first one
-            if threat.risk_score >= 60.0:
-                selected = templates
-            else:
-                selected = templates[:1]
+            selected = templates if threat.risk_score >= 60.0 else templates[:1]
 
             for tmpl in selected:
                 desc = tmpl["description"]

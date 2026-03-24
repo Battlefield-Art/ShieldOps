@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -75,7 +75,7 @@ class HoneycombClient:
         return {"X-Honeycomb-Team": self._api_key, "Content-Type": "application/json"}
 
     def _now_iso(self) -> str:
-        return datetime.now(timezone.utc).isoformat()
+        return datetime.now(UTC).isoformat()
 
     async def _post(self, path: str, payload: Any) -> dict[str, Any]:
         """POST JSON to the Honeycomb API.

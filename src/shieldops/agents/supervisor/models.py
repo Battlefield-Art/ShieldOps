@@ -135,3 +135,8 @@ class SupervisorState(BaseModel):
     reasoning_chain: list[SupervisorStep] = Field(default_factory=list)
     current_step: str = "pending"
     error: str | None = None
+
+    # AI Security orchestration
+    ai_security_scan_results: dict[str, Any] = Field(default_factory=dict)
+    active_security_agents: list[str] = Field(default_factory=list)
+    security_orchestration_status: str = "idle"
