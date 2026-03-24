@@ -36,6 +36,9 @@ from shieldops.agents.threat_automation.runner import ThreatAutomationRunner
 from shieldops.agents.xdr.runner import XDRRunner
 from shieldops.agents.zero_trust.runner import ZeroTrustRunner
 from shieldops.api.routes import (
+    agent_firewall as agent_firewall_routes,
+)
+from shieldops.api.routes import (
     agent_tasks,
     agent_ws,
     agents,
@@ -71,6 +74,26 @@ from shieldops.api.routes import (
     xdr,
     zero_trust,
 )
+from shieldops.api.routes import (
+    ai_security as ai_security_routes,
+)
+from shieldops.api.routes import (
+    identity_graph as identity_graph_routes,
+)
+from shieldops.api.routes import (
+    mcp_security as mcp_security_routes,
+)
+from shieldops.api.routes import (
+    nhi_registry as nhi_registry_routes,
+)
+from shieldops.api.routes import (
+    situations as situations_routes,
+)
+
+try:
+    from shieldops.api.routes import audit_reports as audit_reports_routes
+except ImportError:
+    audit_reports_routes = None  # type: ignore[assignment]
 from shieldops.config import settings
 from shieldops.connectors.factory import create_connector_router
 from shieldops.observability.factory import create_observability_sources
@@ -210,6 +233,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "security_testing",
                 "otel_logs_pipeline",
                 "threat_modeling",
+                "ai_runtime_defense",
+                "soc_brain",
+                "identity_graph",
+                "ai_red_team",
+                "ai_blue_team",
+                "agent_firewall",
+                "nhi_registry",
+                "mcp_security",
             ):
                 try:
                     await agent_registry.register(
@@ -13777,6 +13808,44 @@ def create_app() -> FastAPI:
 
     app.include_router(ws_router, tags=["WebSocket"])
     app.include_router(agent_ws.router, tags=["Agent WebSocket"])
+
+    # ── AI Security Control Plane routes ──────────────────────────────
+    app.include_router(
+        agent_firewall_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Agent Firewall"],
+    )
+    app.include_router(
+        nhi_registry_routes.router,
+        prefix=settings.api_prefix,
+        tags=["NHI Registry"],
+    )
+    app.include_router(
+        mcp_security_routes.router,
+        prefix=settings.api_prefix,
+        tags=["MCP Security"],
+    )
+    app.include_router(
+        situations_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Situations"],
+    )
+    app.include_router(
+        ai_security_routes.router,
+        prefix=settings.api_prefix,
+        tags=["AI Security"],
+    )
+    app.include_router(
+        identity_graph_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Identity Graph"],
+    )
+    if audit_reports_routes is not None:
+        app.include_router(
+            audit_reports_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Audit Reports"],
+        )
 
     @app.get("/health")
     async def health_check() -> dict[str, str]:

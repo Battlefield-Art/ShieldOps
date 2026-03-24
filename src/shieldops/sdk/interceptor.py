@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import time
 import uuid
 from typing import Any
 
+import httpx
 import structlog
 from pydantic import BaseModel, Field
 
 from shieldops.sdk.config import SDKConfig
 
 logger = structlog.get_logger()
+
+_MAX_RETRIES = 3
+_BACKOFF_BASE = 0.5  # seconds — exponential: 0.5, 1.0, 2.0
 
 
 class InterceptResult(BaseModel):
@@ -176,20 +181,86 @@ class ShieldOpsInterceptor:
     def flush(self) -> int:
         """Send batched events to the ShieldOps API.
 
-        Returns the number of events flushed. In the current implementation,
-        events are cleared from the batch buffer (actual HTTP transport is
-        handled by the telemetry exporter or an async background task).
+        Attempts async HTTP POST to the backend. Falls back to clearing the
+        local buffer if the event loop is not running or the API is unreachable.
+        Returns the number of events flushed.
         """
         count = len(self._batch)
         if count == 0:
             return 0
+
+        events_to_send = list(self._batch)
+        self._batch.clear()
+
+        # Attempt async send — fall back gracefully if no running loop
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._send_batch(events_to_send))
+        except RuntimeError:
+            # No running event loop — try synchronous send
+            try:
+                asyncio.run(self._send_batch(events_to_send))
+            except Exception as exc:
+                logger.warning(
+                    "shieldops_interceptor.flush_fallback",
+                    event_count=count,
+                    error=str(exc),
+                )
         logger.info(
             "shieldops_interceptor.flush",
             event_count=count,
             endpoint=self._config.endpoint,
         )
-        self._batch.clear()
         return count
+
+    async def _send_batch(self, events: list[AuditEvent]) -> None:
+        """POST batched audit events to the ShieldOps backend with retry."""
+        url = f"{self._config.endpoint}/api/v1/agent-firewall/events"
+        payload = {
+            "agent_id": self._config.agent_id or "unknown",
+            "events": [e.model_dump() for e in events],
+            "sent_at": time.time(),
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self._config.api_key}",
+            "X-ShieldOps-Agent-Id": self._config.agent_id or "unknown",
+        }
+
+        last_exc: Exception | None = None
+        for attempt in range(_MAX_RETRIES):
+            try:
+                async with httpx.AsyncClient(
+                    timeout=self._config.timeout_seconds,
+                    verify=self._config.verify_ssl,
+                ) as client:
+                    resp = await client.post(url, json=payload, headers=headers)
+                    resp.raise_for_status()
+                    logger.info(
+                        "shieldops_interceptor.batch_sent",
+                        event_count=len(events),
+                        status=resp.status_code,
+                        attempt=attempt + 1,
+                    )
+                    return
+            except (httpx.HTTPStatusError, httpx.RequestError, httpx.TimeoutException) as exc:
+                last_exc = exc
+                wait = _BACKOFF_BASE * (2**attempt)
+                logger.warning(
+                    "shieldops_interceptor.send_retry",
+                    attempt=attempt + 1,
+                    max_retries=_MAX_RETRIES,
+                    wait_seconds=wait,
+                    error=str(exc),
+                )
+                await asyncio.sleep(wait)
+
+        # All retries exhausted — log but don't crash
+        logger.error(
+            "shieldops_interceptor.send_failed",
+            event_count=len(events),
+            error=str(last_exc),
+        )
 
     # -- reporting ------------------------------------------------------------
 

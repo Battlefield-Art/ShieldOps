@@ -13,6 +13,20 @@ from shieldops.sdk.config import SDKConfig
 
 logger = structlog.get_logger()
 
+# Conditional OTEL imports — graceful degradation when not installed
+_HAS_OTEL = False
+_tracer = None
+try:
+    from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+    _HAS_OTEL = True
+except ImportError:
+    pass
+
 
 class SpanRecord(BaseModel):
     """An OTEL-compatible span representing a single intercepted call."""
@@ -64,9 +78,32 @@ class ShieldOpsTelemetryExporter:
         self._spans: list[SpanRecord] = []
         self._batch: list[SpanRecord] = []
         self._exported_count: int = 0
+        self._otel_tracer: Any = None
+
+        # Initialize real OTEL tracer when the SDK is available
+        if _HAS_OTEL:
+            try:
+                endpoint = otel_endpoint or f"{config.endpoint}/v1/traces"
+                resource = Resource.create({"service.name": service_name})
+                provider = TracerProvider(resource=resource)
+                exporter = OTLPSpanExporter(endpoint=endpoint)
+                provider.add_span_processor(BatchSpanProcessor(exporter))
+                trace.set_tracer_provider(provider)
+                self._otel_tracer = trace.get_tracer("shieldops.agent.firewall", "1.0.0")
+                logger.info(
+                    "shieldops_telemetry.otel_initialized",
+                    endpoint=endpoint,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "shieldops_telemetry.otel_init_failed",
+                    error=str(exc),
+                )
+
         logger.info(
             "shieldops_telemetry.initialized",
             otel_endpoint=otel_endpoint,
+            otel_enabled=self._otel_tracer is not None,
             service_name=service_name,
             agent_id=config.agent_id,
         )
@@ -109,6 +146,31 @@ class ShieldOpsTelemetryExporter:
         )
         self._spans.append(span)
         self._batch.append(span)
+
+        # Emit real OTEL span when the SDK is available
+        if self._otel_tracer is not None:
+            try:
+                otel_span = self._otel_tracer.start_span(
+                    name=span.operation_name,
+                    attributes={
+                        "shieldops.agent_id": span.agent_id,
+                        "shieldops.tool_name": span.tool_name,
+                        "shieldops.risk_score": span.risk_score,
+                        "shieldops.decision": span.decision,
+                        "shieldops.latency_ms": span.latency_ms,
+                        "shieldops.mode": self._config.mode.value,
+                        "service.name": self._service_name,
+                    },
+                )
+                if status != "ok":
+                    otel_span.set_status(trace.StatusCode.ERROR, status)
+                otel_span.end()
+            except Exception as exc:
+                logger.warning(
+                    "shieldops_telemetry.otel_span_error",
+                    tool_name=tool_name,
+                    error=str(exc),
+                )
 
         if len(self._batch) >= self._config.max_batch_size:
             self.flush()
