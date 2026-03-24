@@ -3286,6 +3286,21 @@ class Settings(BaseSettings):
     autonomous_defense_timeout_seconds: int = 600
     autonomous_defense_max_concurrent: int = 5
 
+    # CrowdStrike Connector
+    crowdstrike_client_id: str = ""
+    crowdstrike_client_secret: str = ""
+    crowdstrike_base_url: str = "https://api.crowdstrike.com"
+
+    # Microsoft Defender Connector
+    defender_tenant_id: str = ""
+    defender_client_id: str = ""
+    defender_client_secret: str = ""
+
+    # Wiz Connector
+    wiz_client_id: str = ""
+    wiz_client_secret: str = ""
+    wiz_api_endpoint: str = "https://api.us1.app.wiz.io/graphql"
+
     model_config = {
         "env_prefix": "SHIELDOPS_",
         "env_file": ".env",

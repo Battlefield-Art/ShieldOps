@@ -330,3 +330,122 @@ Borders use white opacity rather than hard gray values for a premium feel:
 | Dashboard refresh rate | 1s (WebSocket) |
 | Supports concurrent agents displayed | 500+ |
 | Historical data query | < 3s for 90-day range |
+
+## Situations Queue (Phase 5 — Outcome-Centric UX)
+
+### Concept
+
+The Situations Queue replaces traditional widget-based SOC dashboards with an AI-curated, outcome-centric feed. Instead of scattering alerts across dozens of panels and forcing analysts to mentally correlate signals, the SOC Brain agent automatically groups related findings into **Situations** — single units of work that represent a real security incident or concern across any combination of vendors (CrowdStrike, Microsoft Defender, Wiz, Splunk, etc.).
+
+The queue is the analyst's primary workspace. Every situation has a clear status, severity, recommended actions, and a measurable outcome (resolved, false positive, escalated). This design eliminates context-switching and ensures every alert is accounted for in a trackable workflow.
+
+### Situation Card Anatomy
+
+Each situation appears as a card in the queue, ordered by risk score (highest first).
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ● CRITICAL                                      2m ago  [Assign]│
+│                                                                  │
+│  Lateral movement: finance-db → hr-app → admin-panel             │
+│                                                                  │
+│  Vendors: CrowdStrike, Microsoft Defender    Findings: 7         │
+│  Entities: svc-acct-payments, ip-203.0.113.42                    │
+│  MITRE: T1021 (Remote Services), T1078 (Valid Accounts)          │
+│                                                                  │
+│  Risk Score: 87.4        Status: ● Investigating                 │
+│                                                                  │
+│  Recommended:  [Contain entity]  [Escalate to Tier-3]            │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Card fields:**
+- **Severity badge** — CRITICAL / HIGH / MEDIUM / LOW / INFO (color-coded)
+- **Title** — AI-generated summary of the situation
+- **Vendors** — which security tools contributed findings
+- **Findings count** — number of correlated alerts/detections
+- **Entities** — affected users, hosts, IPs, service accounts
+- **MITRE ATT&CK techniques** — mapped from findings
+- **Risk score** — composite score from SOC Brain (0-100)
+- **Status** — NEW / TRIAGING / INVESTIGATING / CONTAINING / REMEDIATED / CLOSED / FALSE_POSITIVE
+- **Recommended actions** — AI-suggested next steps (investigate, contain, remediate, escalate, dismiss)
+
+### Detail View Layout
+
+Clicking a situation card opens the detail view with full context.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ← Back to Queue                                                 │
+│                                                                  │
+│  SITUATION: Lateral movement across finance services             │
+│  Severity: CRITICAL  |  Risk: 87.4  |  Status: Investigating    │
+│  Created: 14:21  |  Acknowledged: 14:23 (MTTA: 2m)              │
+│                                                                  │
+│  ┌──────────────────────────┬───────────────────────────────────┐│
+│  │  FINDINGS TIMELINE       │  ENTITY GRAPH                     ││
+│  │                          │                                   ││
+│  │  14:18  CrowdStrike      │    [svc-acct-payments]            ││
+│  │    Process injection on  │        │                          ││
+│  │    finance-db (T1055)    │        ▼                          ││
+│  │                          │    [finance-db] ──→ [hr-app]      ││
+│  │  14:19  Microsoft Defender│       │                          ││
+│  │    Unusual auth from     │        ▼                          ││
+│  │    svc-acct-payments     │    [admin-panel]                  ││
+│  │                          │                                   ││
+│  │  14:20  CrowdStrike      │  Legend:                          ││
+│  │    Lateral movement to   │  ● Compromised  ○ At-risk        ││
+│  │    hr-app (T1021)        │                                   ││
+│  │                          │                                   ││
+│  │  14:21  Wiz              │                                   ││
+│  │    Excessive IAM perms   │                                   ││
+│  │    on svc-acct-payments  │                                   ││
+│  └──────────────────────────┴───────────────────────────────────┘│
+│                                                                  │
+│  RECOMMENDED ACTIONS                                             │
+│  ┌──────────────────────────────────────────────────────────────┐│
+│  │  #1  Contain svc-acct-payments via CrowdStrike (conf: 0.85) ││
+│  │      [Execute]  [Modify]  [Skip]                             ││
+│  │                                                              ││
+│  │  #2  Escalate to SOC Tier-3 / Incident Commander (conf: 0.90)││
+│  │      [Execute]  [Skip]                                       ││
+│  │                                                              ││
+│  │  #3  Apply remediation playbook for T1021 (conf: 0.80)       ││
+│  │      [Execute]  [Modify]  [Skip]                             ││
+│  └──────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ACTIONS TAKEN                                                   │
+│  ┌──────────────────────────────────────────────────────────────┐│
+│  │  14:23  INVESTIGATE  Analyst opened situation (auto)         ││
+│  │  14:25  CONTAIN      Disabled svc-acct-payments (manual)     ││
+│  └──────────────────────────────────────────────────────────────┘│
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### MTTD / MTTA / MTTR Tracking
+
+Every situation automatically tracks three key metrics through its lifecycle:
+
+| Metric | Definition | Tracked By |
+|--------|-----------|------------|
+| **MTTD** (Mean Time to Detect) | Time from first anomalous signal to situation creation | `timestamps["created"] - first_finding_time` |
+| **MTTA** (Mean Time to Acknowledge) | Time from situation creation to first analyst action (triage/investigate) | `timestamps["investigating"] - timestamps["created"]` |
+| **MTTR** (Mean Time to Resolve) | Time from situation creation to remediation/close | `timestamps["remediated"] - timestamps["created"]` |
+
+These metrics are:
+- Displayed per-situation in the detail view header
+- Aggregated across all situations in the SOC metrics dashboard
+- Broken down by severity, vendor, and team for trend analysis
+- Used by the SOC Brain agent to optimize future response recommendations
+- Exported to the SLA engine for SLO compliance tracking
+
+### Integration with SOC Brain Agent
+
+The SOC Brain agent (`src/shieldops/agents/soc_brain/`) drives the Situations Queue:
+
+1. **Ingestion** — Receives normalized findings from CrowdStrike, Defender, Wiz, Splunk, and other vendor connectors
+2. **Correlation** — Groups related findings into situations using entity overlap, temporal proximity, and MITRE technique chains
+3. **Scoring** — Calculates risk scores using vendor severity weights, multi-vendor multipliers, and MITRE coverage depth
+4. **Recommendation** — Generates prioritized action recommendations (investigate, contain, remediate, escalate) with confidence scores
+5. **Learning** — Tracks analyst decisions (accept/modify/skip) on recommendations to improve future suggestions
+6. **Automation** — For high-confidence actions (>0.85), auto-executes containment via the appropriate vendor connector without human approval

@@ -75,6 +75,8 @@ const MetricsPipeline = lazy(() => import("./pages/MetricsPipeline"));
 const SecurityTesting = lazy(() => import("./pages/SecurityTesting"));
 const LogsPipeline = lazy(() => import("./pages/LogsPipeline"));
 const ThreatModeling = lazy(() => import("./pages/ThreatModeling"));
+const Situations = lazy(() => import("./pages/Situations"));
+const SituationDetail = lazy(() => import("./pages/SituationDetail"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -210,6 +212,8 @@ export default function App() {
               <Route path="security-testing" element={<SecurityTesting />} />
               <Route path="logs-pipeline" element={<LogsPipeline />} />
               <Route path="threat-modeling" element={<ThreatModeling />} />
+              <Route path="situations" element={<Situations />} />
+              <Route path="situations/:id" element={<SituationDetail />} />
             </Route>
 
             {/* Catch-all */}

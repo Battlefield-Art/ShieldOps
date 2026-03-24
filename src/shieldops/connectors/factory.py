@@ -85,5 +85,41 @@ def create_connector_router(settings: Settings) -> ConnectorRouter:
         router.register(windows)
         logger.info("connector_registered", provider="windows")
 
+    # CrowdStrike — registered when crowdstrike_client_id is configured
+    if settings.crowdstrike_client_id:
+        from shieldops.connectors.crowdstrike.connector import CrowdStrikeConnector
+
+        crowdstrike = CrowdStrikeConnector(
+            client_id=settings.crowdstrike_client_id,
+            client_secret=settings.crowdstrike_client_secret,
+            base_url=settings.crowdstrike_base_url,
+        )
+        router.register(crowdstrike)
+        logger.info("connector_registered", provider="crowdstrike")
+
+    # Microsoft Defender — registered when defender_tenant_id is configured
+    if settings.defender_tenant_id:
+        from shieldops.connectors.defender.connector import DefenderConnector
+
+        defender = DefenderConnector(
+            tenant_id=settings.defender_tenant_id,
+            client_id=settings.defender_client_id,
+            client_secret=settings.defender_client_secret,
+        )
+        router.register(defender)
+        logger.info("connector_registered", provider="defender")
+
+    # Wiz — registered when wiz_client_id is configured
+    if settings.wiz_client_id:
+        from shieldops.connectors.wiz.connector import WizConnector
+
+        wiz = WizConnector(
+            client_id=settings.wiz_client_id,
+            client_secret=settings.wiz_client_secret,
+            api_url=settings.wiz_api_endpoint,
+        )
+        router.register(wiz)
+        logger.info("connector_registered", provider="wiz")
+
     logger.info("connector_router_ready", providers=router.providers)
     return router

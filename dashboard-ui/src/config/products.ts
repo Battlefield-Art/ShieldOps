@@ -177,6 +177,7 @@ export const NAV_GROUPS: NavGroup[] = [
     productId: "soc",
     color: "text-red-400",
     items: [
+      { to: "/app/situations", icon: Target, label: "Situations" },
       { to: "/app/security", icon: ShieldAlert, label: "Security" },
       { to: "/app/vulnerabilities", icon: Bug, label: "Vulnerabilities" },
       { to: "/app/incidents", icon: Layers, label: "Incident Correlation" },
