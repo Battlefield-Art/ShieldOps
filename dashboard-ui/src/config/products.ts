@@ -39,6 +39,7 @@ import {
   Crosshair,
   TestTube2,
   ScrollText,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -178,6 +179,9 @@ export const NAV_GROUPS: NavGroup[] = [
     color: "text-red-400",
     items: [
       { to: "/app/situations", icon: Target, label: "Situations" },
+      { to: "/app/agent-firewall", icon: Shield, label: "Agent Firewall" },
+      { to: "/app/nhi-registry", icon: KeyRound, label: "NHI Registry" },
+      { to: "/app/mcp-security", icon: Plug, label: "MCP Security" },
       { to: "/app/security", icon: ShieldAlert, label: "Security" },
       { to: "/app/vulnerabilities", icon: Bug, label: "Vulnerabilities" },
       { to: "/app/incidents", icon: Layers, label: "Incident Correlation" },

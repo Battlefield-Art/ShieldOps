@@ -22,7 +22,6 @@ from shieldops.integrations.splunk.signalflow import (
     SignalFlowResult,
 )
 
-
 # =====================================================================
 # Data model tests
 # =====================================================================
@@ -278,9 +277,7 @@ class TestSignalFlowClient:
 
 class TestSignalFlowModels:
     def test_program_model(self):
-        prog = SignalFlowProgram(
-            name="test", program='data("x").publish()', resolution_ms=5000
-        )
+        prog = SignalFlowProgram(name="test", program='data("x").publish()', resolution_ms=5000)
         assert prog.resolution_ms == 5000
 
     def test_result_model(self):
@@ -336,9 +333,7 @@ class TestSplunkDetectorManager:
     def test_critical_detectors_have_pagerduty(self):
         mgr = SplunkDetectorManager()
         critical = [
-            d
-            for d in mgr.get_default_detectors()
-            if d.severity == DetectorSeverity.CRITICAL
+            d for d in mgr.get_default_detectors() if d.severity == DetectorSeverity.CRITICAL
         ]
         assert len(critical) >= 2
         for det in critical:

@@ -18,7 +18,6 @@ from shieldops.integrations.dynatrace.problems import (
     ProblemSeverity,
 )
 
-
 # ---------------------------------------------------------------
 # DynatraceMetric
 # ---------------------------------------------------------------
@@ -39,8 +38,7 @@ class TestDynatraceMetric:
         line = m.to_line_protocol()
         # Dimensions are sorted by key
         assert line == (
-            "shieldops.agent.duration,agent_type=investigation,env=prod"
-            " gauge,1.23 1700000000000"
+            "shieldops.agent.duration,agent_type=investigation,env=prod gauge,1.23 1700000000000"
         )
 
     def test_to_line_protocol_escapes_special_chars(self):
@@ -181,9 +179,7 @@ class TestDynatraceClientBuffered:
 
     @pytest.mark.asyncio()
     async def test_send_agent_metric_with_extra_dims(self, client):
-        result = await client.send_agent_metric(
-            "learning", "accuracy", 0.95, dims={"model": "v2"}
-        )
+        result = await client.send_agent_metric("learning", "accuracy", 0.95, dims={"model": "v2"})
         assert result["status"] == "buffered"
         buf = client.get_buffered()["metrics"]
         assert buf[0]["dimensions"]["model"] == "v2"
@@ -197,9 +193,7 @@ class TestDynatraceClientBuffered:
 
     @pytest.mark.asyncio()
     async def test_send_agent_event_with_props(self, client):
-        result = await client.send_agent_event(
-            "security", "scan complete", props={"findings": "3"}
-        )
+        result = await client.send_agent_event("security", "scan complete", props={"findings": "3"})
         assert result["status"] == "buffered"
         buf = client.get_buffered()["events"]
         assert buf[0]["properties"]["findings"] == "3"
@@ -296,12 +290,8 @@ class TestPackageImports:
     def test_import_all_from_init(self):
         from shieldops.integrations.dynatrace import (
             DynatraceClient,
-            DynatraceEvent,
-            DynatraceLogEntry,
-            DynatraceMetric,
-            DynatraceProblemManager,
-            DynatraceProblemRule,
             ProblemSeverity,
         )
+
         assert DynatraceClient is not None
         assert ProblemSeverity.ERROR == "ERROR_EVENT"

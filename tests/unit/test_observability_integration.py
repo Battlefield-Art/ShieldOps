@@ -6,15 +6,7 @@ Covers IngestClient (all backends), AgentTelemetryCollector, and dashboard defin
 from __future__ import annotations
 
 import pytest
-import pytest_asyncio
 
-from shieldops.integrations.observability.ingest import (
-    IngestResult,
-    ObservabilityBackend,
-    ObservabilityIngestClient,
-    SignalType,
-    TelemetryRecord,
-)
 from shieldops.integrations.observability.agent_telemetry import (
     AgentTelemetryCollector,
 )
@@ -23,7 +15,13 @@ from shieldops.integrations.observability.dashboards import (
     incident_timeline_dashboard,
     llm_cost_dashboard,
 )
-
+from shieldops.integrations.observability.ingest import (
+    IngestResult,
+    ObservabilityBackend,
+    ObservabilityIngestClient,
+    SignalType,
+    TelemetryRecord,
+)
 
 # ── Fixtures ──────────────────────────────────────────────────────────
 
@@ -65,9 +63,7 @@ class TestIngestClientInit:
         assert local_client.organization == "shieldops"
         assert local_client.max_batch_size == 1000
 
-    def test_init_openobserve_backend(
-        self, openobserve_client: ObservabilityIngestClient
-    ) -> None:
+    def test_init_openobserve_backend(self, openobserve_client: ObservabilityIngestClient) -> None:
         assert openobserve_client.backend == ObservabilityBackend.OPENOBSERVE
         assert openobserve_client._auth_header.startswith("Basic ")
 
@@ -128,17 +124,13 @@ class TestLocalIngest:
         assert result.failed == 0
 
     @pytest.mark.asyncio
-    async def test_ingest_empty_records(
-        self, local_client: ObservabilityIngestClient
-    ) -> None:
+    async def test_ingest_empty_records(self, local_client: ObservabilityIngestClient) -> None:
         result = await local_client.ingest_logs("empty_stream", [])
         assert result.successful == 0
         assert result.failed == 0
 
     @pytest.mark.asyncio
-    async def test_ingest_agent_event(
-        self, local_client: ObservabilityIngestClient
-    ) -> None:
+    async def test_ingest_agent_event(self, local_client: ObservabilityIngestClient) -> None:
         result = await local_client.ingest_agent_event(
             agent_type="investigation",
             event_type="alert_received",
@@ -150,9 +142,7 @@ class TestLocalIngest:
 
     @pytest.mark.asyncio
     async def test_ring_buffer_eviction(self) -> None:
-        client = ObservabilityIngestClient(
-            backend=ObservabilityBackend.LOCAL, max_buffer_size=5
-        )
+        client = ObservabilityIngestClient(backend=ObservabilityBackend.LOCAL, max_buffer_size=5)
         records = [{"msg": f"record_{i}"} for i in range(10)]
         await client.ingest_logs("bounded", records)
         assert client.get_local_stream_count("bounded") == 5
@@ -195,29 +185,21 @@ class TestLocalQuery:
         assert results[0]["msg"] == "bad"
 
     @pytest.mark.asyncio
-    async def test_query_logs_with_limit(
-        self, local_client: ObservabilityIngestClient
-    ) -> None:
+    async def test_query_logs_with_limit(self, local_client: ObservabilityIngestClient) -> None:
         await local_client.ingest_logs(
             "limit_test",
             [{"msg": f"r{i}"} for i in range(10)],
         )
-        results = await local_client.query_logs(
-            "limit_test", "SELECT * FROM limit_test LIMIT 3"
-        )
+        results = await local_client.query_logs("limit_test", "SELECT * FROM limit_test LIMIT 3")
         assert len(results) == 3
 
     @pytest.mark.asyncio
-    async def test_query_nonexistent_stream(
-        self, local_client: ObservabilityIngestClient
-    ) -> None:
+    async def test_query_nonexistent_stream(self, local_client: ObservabilityIngestClient) -> None:
         results = await local_client.query_logs("no_such_stream", "SELECT *")
         assert results == []
 
     @pytest.mark.asyncio
-    async def test_query_metrics(
-        self, local_client: ObservabilityIngestClient
-    ) -> None:
+    async def test_query_metrics(self, local_client: ObservabilityIngestClient) -> None:
         await local_client.ingest_metrics(
             "m_stream",
             [

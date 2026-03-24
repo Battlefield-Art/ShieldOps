@@ -449,3 +449,43 @@ The SOC Brain agent (`src/shieldops/agents/soc_brain/`) drives the Situations Qu
 4. **Recommendation** — Generates prioritized action recommendations (investigate, contain, remediate, escalate) with confidence scores
 5. **Learning** — Tracks analyst decisions (accept/modify/skip) on recommendations to improve future suggestions
 6. **Automation** — For high-confidence actions (>0.85), auto-executes containment via the appropriate vendor connector without human approval
+
+## New Dashboard Pages (AI Security Control Plane)
+
+### Agent Firewall Monitor
+
+The Agent Firewall Monitor provides real-time visibility into AI agent tool call interception across the enterprise.
+
+**Layout:** Tab-based navigation with four primary views:
+
+- **Agents Tab** — Live inventory of all monitored AI agents (LangChain, CrewAI, LlamaIndex), showing framework, mode (audit/enforce), tool calls per minute, and blocked call count. Each row expands to show recent tool call history.
+- **Anomalies Tab** — Behavioral anomaly feed. Displays agents whose tool call patterns deviate from established baselines (e.g., sudden spike in database queries, first-time access to sensitive APIs). Each anomaly card shows the agent ID, deviation type, severity, and baseline comparison chart.
+- **Policies Tab** — Policy editor for tool call rules. Supports allow/deny lists per agent, rate limits, resource scope restrictions, and time-of-day constraints. Policies are OPA-backed and version-controlled.
+- **Audit Tab** — Immutable audit log of every intercepted tool call with timestamp, agent ID, tool name, parameters (redacted where sensitive), policy decision (allow/block), and latency overhead.
+
+**Key UI elements:**
+- Circuit breaker indicators per agent (green/yellow/red) showing current enforcement state
+- Kill switch button (prominent, red) to immediately halt all tool calls for a specific agent or globally
+- Real-time tool call throughput sparkline in the header
+
+### NHI Registry
+
+The NHI (Non-Human Identity) Registry provides a searchable inventory of all service accounts, API keys, OAuth apps, bot tokens, and machine identities across the enterprise.
+
+**Layout:**
+
+- **Inventory View** — Searchable, filterable table of all NHIs. Columns: name, type (service account / API key / OAuth app / bot token / machine cert), provider (AWS IAM, Azure AD, GCP SA, GitHub, Slack), risk score (0-100 gauge), last active, credential age, permissions scope, owner team.
+- **Shadow AI Section** — Dedicated panel highlighting discovered shadow AI agents (unauthorized LLM API keys, unregistered MCP clients, rogue automation scripts). Each entry shows discovery method, risk assessment, and recommended action (register, revoke, or quarantine).
+- **Filters** — Type filter (service account, API key, OAuth app, bot token, machine cert), provider filter (AWS, Azure, GCP, GitHub, Slack, custom), risk level filter (critical/high/medium/low), status filter (active, stale, expiring, revoked).
+- **Risk Gauges** — Per-NHI circular gauge showing composite risk score based on: permission scope breadth, credential age, usage anomalies, and owner attribution.
+
+### MCP Security
+
+The MCP Security page provides governance over the Model Context Protocol ecosystem — MCP servers, client connections, and tool permissions.
+
+**Layout:**
+
+- **Server Inventory** — Table of all registered MCP servers with name, version, tool count, connection count, trust level (verified/unverified/quarantined), and last security scan timestamp. Expandable rows show individual tool definitions and permission scopes.
+- **God Key Detection** — Prominent alert panel that flags MCP configurations where a single credential or token grants unrestricted access across multiple MCP servers ("God Keys"). Each detection shows the credential scope, affected servers, blast radius estimate, and remediation steps (rotate, scope-reduce, or revoke).
+- **Supply Chain Scan** — Results from automated scanning of MCP server packages and dependencies. Shows vulnerability counts (critical/high/medium/low), outdated dependencies, unsigned packages, and known-malicious indicators. Integrates with Wiz and Snyk scan results.
+- **Zero-Trust Compliance** — Dashboard showing per-server compliance with zero-trust policies: mutual TLS status, token rotation compliance, least-privilege tool access, connection allowlisting, and audit log completeness. Non-compliant servers are flagged with specific remediation guidance.

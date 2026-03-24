@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ShieldOps is an enterprise SaaS platform deploying autonomous AI agents for Site Reliability Engineering (SRE) operations. Agents investigate incidents, execute remediations, enforce security policies, and learn from outcomes — across multi-cloud (AWS/GCP/Azure) and on-premise Linux environments.
+ShieldOps is an AI Security Control Plane that governs, monitors, and responds to AI agent activity across enterprise infrastructure. The platform deploys autonomous security agents for runtime interception, non-human identity governance, MCP ecosystem security, and SOC automation — across multi-cloud (AWS/GCP/Azure) and on-premise environments.
 
-**Core thesis:** The only autonomous SRE agent platform that doesn't just analyze — it acts. Built for security-first enterprises managing hybrid cloud + on-prem at scale.
+**Core thesis:** The security control plane for AI agents. Intercepts tool calls, governs non-human identities, secures MCP ecosystems, and automates SOC operations — with policy gates at every layer.
 
 ## Build & Development Commands
 
@@ -63,7 +63,7 @@ runner.py     # Entry point — lifecycle management, execution
 policy.py     # OPA policy integration (optional)
 ```
 
-There are 53 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction, otel_pipeline, risk_scoring, auto_learning, security_automation, gitops, telemetry_optimizer, threat_intel, incident_commander, compliance_auditor, otel_collector_manager, adaptive_security, otel_deployer, security_posture, otel_semantic, soar_workflow, otel_tail_sampling, detection_engineering, otel_metrics_pipeline, security_testing, otel_logs_pipeline, threat_modeling, ai_runtime_defense, soc_brain, identity_graph, ai_red_team, ai_blue_team.
+There are 58 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction, otel_pipeline, risk_scoring, auto_learning, security_automation, gitops, telemetry_optimizer, threat_intel, incident_commander, compliance_auditor, otel_collector_manager, adaptive_security, otel_deployer, security_posture, otel_semantic, soar_workflow, otel_tail_sampling, detection_engineering, otel_metrics_pipeline, security_testing, otel_logs_pipeline, threat_modeling, ai_runtime_defense, soc_brain, identity_graph, ai_red_team, ai_blue_team, agent_firewall, nhi_registry, mcp_security.
 
 ### Engine Module Pattern
 The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines across 13 packages. Each follows a strict pattern:
@@ -80,7 +80,7 @@ The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines ac
 | Package | Purpose | Count |
 |---------|---------|-------|
 | `observability/` | Alert intelligence, telemetry, SLI/SLO, OTel pipeline/autoscaler/sampling/attribution/cost, SLO-aware sampling, cardinality control, eBPF telemetry, collector fleet management, backpressure analysis, span-to-metric conversion | 204+ |
-| `security/` | Threat detection, SOAR, zero trust, XDR, RBA pipeline (detection→risk→notable), MITRE mapping, hunt automation, playbook selection, IOC lifecycle, identity risk, threat feed quality, entity risk aggregation, AI runtime defense (prompt injection, LLM firewall, exfiltration guard), identity graph (OAuth grants, service accounts, trust relationships), attack simulation, defense hardening, cross-vendor SOC correlation | 375+ |
+| `security/` | Threat detection, SOAR, zero trust, XDR, RBA pipeline (detection→risk→notable), MITRE mapping, hunt automation, playbook selection, IOC lifecycle, identity risk, threat feed quality, entity risk aggregation, AI runtime defense (prompt injection, LLM firewall, exfiltration guard), identity graph (OAuth grants, service accounts, trust relationships), attack simulation, defense hardening, cross-vendor SOC correlation, agent behavioral firewall (runtime interception, tool call auditing, behavioral baselines), NHI governance (registry, posture monitoring, shadow AI discovery, JIT credentials), MCP security (gateway, supply chain, zero-trust, God Key detection) | 390+ |
 | `operations/` | Runbooks, automation, chaos, capacity, resource budgets | 128+ |
 | `analytics/` | DORA, AIOps, root cause, experiment lifecycle, agent benchmarking, hyperparameter tuning, swarm intelligence, self-healing, knowledge distillation, autoresearch experiments, compute budget management | 222+ |
 | `incidents/` | Triage, escalation, postmortem, on-call burden, notification | 85+ |
@@ -98,7 +98,22 @@ The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines ac
 - React + TypeScript + Tailwind dashboard at `dashboard-ui/`
 - **Design System**: Surface-based depth hierarchy (surface-0 through surface-4), opacity-based borders (`rgba(255,255,255,0.XX)`), brand cyan accent, Inter + JetBrains Mono typography. Premium component library: `btn-primary` (gradient + glow), `btn-secondary`, `card-surface`, `card-interactive` (hover-lift), `tab-bar`, `section-heading`. CSS custom properties for `--border-subtle/default/strong` and `--surface-*` tokens.
 - Situations Queue (outcome-centric UX replacing widget dashboards)
+- Agent Firewall SDK at `src/shieldops/sdk/` — Python SDK for LangChain, CrewAI, LlamaIndex interception
+- Agent Firewall Monitor (runtime tool call interception dashboard)
+- NHI Registry (non-human identity inventory and risk dashboard)
+- MCP Security (MCP ecosystem security with God Key detection)
 - Notification integrations: Slack, Teams, PagerDuty, email, SMS, voice, webhooks
+
+### SDK
+- Agent Firewall SDK at `src/shieldops/sdk/` — one-line integration with AI agent frameworks
+- Supports: LangChain (`ShieldOpsCallbackHandler`), CrewAI (`ShieldOpsCrewAIWrapper`), LlamaIndex
+- Modes: audit (observe only) or enforce (block risky calls)
+- OTEL-compatible telemetry export to any collector (Splunk, Datadog, etc.)
+
+### Security Connectors
+- CrowdStrike Falcon (`connectors/crowdstrike/`) — OAuth2 + RTR commands + Threat Graph
+- Microsoft Defender (`connectors/microsoft_defender/`) — MSAL + KQL advanced hunting
+- Wiz (`connectors/wiz/`) — GraphQL + Security Graph + attack paths
 
 ## Tech Stack
 - Python 3.12+, LangGraph, LangChain, Anthropic Claude (primary LLM)

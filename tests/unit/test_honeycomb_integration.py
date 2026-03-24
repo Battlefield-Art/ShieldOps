@@ -14,7 +14,6 @@ from shieldops.integrations.honeycomb.queries import (
     HoneycombQueryManager,
 )
 
-
 # ------------------------------------------------------------------ #
 # Model tests
 # ------------------------------------------------------------------ #
@@ -82,9 +81,7 @@ class TestHoneycombClientBuffered:
 
     @pytest.mark.asyncio()
     async def test_send_batch_buffered(self, client: HoneycombClient):
-        events = [
-            HoneycombEvent(data={"i": i}) for i in range(5)
-        ]
+        events = [HoneycombEvent(data={"i": i}) for i in range(5)]
         result = await client.send_batch(events)
         assert result["status"] == "buffered"
         assert result["count"] == 5

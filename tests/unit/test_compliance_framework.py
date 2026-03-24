@@ -4,28 +4,26 @@ security events, and FedRAMP controls.
 
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from shieldops.compliance.pii_detector import PIICategory, PIIDetector, PIIMatch
 from shieldops.compliance.data_encryption import FieldEncryptor
 from shieldops.compliance.data_retention import (
     DataRetentionManager,
     RetentionPolicy,
-)
-from shieldops.compliance.security_events import (
-    SecurityEvent,
-    SecurityEventLogger,
-    SecurityEventType,
 )
 from shieldops.compliance.fedramp_controls import (
     ControlCheck,
     FedRAMPControlFamily,
     FedRAMPValidator,
 )
-
+from shieldops.compliance.pii_detector import PIICategory, PIIDetector
+from shieldops.compliance.security_events import (
+    SecurityEvent,
+    SecurityEventLogger,
+    SecurityEventType,
+)
 
 # =====================================================================
 # PII Detection
@@ -200,7 +198,7 @@ class TestFieldEncryptor:
         enc1 = FieldEncryptor()
         ct = enc1.encrypt("secret")
         enc2 = FieldEncryptor()  # different key
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             enc2.decrypt(ct)
 
 
@@ -314,13 +312,11 @@ class TestSecurityEvents:
 
     def test_filter_by_since(self) -> None:
         slog = SecurityEventLogger()
-        old = self._make_event(
-            timestamp=datetime.now(timezone.utc) - timedelta(hours=2)
-        )
+        old = self._make_event(timestamp=datetime.now(UTC) - timedelta(hours=2))
         new = self._make_event()
         slog.log_event(old)
         slog.log_event(new)
-        since = datetime.now(timezone.utc) - timedelta(hours=1)
+        since = datetime.now(UTC) - timedelta(hours=1)
         results = slog.get_events(since=since)
         assert len(results) == 1
 

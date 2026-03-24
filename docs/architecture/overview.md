@@ -112,6 +112,21 @@ implementations (doesn't scale).
 
 See: [Safety Model](safety-model.md)
 
+### ADR-005: AI Security Control Plane Architecture
+
+**Decision:** Build a three-tier security control plane (orchestration, tool/action, data/identity) that governs AI agent activity across existing security tools.
+
+**Rationale:**
+
+- AI agents bypass traditional endpoint security (CrowdStrike/Defender operate on process/file/network, not API/MCP tool calls)
+- Non-human identities outnumber humans 100:1 with no unified governance
+- MCP creates a new attack surface (supply chain, God Keys, privilege escalation)
+- SDK-first deployment model requires zero infrastructure changes for initial value
+
+**Alternatives rejected:** SRE-only platform (market commoditizing), standalone NHI product (too narrow), CSPM partnership (different domain — posture vs. runtime).
+
+See: [ADR-005 Full Record](adr-005-ai-security-control-plane.md)
+
 ---
 
 ## Data Flow
@@ -193,4 +208,51 @@ src/shieldops/
     ws/                    #   WebSocket routes and connection manager
   config/settings.py       # Pydantic Settings (all env vars)
   models/base.py           # Shared Pydantic models
+```
+
+---
+
+## AI Security Control Plane Architecture
+
+ShieldOps operates as an AI Security Control Plane — a governance layer that sits above and integrates with existing security tools.
+
+### Three-Tier Insertion Model
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ORCHESTRATION LAYER (LLM reasoning, agent goals)   │
+│  → Agent Behavioral Firewall, Kill Switch            │
+│  → Prompt Injection Detection, LLM Firewall          │
+├─────────────────────────────────────────────────────┤
+│  TOOL/ACTION LAYER (APIs, MCP servers, databases)   │
+│  → MCP Security Gateway, Zero-Trust Enforcer         │
+│  → Tool Call Interceptor, Supply Chain Scanner        │
+├─────────────────────────────────────────────────────┤
+│  DATA/IDENTITY LAYER (credentials, RAG, permissions)│
+│  → NHI Registry, Shadow AI Discovery                 │
+│  → JIT Credential Issuer, Identity Risk Engine       │
+└─────────────────────────────────────────────────────┘
+```
+
+### Product Modules
+
+| Module | Purpose | Key Components |
+|--------|---------|----------------|
+| Agent Behavioral Firewall | Runtime interception of AI agent tool calls | agent_firewall agent, behavioral_baseline engine, tool_call_interceptor, kill switch |
+| NHI Governance | Discover and govern all non-human identities | nhi_registry agent, posture_monitor, shadow_ai_discovery, jit_credential_issuer |
+| MCP Security | Secure MCP server ecosystem | mcp_security agent, security_gateway, supply_chain_scanner, zero_trust_enforcer, connection_registry |
+| SOC Automation | Cross-vendor AI-driven security operations | soc_brain agent, situations queue, evidence_chain, approval_workflow |
+| AI Runtime Defense | Protect LLM/agent applications | ai_runtime_defense agent, prompt_injection_detector, llm_firewall, exfiltration_guard |
+| Red/Blue Teaming | Continuous adversarial security validation | ai_red_team + ai_blue_team agents, attack_simulation, defense_hardening |
+
+### SDK Integration
+
+```python
+# One-line integration with any LangChain agent
+from shieldops.sdk.langchain import ShieldOpsCallbackHandler
+
+agent = create_agent(
+    callbacks=[ShieldOpsCallbackHandler(api_key="sk-...")]
+)
+# Every tool call is now intercepted, audited, and policy-gated
 ```
