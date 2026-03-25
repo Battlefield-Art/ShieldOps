@@ -64,14 +64,14 @@ export default function KeyboardShortcuts() {
       }}
     >
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-xl border border-gray-700 bg-gray-900 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-800 px-5 py-3">
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-xl border border-white/[0.1] bg-surface-2 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
           <h2 className="text-sm font-semibold text-gray-100">
             Keyboard Shortcuts
           </h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+            className="rounded p-1 text-gray-500 hover:bg-surface-3 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
             aria-label="Close keyboard shortcuts"
           >
             <X className="h-4 w-4" />
@@ -97,7 +97,7 @@ export default function KeyboardShortcuts() {
                       {shortcut.keys.map((key) => (
                         <kbd
                           key={key}
-                          className="rounded border border-gray-700 bg-gray-800 px-2 py-0.5 font-mono text-xs text-gray-400"
+                          className="rounded border border-white/[0.1] bg-surface-3 px-2 py-0.5 font-mono text-xs text-gray-400"
                         >
                           {key}
                         </kbd>
@@ -110,9 +110,9 @@ export default function KeyboardShortcuts() {
           ))}
         </div>
 
-        <div className="border-t border-gray-800 px-5 py-2.5">
+        <div className="border-t border-white/[0.06] px-5 py-2.5">
           <p className="text-center text-xs text-gray-600">
-            Press <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 font-mono text-[10px]">?</kbd> to toggle
+            Press <kbd className="rounded border border-white/[0.1] bg-surface-3 px-1 py-0.5 font-mono text-[10px]">?</kbd> to toggle
           </p>
         </div>
       </div>

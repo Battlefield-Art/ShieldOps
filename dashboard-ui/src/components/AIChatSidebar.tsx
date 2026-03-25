@@ -152,12 +152,12 @@ export default function AIChatSidebar() {
       {/* Chat panel */}
       <div
         className={clsx(
-          "fixed bottom-0 right-0 z-50 flex h-[min(600px,85vh)] w-[380px] flex-col rounded-tl-2xl border-l border-t border-gray-700/80 bg-gray-900 shadow-elevated transition-transform duration-300",
+          "fixed bottom-0 right-0 z-50 flex h-[min(600px,85vh)] w-[380px] flex-col rounded-tl-2xl border-l border-t border-white/[0.08] bg-surface-2 shadow-elevated transition-transform duration-300",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/15 ring-1 ring-brand-500/20">
               <Sparkles className="h-4 w-4 text-brand-400" />
@@ -173,7 +173,7 @@ export default function AIChatSidebar() {
             {messages.length > 0 && (
               <button
                 onClick={handleClear}
-                className="rounded p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                className="rounded p-1.5 text-gray-500 hover:bg-surface-3 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                 aria-label="Clear chat"
                 title="Clear chat"
               >
@@ -182,7 +182,7 @@ export default function AIChatSidebar() {
             )}
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+              className="rounded p-1.5 text-gray-500 hover:bg-surface-3 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
               aria-label="Close AI assistant"
             >
               <X className="h-4 w-4" />
@@ -210,7 +210,7 @@ export default function AIChatSidebar() {
                   <button
                     key={suggestion}
                     onClick={() => sendMessage(suggestion)}
-                    className="rounded-xl border border-gray-800/60 px-3 py-2.5 text-left text-xs text-gray-400 transition-all duration-150 hover:border-gray-700 hover:bg-gray-800/40 hover:text-gray-300"
+                    className="rounded-xl border border-white/[0.04] px-3 py-2.5 text-left text-xs text-gray-400 transition-all duration-150 hover:border-white/[0.1] hover:bg-white/[0.03] hover:text-gray-300"
                   >
                     {suggestion}
                   </button>
@@ -237,7 +237,7 @@ export default function AIChatSidebar() {
                       "max-w-[80%] rounded-lg px-3 py-2 text-sm",
                       msg.role === "user"
                         ? "bg-brand-500 text-white"
-                        : "bg-gray-800 text-gray-200",
+                        : "bg-surface-3 text-gray-200",
                     )}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -254,7 +254,7 @@ export default function AIChatSidebar() {
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-500/20">
                     <Bot className="h-3.5 w-3.5 text-brand-400" />
                   </div>
-                  <div className="rounded-lg bg-gray-800 px-3 py-2">
+                  <div className="rounded-lg bg-surface-3 px-3 py-2">
                     <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                   </div>
                 </div>
@@ -265,8 +265,8 @@ export default function AIChatSidebar() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-800/60 p-3">
-          <div className="flex items-end gap-2 rounded-xl border border-gray-700/60 bg-gray-800/40 px-3 py-2.5">
+        <div className="border-t border-white/[0.04] p-3">
+          <div className="flex items-end gap-2 rounded-xl border border-white/[0.1]/60 bg-white/[0.03] px-3 py-2.5">
             <textarea
               ref={inputRef}
               value={input}

@@ -137,7 +137,7 @@ export default function NotificationDropdown() {
       {/* Bell button */}
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-1.5 text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+        className="relative rounded-lg p-1.5 text-gray-400 hover:bg-surface-3 hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         aria-expanded={open}
         aria-haspopup="true"
@@ -152,9 +152,9 @@ export default function NotificationDropdown() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-2xl border border-gray-700/80 bg-gray-900 shadow-elevated z-50" role="region" aria-label="Notifications">
+        <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-2xl border border-white/[0.08] bg-surface-2 shadow-elevated z-50" role="region" aria-label="Notifications">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-3">
+          <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
             <h3 className="text-sm font-semibold text-gray-100">Notifications</h3>
             {unreadCount > 0 && (
               <button
@@ -182,7 +182,7 @@ export default function NotificationDropdown() {
                     key={n.id}
                     onClick={() => handleNotificationClick(n)}
                     className={clsx(
-                      "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-gray-800/40",
+                      "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-white/[0.03]",
                       !n.read && "bg-brand-500/[0.03]",
                     )}
                   >
@@ -204,7 +204,7 @@ export default function NotificationDropdown() {
                     </div>
                     <button
                       onClick={(e) => dismissNotification(e, n.id)}
-                      className="mt-0.5 rounded p-1 text-gray-600 hover:bg-gray-700 hover:text-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                      className="mt-0.5 rounded p-1 text-gray-600 hover:bg-white/[0.06] hover:text-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                       aria-label={`Dismiss ${n.title}`}
                     >
                       <X className="h-3 w-3" />
@@ -217,7 +217,7 @@ export default function NotificationDropdown() {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="border-t border-gray-800/60 px-4 py-2.5">
+            <div className="border-t border-white/[0.04] px-4 py-2.5">
               <button
                 onClick={() => { setOpen(false); navigate("/app/agent-history"); }}
                 className="w-full text-center text-xs text-gray-500 hover:text-brand-400 transition-colors py-1"

@@ -162,9 +162,9 @@ export default function ProductTour() {
             "left-1/2 top-24 -translate-x-1/2",
         )}
       >
-        <div className="overflow-hidden rounded-xl border border-gray-700 bg-gray-900 shadow-2xl">
+        <div className="overflow-hidden rounded-xl border border-white/[0.1] bg-surface-2 shadow-2xl">
           {/* Progress bar */}
-          <div className="h-1 bg-gray-800">
+          <div className="h-1 bg-surface-3">
             <div
               className="h-full bg-brand-500 transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -182,7 +182,7 @@ export default function ProductTour() {
               </div>
               <button
                 onClick={dismiss}
-                className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                className="rounded p-1 text-gray-500 hover:bg-surface-3 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                 aria-label="Dismiss tour"
               >
                 <X className="h-4 w-4" />
@@ -204,7 +204,7 @@ export default function ProductTour() {
                 {!isFirst && (
                   <button
                     onClick={goPrev}
-                    className="flex items-center gap-1 rounded-lg border border-gray-700 px-3 py-1.5 text-sm text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-200"
+                    className="flex items-center gap-1 rounded-lg border border-white/[0.1] px-3 py-1.5 text-sm text-gray-400 transition-colors hover:border-white/[0.12] hover:text-gray-200"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Back

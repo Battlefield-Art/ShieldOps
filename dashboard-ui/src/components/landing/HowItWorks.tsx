@@ -10,7 +10,7 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="border-y border-gray-800 bg-gray-900 px-6 py-20">
+    <section id="how-it-works" className="border-y border-white/[0.06] bg-surface-2 px-6 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-50">How it works</h2>
@@ -25,7 +25,7 @@ export default function HowItWorks() {
             {STEPS.map((step, idx) => (
               <div key={step.label} className="flex items-start">
                 <div className="flex flex-col items-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-cyan-700 bg-gray-950">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-cyan-700 bg-surface-0">
                     <span className="text-sm font-bold text-cyan-400">{idx + 1}</span>
                   </div>
                   <step.icon className="mt-3 h-5 w-5 text-gray-400" />
@@ -37,7 +37,7 @@ export default function HowItWorks() {
                   </p>
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div className="mt-6 w-16 flex-shrink-0 border-t border-dashed border-gray-700 xl:w-24" />
+                  <div className="mt-6 w-16 flex-shrink-0 border-t border-dashed border-white/[0.1] xl:w-24" />
                 )}
               </div>
             ))}
@@ -48,7 +48,7 @@ export default function HowItWorks() {
         <div className="mt-12 space-y-6 lg:hidden">
           {STEPS.map((step, idx) => (
             <div key={step.label} className="flex items-start gap-4">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 border-cyan-700 bg-gray-950">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 border-cyan-700 bg-surface-0">
                 <span className="text-sm font-bold text-cyan-400">{idx + 1}</span>
               </div>
               <div>
@@ -60,9 +60,9 @@ export default function HowItWorks() {
         </div>
 
         {/* Terminal mockup */}
-        <div className="mx-auto mt-16 max-w-2xl overflow-hidden rounded-lg border border-gray-700 bg-gray-950">
+        <div className="mx-auto mt-16 max-w-2xl overflow-hidden rounded-lg border border-white/[0.1] bg-surface-0">
           {/* Terminal chrome */}
-          <div className="flex items-center gap-2 border-b border-gray-800 bg-gray-900 px-4 py-2.5">
+          <div className="flex items-center gap-2 border-b border-white/[0.06] bg-surface-2 px-4 py-2.5">
             <span className="h-3 w-3 rounded-full bg-red-500/80" />
             <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
             <span className="h-3 w-3 rounded-full bg-green-500/80" />

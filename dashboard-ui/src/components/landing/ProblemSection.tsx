@@ -29,7 +29,7 @@ const PAIN_POINTS = [
 
 export default function ProblemSection() {
   return (
-    <section id="problem" className="bg-gray-950 px-6 py-20">
+    <section id="problem" className="bg-surface-0 px-6 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-50">
@@ -43,7 +43,7 @@ export default function ProblemSection() {
           {PAIN_POINTS.map((point) => (
             <div
               key={point.title}
-              className="rounded-lg border border-gray-800 bg-gray-900 p-6 transition-colors hover:border-gray-600"
+              className="rounded-lg border border-white/[0.06] bg-surface-2 p-6 transition-colors hover:border-white/[0.12]"
             >
               <point.icon className="h-7 w-7 text-red-400" />
               <h3 className="mt-4 text-lg font-semibold text-gray-100">

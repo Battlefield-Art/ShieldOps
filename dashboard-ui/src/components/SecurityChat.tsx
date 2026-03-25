@@ -99,14 +99,14 @@ export default function SecurityChat({ isOpen, onClose }: SecurityChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-0 right-0 z-40 flex h-[600px] w-[420px] flex-col rounded-tl-xl border-l border-t border-gray-700 bg-gray-900 shadow-2xl">
+    <div className="fixed bottom-0 right-0 z-40 flex h-[600px] w-[420px] flex-col rounded-tl-xl border-l border-t border-white/[0.1] bg-surface-2 shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-brand-400" />
           <span className="text-sm font-semibold text-gray-100">Security Assistant</span>
         </div>
-        <button onClick={onClose} className="rounded-lg p-1 hover:bg-gray-800">
+        <button onClick={onClose} className="rounded-lg p-1 hover:bg-surface-3">
           <X className="h-4 w-4 text-gray-400" />
         </button>
       </div>
@@ -129,7 +129,7 @@ export default function SecurityChat({ isOpen, onClose }: SecurityChatProps) {
             <div
               className={clsx(
                 "max-w-[300px] rounded-lg px-3 py-2 text-sm",
-                msg.role === "user" ? "bg-brand-500 text-white" : "bg-gray-800 text-gray-200"
+                msg.role === "user" ? "bg-brand-500 text-white" : "bg-surface-3 text-gray-200"
               )}
             >
               <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -159,7 +159,7 @@ export default function SecurityChat({ isOpen, onClose }: SecurityChatProps) {
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500/20">
               <Bot className="h-3.5 w-3.5 text-brand-400" />
             </div>
-            <div className="rounded-lg bg-gray-800 px-3 py-2">
+            <div className="rounded-lg bg-surface-3 px-3 py-2">
               <div className="flex gap-1">
                 <span
                   className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400"
@@ -181,7 +181,7 @@ export default function SecurityChat({ isOpen, onClose }: SecurityChatProps) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-gray-800 px-4 py-3">
+      <div className="border-t border-white/[0.06] px-4 py-3">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -189,7 +189,7 @@ export default function SecurityChat({ isOpen, onClose }: SecurityChatProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask about security..."
-            className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:border-brand-500 focus:outline-none"
+            className="flex-1 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:border-brand-500 focus:outline-none"
             disabled={isTyping}
           />
           <button

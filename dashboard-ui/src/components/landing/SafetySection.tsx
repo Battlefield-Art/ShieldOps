@@ -38,7 +38,7 @@ const PILLARS = [
 
 export default function SafetySection() {
   return (
-    <section id="safety" className="bg-gray-950 px-6 py-20">
+    <section id="safety" className="bg-surface-0 px-6 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-50">
@@ -52,7 +52,7 @@ export default function SafetySection() {
           {PILLARS.map((pillar) => (
             <div
               key={pillar.title}
-              className="rounded-lg border border-gray-800 bg-gray-900 p-8 transition-colors hover:border-emerald-800"
+              className="rounded-lg border border-white/[0.06] bg-surface-2 p-8 transition-colors hover:border-emerald-800"
             >
               <pillar.icon className="h-7 w-7 text-emerald-400" />
               <h3 className="mt-4 text-lg font-semibold text-gray-100">

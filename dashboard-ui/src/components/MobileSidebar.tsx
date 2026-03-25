@@ -54,13 +54,13 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
       />
 
       {/* Drawer */}
-      <aside className="absolute left-0 top-0 h-full w-72 animate-slide-in-left border-r border-gray-800/60 bg-gray-900">
+      <aside className="absolute left-0 top-0 h-full w-72 animate-slide-in-left border-r border-white/[0.04] bg-surface-2">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-5">
           <Logo />
           <button
             onClick={onClose}
-            className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+            className="rounded p-1 text-gray-500 hover:bg-surface-3 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
             aria-label="Close navigation"
           >
             <X className="h-5 w-5" />
@@ -84,7 +84,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                   className={clsx(
                     "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
                     isGroupActive
-                      ? `${group.color} bg-gray-800/50`
+                      ? `${group.color} bg-surface-3/50`
                       : "text-gray-500 hover:text-gray-400",
                   )}
                   aria-expanded={isExpanded}
@@ -111,7 +111,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500/40",
                           isActive
                             ? "bg-brand-500/10 text-brand-400"
-                            : "text-gray-400 hover:bg-gray-800/70 hover:text-gray-200",
+                            : "text-gray-400 hover:bg-surface-3/70 hover:text-gray-200",
                         )
                       }
                     >

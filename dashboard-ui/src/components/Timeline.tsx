@@ -81,7 +81,7 @@ function EventCard({ event }: { event: IncidentTimelineEvent }) {
     event.details && Object.keys(event.details).length > 0;
 
   return (
-    <div className="min-w-0 flex-1 rounded-lg border border-gray-800 bg-gray-900/50 p-4 transition-colors hover:border-gray-700">
+    <div className="min-w-0 flex-1 rounded-lg border border-white/[0.06] bg-surface-2/50 p-4 transition-colors hover:border-white/[0.1]">
       {/* Header row */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-xs text-gray-500">
@@ -124,7 +124,7 @@ function EventCard({ event }: { event: IncidentTimelineEvent }) {
             Details
           </button>
           {expanded && (
-            <div className="mt-2 rounded-md bg-gray-800/50 p-3">
+            <div className="mt-2 rounded-md bg-surface-3/50 p-3">
               <dl className="space-y-1">
                 {Object.entries(event.details)
                   .filter(([, v]) => v != null)
@@ -170,7 +170,7 @@ export default function Timeline({ events, loading }: TimelineProps) {
 
   if (events.length === 0) {
     return (
-      <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-gray-800 bg-gray-900/50">
+      <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-surface-2/50">
         <AlertTriangle className="h-8 w-8 text-gray-600" />
         <p className="text-sm text-gray-500">
           No timeline events recorded.

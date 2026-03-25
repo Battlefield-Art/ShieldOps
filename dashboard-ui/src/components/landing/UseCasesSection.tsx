@@ -110,7 +110,7 @@ const USE_CASES: UseCase[] = [
 
 export default function UseCasesSection() {
   return (
-    <section className="bg-gray-900/40 px-6 py-24">
+    <section className="bg-surface-1 px-6 py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-4">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-400">
@@ -134,7 +134,7 @@ export default function UseCasesSection() {
               <Link
                 key={uc.title}
                 to={uc.link}
-                className="group flex flex-col rounded-xl border border-gray-800 bg-gray-950 p-6 transition-colors hover:border-gray-700 hover:bg-gray-900/80"
+                className="group flex flex-col rounded-xl border border-white/[0.06] bg-surface-0 p-6 transition-colors hover:border-white/[0.1] hover:bg-surface-2"
               >
                 <div className="mb-1 flex items-center gap-3">
                   <Icon className={clsx("h-5 w-5 shrink-0", uc.color)} />
