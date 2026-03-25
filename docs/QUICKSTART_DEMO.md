@@ -171,6 +171,39 @@ This stops all Docker containers and removes volumes (database data will be lost
 
 ---
 
+## AI Security Demo
+
+### Agent Firewall
+
+Navigate to `/app/agent-firewall` to see real-time agent monitoring with:
+- 8 demo agents with circuit breaker states
+- Anomaly detection timeline
+- Firewall policies and audit log
+
+### NHI Registry
+
+Navigate to `/app/nhi-registry` to explore:
+- 25 non-human identities across AWS, GCP, Azure, K8s
+- Shadow AI detection (3 unregistered AI agents)
+- Risk scoring and posture monitoring
+
+### MCP Security
+
+Navigate to `/app/mcp-security` to view:
+- 12 MCP servers with risk scores
+- God Key detection (3 high-risk servers)
+- Supply chain vulnerability scanning
+- Zero-trust compliance dashboard
+
+### Situations Queue
+
+Navigate to `/app/situations` to see:
+- AI-curated security situations from cross-vendor correlation
+- Recommended actions with confidence scores
+- MTTD/MTTA/MTTR metrics
+
+---
+
 ## Next steps
 
 - Read the full [Deployment Guide](DEPLOYMENT.md) for production deployments

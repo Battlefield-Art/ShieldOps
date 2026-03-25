@@ -16,19 +16,19 @@
 
 | Component | Count/Status | Production Ready? |
 |-----------|-------------|-------------------|
-| LangGraph Agents | 50 (all LLM-wired) | Yes — Claude API with graceful fallback |
+| LangGraph Agents | 61 (all LLM-wired) | Yes — Claude API with graceful fallback |
 | Engine Modules | 1,562+ | Yes — all tested |
 | Unit Tests | 62,169 passing | Yes |
 | API Routes | 700+ | Yes — rate limiting, tenant isolation, security headers |
 | API Middleware | 14 | Yes — rate limiter, tenant, CORS, billing, idempotency, metrics |
-| Dashboard Pages | 58+ | Yes — manus.ai-inspired landing + all 50 agents have UI pages |
+| Dashboard Pages | 69+ | Yes — manus.ai-inspired landing + all agents have UI pages |
 | CI/CD Pipeline | 7 workflows | Yes — lint, test, e2e, Terraform, OPA, security scan |
 | Kubernetes | 16 manifests | Yes — deployment, HPA, ingress, PDB, network policies, OPA sidecar |
 | Terraform | AWS + GCP + Azure | Yes — validated in CI |
 | Helm Chart | Complete | Yes |
 | Docker | Dockerfile + 7-service compose | Yes — API, Postgres, Redis, Kafka, OPA, Jaeger, Dashboard |
 | Database | 20+ tables, Alembic migrations | Yes — async SQLAlchemy, repository pattern |
-| Cloud Connectors | AWS (boto3), GCP, Azure, K8s, Linux | Yes — real SDK calls with lazy initialization |
+| Cloud Connectors | AWS (boto3), GCP, Azure, K8s, Linux + 17 observability/security connectors | Yes — real SDK calls with lazy initialization |
 | Auth | JWT + API keys + OIDC/SSO | Yes |
 | Health Checks | /health, /ready with DB/Redis/Kafka checks | Yes — wired to K8s probes |
 | Load Testing | k6 — smoke, CRUD, auth, WebSocket, read-heavy | Yes |
@@ -61,10 +61,16 @@
 | 18 | Purple colors removed from all 8 pages, gradients cleaned from 2 pages | High | Done |
 | 19 | UI audit: zero purple, zero glassmorphism, all animations functional (not decorative) | High | Done |
 | 20 | Final verified: 62,169 unit + 150 integration = 62,319 tests, dashboard build clean | Critical | Done |
-| 21 | External penetration test | High | Planned — requires vendor |
-| 13 | Production environment provisioning (Terraform apply) | High | Planned — requires cloud accounts |
-| 14 | DNS + TLS + CDN setup | High | Planned — requires domain registrar |
-| 15 | Status page setup (statuspage.io) | Medium | Planned |
+| 21 | AI Security Control Plane — Agent Firewall, NHI Registry, MCP Security, SOC Brain (11 new agents) | Critical | Done |
+| 22 | Vendor connectors — CrowdStrike Falcon, Microsoft Defender, Wiz (17 total connectors) | High | Done |
+| 23 | Design system migration — 69 dashboard pages with unified SRE theme | High | Done |
+| 24 | SDK & GitOps — ShieldOps SDK, GitOps agent, observability connectors (Datadog, Grafana, Splunk, Dynatrace, Honeycomb) | High | Done |
+| 25 | AI Security operational runbook (docs/AIOPS_RUNBOOK.md) | Medium | Done |
+| 26 | API documentation for Agent Firewall, NHI Registry, MCP Security, Situations endpoints | Medium | Done |
+| 27 | External penetration test | High | Planned — requires vendor |
+| 28 | Production environment provisioning (Terraform apply) | High | Planned — requires cloud accounts |
+| 29 | DNS + TLS + CDN setup | High | Planned — requires domain registrar |
+| 30 | Status page setup (statuspage.io) | Medium | Planned |
 
 ---
 
