@@ -38,6 +38,18 @@ _ROLE_LIMITS: dict[str, int] = {
     "viewer": settings.rate_limit_viewer,
 }
 
+# AI Security endpoints — custom rate limits (path prefix → per-minute limit)
+_AI_SECURITY_LIMITS: dict[str, int] = {
+    "/agent-firewall/agents/": 500,  # High throughput for firewall evaluations
+    "/agent-firewall/policies": 50,
+    "/nhi/scan": 10,  # Scans are expensive
+    "/nhi/identities": 200,
+    "/mcp-security/scan": 10,
+    "/mcp-security/servers": 200,
+    "/situations": 200,
+    "/webhooks/security/": 1000,  # Vendor webhooks need high throughput
+}
+
 
 def _get_client_ip(request: Request) -> str:
     """Extract client IP, respecting X-Forwarded-For for proxied deployments."""

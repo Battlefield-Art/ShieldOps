@@ -94,6 +94,10 @@ try:
     from shieldops.api.routes import audit_reports as audit_reports_routes
 except ImportError:
     audit_reports_routes = None  # type: ignore[assignment]
+try:
+    from shieldops.api.routes import webhooks_security as webhooks_security_routes
+except ImportError:
+    webhooks_security_routes = None  # type: ignore[assignment]
 from shieldops.config import settings
 from shieldops.connectors.factory import create_connector_router
 from shieldops.observability.factory import create_observability_sources
@@ -13845,6 +13849,12 @@ def create_app() -> FastAPI:
             audit_reports_routes.router,
             prefix=settings.api_prefix,
             tags=["Audit Reports"],
+        )
+    if webhooks_security_routes is not None:
+        app.include_router(
+            webhooks_security_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Security Webhooks"],
         )
 
     @app.get("/health")
