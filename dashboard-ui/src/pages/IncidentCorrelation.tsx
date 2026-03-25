@@ -144,7 +144,7 @@ export default function IncidentCorrelation() {
           { label: 'Investigating', value: stats.investigating, color: 'text-blue-400' },
           { label: 'Resolved', value: stats.resolved, color: 'text-green-400' },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl border border-gray-700 bg-gray-800/50 p-4">
+          <div key={s.label} className="rounded-xl border border-white/[0.1] bg-surface-3/50 p-4">
             <p className="text-xs text-gray-400">{s.label}</p>
             <p className={clsx('text-2xl font-bold mt-1', s.color)}>{s.value}</p>
           </div>
@@ -160,13 +160,13 @@ export default function IncidentCorrelation() {
             placeholder="Search incidents..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-sm focus:outline-none focus:border-brand-400"
+            className="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-3 border border-white/[0.1] text-gray-100 text-sm focus:outline-none focus:border-brand-400"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-sm"
+          className="px-3 py-2 rounded-lg bg-surface-3 border border-white/[0.1] text-gray-100 text-sm"
         >
           <option value="">All Statuses</option>
           <option value="open">Open</option>
@@ -196,10 +196,10 @@ export default function IncidentCorrelation() {
           <div
             key={incident.id}
             className={clsx(
-              'rounded-xl border bg-gray-800/50 overflow-hidden transition-all',
+              'rounded-xl border bg-surface-3/50 overflow-hidden transition-all',
               mergeSource && mergeSource !== incident.id
                 ? 'border-brand-500/30 cursor-pointer hover:bg-brand-500/5'
-                : 'border-gray-700'
+                : 'border-white/[0.1]'
             )}
             onClick={() => {
               if (mergeSource && mergeSource !== incident.id) {
@@ -252,7 +252,7 @@ export default function IncidentCorrelation() {
                           e.stopPropagation();
                           setMergeSource(incident.id);
                         }}
-                        className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-brand-400"
+                        className="p-1 rounded hover:bg-white/[0.06] text-gray-400 hover:text-brand-400"
                         title="Merge into another incident"
                       >
                         <GitMerge className="w-3.5 h-3.5" />
@@ -265,7 +265,7 @@ export default function IncidentCorrelation() {
                             status: incident.status === 'open' ? 'investigating' : 'resolved',
                           });
                         }}
-                        className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-green-400"
+                        className="p-1 rounded hover:bg-white/[0.06] text-gray-400 hover:text-green-400"
                         title={incident.status === 'open' ? 'Start investigating' : 'Resolve'}
                       >
                         {incident.status === 'open' ? (
@@ -300,7 +300,7 @@ export default function IncidentCorrelation() {
 
             {/* Expanded: investigation list */}
             {expandedId === incident.id && (
-              <div className="border-t border-gray-700 bg-gray-900/30 p-4">
+              <div className="border-t border-white/[0.1] bg-surface-2/30 p-4">
                 <h4 className="text-xs font-medium text-gray-400 mb-2">
                   Correlated Investigations ({incident.investigation_ids.length})
                 </h4>
@@ -308,7 +308,7 @@ export default function IncidentCorrelation() {
                   {incident.investigation_ids.map((invId) => (
                     <div
                       key={invId}
-                      className="flex items-center justify-between p-2 rounded-lg bg-gray-800/50 border border-gray-700"
+                      className="flex items-center justify-between p-2 rounded-lg bg-surface-3/50 border border-white/[0.1]"
                     >
                       <span className="text-sm text-gray-300 font-mono">{invId}</span>
                       <a

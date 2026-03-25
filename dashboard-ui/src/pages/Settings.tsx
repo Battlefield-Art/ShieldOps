@@ -817,8 +817,8 @@ function NotificationsTab() {
   return (
     <div className="space-y-6">
       {/* Notification Channels overview */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
-        <div className="border-b border-gray-800/60 px-5 py-4">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
+        <div className="border-b border-white/[0.04] px-5 py-4">
           <h3 className="font-semibold text-gray-50">
             Notification Channels
           </h3>
@@ -870,8 +870,8 @@ function NotificationsTab() {
       </div>
 
       {/* Notification Preferences grid */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
-        <div className="flex items-center justify-between border-b border-gray-800/60 px-5 py-4">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
+        <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-4">
           <div>
             <h3 className="font-semibold text-gray-50">
               Notification Preferences
@@ -887,7 +887,7 @@ function NotificationsTab() {
               "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
               dirty
                 ? "bg-brand-600 text-white hover:bg-brand-500"
-                : "bg-gray-800 text-gray-500 cursor-not-allowed",
+                : "bg-surface-3 text-gray-500 cursor-not-allowed",
             )}
           >
             {saveMutation.isPending ? (
@@ -914,7 +914,7 @@ function NotificationsTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800/60">
+                <tr className="border-b border-white/[0.04]">
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Event
                   </th>
@@ -933,7 +933,7 @@ function NotificationsTab() {
               </thead>
               <tbody className="divide-y divide-gray-800/50">
                 {eventTypes.map((et) => (
-                  <tr key={et.event_type} className="hover:bg-gray-800/30">
+                  <tr key={et.event_type} className="hover:bg-surface-3/30">
                     <td className="px-5 py-3">
                       <p className="font-mono text-xs text-gray-200">
                         {et.event_type}
@@ -1013,7 +1013,7 @@ function ApiTab() {
   return (
     <div className="space-y-4">
       {/* API Endpoints */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
         <h3 className="font-semibold text-gray-50">API Endpoints</h3>
         <p className="mt-1 text-sm text-gray-500">
           Use these endpoints to integrate with the ShieldOps API.
@@ -1062,20 +1062,20 @@ function ApiTab() {
       </div>
 
       {/* Token section */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
         <h3 className="font-semibold text-gray-50">Your Token</h3>
         <p className="mt-1 text-sm text-gray-500">
           Use this bearer token to authenticate API requests.
         </p>
 
         <div className="mt-3 flex items-center gap-2">
-          <div className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2">
+          <div className="flex-1 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2">
             <code className="text-sm text-gray-300">{maskToken(token)}</code>
           </div>
           <button
             onClick={copyToken}
             disabled={!token}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {copied ? (
               <>
@@ -1093,7 +1093,7 @@ function ApiTab() {
       </div>
 
       {/* Swagger link */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
         <h3 className="font-semibold text-gray-50">Interactive Documentation</h3>
         <p className="mt-1 text-sm text-gray-500">
           Explore and test API endpoints using the interactive Swagger UI.

@@ -103,7 +103,7 @@ export default function SEOIndex() {
       </section>
 
       {/* Search + Filter */}
-      <section className="border-y border-gray-800 bg-gray-900/50 px-6 py-6">
+      <section className="border-y border-white/[0.06] bg-surface-2/50 px-6 py-6">
         <div className="mx-auto max-w-4xl">
           <AnimatedSection>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -114,7 +114,7 @@ export default function SEOIndex() {
                   placeholder="Search issues (e.g. CrashLoopBackOff, OOM, 502...)"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-white/[0.1] bg-surface-3 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -159,7 +159,7 @@ export default function SEOIndex() {
                 return (
                   <AnimatedSection key={cat}>
                     <div className="mb-4 flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-800">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3">
                         <Icon className="h-4 w-4 text-gray-400" />
                       </div>
                       <h2 className="text-lg font-semibold text-gray-200">
@@ -174,7 +174,7 @@ export default function SEOIndex() {
                           <Link
                             key={page.slug}
                             to={`/solutions/${page.slug}`}
-                            className="group flex flex-col rounded-xl border border-gray-800 bg-gray-900/50 p-4 transition-colors hover:border-gray-700 hover:bg-gray-900"
+                            className="group flex flex-col rounded-xl border border-white/[0.06] bg-surface-2/50 p-4 transition-colors hover:border-white/[0.1] hover:bg-surface-2"
                           >
                             <div className="mb-3 flex items-center gap-2">
                               <span
@@ -213,7 +213,7 @@ export default function SEOIndex() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="border-t border-gray-800 bg-gradient-to-b from-gray-900/50 to-gray-950 px-6 py-20">
+      <section className="border-t border-white/[0.06] bg-gradient-to-b from-gray-900/50 to-gray-950 px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <AnimatedSection>
             <h2 className="text-2xl font-bold text-gray-50 sm:text-3xl">
@@ -233,7 +233,7 @@ export default function SEOIndex() {
               </Link>
               <Link
                 to="/pricing"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-6 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-lg border border-white/[0.1] px-6 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
               >
                 View Pricing
               </Link>
@@ -261,7 +261,7 @@ function FilterButton({
         "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
         active
           ? "bg-brand-500/20 text-brand-300 border border-brand-500/30"
-          : "border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300",
+          : "border border-white/[0.1] text-gray-400 hover:border-white/[0.12] hover:text-gray-300",
       )}
     >
       {children}

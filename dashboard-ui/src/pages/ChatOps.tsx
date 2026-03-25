@@ -215,7 +215,7 @@ export default function ChatOps() {
   return (
     <div className="flex h-[calc(100vh-4rem)] gap-0">
       {/* Channels sidebar */}
-      <div className="hidden w-56 shrink-0 border-r border-gray-800 bg-gray-900/60 lg:block">
+      <div className="hidden w-56 shrink-0 border-r border-white/[0.06] bg-surface-2 lg:block">
         <div className="p-4">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Channels
@@ -230,7 +230,7 @@ export default function ChatOps() {
                 "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
                 activeChannel === ch.name
                   ? "bg-brand-600/20 text-brand-400"
-                  : "text-gray-400 hover:bg-gray-800 hover:text-gray-200",
+                  : "text-gray-400 hover:bg-surface-3 hover:text-gray-200",
               )}
             >
               <span className="flex items-center gap-2 truncate">
@@ -275,7 +275,7 @@ export default function ChatOps() {
       {/* Main chat area */}
       <div className="flex flex-1 flex-col">
         {/* Chat header */}
-        <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3 sm:px-6">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <MessageSquare className="h-5 w-5 text-brand-400" />
             <div>
@@ -305,7 +305,7 @@ export default function ChatOps() {
                     key={msg.id}
                     className="text-center text-xs text-gray-600"
                   >
-                    <span className="rounded-full bg-gray-800/50 px-3 py-1">
+                    <span className="rounded-full bg-surface-3/50 px-3 py-1">
                       {msg.content}
                     </span>
                   </div>
@@ -336,7 +336,7 @@ export default function ChatOps() {
                       "max-w-[85%] rounded-xl px-4 py-3",
                       msg.role === "user"
                         ? "bg-brand-600/20 text-gray-200"
-                        : "border border-gray-800 bg-gray-900/60 text-gray-200",
+                        : "border border-white/[0.06] bg-surface-2 text-gray-200",
                     )}
                   >
                     {msg.channel && msg.role === "user" && (
@@ -350,7 +350,7 @@ export default function ChatOps() {
                         <span
                           className={clsx(
                             "rounded-full px-2 py-0.5 text-[10px] font-medium",
-                            AGENT_COLORS[msg.agentType] || "bg-gray-800",
+                            AGENT_COLORS[msg.agentType] || "bg-surface-3",
                           )}
                         >
                           {msg.agentType} agent
@@ -373,12 +373,12 @@ export default function ChatOps() {
                       {msg.content}
                     </div>
                     {msg.actions && msg.actions.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-800 pt-3">
+                      <div className="mt-3 flex flex-wrap gap-2 border-t border-white/[0.06] pt-3">
                         {msg.actions.map((action) => (
                           <button
                             key={action.label}
                             className={clsx(
-                              "rounded-lg border border-gray-700 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500/50",
+                              "rounded-lg border border-white/[0.1] px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-3 focus:outline-none focus:ring-2 focus:ring-brand-500/50",
                               action.color,
                             )}
                           >
@@ -404,7 +404,7 @@ export default function ChatOps() {
 
         {/* Quick commands */}
         {showCommands && (
-          <div className="border-t border-gray-800 bg-gray-900/80 px-4 py-3 sm:px-6">
+          <div className="border-t border-white/[0.06] bg-surface-2 px-4 py-3 sm:px-6">
             <div className="mx-auto grid max-w-3xl grid-cols-2 gap-2 sm:grid-cols-3">
               {QUICK_COMMANDS.map((cmd) => {
                 const Icon = cmd.icon;
@@ -415,7 +415,7 @@ export default function ChatOps() {
                       setInput(cmd.command + " ");
                       setShowCommands(false);
                     }}
-                    className="flex items-center gap-2.5 rounded-lg border border-gray-800 bg-gray-900 px-3 py-2.5 text-left transition-all hover:border-gray-600 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                    className="flex items-center gap-2.5 rounded-lg border border-white/[0.06] bg-surface-2 px-3 py-2.5 text-left transition-all hover:border-white/[0.12] hover:bg-surface-3 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                   >
                     <Icon className={clsx("h-4 w-4 shrink-0", cmd.color)} />
                     <div className="min-w-0">
@@ -434,7 +434,7 @@ export default function ChatOps() {
         )}
 
         {/* Input */}
-        <div className="border-t border-gray-800 px-4 py-3 sm:px-6">
+        <div className="border-t border-white/[0.06] px-4 py-3 sm:px-6">
           <div className="mx-auto flex max-w-3xl items-center gap-2">
             <button
               onClick={() => setShowCommands(!showCommands)}
@@ -442,14 +442,14 @@ export default function ChatOps() {
                 "shrink-0 rounded-lg p-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
                 showCommands
                   ? "bg-brand-600/20 text-brand-400"
-                  : "text-gray-500 hover:bg-gray-800 hover:text-gray-300",
+                  : "text-gray-500 hover:bg-surface-3 hover:text-gray-300",
               )}
               aria-label="Toggle quick commands"
               aria-expanded={showCommands}
             >
               <Zap className="h-4 w-4" />
             </button>
-            <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-2.5">
+            <div className="flex flex-1 items-center gap-2 rounded-xl border border-white/[0.1] bg-surface-3/50 px-4 py-2.5">
               <input
                 type="text"
                 value={input}
@@ -480,7 +480,7 @@ export default function ChatOps() {
       </div>
 
       {/* Right panel — Quick commands reference */}
-      <div className="hidden w-64 shrink-0 border-l border-gray-800 bg-gray-900/60 xl:block">
+      <div className="hidden w-64 shrink-0 border-l border-white/[0.06] bg-surface-2 xl:block">
         <div className="p-4">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Quick Commands
@@ -493,7 +493,7 @@ export default function ChatOps() {
               <button
                 key={cmd.command}
                 onClick={() => setInput(cmd.command + " ")}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-3 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
               >
                 <Icon className={clsx("h-4 w-4 shrink-0", cmd.color)} />
                 <div className="min-w-0">

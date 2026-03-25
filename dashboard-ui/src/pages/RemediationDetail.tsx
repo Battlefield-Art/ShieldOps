@@ -23,7 +23,7 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
       {events.map((event, idx) => (
         <div key={idx} className="relative flex gap-4 pb-6 last:pb-0">
           {/* Dot */}
-          <div className="relative z-10 mt-1.5 h-[15px] w-[15px] flex-shrink-0 rounded-full border-2 border-gray-700 bg-gray-900" />
+          <div className="relative z-10 mt-1.5 h-[15px] w-[15px] flex-shrink-0 rounded-full border-2 border-white/[0.1] bg-surface-2" />
           {/* Content */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function RemediationDetail() {
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-xl border border-gray-800 bg-gray-900 p-5"
+            className="rounded-xl border border-white/[0.06] bg-surface-2 p-5"
           >
             <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
               {item.label}
@@ -149,11 +149,11 @@ export default function RemediationDetail() {
 
       {/* Parameters */}
       {Object.keys(rem.parameters).length > 0 && (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
           <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500">
             Parameters
           </h2>
-          <pre className="mt-3 overflow-x-auto rounded-lg bg-gray-950 p-4 text-xs text-gray-300">
+          <pre className="mt-3 overflow-x-auto rounded-lg bg-surface-0 p-4 text-xs text-gray-300">
             {JSON.stringify(rem.parameters, null, 2)}
           </pre>
         </div>
@@ -168,7 +168,7 @@ export default function RemediationDetail() {
               ? "border-green-500/20 bg-green-500/5"
               : rem.approval.status === "denied"
                 ? "border-red-500/20 bg-red-500/5"
-                : "border-gray-800 bg-gray-900",
+                : "border-white/[0.06] bg-surface-2",
           )}
         >
           <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export default function RemediationDetail() {
 
       {/* Rollback Section */}
       {rem.rollback_snapshot_id && (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
           <div className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5 text-brand-400" />
             <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500">
@@ -247,7 +247,7 @@ export default function RemediationDetail() {
       {/* Rollback Confirmation Modal */}
       {showRollbackConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-xl border border-gray-700 bg-gray-900 p-6">
+          <div className="w-full max-w-md rounded-xl border border-white/[0.1] bg-surface-2 p-6">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-100">
               <AlertTriangle className="h-5 w-5 text-orange-400" />
               Confirm Rollback
@@ -271,7 +271,7 @@ export default function RemediationDetail() {
                   setRollbackError(null);
                 }}
                 disabled={rollbackMutation.isPending}
-                className="rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 disabled:opacity-50"
+                className="rounded-lg border border-white/[0.1] px-4 py-2 text-sm text-gray-300 hover:bg-surface-3 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -291,7 +291,7 @@ export default function RemediationDetail() {
       )}
 
       {/* Timeline */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
           Timeline
         </h2>

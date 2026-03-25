@@ -41,9 +41,9 @@ export default function SecurityTesting() {
         <MetricCard label="Pass Rate %" value={91} icon={<CheckCircle className="h-5 w-5" />} change={3.4} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+      <div className="overflow-x-auto rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+          <thead className="border-b border-white/[0.04] text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
               <th className="px-5 py-3.5">Finding</th>
               <th className="px-5 py-3.5">Category</th>
@@ -55,7 +55,7 @@ export default function SecurityTesting() {
           </thead>
           <tbody className="divide-y divide-gray-800/40">
             {FINDINGS.map((f) => (
-              <tr key={f.finding} className="hover:bg-gray-800/30">
+              <tr key={f.finding} className="hover:bg-surface-3/30">
                 <td className="px-5 py-3.5 font-medium">{f.finding}</td>
                 <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", CATEGORY_COLORS[f.category])}>{f.category}</span>

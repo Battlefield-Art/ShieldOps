@@ -58,7 +58,7 @@ export default function ProductLanding() {
             </Link>
             <Link
               to="/pricing"
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-6 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.1] px-6 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
             >
               View Pricing
             </Link>
@@ -68,7 +68,7 @@ export default function ProductLanding() {
 
       {/* Metrics */}
       {content.metrics.length > 0 && (
-        <section className="border-y border-gray-800 bg-gray-900/50 px-6 py-12">
+        <section className="border-y border-white/[0.06] bg-surface-2/50 px-6 py-12">
           <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 md:grid-cols-4">
             {content.metrics.map((metric) => (
               <div key={metric.label} className="text-center">
@@ -93,7 +93,7 @@ export default function ProductLanding() {
               {content.features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-xl border border-gray-800 bg-gray-900 p-6 transition-all hover:border-gray-600 hover:shadow-lg hover:shadow-gray-900/50"
+                  className="rounded-xl border border-white/[0.06] bg-surface-2 p-6 transition-all hover:border-white/[0.12] hover:shadow-lg hover:shadow-gray-900/50"
                 >
                   <h3 className="mb-2 text-lg font-semibold text-gray-100">
                     {feature.title}
@@ -119,7 +119,7 @@ export default function ProductLanding() {
               {content.integrations.map((name) => (
                 <span
                   key={name}
-                  className="flex items-center gap-2 rounded-full border border-gray-800 bg-gray-900 px-4 py-2 text-sm text-gray-300"
+                  className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-surface-2 px-4 py-2 text-sm text-gray-300"
                 >
                   <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
                   {name}
@@ -132,7 +132,7 @@ export default function ProductLanding() {
 
       {/* CTA */}
       <section className="px-6 py-16">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-gray-800 bg-gray-900 p-8 text-center sm:p-12">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-white/[0.06] bg-surface-2 p-8 text-center sm:p-12">
           <h2 className="text-2xl font-bold text-gray-50">
             Ready to get started?
           </h2>
@@ -148,7 +148,7 @@ export default function ProductLanding() {
             </Link>
             <a
               href="mailto:founders@shieldops.io"
-              className="rounded-lg border border-gray-700 px-6 py-3 text-sm font-medium text-gray-300 transition-all hover:border-gray-500 hover:bg-gray-900 hover:text-white"
+              className="rounded-lg border border-white/[0.1] px-6 py-3 text-sm font-medium text-gray-300 transition-all hover:border-gray-500 hover:bg-surface-2 hover:text-white"
             >
               Contact Sales
             </a>

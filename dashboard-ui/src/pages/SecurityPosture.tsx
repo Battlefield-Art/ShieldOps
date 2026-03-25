@@ -31,10 +31,10 @@ export default function SecurityPosture() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {DOMAINS.map((d) => (
-          <div key={d.name} className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+          <div key={d.name} className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
             <p className="text-sm font-medium text-gray-400">{d.name}</p>
             <p className="mt-2 text-2xl font-semibold text-gray-50">{d.score}</p>
-            <div className="mt-3 h-2 w-full rounded-full bg-gray-800">
+            <div className="mt-3 h-2 w-full rounded-full bg-surface-3">
               <div
                 className={`h-2 rounded-full ${d.color}`}
                 style={{ width: `${d.score}%` }}

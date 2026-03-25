@@ -49,7 +49,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-surface-0 px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
@@ -63,7 +63,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-gray-800/80 bg-gray-900 p-6 shadow-elevated">
+        <div className="rounded-2xl border border-white/[0.06] bg-surface-2 p-6 shadow-elevated">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
@@ -80,7 +80,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full rounded-lg border border-gray-700/80 bg-gray-800/80 px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
+                className="w-full rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
 
@@ -99,7 +99,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full rounded-lg border border-gray-700/80 bg-gray-800/80 px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
+                className="w-full rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
 
@@ -123,9 +123,9 @@ export default function Login() {
 
           {/* SSO Divider */}
           <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-gray-800" />
+            <div className="h-px flex-1 bg-surface-3" />
             <span className="text-xs text-gray-600">or</span>
-            <div className="h-px flex-1 bg-gray-800" />
+            <div className="h-px flex-1 bg-surface-3" />
           </div>
 
           {/* SSO Button */}

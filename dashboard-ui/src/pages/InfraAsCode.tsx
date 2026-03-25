@@ -54,12 +54,12 @@ export default function InfraAsCode() {
         playbooks, policies, and webhook subscriptions as code.
       </p>
 
-      <div className="rounded-lg border border-gray-700 bg-gray-900">
-        <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-2">
+      <div className="rounded-lg border border-white/[0.1] bg-surface-2">
+        <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-2">
           <span className="text-sm font-medium text-gray-300">main.tf</span>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-400 hover:bg-surface-3 hover:text-gray-200"
           >
             <Copy className="h-3 w-3" /> Copy
           </button>
@@ -71,9 +71,9 @@ export default function InfraAsCode() {
 
       <div className="space-y-3">
         <h2 className="text-lg font-medium">API Endpoints</h2>
-        <div className="overflow-x-auto rounded-lg border border-gray-700">
+        <div className="overflow-x-auto rounded-lg border border-white/[0.1]">
           <table className="w-full text-sm">
-            <thead className="bg-gray-800/50">
+            <thead className="bg-surface-3/50">
               <tr>
                 <th className="px-4 py-2 text-left text-gray-400">Resource</th>
                 <th className="px-4 py-2 text-left text-gray-400">Endpoints</th>

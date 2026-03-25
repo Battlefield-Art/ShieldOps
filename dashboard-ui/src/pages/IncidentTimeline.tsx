@@ -132,7 +132,7 @@ export default function IncidentTimeline() {
           <h1 className="text-2xl font-bold text-gray-100">
             Incident Timeline
           </h1>
-          <span className="rounded-full bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-400">
+          <span className="rounded-full bg-surface-3 px-2.5 py-0.5 text-xs font-medium text-gray-400">
             {filteredEvents.length} event
             {filteredEvents.length !== 1 ? "s" : ""}
           </span>
@@ -144,7 +144,7 @@ export default function IncidentTimeline() {
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-800/80 bg-gray-900 p-4 shadow-card">
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-white/[0.06] bg-surface-2 p-4 shadow-card">
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <Filter className="h-4 w-4" />
           <span className="font-medium">Filters</span>
@@ -161,7 +161,7 @@ export default function IncidentTimeline() {
                 "rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-all",
                 activeTypes.has(et.value)
                   ? "bg-gray-700 text-gray-100 ring-gray-600"
-                  : "bg-gray-900 text-gray-500 ring-gray-800 hover:text-gray-300",
+                  : "bg-surface-2 text-gray-500 ring-gray-800 hover:text-gray-300",
               )}
             >
               {et.label}
@@ -173,7 +173,7 @@ export default function IncidentTimeline() {
         <select
           value={severityFilter}
           onChange={(e) => setSeverityFilter(e.target.value)}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs text-gray-300 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-xs text-gray-300 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           <option value="">All severities</option>
           {SEVERITY_OPTIONS.map((s) => (

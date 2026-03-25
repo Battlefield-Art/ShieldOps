@@ -166,10 +166,10 @@ function DependencyCard({
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-gray-800 p-2">
+          <div className="rounded-lg bg-surface-3 p-2">
             <Icon className="h-5 w-5 text-gray-400" />
           </div>
           <div>
@@ -283,7 +283,7 @@ export default function SystemHealth() {
               "flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors",
               autoRefresh
                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                : "border-gray-700 bg-gray-800 text-gray-400 hover:text-gray-300",
+                : "border-white/[0.1] bg-surface-3 text-gray-400 hover:text-gray-300",
             )}
           >
             <RefreshCw
@@ -299,7 +299,7 @@ export default function SystemHealth() {
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:text-gray-300 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:text-gray-300 disabled:opacity-50"
           >
             <RefreshCw
               className={clsx("h-3.5 w-3.5", isFetching && "animate-spin")}
@@ -349,7 +349,7 @@ export default function SystemHealth() {
       </div>
 
       {/* Uptime section */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-blue-400" />
           <h2 className="text-lg font-semibold text-gray-50">

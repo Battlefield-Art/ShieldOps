@@ -73,7 +73,7 @@ export default function SEOPage() {
                 <AlertTriangle className="h-3 w-3" />
                 {severity.label} Severity
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-xs font-medium text-gray-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-surface-3/50 px-3 py-1 text-xs font-medium text-gray-400">
                 {page.category.charAt(0).toUpperCase() + page.category.slice(1)}
               </span>
             </div>
@@ -96,7 +96,7 @@ export default function SEOPage() {
       </section>
 
       {/* Symptoms */}
-      <section className="border-t border-gray-800 px-6 py-16">
+      <section className="border-t border-white/[0.06] px-6 py-16">
         <div className="mx-auto max-w-3xl">
           <AnimatedSection>
             <div className="mb-6 flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function SEOPage() {
       </section>
 
       {/* Common Causes */}
-      <section className="border-t border-gray-800 bg-gray-900/30 px-6 py-16">
+      <section className="border-t border-white/[0.06] bg-surface-2/30 px-6 py-16">
         <div className="mx-auto max-w-3xl">
           <AnimatedSection>
             <div className="mb-6 flex items-center gap-3">
@@ -148,7 +148,7 @@ export default function SEOPage() {
       </section>
 
       {/* Manual Fix Steps */}
-      <section className="border-t border-gray-800 px-6 py-16">
+      <section className="border-t border-white/[0.06] px-6 py-16">
         <div className="mx-auto max-w-3xl">
           <AnimatedSection>
             <div className="mb-6 flex items-center gap-3">
@@ -163,7 +163,7 @@ export default function SEOPage() {
             <ol className="space-y-4">
               {page.manualSteps.map((step, i) => (
                 <li key={i} className="flex items-start gap-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gray-700 text-sm font-medium text-gray-500">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.1] text-sm font-medium text-gray-500">
                     {i + 1}
                   </span>
                   <div className="pt-0.5 text-gray-300">
@@ -177,7 +177,7 @@ export default function SEOPage() {
       </section>
 
       {/* Agent Fix CTA */}
-      <section className="border-t border-gray-800 bg-gray-900/30 px-6 py-16">
+      <section className="border-t border-white/[0.06] bg-surface-2/30 px-6 py-16">
         <div className="mx-auto max-w-3xl">
           <AnimatedSection>
             <div className="overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-brand-500/5 to-brand-600/5">
@@ -224,7 +224,7 @@ export default function SEOPage() {
                   </Link>
                   <Link
                     to="/pricing"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-700 px-6 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/[0.1] px-6 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
                   >
                     View Pricing
                   </Link>
@@ -237,7 +237,7 @@ export default function SEOPage() {
 
       {/* Related Issues */}
       {relatedPages.length > 0 && (
-        <section className="border-t border-gray-800 px-6 py-16">
+        <section className="border-t border-white/[0.06] px-6 py-16">
           <div className="mx-auto max-w-3xl">
             <AnimatedSection>
               <div className="mb-6 flex items-center gap-3">
@@ -254,7 +254,7 @@ export default function SEOPage() {
                     <Link
                       key={related.slug}
                       to={`/solutions/${related.slug}`}
-                      className="group rounded-xl border border-gray-800 bg-gray-900/50 p-4 transition-colors hover:border-gray-700 hover:bg-gray-900"
+                      className="group rounded-xl border border-white/[0.06] bg-surface-2/50 p-4 transition-colors hover:border-white/[0.1] hover:bg-surface-2"
                     >
                       <span
                         className={clsx(
@@ -278,7 +278,7 @@ export default function SEOPage() {
       )}
 
       {/* Bottom CTA */}
-      <section className="border-t border-gray-800 bg-gradient-to-b from-gray-900/50 to-gray-950 px-6 py-20">
+      <section className="border-t border-white/[0.06] bg-gradient-to-b from-gray-900/50 to-gray-950 px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <AnimatedSection>
             <h2 className="text-2xl font-bold text-gray-50 sm:text-3xl">
@@ -320,7 +320,7 @@ function ManualStepContent({ text }: { text: string }) {
         part.startsWith("`") && part.endsWith("`") ? (
           <code
             key={i}
-            className="rounded bg-gray-800 px-1.5 py-0.5 text-sm font-mono text-brand-300"
+            className="rounded bg-surface-3 px-1.5 py-0.5 text-sm font-mono text-brand-300"
           >
             {part.slice(1, -1)}
           </code>

@@ -159,7 +159,7 @@ export default function MCPServers() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-gray-800/60 px-3 py-1.5 text-xs text-gray-300">
+          <span className="rounded-lg bg-white/[0.04] px-3 py-1.5 text-xs text-gray-300">
             <span className="font-bold text-white">{stats.total}</span> servers
           </span>
           <span className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400">
@@ -181,7 +181,7 @@ export default function MCPServers() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search servers..."
             aria-label="Search MCP servers"
-            className="w-full rounded-xl border border-gray-700 bg-gray-800/50 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+            className="w-full rounded-xl border border-white/[0.1] bg-surface-3/50 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
           />
         </div>
         <button
@@ -203,12 +203,12 @@ export default function MCPServers() {
           return (
             <div
               key={server.id}
-              className="rounded-xl border border-gray-800/50 bg-gray-900/40 p-5 transition-all hover:border-gray-700"
+              className="rounded-xl border border-white/[0.06]/50 bg-surface-1 p-5 transition-all hover:border-white/[0.1]"
             >
               {/* Top row */}
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-800/60">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04]">
                     <Icon className={clsx("h-5 w-5", server.iconColor)} />
                   </div>
                   <div className="min-w-0">
@@ -268,7 +268,7 @@ export default function MCPServers() {
                   {server.tools.map((tool) => (
                     <span
                       key={tool}
-                      className="rounded-md border border-gray-800 bg-gray-800/40 px-2 py-0.5 font-mono text-xs text-gray-400"
+                      className="rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-0.5 font-mono text-xs text-gray-400"
                     >
                       {tool}
                     </span>
@@ -277,16 +277,16 @@ export default function MCPServers() {
               )}
 
               {/* Actions */}
-              <div className="mt-4 flex items-center gap-2 border-t border-gray-800/50 pt-3">
+              <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06]/50 pt-3">
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                   aria-label={`Configure ${server.name}`}
                 >
                   <Settings className="h-3.5 w-3.5" />
                   Configure
                 </button>
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                   aria-label={`Reconnect ${server.name}`}
                 >
                   <RefreshCw className="h-3.5 w-3.5" />

@@ -32,7 +32,7 @@ function ConfidenceMeter({ confidence }: { confidence: number }) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="h-2 flex-1 rounded-full bg-gray-800">
+      <div className="h-2 flex-1 rounded-full bg-surface-3">
         <div
           className={clsx("h-2 rounded-full transition-all", color)}
           style={{ width: `${pct}%` }}
@@ -57,7 +57,7 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
       {events.map((event, idx) => (
         <div key={idx} className="relative flex gap-4 pb-6 last:pb-0">
           {/* Dot */}
-          <div className="relative z-10 mt-1.5 h-[15px] w-[15px] flex-shrink-0 rounded-full border-2 border-gray-700 bg-gray-900" />
+          <div className="relative z-10 mt-1.5 h-[15px] w-[15px] flex-shrink-0 rounded-full border-2 border-white/[0.1] bg-surface-2" />
           {/* Content */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function InvestigationDetail() {
           <StatusBadge status={inv.status} />
           <Link
             to={`/app/investigations/${id}/timeline`}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-brand-500 hover:text-gray-100"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-brand-500 hover:text-gray-100"
           >
             <ListOrdered className="h-4 w-4" />
             View Timeline
@@ -162,7 +162,7 @@ export default function InvestigationDetail() {
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-xl border border-gray-800 bg-gray-900 p-5"
+            className="rounded-xl border border-white/[0.06] bg-surface-2 p-5"
           >
             <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
               {item.label}
@@ -180,7 +180,7 @@ export default function InvestigationDetail() {
       </div>
 
       {/* Root Cause Card */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
         <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500">
           Root Cause Analysis
         </h2>
@@ -206,7 +206,7 @@ export default function InvestigationDetail() {
 
       {/* Recommended Actions */}
       {inv.recommended_actions.length > 0 && (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
           <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500">
             Recommended Actions
           </h2>
@@ -222,7 +222,7 @@ export default function InvestigationDetail() {
       )}
 
       {/* Timeline */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
           Timeline
         </h2>

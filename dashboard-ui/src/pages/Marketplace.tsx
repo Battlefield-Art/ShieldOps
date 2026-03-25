@@ -212,8 +212,8 @@ function MarketplaceAgentCard({ agent }: { agent: MarketplaceAgent }) {
   return (
     <div
       className={clsx(
-        "group flex flex-col rounded-xl border border-gray-800/80 bg-gray-900 shadow-card",
-        "transition-all hover:border-gray-700 hover:shadow-lg hover:shadow-black/20",
+        "group flex flex-col rounded-xl border border-white/[0.06] bg-surface-2 shadow-card",
+        "transition-all hover:border-white/[0.1] hover:shadow-lg hover:shadow-black/20",
       )}
     >
       <div className="flex-1 p-5">
@@ -253,7 +253,7 @@ function MarketplaceAgentCard({ agent }: { agent: MarketplaceAgent }) {
         </div>
       </div>
 
-      <div className="border-t border-gray-800/60 p-3">
+      <div className="border-t border-white/[0.04] p-3">
         <button
           onClick={() => setInstalled(!installed)}
           className={clsx(
@@ -307,7 +307,7 @@ function CategoryPill({
         "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-all",
         active
           ? "border-brand-500 bg-brand-600/20 text-brand-400"
-          : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:text-gray-300"
+          : "border-white/[0.1] bg-surface-3/50 text-gray-400 hover:border-white/[0.12] hover:text-gray-300"
       )}
     >
       <Icon className="h-4 w-4" />
@@ -346,8 +346,8 @@ function TemplateCard({
   return (
     <div
       className={clsx(
-        "group flex flex-col rounded-xl border border-gray-800/80 bg-gray-900 shadow-card",
-        "transition-all hover:border-gray-700 hover:shadow-lg hover:shadow-black/20"
+        "group flex flex-col rounded-xl border border-white/[0.06] bg-surface-2 shadow-card",
+        "transition-all hover:border-white/[0.1] hover:shadow-lg hover:shadow-black/20"
       )}
     >
       {/* Header */}
@@ -391,7 +391,7 @@ function TemplateCard({
           {template.tags.slice(0, 4).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-gray-700 px-2 py-0.5 text-xs text-gray-500"
+              className="rounded-full border border-white/[0.1] px-2 py-0.5 text-xs text-gray-500"
             >
               {tag}
             </span>
@@ -435,13 +435,13 @@ function TemplateCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 border-t border-gray-800/60 p-3">
+      <div className="flex items-center gap-2 border-t border-white/[0.04] p-3">
         <button
           onClick={() => onPreview(template)}
           className={clsx(
             "flex flex-1 items-center justify-center gap-1.5 rounded-lg",
-            "border border-gray-700 py-2 text-sm font-medium text-gray-400",
-            "transition-colors hover:border-gray-600 hover:text-gray-300"
+            "border border-white/[0.1] py-2 text-sm font-medium text-gray-400",
+            "transition-colors hover:border-white/[0.12] hover:text-gray-300"
           )}
         >
           <Eye className="h-4 w-4" />
@@ -511,9 +511,9 @@ function DeployModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/[0.1] bg-surface-2">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-800/60 p-6">
+        <div className="flex items-start justify-between border-b border-white/[0.04] p-6">
           <div>
             <h2 className="text-xl font-bold text-gray-100">
               {deployResult ? "Deployment Successful" : `Deploy: ${template.name}`}
@@ -526,7 +526,7 @@ function DeployModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-500 transition-colors hover:bg-gray-800 hover:text-gray-300"
+            className="rounded-lg p-1 text-gray-500 transition-colors hover:bg-surface-3 hover:text-gray-300"
           >
             <X className="h-5 w-5" />
           </button>
@@ -546,7 +546,7 @@ function DeployModal({
                 </p>
               </div>
             </div>
-            <div className="mt-4 rounded-lg bg-gray-800 p-4">
+            <div className="mt-4 rounded-lg bg-surface-3 p-4">
               <pre className="text-sm text-gray-300">
                 {JSON.stringify(deployResult, null, 2)}
               </pre>
@@ -581,7 +581,7 @@ function DeployModal({
                 value={environment}
                 onChange={(e) => setEnvironment(e.target.value)}
                 className={clsx(
-                  "w-full rounded-lg border border-gray-700 bg-gray-800",
+                  "w-full rounded-lg border border-white/[0.1] bg-surface-3",
                   "px-3 py-2 text-sm text-gray-200",
                   "focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 )}
@@ -636,7 +636,7 @@ function DeployModal({
                           handleParamChange(p.name, e.target.value, p.type)
                         }
                         className={clsx(
-                          "w-full rounded-lg border border-gray-700 bg-gray-800",
+                          "w-full rounded-lg border border-white/[0.1] bg-surface-3",
                           "px-3 py-2 text-sm text-gray-200",
                           "focus:border-brand-500 focus:outline-none"
                         )}
@@ -652,7 +652,7 @@ function DeployModal({
                           handleParamChange(p.name, e.target.value, p.type)
                         }
                         className={clsx(
-                          "w-full rounded-lg border border-gray-700 bg-gray-800",
+                          "w-full rounded-lg border border-white/[0.1] bg-surface-3",
                           "px-3 py-2 text-sm text-gray-200 placeholder-gray-600",
                           "focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                         )}
@@ -674,7 +674,7 @@ function DeployModal({
                 <ChevronDown className="h-4 w-4" />
                 Execution Steps ({template.steps.length})
               </summary>
-              <ol className="mt-2 space-y-2 border-l border-gray-700 pl-4">
+              <ol className="mt-2 space-y-2 border-l border-white/[0.1] pl-4">
                 {template.steps.map((step, idx) => (
                   <li key={step.name} className="text-sm">
                     <span className="text-gray-500">{idx + 1}.</span>{" "}
@@ -735,9 +735,9 @@ function PreviewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/[0.1] bg-surface-2">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-800/60 p-6">
+        <div className="flex items-start justify-between border-b border-white/[0.04] p-6">
           <div className="flex items-start gap-4">
             <div
               className={clsx(
@@ -773,7 +773,7 @@ function PreviewModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
+            className="rounded-lg p-1 text-gray-500 hover:bg-surface-3 hover:text-gray-300"
           >
             <X className="h-5 w-5" />
           </button>
@@ -822,7 +822,7 @@ function PreviewModal({
               {template.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-gray-700 px-2.5 py-0.5 text-xs text-gray-400"
+                  className="rounded-full border border-white/[0.1] px-2.5 py-0.5 text-xs text-gray-400"
                 >
                   {tag}
                 </span>
@@ -840,7 +840,7 @@ function PreviewModal({
                 {template.parameters.map((p) => (
                   <div
                     key={p.name}
-                    className="rounded-lg border border-gray-800 bg-gray-800/50 p-3"
+                    className="rounded-lg border border-white/[0.06] bg-surface-3/50 p-3"
                   >
                     <div className="flex items-center gap-2">
                       <code className="text-sm font-medium text-brand-400">
@@ -876,7 +876,7 @@ function PreviewModal({
               {template.steps.map((step, idx) => (
                 <li
                   key={step.name}
-                  className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-800/50 p-3"
+                  className="flex items-start gap-3 rounded-lg border border-white/[0.06] bg-surface-3/50 p-3"
                 >
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-700 text-xs font-medium text-gray-300">
                     {idx + 1}
@@ -896,10 +896,10 @@ function PreviewModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 border-t border-gray-800/60 p-6">
+        <div className="flex items-center gap-3 border-t border-white/[0.04] p-6">
           <button
             onClick={onClose}
-            className="flex-1 rounded-lg border border-gray-700 py-2 text-sm font-medium text-gray-400 hover:border-gray-600 hover:text-gray-300"
+            className="flex-1 rounded-lg border border-white/[0.1] py-2 text-sm font-medium text-gray-400 hover:border-white/[0.12] hover:text-gray-300"
           >
             Close
           </button>
@@ -968,13 +968,13 @@ function FilterSidebar({
           {categories.map(({ category, count }) => (
             <label
               key={category}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-gray-800"
+              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-3"
             >
               <input
                 type="checkbox"
                 checked={selectedCategories.has(category)}
                 onChange={() => onToggleCategory(category)}
-                className="rounded border-gray-600 bg-gray-800 text-brand-500 focus:ring-brand-500"
+                className="rounded border-gray-600 bg-surface-3 text-brand-500 focus:ring-brand-500"
               />
               <span className="text-gray-400">
                 {CATEGORY_CONFIG[category]?.label ?? category}
@@ -994,13 +994,13 @@ function FilterSidebar({
           {Object.entries(CLOUD_CONFIG).map(([key, cfg]) => (
             <label
               key={key}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-gray-800"
+              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-3"
             >
               <input
                 type="checkbox"
                 checked={selectedClouds.has(key)}
                 onChange={() => onToggleCloud(key)}
-                className="rounded border-gray-600 bg-gray-800 text-brand-500 focus:ring-brand-500"
+                className="rounded border-gray-600 bg-surface-3 text-brand-500 focus:ring-brand-500"
               />
               <span className="text-gray-400">{cfg.label}</span>
             </label>
@@ -1017,13 +1017,13 @@ function FilterSidebar({
           {Object.entries(RISK_CONFIG).map(([key, cfg]) => (
             <label
               key={key}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-gray-800"
+              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-3"
             >
               <input
                 type="checkbox"
                 checked={selectedRisk.has(key)}
                 onChange={() => onToggleRisk(key)}
-                className="rounded border-gray-600 bg-gray-800 text-brand-500 focus:ring-brand-500"
+                className="rounded border-gray-600 bg-surface-3 text-brand-500 focus:ring-brand-500"
               />
               <span className="text-gray-400">{cfg.label}</span>
             </label>
@@ -1145,7 +1145,7 @@ export default function Marketplace() {
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-8 shadow-card">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-8 shadow-card">
         <div className="flex items-center gap-3">
           <Store className="h-8 w-8 text-brand-400" />
           <h1 className="text-2xl font-bold text-gray-100">
@@ -1167,7 +1167,7 @@ export default function Marketplace() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={clsx(
-              "w-full rounded-lg border border-gray-700 bg-gray-800",
+              "w-full rounded-lg border border-white/[0.1] bg-surface-3",
               "py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500",
               "focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             )}
@@ -1221,7 +1221,7 @@ export default function Marketplace() {
         {/* Template grid */}
         <div className="flex-1">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800/80 bg-gray-900 py-16 shadow-card">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-surface-2 py-16 shadow-card">
               <Store className="h-10 w-10 text-gray-600" />
               <p className="mt-3 text-gray-400">
                 {searchTerm || selectedCategories.size > 0

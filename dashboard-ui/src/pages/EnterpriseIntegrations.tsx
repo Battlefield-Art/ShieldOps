@@ -250,7 +250,7 @@ export default function EnterpriseIntegrations() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-gray-800/60 px-3 py-1.5 text-xs text-gray-300">
+          <span className="rounded-lg bg-white/[0.04] px-3 py-1.5 text-xs text-gray-300">
             <span className="font-bold text-white">{stats.total}</span> integrations
           </span>
           <span className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400">
@@ -272,7 +272,7 @@ export default function EnterpriseIntegrations() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search integrations..."
             aria-label="Search integrations"
-            className="w-full rounded-xl border border-gray-700 bg-gray-800/50 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+            className="w-full rounded-xl border border-white/[0.1] bg-surface-3/50 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -285,7 +285,7 @@ export default function EnterpriseIntegrations() {
                 "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
                 categoryFilter === cat.key
                   ? "bg-brand-600/20 text-brand-400"
-                  : "text-gray-500 hover:bg-gray-800 hover:text-gray-300",
+                  : "text-gray-500 hover:bg-surface-3 hover:text-gray-300",
               )}
             >
               {cat.label}
@@ -305,16 +305,16 @@ export default function EnterpriseIntegrations() {
             <div
               key={integration.id}
               className={clsx(
-                "rounded-xl border bg-gray-900/40 p-5 transition-all",
+                "rounded-xl border bg-surface-1 p-5 transition-all",
                 integration.status === "available"
-                  ? "border-dashed border-gray-700 hover:border-gray-600"
-                  : "border-gray-800/50 hover:border-gray-700",
+                  ? "border-dashed border-white/[0.1] hover:border-white/[0.12]"
+                  : "border-white/[0.06]/50 hover:border-white/[0.1]",
               )}
             >
               {/* Top row */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-800/60">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04]">
                     <Icon className={clsx("h-5 w-5", integration.iconColor)} />
                   </div>
                   <div>
@@ -381,7 +381,7 @@ export default function EnterpriseIntegrations() {
                   {integration.features.map((f) => (
                     <span
                       key={f}
-                      className="rounded-md border border-gray-800 bg-gray-800/40 px-2 py-0.5 text-[10px] text-gray-400"
+                      className="rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-0.5 text-[10px] text-gray-400"
                     >
                       {f}
                     </span>
@@ -390,7 +390,7 @@ export default function EnterpriseIntegrations() {
               )}
 
               {/* Actions */}
-              <div className="mt-4 flex items-center gap-2 border-t border-gray-800/50 pt-3">
+              <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06]/50 pt-3">
                 {integration.status === "available" ? (
                   <button className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                     <Plug className="h-3 w-3" />
@@ -399,14 +399,14 @@ export default function EnterpriseIntegrations() {
                 ) : (
                   <>
                     <button
-                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                       aria-label={`Configure ${integration.name}`}
                     >
                       <Settings className="h-3 w-3" />
                       Configure
                     </button>
                     <button
-                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                       aria-label={`View ${integration.name} docs`}
                     >
                       <ExternalLink className="h-3 w-3" />

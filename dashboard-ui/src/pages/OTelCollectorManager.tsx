@@ -39,14 +39,14 @@ export default function OTelCollectorManager() {
         <MetricCard label="Avg CPU Usage" value="24%" icon={<Cpu className="h-5 w-5" />} change={-2.1} />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
-        <div className="border-b border-gray-800/60 px-5 py-4">
+      <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
+        <div className="border-b border-white/[0.04] px-5 py-4">
           <h2 className="text-lg font-semibold text-gray-50">Collector Fleet</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <tr className="border-b border-white/[0.04] text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                 <th className="px-5 py-3.5 font-medium">Collector Name</th>
                 <th className="px-5 py-3.5 font-medium">Namespace</th>
                 <th className="px-5 py-3.5 font-medium">Mode</th>
@@ -58,7 +58,7 @@ export default function OTelCollectorManager() {
             </thead>
             <tbody className="divide-y divide-gray-800/40">
               {MOCK_COLLECTORS.map((c, i) => (
-                <tr key={i} className="text-gray-300 hover:bg-gray-800/30">
+                <tr key={i} className="text-gray-300 hover:bg-surface-3/30">
                   <td className="px-5 py-3.5 font-mono text-xs text-gray-100">{c.name}</td>
                   <td className="px-5 py-3.5">{c.namespace}</td>
                   <td className="px-5 py-3.5">{c.mode}</td>

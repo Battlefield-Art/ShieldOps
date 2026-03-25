@@ -85,8 +85,8 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
   return (
     <div
       className={clsx(
-        "rounded-xl border border-gray-800/80 bg-gray-900 shadow-card",
-        "transition-colors hover:border-gray-700"
+        "rounded-xl border border-white/[0.06] bg-surface-2 shadow-card",
+        "transition-colors hover:border-white/[0.1]"
       )}
     >
       {/* Header */}
@@ -140,7 +140,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
               className={clsx(
                 "rounded-full px-2 py-0.5",
                 "text-xs text-gray-400",
-                "border border-gray-700"
+                "border border-white/[0.1]"
               )}
             >
               {sev}
@@ -158,9 +158,9 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
         onClick={() => setExpanded(!expanded)}
         className={clsx(
           "flex w-full items-center justify-center gap-1",
-          "border-t border-gray-800 py-2 text-xs",
+          "border-t border-white/[0.06] py-2 text-xs",
           "text-gray-500 transition-colors",
-          "hover:bg-gray-800/30 hover:text-gray-300"
+          "hover:bg-surface-3/30 hover:text-gray-300"
         )}
       >
         {expanded ? (
@@ -178,7 +178,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
 
       {/* Expanded Detail */}
       {expanded && (
-        <div className="border-t border-gray-800 p-5">
+        <div className="border-t border-white/[0.06] p-5">
           {detailLoading ? (
             <LoadingSpinner size="sm" className="py-4" />
           ) : detail ? (
@@ -190,7 +190,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
                     <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Investigation
                     </h4>
-                    <pre className="overflow-x-auto rounded-lg bg-gray-950 p-3 text-xs text-gray-300">
+                    <pre className="overflow-x-auto rounded-lg bg-surface-0 p-3 text-xs text-gray-300">
                       {JSON.stringify(
                         detail.investigation,
                         null,
@@ -206,7 +206,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
                     <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Remediation
                     </h4>
-                    <pre className="overflow-x-auto rounded-lg bg-gray-950 p-3 text-xs text-gray-300">
+                    <pre className="overflow-x-auto rounded-lg bg-surface-0 p-3 text-xs text-gray-300">
                       {JSON.stringify(
                         detail.remediation,
                         null,
@@ -220,7 +220,7 @@ function PlaybookCard({ playbook }: { playbook: PlaybookItem }) {
                   <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                     Validation
                   </h4>
-                  <pre className="overflow-x-auto rounded-lg bg-gray-950 p-3 text-xs text-gray-300">
+                  <pre className="overflow-x-auto rounded-lg bg-surface-0 p-3 text-xs text-gray-300">
                     {JSON.stringify(
                       detail.validation,
                       null,
@@ -305,8 +305,8 @@ export default function Playbooks() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={clsx(
-            "w-full rounded-lg border border-gray-700",
-            "bg-gray-800 py-2 pl-10 pr-4 text-sm",
+            "w-full rounded-lg border border-white/[0.1]",
+            "bg-surface-3 py-2 pl-10 pr-4 text-sm",
             "text-gray-200 placeholder-gray-500",
             "focus:border-brand-500 focus:outline-none",
             "focus:ring-1 focus:ring-brand-500"
@@ -316,7 +316,7 @@ export default function Playbooks() {
 
       {/* Results */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-800/80 bg-gray-900 shadow-card py-16">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-surface-2 shadow-card py-16">
           <BookOpen className="h-10 w-10 text-gray-600" />
           <p className="mt-3 text-gray-400">
             {searchTerm

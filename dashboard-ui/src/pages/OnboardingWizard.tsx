@@ -507,8 +507,8 @@ export default function OnboardingWizard() {
             className={clsx(
               "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
               activeStep === 0
-                ? "cursor-not-allowed bg-gray-800 text-gray-600"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700",
+                ? "cursor-not-allowed bg-surface-3 text-gray-600"
+                : "bg-surface-3 text-gray-300 hover:bg-white/[0.06]",
             )}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -523,7 +523,7 @@ export default function OnboardingWizard() {
                 "inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors",
                 isStepValid(activeStep)
                   ? "bg-brand-600 text-white hover:bg-brand-500"
-                  : "cursor-not-allowed bg-gray-800 text-gray-500",
+                  : "cursor-not-allowed bg-surface-3 text-gray-500",
               )}
             >
               Next
@@ -567,7 +567,7 @@ function StepIndicator({
                   ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
                   : active
                     ? "bg-brand-500/20 text-brand-400 ring-2 ring-brand-500/50"
-                    : "bg-gray-800 text-gray-500",
+                    : "bg-surface-3 text-gray-500",
               )}
               aria-label={step.label}
             >
@@ -585,7 +585,7 @@ function StepIndicator({
               <div
                 className={clsx(
                   "h-0.5 flex-1 rounded transition-colors",
-                  idx < activeStep ? "bg-green-500/40" : "bg-gray-800",
+                  idx < activeStep ? "bg-green-500/40" : "bg-surface-3",
                 )}
               />
             )}
@@ -628,7 +628,7 @@ function WelcomeStep({
           value={org.name}
           onChange={(e) => setOrg((prev) => ({ ...prev, name: e.target.value }))}
           placeholder="Acme Corp"
-          className="mt-1.5 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </div>
 
@@ -646,7 +646,7 @@ function WelcomeStep({
                 "rounded-xl border p-4 text-left transition-all",
                 org.environment === env.value
                   ? "border-brand-500 bg-brand-500/10"
-                  : "border-gray-700 bg-gray-800 hover:border-gray-600",
+                  : "border-white/[0.1] bg-surface-3 hover:border-white/[0.12]",
               )}
             >
               <p className="text-sm font-medium text-gray-100">{env.label}</p>
@@ -670,7 +670,7 @@ function WelcomeStep({
                 "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                 org.teamSize === size.value
                   ? "bg-brand-500/20 text-brand-400 ring-1 ring-brand-500/50"
-                  : "bg-gray-800 text-gray-400 hover:text-gray-200",
+                  : "bg-surface-3 text-gray-400 hover:text-gray-200",
               )}
             >
               {size.label}
@@ -807,8 +807,8 @@ function IntegrationStep({
                 isConnected
                   ? "border-green-500/30 bg-green-500/5"
                   : isExpanded
-                    ? "border-brand-500/30 bg-gray-800/50"
-                    : "border-gray-700 bg-gray-800 hover:border-gray-600",
+                    ? "border-brand-500/30 bg-surface-3/50"
+                    : "border-white/[0.1] bg-surface-3 hover:border-white/[0.12]",
               )}
             >
               {/* Card header */}
@@ -858,7 +858,7 @@ function IntegrationStep({
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="space-y-3 border-t border-gray-700/50 px-4 pb-4 pt-3">
+                    <div className="space-y-3 border-t border-white/[0.1]/50 px-4 pb-4 pt-3">
                       {integration.oauthButton && (
                         <button
                           onClick={() => handleSave(integration)}
@@ -880,7 +880,7 @@ function IntegrationStep({
                               handleFieldChange(integration.id, field.key, e.target.value)
                             }
                             placeholder={field.placeholder}
-                            className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="mt-1 w-full rounded-lg border border-white/[0.1] bg-surface-2 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                           />
                         </div>
                       ))}
@@ -996,7 +996,7 @@ function AgentStep({
                 "rounded-xl border p-4 text-left transition-all",
                 enabled
                   ? "border-brand-500 bg-brand-500/10"
-                  : "border-gray-700 bg-gray-800 hover:border-gray-600",
+                  : "border-white/[0.1] bg-surface-3 hover:border-white/[0.12]",
               )}
             >
               <div className="flex items-center justify-between">
@@ -1028,7 +1028,7 @@ function AgentStep({
 
       {/* Remediation approval mode */}
       {agents.remediation && (
-        <div className="space-y-3 rounded-xl border border-gray-700 bg-gray-800/50 p-4">
+        <div className="space-y-3 rounded-xl border border-white/[0.1] bg-surface-3/50 p-4">
           <p className="text-sm font-medium text-gray-300">
             Remediation Approval Mode
             <span className="ml-2 text-xs text-gray-500">
@@ -1058,7 +1058,7 @@ function AgentStep({
       )}
 
       {/* Blast radius limits */}
-      <div className="space-y-3 rounded-xl border border-gray-700 bg-gray-800/50 p-4">
+      <div className="space-y-3 rounded-xl border border-white/[0.1] bg-surface-3/50 p-4">
         <p className="text-sm font-medium text-gray-300">Blast Radius Limits</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -1076,7 +1076,7 @@ function AgentStep({
                   maxPods: Math.max(1, Math.min(100, parseInt(e.target.value) || 1)),
                 }))
               }
-              className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-sm text-gray-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-surface-2 px-3 py-1.5 text-sm text-gray-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -1094,7 +1094,7 @@ function AgentStep({
                   maxServices: Math.max(1, Math.min(50, parseInt(e.target.value) || 1)),
                 }))
               }
-              className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-sm text-gray-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-surface-2 px-3 py-1.5 text-sm text-gray-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -1114,7 +1114,7 @@ function AgentStep({
               setAgents((prev) => ({ ...prev, slackChannel: e.target.value }))
             }
             placeholder="#ops-alerts"
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -1143,7 +1143,7 @@ function AgentStep({
           {agents.agentFirewall.enabled && (
             <div className="mt-3 space-y-2">
               <p className="text-xs font-medium text-gray-400">SDK Setup</p>
-              <div className="rounded-lg bg-gray-900 p-3 font-mono text-xs text-gray-300">
+              <div className="rounded-lg bg-surface-2 p-3 font-mono text-xs text-gray-300">
                 <code>
                   <span className="text-brand-400">import</span> {"{"} ShieldOpsFirewall {"}"}{" "}
                   <span className="text-brand-400">from</span>{" "}
@@ -1240,7 +1240,7 @@ function AgentStep({
                   }))
                 }
                 placeholder="sse://mcp-gateway.internal:8080"
-                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                className="w-full rounded-lg border border-white/[0.1] bg-surface-2 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
               <p className="text-xs text-gray-600">
                 Enter the primary MCP gateway URL. Additional servers can be configured after setup.
@@ -1341,7 +1341,7 @@ function AiSecurityToggle({
         "rounded-xl border p-4 transition-all",
         enabled
           ? "border-brand-500 bg-brand-500/10"
-          : "border-gray-700 bg-gray-800 hover:border-gray-600",
+          : "border-white/[0.1] bg-surface-3 hover:border-white/[0.12]",
       )}
     >
       <button onClick={onToggle} className="flex w-full items-center justify-between text-left">
@@ -1444,7 +1444,7 @@ function ReviewStep({
       </div>
 
       {/* Agent summary */}
-      <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4">
+      <div className="rounded-xl border border-white/[0.1] bg-surface-3/50 p-4">
         <p className="mb-3 text-sm font-medium text-gray-300">Agents</p>
         <div className="flex flex-wrap gap-2">
           {enabledAgents.map((a) => (
@@ -1480,7 +1480,7 @@ function ReviewStep({
 
 function SummaryCard({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4">
+    <div className="rounded-xl border border-white/[0.1] bg-surface-3/50 p-4">
       <p className="mb-2 text-sm font-medium text-gray-300">{title}</p>
       <ul className="space-y-1">
         {items.map((item) => (
@@ -1529,7 +1529,7 @@ function LaunchProgress({ phase }: { phase: LaunchPhase }) {
                     ? "bg-green-500/20"
                     : isActive
                       ? "bg-brand-500/20"
-                      : "bg-gray-800",
+                      : "bg-surface-3",
                 )}
               >
                 {isDone ? (

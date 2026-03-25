@@ -55,9 +55,9 @@ export default function RiskScoring() {
         <MetricCard label="Notable Events" value={47} icon={<Bell className="h-5 w-5" />} change={8.1} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+      <div className="overflow-x-auto rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+          <thead className="border-b border-white/[0.04] text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <tr>
               <th className="px-5 py-3.5">Entity</th>
               <th className="px-5 py-3.5">Type</th>
@@ -71,7 +71,7 @@ export default function RiskScoring() {
             {ENTITIES.map((e) => {
               const rc = riskColor(e.score);
               return (
-                <tr key={e.entity} className="hover:bg-gray-800/30">
+                <tr key={e.entity} className="hover:bg-surface-3/30">
                   <td className="px-5 py-3.5 font-medium">{e.entity}</td>
                   <td className="px-5 py-3.5">
                     <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", TYPE_COLORS[e.type])}>{e.type}</span>
@@ -94,13 +94,13 @@ export default function RiskScoring() {
         </table>
       </div>
 
-      <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
         <h2 className="mb-4 text-lg font-semibold">Recent Notable Events</h2>
         <div className="space-y-3">
           {NOTABLE_EVENTS.map((ev) => {
             const rc = riskColor(ev.score);
             return (
-              <div key={ev.entity} className="flex items-center justify-between rounded-lg border border-gray-800 px-4 py-3">
+              <div key={ev.entity} className="flex items-center justify-between rounded-lg border border-white/[0.06] px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className={clsx("text-sm font-semibold", rc.text)}>{ev.score}</span>
                   <span className="font-medium">{ev.entity}</span>

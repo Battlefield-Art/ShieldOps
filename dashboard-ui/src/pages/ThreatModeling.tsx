@@ -73,9 +73,9 @@ export default function ThreatModeling() {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+      <div className="overflow-x-auto rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800/60 text-xs uppercase text-gray-400">
+          <thead className="border-b border-white/[0.04] text-xs uppercase text-gray-400">
             <tr>
               <th className="px-5 py-3.5">Threat</th>
               <th className="px-5 py-3.5">STRIDE Category</th>
@@ -87,7 +87,7 @@ export default function ThreatModeling() {
           </thead>
           <tbody className="divide-y divide-gray-800/40">
             {THREATS.map((t) => (
-              <tr key={t.threat} className="hover:bg-gray-800/30">
+              <tr key={t.threat} className="hover:bg-surface-3/30">
                 <td className="px-5 py-3.5 font-medium">{t.threat}</td>
                 <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", STRIDE_BADGE[t.stride])}>{t.stride}</span>

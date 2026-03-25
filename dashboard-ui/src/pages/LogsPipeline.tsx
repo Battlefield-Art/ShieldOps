@@ -47,9 +47,9 @@ export default function LogsPipeline() {
         <MetricCard label="Volume/Min" value={"24.5K"} icon={<Activity className="h-5 w-5" />} change={8.3} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+      <div className="overflow-x-auto rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-800/60 text-xs uppercase text-gray-400">
+          <thead className="border-b border-white/[0.04] text-xs uppercase text-gray-400">
             <tr>
               <th className="px-5 py-3.5">Service</th>
               <th className="px-5 py-3.5">Source</th>
@@ -61,7 +61,7 @@ export default function LogsPipeline() {
           </thead>
           <tbody className="divide-y divide-gray-800/40">
             {LOG_SOURCES.map((l) => (
-              <tr key={l.service} className="hover:bg-gray-800/30">
+              <tr key={l.service} className="hover:bg-surface-3/30">
                 <td className="px-5 py-3.5 font-medium">{l.service}</td>
                 <td className="px-5 py-3.5">
                   <span className={clsx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", SOURCE_COLORS[l.source])}>{l.source}</span>

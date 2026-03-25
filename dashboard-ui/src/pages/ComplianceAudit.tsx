@@ -49,10 +49,10 @@ export default function ComplianceAudit() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {MOCK_FRAMEWORKS.map((fw) => (
-          <div key={fw.name} className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card text-center">
+          <div key={fw.name} className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card text-center">
             <p className="text-sm font-medium text-gray-400">{fw.name}</p>
             <p className={`mt-2 text-3xl font-bold ${scoreColor(fw.score)}`}>{fw.score}%</p>
-            <div className="mt-3 h-1.5 rounded-full bg-gray-800">
+            <div className="mt-3 h-1.5 rounded-full bg-surface-3">
               <div
                 className={`h-1.5 rounded-full ${fw.score >= 90 ? "bg-green-500" : fw.score >= 80 ? "bg-yellow-500" : "bg-red-500"}`}
                 style={{ width: `${fw.score}%` }}
@@ -62,14 +62,14 @@ export default function ComplianceAudit() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
-        <div className="border-b border-gray-800/60 px-5 py-4">
+      <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
+        <div className="border-b border-white/[0.04] px-5 py-4">
           <h2 className="text-lg font-semibold text-gray-50">Recent Audit Findings</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <tr className="border-b border-white/[0.04] text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                 <th className="px-5 py-3.5 font-medium">Control ID</th>
                 <th className="px-5 py-3.5 font-medium">Framework</th>
                 <th className="px-5 py-3.5 font-medium">Status</th>
@@ -79,7 +79,7 @@ export default function ComplianceAudit() {
             </thead>
             <tbody className="divide-y divide-gray-800/40">
               {MOCK_FINDINGS.map((f, i) => (
-                <tr key={i} className="text-gray-300 hover:bg-gray-800/30">
+                <tr key={i} className="text-gray-300 hover:bg-surface-3/30">
                   <td className="px-5 py-3.5 font-mono text-xs text-gray-100">{f.controlId}</td>
                   <td className="px-5 py-3.5">{f.framework}</td>
                   <td className="px-5 py-3.5">

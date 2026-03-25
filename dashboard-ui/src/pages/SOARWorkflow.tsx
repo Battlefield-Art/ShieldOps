@@ -36,14 +36,14 @@ export default function SOARWorkflow() {
         <MetricCard label="Lessons Learned" value={238} icon={<BookOpen className="h-5 w-5" />} change={4.1} />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
-        <div className="border-b border-gray-800/60 px-5 py-4">
+      <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
+        <div className="border-b border-white/[0.04] px-5 py-4">
           <h2 className="text-lg font-semibold text-gray-50">Active Response Workflows</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <tr className="border-b border-white/[0.04] text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                 <th className="px-5 py-3.5 font-medium">Alert ID</th>
                 <th className="px-5 py-3.5 font-medium">Severity</th>
                 <th className="px-5 py-3.5 font-medium">Stage</th>
@@ -54,7 +54,7 @@ export default function SOARWorkflow() {
             </thead>
             <tbody className="divide-y divide-gray-800/40">
               {MOCK_RESPONSES.map((r, i) => (
-                <tr key={i} className="text-gray-300 hover:bg-gray-800/30">
+                <tr key={i} className="text-gray-300 hover:bg-surface-3/30">
                   <td className="px-5 py-3.5 font-mono text-xs text-gray-100">{r.alertId}</td>
                   <td className="px-5 py-3.5">{r.severity}</td>
                   <td className="px-5 py-3.5">{r.stage}</td>

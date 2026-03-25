@@ -60,8 +60,8 @@ export default function WarRoom() {
   return (
     <div className="flex h-full">
       {/* Left: War room list */}
-      <div className="w-80 shrink-0 border-r border-gray-800/60 flex flex-col">
-        <div className="flex items-center justify-between border-b border-gray-800/60 px-4 py-3">
+      <div className="w-80 shrink-0 border-r border-white/[0.04] flex flex-col">
+        <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
           <div className="flex items-center gap-2">
             <Siren className="h-4 w-4 text-red-400" />
             <h2 className="text-sm font-semibold text-gray-200">War Rooms</h2>
@@ -93,8 +93,8 @@ export default function WarRoom() {
                 className={clsx(
                   "w-full rounded-xl border p-3 text-left transition-all",
                   selectedRoom === wr.id
-                    ? `${sev.border} bg-gray-800/60`
-                    : "border-gray-800/30 bg-gray-900/30 hover:border-gray-700",
+                    ? `${sev.border} bg-white/[0.04]`
+                    : "border-white/[0.06]/30 bg-surface-2/30 hover:border-white/[0.1]",
                 )}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -151,7 +151,7 @@ export default function WarRoom() {
             {room.affectedServices.map((svc) => (
               <span
                 key={svc}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900/40 px-2.5 py-1 text-xs font-medium text-gray-300"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-surface-1 px-2.5 py-1 text-xs font-medium text-gray-300"
               >
                 <Server className="h-3 w-3 text-gray-500" />
                 {svc}
@@ -164,7 +164,7 @@ export default function WarRoom() {
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 h-full">
             {/* Timeline */}
-            <div className="lg:col-span-2 border-r border-gray-800/60 p-4">
+            <div className="lg:col-span-2 border-r border-white/[0.04] p-4">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-200 mb-4">
                 <Activity className="h-4 w-4 text-gray-500" />
                 Incident Timeline
@@ -209,7 +209,7 @@ export default function WarRoom() {
                   {room.agents.map((agent, i) => (
                     <div
                       key={i}
-                      className="rounded-lg border border-gray-800/50 bg-gray-900/30 p-3"
+                      className="rounded-lg border border-white/[0.06]/50 bg-surface-2/30 p-3"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium text-gray-200">{agent.name}</span>
@@ -223,7 +223,7 @@ export default function WarRoom() {
                       </div>
                       <p className="text-xs text-gray-500">{agent.task}</p>
                       {agent.progress !== undefined && (
-                        <div className="mt-2 h-1 rounded-full bg-gray-800">
+                        <div className="mt-2 h-1 rounded-full bg-surface-3">
                           <div
                             className="h-full rounded-full bg-brand-500 transition-all"
                             style={{ width: `${agent.progress}%` }}
@@ -248,10 +248,10 @@ export default function WarRoom() {
                   return (
                     <div
                       key={i}
-                      className="flex items-center gap-3 rounded-lg border border-gray-800/30 bg-gray-900/30 p-3"
+                      className="flex items-center gap-3 rounded-lg border border-white/[0.06]/30 bg-surface-2/30 p-3"
                     >
                       <div className="relative">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 text-sm font-medium text-gray-300">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-3 text-sm font-medium text-gray-300">
                           {resp.name.split(" ").map((n) => n[0]).join("")}
                         </div>
                         <span
@@ -286,7 +286,7 @@ export default function WarRoom() {
                   ].map((action) => (
                     <button
                       key={action.label}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-gray-400 hover:bg-surface-3 hover:text-gray-200 transition-colors"
                     >
                       <action.icon className="h-3.5 w-3.5" />
                       {action.label}

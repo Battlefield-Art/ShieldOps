@@ -180,7 +180,7 @@ export default function AutomationRules() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-gray-800/60 px-3 py-1.5 text-xs text-gray-300">
+          <span className="rounded-lg bg-white/[0.04] px-3 py-1.5 text-xs text-gray-300">
             <span className="font-bold text-white">{stats.total}</span> rules
           </span>
           <span className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400">
@@ -202,7 +202,7 @@ export default function AutomationRules() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search rules..."
             aria-label="Search automation rules"
-            className="w-full rounded-xl border border-gray-700 bg-gray-800/50 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+            className="w-full rounded-xl border border-white/[0.1] bg-surface-3/50 py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
           />
         </div>
         <button className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
@@ -221,10 +221,10 @@ export default function AutomationRules() {
             <div
               key={rule.id}
               className={clsx(
-                "rounded-xl border bg-gray-900/40 transition-all",
+                "rounded-xl border bg-surface-1 transition-all",
                 rule.enabled
-                  ? "border-gray-800/50 hover:border-gray-700"
-                  : "border-gray-800/30 opacity-60",
+                  ? "border-white/[0.06]/50 hover:border-white/[0.1]"
+                  : "border-white/[0.06]/30 opacity-60",
               )}
             >
               {/* Main row */}
@@ -233,7 +233,7 @@ export default function AutomationRules() {
                 className="flex w-full items-center gap-4 px-5 py-4 text-left focus:outline-none focus:ring-2 focus:ring-brand-500/50 rounded-xl"
                 aria-expanded={isExpanded}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-800/60">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04]">
                   <Icon className={clsx("h-5 w-5", rule.iconColor)} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -269,14 +269,14 @@ export default function AutomationRules() {
 
               {/* Expanded details */}
               {isExpanded && (
-                <div className="border-t border-gray-800/50 px-5 py-4">
+                <div className="border-t border-white/[0.06]/50 px-5 py-4">
                   <div className="grid gap-4 md:grid-cols-3">
                     {/* Trigger */}
                     <div>
                       <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
                         Trigger
                       </h4>
-                      <div className="rounded-lg border border-gray-800 bg-gray-800/30 p-3">
+                      <div className="rounded-lg border border-white/[0.06] bg-surface-3/30 p-3">
                         <p className="text-xs font-medium text-gray-300">
                           {rule.trigger.type}
                         </p>
@@ -298,7 +298,7 @@ export default function AutomationRules() {
                         {rule.actions.map((action, i) => (
                           <div
                             key={i}
-                            className="flex items-start gap-2 rounded-lg border border-gray-800 bg-gray-800/30 p-2"
+                            className="flex items-start gap-2 rounded-lg border border-white/[0.06] bg-surface-3/30 p-2"
                           >
                             <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-brand-400" />
                             <div>
@@ -321,7 +321,7 @@ export default function AutomationRules() {
                       <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
                         Policy Gate
                       </h4>
-                      <div className="rounded-lg border border-gray-800 bg-gray-800/30 p-3">
+                      <div className="rounded-lg border border-white/[0.06] bg-surface-3/30 p-3">
                         <div className="flex items-center gap-2">
                           <Shield className="h-3.5 w-3.5 text-emerald-400" />
                           <span className="font-mono text-xs text-emerald-400">
@@ -341,12 +341,12 @@ export default function AutomationRules() {
                   </div>
 
                   {/* Bottom actions */}
-                  <div className="mt-4 flex items-center gap-2 border-t border-gray-800/50 pt-3">
-                    <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                  <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06]/50 pt-3">
+                    <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                       <Settings className="h-3.5 w-3.5" />
                       Edit Rule
                     </button>
-                    <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                       {rule.enabled ? (
                         <>
                           <Pause className="h-3.5 w-3.5" />
@@ -359,7 +359,7 @@ export default function AutomationRules() {
                         </>
                       )}
                     </button>
-                    <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                       <Play className="h-3.5 w-3.5" />
                       Test Run
                     </button>

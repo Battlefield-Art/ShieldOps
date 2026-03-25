@@ -484,13 +484,13 @@ export default function AgentTask() {
   return (
     <div className="flex h-full">
       {/* Left panel: Steps */}
-      <div className="flex w-full flex-col lg:w-[55%] border-r border-gray-800">
+      <div className="flex w-full flex-col lg:w-[55%] border-r border-white/[0.06]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/app")}
-              className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
+              className="rounded-lg p-1.5 text-gray-500 hover:bg-surface-3 hover:text-gray-300"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -536,10 +536,10 @@ export default function AgentTask() {
                   step.status === "running"
                     ? "border-brand-500/30 bg-brand-500/5"
                     : step.status === "completed"
-                    ? "border-gray-800/50 bg-gray-900/30"
+                    ? "border-white/[0.06]/50 bg-surface-2/30"
                     : step.status === "failed"
                     ? "border-red-500/30 bg-red-500/5"
-                    : "border-gray-800/30 bg-gray-900/20",
+                    : "border-white/[0.06]/30 bg-surface-2/20",
                 )}
               >
                 {/* Step header */}
@@ -572,7 +572,7 @@ export default function AgentTask() {
 
                 {/* Expanded content */}
                 {isExpanded && (
-                  <div className="border-t border-gray-800/30 px-4 py-3 space-y-3">
+                  <div className="border-t border-white/[0.06]/30 px-4 py-3 space-y-3">
                     {/* Substeps */}
                     {step.substeps && (
                       <div className="space-y-1.5">
@@ -597,7 +597,7 @@ export default function AgentTask() {
 
                     {/* Output */}
                     {step.output && (
-                      <pre className="rounded-lg bg-gray-950/60 p-3 text-xs text-gray-400 font-mono whitespace-pre-wrap overflow-x-auto">
+                      <pre className="rounded-lg bg-surface-0/60 p-3 text-xs text-gray-400 font-mono whitespace-pre-wrap overflow-x-auto">
                         {step.output}
                       </pre>
                     )}
@@ -609,7 +609,7 @@ export default function AgentTask() {
                         {step.artifacts.map((art, j) => (
                           <div
                             key={j}
-                            className="flex items-center gap-2 rounded-lg bg-gray-800/30 px-3 py-2 text-xs text-gray-300"
+                            className="flex items-center gap-2 rounded-lg bg-surface-3/30 px-3 py-2 text-xs text-gray-300"
                           >
                             <ArtifactIcon type={art.type} />
                             {art.label}
@@ -647,7 +647,7 @@ export default function AgentTask() {
 
       {/* Right panel: Chat */}
       <div className="hidden lg:flex flex-col flex-1">
-        <div className="flex items-center gap-2 border-b border-gray-800 px-4 py-3">
+        <div className="flex items-center gap-2 border-b border-white/[0.06] px-4 py-3">
           <MessageSquare className="h-4 w-4 text-gray-500" />
           <h2 className="text-sm font-semibold text-gray-300">Agent Chat</h2>
         </div>
@@ -662,8 +662,8 @@ export default function AgentTask() {
                 msg.role === "user"
                   ? "ml-auto bg-brand-600/20 text-brand-100"
                   : msg.role === "system"
-                  ? "mx-auto text-center bg-gray-800/30 text-gray-500 text-xs max-w-full"
-                  : "bg-gray-800/40 text-gray-300",
+                  ? "mx-auto text-center bg-surface-3/30 text-gray-500 text-xs max-w-full"
+                  : "bg-white/[0.03] text-gray-300",
               )}
             >
               <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -674,7 +674,7 @@ export default function AgentTask() {
         </div>
 
         {/* Chat input */}
-        <div className="border-t border-gray-800 p-3">
+        <div className="border-t border-white/[0.06] p-3">
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -682,7 +682,7 @@ export default function AgentTask() {
               onChange={(e) => setUserInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder="Ask the agent or provide guidance..."
-              className="flex-1 rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none"
+              className="flex-1 rounded-xl border border-white/[0.1] bg-surface-3/50 px-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none"
             />
             <button
               onClick={handleSendMessage}
@@ -691,7 +691,7 @@ export default function AgentTask() {
                 "rounded-xl p-2.5 transition-colors",
                 userInput.trim()
                   ? "bg-brand-600 text-white hover:bg-brand-500"
-                  : "bg-gray-800 text-gray-600",
+                  : "bg-surface-3 text-gray-600",
               )}
             >
               <Send className="h-4 w-4" />

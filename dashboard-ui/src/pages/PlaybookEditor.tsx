@@ -81,9 +81,9 @@ function PlaybookFileList({
   );
 
   return (
-    <div className="flex h-full flex-col border-r border-gray-800 bg-gray-900">
+    <div className="flex h-full flex-col border-r border-white/[0.06] bg-surface-2">
       {/* New Playbook Button */}
-      <div className="border-b border-gray-800 p-3">
+      <div className="border-b border-white/[0.06] p-3">
         <button
           onClick={onNew}
           className={clsx(
@@ -116,7 +116,7 @@ function PlaybookFileList({
                   "transition-colors",
                   selectedId === pb.id
                     ? "bg-brand-600/20 text-brand-400"
-                    : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                    : "text-gray-400 hover:bg-surface-3 hover:text-gray-200"
                 )}
               >
                 <FileText className="h-3.5 w-3.5 flex-shrink-0" />
@@ -148,7 +148,7 @@ function PlaybookFileList({
                   "transition-colors",
                   selectedId === pb.id
                     ? "bg-brand-600/20 text-brand-400"
-                    : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                    : "text-gray-400 hover:bg-surface-3 hover:text-gray-200"
                 )}
               >
                 <FileText className="h-3.5 w-3.5 flex-shrink-0" />
@@ -445,11 +445,11 @@ export default function PlaybookEditor() {
   return (
     <div className="flex h-[calc(100vh-7rem)] flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+      <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/app/playbooks")}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-surface-3 hover:text-gray-200"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -470,7 +470,7 @@ export default function PlaybookEditor() {
       </div>
 
       {/* Split Pane */}
-      <div className="mt-4 flex flex-1 overflow-hidden rounded-xl border border-gray-800">
+      <div className="mt-4 flex flex-1 overflow-hidden rounded-xl border border-white/[0.06]">
         {/* Left Pane: File List */}
         <div className="w-64 flex-shrink-0">
           {listLoading ? (
@@ -488,7 +488,7 @@ export default function PlaybookEditor() {
         </div>
 
         {/* Right Pane: Editor */}
-        <div className="flex flex-1 flex-col overflow-hidden bg-gray-950">
+        <div className="flex flex-1 flex-col overflow-hidden bg-surface-0">
           {!selectedId && !isNew ? (
             <div className="flex flex-1 items-center justify-center">
               <div className="text-center">
@@ -506,7 +506,7 @@ export default function PlaybookEditor() {
           ) : (
             <>
               {/* Toolbar */}
-              <div className="flex items-center gap-2 border-b border-gray-800 px-4 py-2">
+              <div className="flex items-center gap-2 border-b border-white/[0.06] px-4 py-2">
                 <button
                   onClick={handleSave}
                   disabled={
@@ -517,7 +517,7 @@ export default function PlaybookEditor() {
                     "px-3 py-1.5 text-xs font-medium",
                     "transition-colors",
                     isSaving || isReadOnly || !isDirty
-                      ? "bg-gray-800 text-gray-600"
+                      ? "bg-surface-3 text-gray-600"
                       : "bg-brand-600 text-white hover:bg-brand-700"
                   )}
                 >
@@ -534,9 +534,9 @@ export default function PlaybookEditor() {
                   }
                   className={clsx(
                     "flex items-center gap-1.5 rounded-lg",
-                    "border border-gray-700 px-3 py-1.5",
+                    "border border-white/[0.1] px-3 py-1.5",
                     "text-xs font-medium text-gray-300",
-                    "transition-colors hover:bg-gray-800"
+                    "transition-colors hover:bg-surface-3"
                   )}
                 >
                   <CheckCircle className="h-3.5 w-3.5" />
@@ -554,9 +554,9 @@ export default function PlaybookEditor() {
                     }
                     className={clsx(
                       "flex items-center gap-1.5 rounded-lg",
-                      "border border-gray-700 px-3 py-1.5",
+                      "border border-white/[0.1] px-3 py-1.5",
                       "text-xs font-medium text-gray-300",
-                      "transition-colors hover:bg-gray-800"
+                      "transition-colors hover:bg-surface-3"
                     )}
                   >
                     <Play className="h-3.5 w-3.5" />
@@ -588,7 +588,7 @@ export default function PlaybookEditor() {
               </div>
 
               {/* Metadata Fields */}
-              <div className="space-y-3 border-b border-gray-800 px-4 py-3">
+              <div className="space-y-3 border-b border-white/[0.06] px-4 py-3">
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="mb-1 block text-xs text-gray-500">
@@ -602,8 +602,8 @@ export default function PlaybookEditor() {
                       }}
                       disabled={isReadOnly}
                       className={clsx(
-                        "w-full rounded-lg border border-gray-700",
-                        "bg-gray-900 px-3 py-1.5 text-sm",
+                        "w-full rounded-lg border border-white/[0.1]",
+                        "bg-surface-2 px-3 py-1.5 text-sm",
                         "text-gray-200",
                         "focus:border-brand-500 focus:outline-none",
                         "disabled:opacity-50"
@@ -622,8 +622,8 @@ export default function PlaybookEditor() {
                       }}
                       disabled={isReadOnly}
                       className={clsx(
-                        "w-full rounded-lg border border-gray-700",
-                        "bg-gray-900 px-3 py-1.5 text-sm",
+                        "w-full rounded-lg border border-white/[0.1]",
+                        "bg-surface-2 px-3 py-1.5 text-sm",
                         "text-gray-200",
                         "focus:border-brand-500 focus:outline-none",
                         "disabled:opacity-50"
@@ -659,7 +659,7 @@ export default function PlaybookEditor() {
                   spellCheck={false}
                   className={clsx(
                     "h-full w-full resize-none",
-                    "bg-gray-950 p-4",
+                    "bg-surface-0 p-4",
                     "font-mono text-sm leading-relaxed",
                     "text-gray-300",
                     "focus:outline-none",
@@ -673,7 +673,7 @@ export default function PlaybookEditor() {
               {(validation ||
                 dryRun ||
                 saveError) && (
-                <div className="max-h-48 overflow-y-auto border-t border-gray-800 p-4">
+                <div className="max-h-48 overflow-y-auto border-t border-white/[0.06] p-4">
                   {/* Save Error */}
                   {saveError && (
                     <div className="mb-3 flex items-start gap-2 rounded-lg bg-red-500/10 p-3">
@@ -764,7 +764,7 @@ export default function PlaybookEditor() {
                           (step, i) => (
                             <div
                               key={i}
-                              className="rounded bg-gray-900 px-3 py-1.5 text-xs"
+                              className="rounded bg-surface-2 px-3 py-1.5 text-xs"
                             >
                               <span className="text-gray-500">
                                 {i + 1}.
