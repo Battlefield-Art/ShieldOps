@@ -86,8 +86,9 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 │              Observability Ingestion (OpenTelemetry)          │
 │     Splunk · Datadog · Prometheus · CloudWatch · Elastic      │
 ├──────────────────────────────────────────────────────────────┤
-│              Multi-Cloud Connectors                          │
-│       AWS · GCP · Azure · Kubernetes · Linux · Windows        │
+│              Multi-Cloud & ITSM Connectors (17)              │
+│  AWS · GCP · Azure · K8s · Linux · Windows · Datadog · NR    │
+│  PagerDuty · ServiceNow · Jira · OpsGenie · Splunk · Elastic │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -101,7 +102,7 @@ Python 3.12 · LangGraph · FastAPI · React · TypeScript · Tailwind CSS · Po
 |--------|-------|
 | Autonomous AI agents | 50 |
 | Security & analytics engines | 1,562+ |
-| Cloud connectors | 9 (AWS, GCP, Azure, K8s, Linux, Windows, Splunk, Datadog, Prometheus) |
+| Cloud connectors | 17 (AWS, GCP, Azure, K8s, Linux, Windows, CrowdStrike, Defender, Wiz, Splunk, Elastic, Datadog, New Relic, PagerDuty, ServiceNow, Jira, OpsGenie) |
 | Dashboard pages | 69 |
 | API endpoints | 700+ |
 | OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |

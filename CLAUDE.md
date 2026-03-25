@@ -46,7 +46,7 @@ shieldops --help
 ## Architecture
 
 ### Four Layers
-1. **Connector Layer** — Abstracts cloud/on-prem: AWS, GCP, Azure, Kubernetes, Linux, Windows (`src/shieldops/connectors/{provider}/`)
+1. **Connector Layer** — 17 connectors: AWS, GCP, Azure, Kubernetes, Linux, Windows, CrowdStrike, Microsoft Defender, Wiz, Splunk, Elastic, Datadog, New Relic, PagerDuty, ServiceNow, Jira, OpsGenie (`src/shieldops/connectors/{provider}/`)
 2. **Observability Ingestion** — Vendor-neutral OpenTelemetry (Splunk, Datadog, Prometheus)
 3. **Agent Orchestration** — LangGraph-based agents with graph→nodes→tools pattern
 4. **Policy & Safety** — OPA policies, approval workflows, rollback, compliance
@@ -63,7 +63,7 @@ runner.py     # Entry point — lifecycle management, execution
 policy.py     # OPA policy integration (optional)
 ```
 
-There are 58 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction, otel_pipeline, risk_scoring, auto_learning, security_automation, gitops, telemetry_optimizer, threat_intel, incident_commander, compliance_auditor, otel_collector_manager, adaptive_security, otel_deployer, security_posture, otel_semantic, soar_workflow, otel_tail_sampling, detection_engineering, otel_metrics_pipeline, security_testing, otel_logs_pipeline, threat_modeling, ai_runtime_defense, soc_brain, identity_graph, ai_red_team, ai_blue_team, agent_firewall, nhi_registry, mcp_security.
+There are 61 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction, otel_pipeline, risk_scoring, auto_learning, security_automation, gitops, telemetry_optimizer, threat_intel, incident_commander, compliance_auditor, otel_collector_manager, adaptive_security, otel_deployer, security_posture, otel_semantic, soar_workflow, otel_tail_sampling, detection_engineering, otel_metrics_pipeline, security_testing, otel_logs_pipeline, threat_modeling, ai_runtime_defense, soc_brain, identity_graph, ai_red_team, ai_blue_team, agent_firewall, nhi_registry, mcp_security.
 
 ### Engine Module Pattern
 The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines across 13 packages. Each follows a strict pattern:
@@ -110,10 +110,12 @@ The bulk of the codebase (~1,562+ modules) are analytics/intelligence engines ac
 - Modes: audit (observe only) or enforce (block risky calls)
 - OTEL-compatible telemetry export to any collector (Splunk, Datadog, etc.)
 
-### Security Connectors
-- CrowdStrike Falcon (`connectors/crowdstrike/`) — OAuth2 + RTR commands + Threat Graph
-- Microsoft Defender (`connectors/microsoft_defender/`) — MSAL + KQL advanced hunting
-- Wiz (`connectors/wiz/`) — GraphQL + Security Graph + attack paths
+### Connectors (17 total)
+- **Cloud**: AWS (`connectors/aws/`), GCP, Azure, Kubernetes, Linux, Windows
+- **Security**: CrowdStrike Falcon (OAuth2 + RTR + Threat Graph), Microsoft Defender (MSAL + KQL), Wiz (GraphQL + attack paths)
+- **Observability**: Splunk (REST + HEC + SPL + ITSI), Elastic (DSL + EQL + SIEM), Datadog (metrics + logs + monitors), New Relic (NerdGraph + NRQL + SLIs)
+- **Incident**: PagerDuty (REST + Events API v2), OpsGenie (alerts + on-call)
+- **ITSM**: ServiceNow (Table API + CMDB + change requests), Jira (REST v3 + JQL)
 
 ## Tech Stack
 - Python 3.12+, LangGraph, LangChain, Anthropic Claude (primary LLM)

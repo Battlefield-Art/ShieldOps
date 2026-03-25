@@ -146,5 +146,72 @@ def create_connector_router(settings: Settings) -> ConnectorRouter:
         router.register(elastic)
         logger.info("connector_registered", provider="elastic")
 
+    # Datadog — registered when datadog_api_key is configured
+    if settings.datadog_api_key:
+        from shieldops.connectors.datadog.connector import DatadogConnector
+
+        dd = DatadogConnector(
+            api_key=settings.datadog_api_key,
+            app_key=settings.datadog_app_key,
+            site=settings.datadog_site,
+        )
+        router.register(dd)
+        logger.info("connector_registered", provider="datadog")
+
+    # New Relic — registered when newrelic_api_key is configured
+    if settings.newrelic_api_key:
+        from shieldops.connectors.newrelic.connector import NewRelicConnector
+
+        nr = NewRelicConnector(
+            api_key=settings.newrelic_api_key,
+            account_id=settings.newrelic_account_id,
+            region=settings.newrelic_region,
+        )
+        router.register(nr)
+        logger.info("connector_registered", provider="newrelic")
+
+    # PagerDuty — registered when pagerduty_api_key is configured
+    if settings.pagerduty_api_key:
+        from shieldops.connectors.pagerduty.connector import PagerDutyConnector
+
+        pd_conn = PagerDutyConnector(
+            api_key=settings.pagerduty_api_key,
+            routing_key=getattr(settings, "pagerduty_routing_key", ""),
+        )
+        router.register(pd_conn)
+        logger.info("connector_registered", provider="pagerduty")
+
+    # ServiceNow — registered when servicenow_instance_url is configured
+    if settings.servicenow_instance_url:
+        from shieldops.connectors.servicenow.connector import ServiceNowConnector
+
+        snow = ServiceNowConnector(
+            instance_url=settings.servicenow_instance_url,
+            username=settings.servicenow_username,
+            password=settings.servicenow_password,
+        )
+        router.register(snow)
+        logger.info("connector_registered", provider="servicenow")
+
+    # Jira — registered when jira_base_url is configured
+    if settings.jira_base_url:
+        from shieldops.connectors.jira.connector import JiraConnector
+
+        jira = JiraConnector(
+            base_url=settings.jira_base_url,
+            email=settings.jira_email,
+            api_token=settings.jira_api_token,
+        )
+        router.register(jira)
+        logger.info("connector_registered", provider="jira")
+
+    # OpsGenie — registered when opsgenie_api_key is configured
+    if settings.opsgenie_api_key:
+        from shieldops.connectors.opsgenie.connector import OpsGenieConnector
+
+        og = OpsGenieConnector(api_key=settings.opsgenie_api_key)
+        router.register(og)
+        logger.info("connector_registered", provider="opsgenie")
+
     logger.info("connector_router_ready", providers=router.providers)
     return router

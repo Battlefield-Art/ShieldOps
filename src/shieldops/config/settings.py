@@ -3312,6 +3312,33 @@ class Settings(BaseSettings):
     elastic_api_key: str = ""
     elastic_cloud_id: str = ""
 
+    # Datadog Connector
+    datadog_api_key: str = ""
+    datadog_app_key: str = ""
+    datadog_site: str = "datadoghq.com"
+
+    # New Relic Connector
+    newrelic_api_key: str = ""
+    newrelic_account_id: str = ""
+    newrelic_region: str = "US"
+
+    # PagerDuty Connector
+    pagerduty_api_key: str = ""
+    pagerduty_routing_key: str = ""
+
+    # ServiceNow Connector
+    servicenow_instance_url: str = ""
+    servicenow_username: str = ""
+    servicenow_password: str = ""
+
+    # Jira Connector
+    jira_base_url: str = ""
+    jira_email: str = ""
+    jira_api_token: str = ""
+
+    # OpsGenie Connector
+    opsgenie_api_key: str = ""
+
     model_config = {
         "env_prefix": "SHIELDOPS_",
         "env_file": ".env",
