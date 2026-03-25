@@ -278,3 +278,27 @@ class IdentityRiskEngine:
         self._signals.clear()
         logger.info("identity_risk_engine.cleared")
         return {"status": "cleared"}
+
+
+# Backward-compatibility aliases for pre-Phase-3 code
+class AccessPattern(StrEnum):
+    """Legacy alias — use RiskFactor for new code."""
+
+    NORMAL = "normal"
+    ANOMALOUS = "anomalous"
+    SUSPICIOUS = "suspicious"
+    MALICIOUS = "malicious"
+
+
+class IdentityRiskLevel(StrEnum):
+    """Legacy alias — use RiskAction for new code."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+# Legacy model aliases
+IdentityRiskAnalysis = IdentityRiskReport
+IdentityType = EntityType

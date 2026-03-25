@@ -9,7 +9,7 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from shieldops.db.models.ai_security import (
+from shieldops.db.models_ai_security import (
     FirewallEvent,
     MCPServer,
     NHIdentity,

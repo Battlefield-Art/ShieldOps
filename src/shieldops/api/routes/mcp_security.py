@@ -4,6 +4,7 @@ Provides REST endpoints for MCP ecosystem security scanning, God Key detection,
 supply chain analysis, zero-trust compliance, and gateway policy management.
 """
 
+import time
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -57,6 +58,28 @@ class CreatePolicyRequest(BaseModel):
 
 
 # --- Endpoints ---
+
+
+@router.get("/mcp-security/health")
+async def mcp_security_health() -> dict[str, Any]:
+    """Health check for MCP Security service."""
+    has_runner = _runner is not None
+    components: dict[str, str] = {}
+    if has_runner:
+        components["gateway"] = "ok" if hasattr(_runner, "gateway") else "not_initialized"
+        components["registry"] = "ok" if hasattr(_runner, "registry") else "not_initialized"
+        components["zero_trust"] = "ok" if hasattr(_runner, "zero_trust") else "not_initialized"
+    else:
+        components["gateway"] = "not_initialized"
+        components["registry"] = "not_initialized"
+        components["zero_trust"] = "not_initialized"
+    all_ok = all(v == "ok" for v in components.values())
+    return {
+        "service": "mcp-security",
+        "status": "healthy" if all_ok else "degraded",
+        "components": components,
+        "timestamp": time.time(),
+    }
 
 
 @router.get("/mcp-security/servers")

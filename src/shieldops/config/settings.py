@@ -3301,6 +3301,17 @@ class Settings(BaseSettings):
     wiz_client_secret: str = ""
     wiz_api_endpoint: str = "https://api.us1.app.wiz.io/graphql"
 
+    # Splunk Connector
+    splunk_url: str = ""
+    splunk_token: str = ""
+    splunk_hec_url: str = ""
+    splunk_hec_token: str = ""
+
+    # Elastic Connector
+    elastic_url: str = ""
+    elastic_api_key: str = ""
+    elastic_cloud_id: str = ""
+
     model_config = {
         "env_prefix": "SHIELDOPS_",
         "env_file": ".env",

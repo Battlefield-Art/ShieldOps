@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import structlog
@@ -46,6 +47,21 @@ class UpdateStatusRequest(BaseModel):
 
     status: str
     note: str = ""
+
+
+@router.get("/health")
+async def situations_health() -> dict[str, Any]:
+    """Health check for Situations / SOC Brain service."""
+    components: dict[str, str] = {
+        "soc_brain": "ok" if _engine else "not_initialized",
+    }
+    all_ok = all(v == "ok" for v in components.values())
+    return {
+        "service": "situations",
+        "status": "healthy" if all_ok else "degraded",
+        "components": components,
+        "timestamp": time.time(),
+    }
 
 
 @router.get("")

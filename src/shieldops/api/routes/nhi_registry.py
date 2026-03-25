@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import structlog
@@ -37,6 +38,28 @@ def _require_registry() -> Any:
     if _registry_engine is None:
         raise HTTPException(status_code=501, detail="NHI registry engine not configured")
     return _registry_engine
+
+
+# --------------------------------------------------------------------------
+# Health check
+# --------------------------------------------------------------------------
+
+
+@router.get("/health")
+async def nhi_health() -> dict[str, Any]:
+    """Health check for NHI Registry service."""
+    components = {
+        "registry": "ok" if _registry_engine else "not_initialized",
+        "posture": "ok" if _posture_monitor else "not_initialized",
+        "shadow_ai": "ok" if _shadow_discovery else "not_initialized",
+    }
+    all_ok = all(v == "ok" for v in components.values())
+    return {
+        "service": "nhi-registry",
+        "status": "healthy" if all_ok else "degraded",
+        "components": components,
+        "timestamp": time.time(),
+    }
 
 
 # --------------------------------------------------------------------------

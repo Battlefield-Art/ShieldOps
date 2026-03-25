@@ -7,13 +7,13 @@ from __future__ import annotations
 import pytest
 
 from shieldops.security.identity_risk_engine import (
-    AccessPattern,
-    IdentityRiskAnalysis,
+    EntityType,
     IdentityRiskEngine,
-    IdentityRiskLevel,
     IdentityRiskRecord,
     IdentityRiskReport,
-    IdentityType,
+    RiskAction,
+    RiskFactor,
+    RiskSignal,
 )
 from shieldops.security.ioc_lifecycle_engine import (
     IOCAction,
@@ -328,23 +328,29 @@ class TestSoarPlaybookAnalyticsEngine:
 
 
 class TestIdentityRiskEnums:
-    def test_identity_risk_level_values(self) -> None:
-        assert IdentityRiskLevel.CRITICAL == "critical"
-        assert IdentityRiskLevel.HIGH == "high"
-        assert IdentityRiskLevel.MEDIUM == "medium"
-        assert IdentityRiskLevel.LOW == "low"
+    def test_risk_factor_values(self) -> None:
+        assert RiskFactor.EXCESSIVE_PERMISSIONS == "excessive_permissions"
+        assert RiskFactor.NO_MFA == "no_mfa"
+        assert RiskFactor.STALE_CREDENTIALS == "stale_credentials"
+        assert RiskFactor.IMPOSSIBLE_TRAVEL == "impossible_travel"
+        assert RiskFactor.PRIVILEGE_ESCALATION == "privilege_escalation"
+        assert RiskFactor.LATERAL_MOVEMENT == "lateral_movement"
 
-    def test_access_pattern_values(self) -> None:
-        assert AccessPattern.NORMAL == "normal"
-        assert AccessPattern.ANOMALOUS == "anomalous"
-        assert AccessPattern.IMPOSSIBLE_TRAVEL == "impossible_travel"
-        assert AccessPattern.PRIVILEGE_ESCALATION == "privilege_escalation"
+    def test_entity_type_values(self) -> None:
+        assert EntityType.HUMAN == "human"
+        assert EntityType.SERVICE_ACCOUNT == "service_account"
+        assert EntityType.AI_AGENT == "ai_agent"
+        assert EntityType.FEDERATED_IDENTITY == "federated_identity"
+        assert EntityType.GUEST == "guest"
+        assert EntityType.EXTERNAL_CONTRACTOR == "external_contractor"
 
-    def test_identity_type_values(self) -> None:
-        assert IdentityType.USER == "user"
-        assert IdentityType.SERVICE == "service"
-        assert IdentityType.API_KEY == "api_key"
-        assert IdentityType.MACHINE == "machine"
+    def test_risk_action_values(self) -> None:
+        assert RiskAction.MONITOR == "monitor"
+        assert RiskAction.RESTRICT == "restrict"
+        assert RiskAction.REQUIRE_MFA == "require_mfa"
+        assert RiskAction.REVOKE == "revoke"
+        assert RiskAction.QUARANTINE == "quarantine"
+        assert RiskAction.ESCALATE == "escalate"
 
 
 class TestIdentityRiskModels:
@@ -353,33 +359,33 @@ class TestIdentityRiskModels:
         assert r.id
         assert r.identity_id == ""
         assert r.identity_name == ""
-        assert r.identity_risk_level == IdentityRiskLevel.LOW
-        assert r.access_pattern == AccessPattern.NORMAL
-        assert r.identity_type == IdentityType.USER
-        assert r.risk_score == 0.0
-        assert r.privileges_used == 0
-        assert r.privileges_granted == 0
-        assert r.failed_auth_count == 0
+        assert r.entity_type == EntityType.HUMAN
+        assert r.risk_factors == []
+        assert r.composite_risk_score == 0.0
+        assert r.recommended_action == RiskAction.MONITOR
+        assert r.details == ""
         assert r.created_at > 0
 
-    def test_analysis_defaults(self) -> None:
-        a = IdentityRiskAnalysis()
-        assert a.id
-        assert a.composite_score == 0.0
-        assert a.identity_risk_level == IdentityRiskLevel.LOW
-        assert a.access_pattern == AccessPattern.NORMAL
-        assert a.created_at > 0
+    def test_signal_defaults(self) -> None:
+        s = RiskSignal()
+        assert s.id
+        assert s.identity_id == ""
+        assert s.risk_factor == RiskFactor.EXCESSIVE_PERMISSIONS
+        assert s.severity == 0.0
+        assert s.evidence == ""
+        assert s.source == ""
+        assert s.detected_at > 0
 
     def test_report_defaults(self) -> None:
         rpt = IdentityRiskReport()
-        assert rpt.total_records == 0
-        assert rpt.total_analyses == 0
-        assert rpt.avg_risk_score == 0.0
-        assert rpt.by_identity_risk_level == {}
-        assert rpt.by_access_pattern == {}
-        assert rpt.by_identity_type == {}
-        assert rpt.high_risk_identities == []
+        assert rpt.total_identities == 0
+        assert rpt.total_signals == 0
+        assert rpt.high_risk_count == 0
+        assert rpt.by_entity_type == {}
+        assert rpt.by_risk_factor == {}
+        assert rpt.action_recommendations == {}
         assert rpt.recommendations == []
+        assert rpt.generated_at > 0
 
 
 class TestIdentityRiskEngine:
@@ -387,219 +393,246 @@ class TestIdentityRiskEngine:
     def engine(self) -> IdentityRiskEngine:
         return IdentityRiskEngine(max_records=100)
 
-    def test_add_record(self, engine: IdentityRiskEngine) -> None:
-        rec = engine.add_record(
+    def test_add_risk_signal(self, engine: IdentityRiskEngine) -> None:
+        signal = engine.add_risk_signal(
             identity_id="user-1",
-            identity_name="Alice",
-            identity_risk_level=IdentityRiskLevel.HIGH,
-            access_pattern=AccessPattern.ANOMALOUS,
-            identity_type=IdentityType.USER,
-            risk_score=0.8,
-            login_location="US",
-            privileges_used=5,
-            privileges_granted=20,
-            failed_auth_count=3,
+            risk_factor=RiskFactor.EXCESSIVE_PERMISSIONS,
+            severity=80.0,
+            evidence="Over-privileged account",
+            source="iam-scanner",
         )
-        assert isinstance(rec, IdentityRiskRecord)
-        assert rec.identity_id == "user-1"
-        assert rec.risk_score == 0.8
-        assert rec.identity_name == "Alice"
+        assert isinstance(signal, RiskSignal)
+        assert signal.identity_id == "user-1"
+        assert signal.severity == 80.0
+        assert signal.source == "iam-scanner"
 
-    def test_add_record_defaults(self, engine: IdentityRiskEngine) -> None:
-        rec = engine.add_record()
-        assert rec.identity_risk_level == IdentityRiskLevel.LOW
-        assert rec.access_pattern == AccessPattern.NORMAL
-        assert rec.identity_type == IdentityType.USER
+    def test_add_risk_signal_defaults(self, engine: IdentityRiskEngine) -> None:
+        signal = engine.add_risk_signal(identity_id="default-user")
+        assert signal.risk_factor == RiskFactor.EXCESSIVE_PERMISSIONS
+        assert signal.severity == 0.0
+        assert signal.evidence == ""
 
-    def test_process_found_critical(self, engine: IdentityRiskEngine) -> None:
-        rec = engine.add_record(
+    def test_calculate_composite_risk_high(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
             identity_id="svc-1",
-            risk_score=0.9,
-            access_pattern=AccessPattern.PRIVILEGE_ESCALATION,
+            risk_factor=RiskFactor.PRIVILEGE_ESCALATION,
+            severity=90.0,
         )
-        result = engine.process(rec.id)
-        assert isinstance(result, IdentityRiskAnalysis)
-        # composite = 0.9*0.6 + 0.8*0.4 = 0.54 + 0.32 = 0.86
-        assert result.composite_score == 0.86
-        assert result.identity_risk_level == IdentityRiskLevel.CRITICAL
+        result = engine.calculate_composite_risk("svc-1")
+        assert isinstance(result, IdentityRiskRecord)
+        # weight for PRIVILEGE_ESCALATION = 35.0; score = 35.0 * (90/100) = 31.5
+        assert result.composite_risk_score == 31.5
+        assert result.recommended_action == RiskAction.REQUIRE_MFA
 
-    def test_process_found_low(self, engine: IdentityRiskEngine) -> None:
-        rec = engine.add_record(
+    def test_calculate_composite_risk_low(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
             identity_id="safe-user",
-            risk_score=0.1,
-            access_pattern=AccessPattern.NORMAL,
+            risk_factor=RiskFactor.STALE_CREDENTIALS,
+            severity=10.0,
         )
-        result = engine.process(rec.id)
-        assert isinstance(result, IdentityRiskAnalysis)
-        # composite = 0.1*0.6 + 0.0*0.4 = 0.06
-        assert result.composite_score == 0.06
-        assert result.identity_risk_level == IdentityRiskLevel.LOW
+        result = engine.calculate_composite_risk("safe-user")
+        assert isinstance(result, IdentityRiskRecord)
+        # weight for STALE_CREDENTIALS = 10.0; score = 10.0 * (10/100) = 1.0
+        assert result.composite_risk_score == 1.0
+        assert result.recommended_action == RiskAction.MONITOR
 
-    def test_process_found_medium(self, engine: IdentityRiskEngine) -> None:
-        rec = engine.add_record(
+    def test_calculate_composite_risk_medium(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
             identity_id="mid-user",
-            risk_score=0.5,
-            access_pattern=AccessPattern.ANOMALOUS,
+            risk_factor=RiskFactor.NO_MFA,
+            severity=80.0,
         )
-        result = engine.process(rec.id)
-        assert isinstance(result, IdentityRiskAnalysis)
-        # composite = 0.5*0.6 + 0.3*0.4 = 0.3 + 0.12 = 0.42
-        assert result.composite_score == 0.42
-        assert result.identity_risk_level == IdentityRiskLevel.MEDIUM
+        engine.add_risk_signal(
+            identity_id="mid-user",
+            risk_factor=RiskFactor.STALE_CREDENTIALS,
+            severity=50.0,
+        )
+        result = engine.calculate_composite_risk("mid-user")
+        assert isinstance(result, IdentityRiskRecord)
+        # NO_MFA: 25*0.8=20.0, STALE_CREDENTIALS: 10*0.5=5.0 => total=25.0
+        assert result.composite_risk_score == 25.0
+        assert result.recommended_action == RiskAction.REQUIRE_MFA
 
-    def test_process_not_found(self, engine: IdentityRiskEngine) -> None:
-        result = engine.process("nonexistent")
-        assert isinstance(result, dict)
-        assert result["status"] == "not_found"
-        assert result["key"] == "nonexistent"
+    def test_calculate_composite_risk_no_signals(self, engine: IdentityRiskEngine) -> None:
+        result = engine.calculate_composite_risk("nonexistent")
+        assert isinstance(result, IdentityRiskRecord)
+        assert result.composite_risk_score == 0.0
+        assert result.identity_id == "nonexistent"
 
-    def test_generate_report_populated(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(
+    def test_generate_risk_report_populated(self, engine: IdentityRiskEngine) -> None:
+        # u1 gets high composite: LATERAL_MOVEMENT(40*0.95=38) + PRIVILEGE_ESCALATION(35*0.9=31.5) = 69.5
+        engine.add_risk_signal(
             identity_id="u1",
-            identity_risk_level=IdentityRiskLevel.CRITICAL,
-            risk_score=0.9,
-            identity_type=IdentityType.USER,
+            risk_factor=RiskFactor.LATERAL_MOVEMENT,
+            severity=95.0,
         )
-        engine.add_record(
+        engine.add_risk_signal(
+            identity_id="u1",
+            risk_factor=RiskFactor.PRIVILEGE_ESCALATION,
+            severity=90.0,
+        )
+        engine.add_risk_signal(
             identity_id="u2",
-            identity_risk_level=IdentityRiskLevel.LOW,
-            risk_score=0.1,
-            identity_type=IdentityType.SERVICE,
+            risk_factor=RiskFactor.STALE_CREDENTIALS,
+            severity=10.0,
         )
-        report = engine.generate_report()
+        engine.calculate_composite_risk("u1")
+        engine.calculate_composite_risk("u2")
+        report = engine.generate_risk_report()
         assert isinstance(report, IdentityRiskReport)
-        assert report.total_records == 2
-        assert report.avg_risk_score == 0.5
-        assert "u1" in report.high_risk_identities
-        assert "critical" in report.by_identity_risk_level
-        assert "low" in report.by_identity_risk_level
+        assert report.total_identities == 2
+        assert report.total_signals == 3
+        assert report.high_risk_count >= 1
+        assert len(report.by_risk_factor) >= 1
         assert len(report.recommendations) >= 1
 
-    def test_generate_report_empty(self, engine: IdentityRiskEngine) -> None:
-        report = engine.generate_report()
-        assert report.total_records == 0
-        assert report.avg_risk_score == 0.0
+    def test_generate_risk_report_empty(self, engine: IdentityRiskEngine) -> None:
+        report = engine.generate_risk_report()
+        assert report.total_identities == 0
+        assert report.total_signals == 0
 
-    def test_generate_report_normal_recommendation(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(
+    def test_generate_risk_report_meets_targets(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
             identity_id="safe",
-            identity_risk_level=IdentityRiskLevel.LOW,
-            risk_score=0.1,
+            risk_factor=RiskFactor.STALE_CREDENTIALS,
+            severity=5.0,
         )
-        report = engine.generate_report()
-        assert any("normal parameters" in r for r in report.recommendations)
+        engine.calculate_composite_risk("safe")
+        report = engine.generate_risk_report()
+        assert any("meets targets" in r.lower() for r in report.recommendations)
 
     def test_get_stats(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(identity_risk_level=IdentityRiskLevel.MEDIUM)
+        engine.add_risk_signal(
+            identity_id="test-id",
+            risk_factor=RiskFactor.NO_MFA,
+            severity=50.0,
+        )
         stats = engine.get_stats()
-        assert stats["total_records"] == 1
-        assert stats["total_analyses"] == 0
-        assert "medium" in stats["identity_risk_level_distribution"]
+        assert stats["total_signals"] == 1
+        assert stats["total_records"] == 0
+        assert "no_mfa" in stats["risk_factor_distribution"]
 
     def test_clear_data(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record()
-        rec = engine._records[0]
-        engine.process(rec.id)
+        engine.add_risk_signal(identity_id="clear-me", severity=50.0)
+        engine.calculate_composite_risk("clear-me")
         result = engine.clear_data()
         assert result == {"status": "cleared"}
         assert engine.get_stats()["total_records"] == 0
-        assert engine.get_stats()["total_analyses"] == 0
+        assert engine.get_stats()["total_signals"] == 0
 
     def test_ring_buffer_eviction(self) -> None:
         engine = IdentityRiskEngine(max_records=3)
         for i in range(5):
-            engine.add_record(identity_id=f"id-{i}")
-        assert engine.get_stats()["total_records"] == 3
-        ids = [r.identity_id for r in engine._records]
+            engine.add_risk_signal(identity_id=f"id-{i}", severity=float(i * 10))
+        assert engine.get_stats()["total_signals"] == 3
+        ids = [s.identity_id for s in engine._signals]
         assert "id-0" not in ids
         assert "id-4" in ids
 
-    def test_score_identity_risk(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(identity_id="user-x", risk_score=0.6)
-        engine.add_record(identity_id="user-x", risk_score=0.9)
-        result = engine.score_identity_risk("user-x")
-        assert result["identity_id"] == "user-x"
-        assert result["event_count"] == 2
-        assert result["max_score"] == 0.9
-        # composite = avg(0.75)*0.4 + max(0.9)*0.6 = 0.3 + 0.54 = 0.84
-        assert result["composite_score"] == 0.84
-        assert result["risk_level"] == "critical"
+    def test_calculate_composite_risk_multiple_signals(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
+            identity_id="user-x",
+            risk_factor=RiskFactor.NO_MFA,
+            severity=60.0,
+        )
+        engine.add_risk_signal(
+            identity_id="user-x",
+            risk_factor=RiskFactor.IMPOSSIBLE_TRAVEL,
+            severity=90.0,
+        )
+        result = engine.calculate_composite_risk("user-x")
+        assert result.identity_id == "user-x"
+        # NO_MFA: 25*0.6=15.0, IMPOSSIBLE_TRAVEL: 30*0.9=27.0 => total=42.0
+        assert result.composite_risk_score == 42.0
+        assert len(result.risk_factors) == 2
+        assert result.recommended_action == RiskAction.RESTRICT
 
-    def test_score_identity_risk_no_data(self, engine: IdentityRiskEngine) -> None:
-        result = engine.score_identity_risk("unknown")
-        assert result["risk_level"] == "no_data"
-        assert result["event_count"] == 0
-        assert result["composite_score"] == 0.0
+    def test_calculate_composite_risk_no_data(self, engine: IdentityRiskEngine) -> None:
+        result = engine.calculate_composite_risk("unknown")
+        assert result.composite_risk_score == 0.0
+        assert result.identity_id == "unknown"
 
     def test_detect_anomalous_access(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(
+        engine.add_risk_signal(
             identity_id="u1",
-            access_pattern=AccessPattern.IMPOSSIBLE_TRAVEL,
-            risk_score=0.7,
-            failed_auth_count=5,
-            login_location="Tokyo",
+            risk_factor=RiskFactor.IMPOSSIBLE_TRAVEL,
+            severity=70.0,
+            evidence="Login from Tokyo",
         )
-        engine.add_record(
+        engine.add_risk_signal(
             identity_id="u1",
-            access_pattern=AccessPattern.NORMAL,
-            risk_score=0.1,
+            risk_factor=RiskFactor.STALE_CREDENTIALS,
+            severity=10.0,
         )
         results = engine.detect_anomalous_access()
         assert len(results) == 1
         assert results[0]["identity_id"] == "u1"
-        assert results[0]["anomaly_rate"] == 0.5
-        assert results[0]["severity"] == "high"
-        assert "Tokyo" in results[0]["unique_locations"]
+        assert results[0]["anomalous_signals"] == 1
+        assert "impossible_travel" in results[0]["factors"]
+        assert results[0]["max_severity"] == 70.0
 
-    def test_detect_anomalous_access_critical(self, engine: IdentityRiskEngine) -> None:
+    def test_detect_anomalous_access_lateral_movement(self, engine: IdentityRiskEngine) -> None:
         for _ in range(3):
-            engine.add_record(
+            engine.add_risk_signal(
                 identity_id="bad-user",
-                access_pattern=AccessPattern.ANOMALOUS,
+                risk_factor=RiskFactor.LATERAL_MOVEMENT,
+                severity=85.0,
             )
         results = engine.detect_anomalous_access()
         assert len(results) == 1
-        assert results[0]["anomaly_rate"] == 1.0
-        assert results[0]["severity"] == "critical"
+        assert results[0]["anomalous_signals"] == 3
+        assert results[0]["max_severity"] == 85.0
 
     def test_detect_anomalous_access_empty(self, engine: IdentityRiskEngine) -> None:
         assert engine.detect_anomalous_access() == []
 
-    def test_recommend_access_changes(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(
+    def test_recommend_actions(self, engine: IdentityRiskEngine) -> None:
+        # Need score > 20 to get non-MONITOR action: NO_MFA(25*0.8=20) + EXCESSIVE(15*0.8=12) = 32
+        engine.add_risk_signal(
             identity_id="svc-1",
-            privileges_granted=100,
-            privileges_used=5,
-            risk_score=0.2,
+            risk_factor=RiskFactor.NO_MFA,
+            severity=80.0,
         )
-        results = engine.recommend_access_changes()
-        assert len(results) == 1
-        assert results[0]["usage_ratio"] == 0.05
-        assert any("Revoke" in c for c in results[0]["recommended_changes"])
+        engine.add_risk_signal(
+            identity_id="svc-1",
+            risk_factor=RiskFactor.EXCESSIVE_PERMISSIONS,
+            severity=80.0,
+        )
+        engine.calculate_composite_risk("svc-1")
+        results = engine.recommend_actions()
+        assert len(results) >= 1
+        assert results[0]["identity_id"] == "svc-1"
+        assert results[0]["recommended_action"] in [a.value for a in RiskAction]
 
-    def test_recommend_access_changes_high_risk(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(
+    def test_recommend_actions_high_risk(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
             identity_id="risky",
-            privileges_granted=10,
-            privileges_used=9,
-            risk_score=0.8,
+            risk_factor=RiskFactor.PRIVILEGE_ESCALATION,
+            severity=95.0,
         )
-        results = engine.recommend_access_changes()
-        assert len(results) == 1
-        assert any("MFA" in c for c in results[0]["recommended_changes"])
+        engine.add_risk_signal(
+            identity_id="risky",
+            risk_factor=RiskFactor.LATERAL_MOVEMENT,
+            severity=90.0,
+        )
+        engine.calculate_composite_risk("risky")
+        results = engine.recommend_actions()
+        assert len(results) >= 1
+        assert results[0]["risk_score"] > 0
 
-    def test_recommend_access_changes_priv_escalation(self, engine: IdentityRiskEngine) -> None:
-        engine.add_record(
+    def test_recommend_actions_priv_escalation(self, engine: IdentityRiskEngine) -> None:
+        engine.add_risk_signal(
             identity_id="escalator",
-            privileges_granted=20,
-            privileges_used=15,
-            access_pattern=AccessPattern.PRIVILEGE_ESCALATION,
+            risk_factor=RiskFactor.PRIVILEGE_ESCALATION,
+            severity=70.0,
         )
-        results = engine.recommend_access_changes()
-        assert any("privilege escalation" in c.lower() for c in results[0]["recommended_changes"])
+        engine.calculate_composite_risk("escalator")
+        results = engine.recommend_actions()
+        assert len(results) >= 1
+        assert "privilege_escalation" in results[0]["risk_factors"]
 
-    def test_recommend_access_changes_empty(self, engine: IdentityRiskEngine) -> None:
-        assert engine.recommend_access_changes() == []
+    def test_recommend_actions_empty(self, engine: IdentityRiskEngine) -> None:
+        assert engine.recommend_actions() == []
 
 
 # ============================================================

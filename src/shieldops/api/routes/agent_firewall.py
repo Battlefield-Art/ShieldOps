@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import structlog
@@ -52,6 +53,23 @@ class CreatePolicyRequest(BaseModel):
 
 
 # --- Routes ---
+
+
+@router.get("/health")
+async def firewall_health() -> dict[str, Any]:
+    """Health check for Agent Firewall service."""
+    components = {
+        "firewall_engine": "ok" if _firewall else "not_initialized",
+        "interceptor": "ok" if _interceptor else "not_initialized",
+        "baseline": "ok" if _baseline else "not_initialized",
+    }
+    all_ok = all(v == "ok" for v in components.values())
+    return {
+        "service": "agent-firewall",
+        "status": "healthy" if all_ok else "degraded",
+        "components": components,
+        "timestamp": time.time(),
+    }
 
 
 @router.get("/agents")

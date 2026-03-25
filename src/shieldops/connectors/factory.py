@@ -121,5 +121,30 @@ def create_connector_router(settings: Settings) -> ConnectorRouter:
         router.register(wiz)
         logger.info("connector_registered", provider="wiz")
 
+    # Splunk — registered when splunk_url is configured
+    if settings.splunk_url:
+        from shieldops.connectors.splunk.connector import SplunkConnector
+
+        splunk = SplunkConnector(
+            base_url=settings.splunk_url,
+            token=settings.splunk_token,
+            hec_url=settings.splunk_hec_url,
+            hec_token=settings.splunk_hec_token,
+        )
+        router.register(splunk)
+        logger.info("connector_registered", provider="splunk")
+
+    # Elastic — registered when elastic_url is configured
+    if settings.elastic_url:
+        from shieldops.connectors.elastic.connector import ElasticConnector
+
+        elastic = ElasticConnector(
+            url=settings.elastic_url,
+            api_key=settings.elastic_api_key,
+            cloud_id=settings.elastic_cloud_id,
+        )
+        router.register(elastic)
+        logger.info("connector_registered", provider="elastic")
+
     logger.info("connector_router_ready", providers=router.providers)
     return router
