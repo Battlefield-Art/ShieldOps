@@ -80,6 +80,30 @@ const SituationDetail = lazy(() => import("./pages/SituationDetail"));
 const AgentFirewall = lazy(() => import("./pages/AgentFirewall"));
 const NHIRegistry = lazy(() => import("./pages/NHIRegistry"));
 const MCPSecurity = lazy(() => import("./pages/MCPSecurity"));
+const DataPipelineSecurity = lazy(() => import("./pages/DataPipelineSecurity"));
+const CredentialLifecycle = lazy(() => import("./pages/CredentialLifecycle"));
+const VendorNormalizer = lazy(() => import("./pages/VendorNormalizer"));
+const AttackCampaign = lazy(() => import("./pages/AttackCampaign"));
+const SituationComposer = lazy(() => import("./pages/SituationComposer"));
+const ComplianceReporter = lazy(() => import("./pages/ComplianceReporter"));
+const OAuthAnalyzer = lazy(() => import("./pages/OAuthAnalyzer"));
+const LateralMovement = lazy(() => import("./pages/LateralMovement"));
+const ShadowAIDiscovery = lazy(() => import("./pages/ShadowAIDiscovery"));
+const SecretsScanner = lazy(() => import("./pages/SecretsScanner"));
+const APISecurity = lazy(() => import("./pages/APISecurity"));
+const PolicyEngine = lazy(() => import("./pages/PolicyEngine"));
+const CloudPosture = lazy(() => import("./pages/CloudPosture"));
+const ContainerSecurity = lazy(() => import("./pages/ContainerSecurity"));
+const SupplyChainSecurity = lazy(() => import("./pages/SupplyChainSecurity"));
+const IncidentTriage = lazy(() => import("./pages/IncidentTriage"));
+const ChangeRiskAnalyzer = lazy(() => import("./pages/ChangeRiskAnalyzer"));
+const CostAnomaly = lazy(() => import("./pages/CostAnomaly"));
+const AdversarialValidation = lazy(() => import("./pages/AdversarialValidation"));
+const MCPGateway = lazy(() => import("./pages/MCPGateway"));
+const ServiceAccountTracker = lazy(() => import("./pages/ServiceAccountTracker"));
+const DataClassification = lazy(() => import("./pages/DataClassification"));
+const AccessReview = lazy(() => import("./pages/AccessReview"));
+const RunbookAutomation = lazy(() => import("./pages/RunbookAutomation"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -220,6 +244,30 @@ export default function App() {
               <Route path="agent-firewall" element={<AgentFirewall />} />
               <Route path="nhi-registry" element={<NHIRegistry />} />
               <Route path="mcp-security" element={<MCPSecurity />} />
+              <Route path="data-pipeline-security" element={<DataPipelineSecurity />} />
+              <Route path="credential-lifecycle" element={<CredentialLifecycle />} />
+              <Route path="vendor-normalizer" element={<VendorNormalizer />} />
+              <Route path="attack-campaign" element={<AttackCampaign />} />
+              <Route path="situation-composer" element={<SituationComposer />} />
+              <Route path="compliance-reporter" element={<ComplianceReporter />} />
+              <Route path="oauth-analyzer" element={<OAuthAnalyzer />} />
+              <Route path="lateral-movement" element={<LateralMovement />} />
+              <Route path="shadow-ai-discovery" element={<ShadowAIDiscovery />} />
+              <Route path="secrets-scanner" element={<SecretsScanner />} />
+              <Route path="api-security" element={<APISecurity />} />
+              <Route path="policy-engine" element={<PolicyEngine />} />
+              <Route path="cloud-posture" element={<CloudPosture />} />
+              <Route path="container-security" element={<ContainerSecurity />} />
+              <Route path="supply-chain-security" element={<SupplyChainSecurity />} />
+              <Route path="incident-triage" element={<IncidentTriage />} />
+              <Route path="change-risk-analyzer" element={<ChangeRiskAnalyzer />} />
+              <Route path="cost-anomaly" element={<CostAnomaly />} />
+              <Route path="adversarial-validation" element={<AdversarialValidation />} />
+              <Route path="mcp-gateway" element={<MCPGateway />} />
+              <Route path="service-account-tracker" element={<ServiceAccountTracker />} />
+              <Route path="data-classification" element={<DataClassification />} />
+              <Route path="access-review" element={<AccessReview />} />
+              <Route path="runbook-automation" element={<RunbookAutomation />} />
             </Route>
 
             {/* Catch-all */}

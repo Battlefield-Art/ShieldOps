@@ -245,6 +245,30 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "agent_firewall",
                 "nhi_registry",
                 "mcp_security",
+                "data_pipeline_security",
+                "credential_lifecycle",
+                "vendor_normalizer",
+                "attack_campaign",
+                "situation_composer",
+                "compliance_reporter",
+                "oauth_analyzer",
+                "lateral_movement",
+                "shadow_ai_discovery",
+                "secrets_scanner",
+                "api_security",
+                "policy_engine",
+                "cloud_posture",
+                "container_security",
+                "supply_chain_security",
+                "incident_triage",
+                "change_risk_analyzer",
+                "cost_anomaly",
+                "adversarial_validation",
+                "mcp_gateway",
+                "service_account_tracker",
+                "data_classification",
+                "access_review",
+                "runbook_automation",
             ):
                 try:
                     await agent_registry.register(
@@ -13844,6 +13868,40 @@ def create_app() -> FastAPI:
         prefix=settings.api_prefix,
         tags=["Identity Graph"],
     )
+
+    # ── Phase 142-145 agent routes ────────────────────────────────────
+    _p142_routes: dict[str, Any] = {}
+    for _rname in (
+        "data_pipeline_security",
+        "credential_lifecycle",
+        "vendor_normalizer",
+        "attack_campaign",
+        "situation_composer",
+        "oauth_analyzer",
+        "shadow_ai_discovery",
+        "secrets_scanner",
+        "policy_engine",
+        "cloud_posture",
+        "container_security",
+        "supply_chain_security",
+        "incident_triage",
+        "change_risk_analyzer",
+        "adversarial_validation",
+        "mcp_gateway",
+        "service_account_tracker",
+        "runbook_automation",
+    ):
+        try:
+            _mod = __import__(f"shieldops.api.routes.{_rname}", fromlist=["router"])
+            _p142_routes[_rname] = _mod
+        except ImportError:
+            pass
+    for _rname, _rmod in _p142_routes.items():
+        _tag = _rname.replace("_", " ").title()
+        app.include_router(_rmod.router, prefix=settings.api_prefix, tags=[_tag])
+    if _p142_routes:
+        logger.info("phase_142_145_routes_registered", count=len(_p142_routes))
+
     if audit_reports_routes is not None:
         app.include_router(
             audit_reports_routes.router,
