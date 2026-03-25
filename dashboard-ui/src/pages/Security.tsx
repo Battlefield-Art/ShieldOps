@@ -193,7 +193,7 @@ export default function Security() {
           {/* Charts */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Severity Distribution */}
-            <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+            <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
               <h3 className="section-heading mb-4">
                 Severity Distribution
               </h3>
@@ -237,7 +237,7 @@ export default function Security() {
             </div>
 
             {/* Status Distribution */}
-            <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+            <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
               <h3 className="section-heading mb-4">
                 Status Distribution
               </h3>
@@ -268,7 +268,7 @@ export default function Security() {
           {/* Quick link to full vulnerability list */}
           <button
             onClick={() => navigate("/app/vulnerabilities")}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-700 py-3 text-sm text-gray-300 hover:bg-gray-800"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.1] py-3 text-sm text-gray-300 hover:bg-white/[0.04]"
           >
             <Bug className="h-4 w-4" />
             View All Vulnerabilities
@@ -295,7 +295,7 @@ export default function Security() {
 
       {/* ── Compliance tab ────────────────────────────────────────────── */}
       {activeTab === "Compliance" && (
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
           <h3 className="section-heading mb-4">
             Compliance Frameworks
           </h3>
@@ -315,7 +315,7 @@ export default function Security() {
                     <span className="w-20 text-sm font-medium uppercase text-gray-300">
                       {framework}
                     </span>
-                    <div className="h-3 flex-1 rounded-full bg-gray-800">
+                    <div className="h-3 flex-1 rounded-full bg-surface-3">
                       <div
                         className={clsx(
                           "h-3 rounded-full",

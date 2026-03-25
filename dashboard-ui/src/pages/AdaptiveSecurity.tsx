@@ -4,6 +4,9 @@ import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 
+type ThresholdStatus = "active" | "proposed" | "retired";
+
+
 const MOCK_THRESHOLDS = [
   { name: "Login Failure Rate", type: "Rate", current: "5/min", proposed: "8/min", drift: 3.2, status: "active" as ThresholdStatus },
   { name: "API Error Spike", type: "Anomaly", current: "2σ", proposed: "2.5σ", drift: 12.5, status: "proposed" as ThresholdStatus },

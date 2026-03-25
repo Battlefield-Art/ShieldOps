@@ -77,7 +77,7 @@ function InviteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <div className="w-full max-w-md rounded-xl border border-white/[0.06] bg-surface-2 p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-50">
             Invite User
@@ -100,8 +100,8 @@ function InviteModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={clsx(
-                "w-full rounded-lg border border-gray-700",
-                "bg-gray-800 px-3 py-2 text-sm",
+                "w-full rounded-lg border border-white/[0.1]",
+                "bg-surface-3 px-3 py-2 text-sm",
                 "text-gray-200 placeholder-gray-500",
                 "focus:border-brand-500 focus:outline-none"
               )}
@@ -118,8 +118,8 @@ function InviteModal({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={clsx(
-                "w-full rounded-lg border border-gray-700",
-                "bg-gray-800 px-3 py-2 text-sm",
+                "w-full rounded-lg border border-white/[0.1]",
+                "bg-surface-3 px-3 py-2 text-sm",
                 "text-gray-200 placeholder-gray-500",
                 "focus:border-brand-500 focus:outline-none"
               )}
@@ -136,8 +136,8 @@ function InviteModal({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={clsx(
-                "w-full rounded-lg border border-gray-700",
-                "bg-gray-800 px-3 py-2 text-sm",
+                "w-full rounded-lg border border-white/[0.1]",
+                "bg-surface-3 px-3 py-2 text-sm",
                 "text-gray-200 placeholder-gray-500",
                 "focus:border-brand-500 focus:outline-none"
               )}
@@ -153,8 +153,8 @@ function InviteModal({
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className={clsx(
-                "w-full rounded-lg border border-gray-700",
-                "bg-gray-800 px-3 py-2 text-sm text-gray-200"
+                "w-full rounded-lg border border-white/[0.1]",
+                "bg-surface-3 px-3 py-2 text-sm text-gray-200"
               )}
             >
               {ROLES.map((r) => (
@@ -177,9 +177,9 @@ function InviteModal({
               type="button"
               onClick={onClose}
               className={clsx(
-                "rounded-lg border border-gray-700 px-4 py-2",
+                "rounded-lg border border-white/[0.1] px-4 py-2",
                 "text-sm text-gray-300",
-                "transition-colors hover:bg-gray-800"
+                "transition-colors hover:bg-white/[0.04]"
               )}
             >
               Cancel
@@ -219,7 +219,7 @@ function ConfirmDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-sm rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <div className="w-full max-w-sm rounded-xl border border-white/[0.06] bg-surface-2 p-6">
         <div className="flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 text-yellow-400" />
           <h3 className="font-semibold text-gray-100">
@@ -241,9 +241,9 @@ function ConfirmDialog({
           <button
             onClick={onCancel}
             className={clsx(
-              "rounded-lg border border-gray-700 px-4 py-2",
+              "rounded-lg border border-white/[0.1] px-4 py-2",
               "text-sm text-gray-300",
-              "transition-colors hover:bg-gray-800"
+              "transition-colors hover:bg-white/[0.04]"
             )}
           >
             Cancel
@@ -364,10 +364,10 @@ export default function UserManagement() {
       </div>
 
       {/* Users Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+      <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-800/60 text-left text-xs uppercase tracking-wider text-gray-500">
+            <tr className="border-b border-white/[0.04] text-left text-xs uppercase tracking-wider text-gray-500">
               <th className="px-5 py-3.5">User</th>
               <th className="px-5 py-3.5">Role</th>
               <th className="px-5 py-3.5">Status</th>
@@ -379,7 +379,7 @@ export default function UserManagement() {
             {users.map((u) => (
               <tr
                 key={u.id}
-                className="transition-colors hover:bg-gray-800/30"
+                className="transition-colors hover:bg-white/[0.03]"
               >
                 <td className="px-5 py-3.5">
                   <div className="font-medium text-gray-100">
@@ -400,8 +400,8 @@ export default function UserManagement() {
                     }
                     disabled={u.id === currentUser?.id}
                     className={clsx(
-                      "rounded-lg border border-gray-700",
-                      "bg-gray-800 px-2 py-1 text-xs",
+                      "rounded-lg border border-white/[0.1]",
+                      "bg-surface-3 px-2 py-1 text-xs",
                       "text-gray-200",
                       "disabled:opacity-50"
                     )}

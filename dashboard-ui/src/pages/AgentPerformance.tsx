@@ -81,7 +81,7 @@ function successRateBarColor(rate: number): string {
 }
 
 function heatmapCellColor(count: number, maxCount: number): string {
-  if (maxCount === 0 || count === 0) return "bg-gray-800";
+  if (maxCount === 0 || count === 0) return "bg-surface-3";
   const ratio = count / maxCount;
   if (ratio > 0.75) return "bg-blue-500";
   if (ratio > 0.5) return "bg-blue-600/70";
@@ -121,7 +121,7 @@ function ExecutionTrendChart({
 
   if (mergedData.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
         <h2 className="mb-4 text-lg font-semibold text-gray-100">
           Execution Trends
         </h2>
@@ -133,7 +133,7 @@ function ExecutionTrendChart({
   }
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
       <div className="mb-4 flex items-center gap-2">
         <Activity className="h-5 w-5 text-blue-400" />
         <h2 className="text-lg font-semibold text-gray-100">
@@ -204,7 +204,7 @@ function SuccessRateChart({
   }));
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
       <div className="mb-4 flex items-center gap-2">
         <CheckCircle className="h-5 w-5 text-emerald-400" />
         <h2 className="text-lg font-semibold text-gray-100">
@@ -284,7 +284,7 @@ function ActivityHeatmap({ heatmap }: { heatmap: HeatmapCell[] }) {
 
   if (heatmap.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
         <div className="mb-4 flex items-center gap-2">
           <Clock className="h-5 w-5 text-sky-400" />
           <h2 className="text-lg font-semibold text-gray-100">
@@ -299,7 +299,7 @@ function ActivityHeatmap({ heatmap }: { heatmap: HeatmapCell[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
       <div className="mb-4 flex items-center gap-2">
         <Clock className="h-5 w-5 text-sky-400" />
         <h2 className="text-lg font-semibold text-gray-100">
@@ -344,7 +344,7 @@ function ActivityHeatmap({ heatmap }: { heatmap: HeatmapCell[] }) {
           {/* Legend */}
           <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-gray-500">
             <span>Less</span>
-            <div className="h-3 w-3 rounded-sm bg-gray-800" />
+            <div className="h-3 w-3 rounded-sm bg-surface-3" />
             <div className="h-3 w-3 rounded-sm bg-blue-900/40" />
             <div className="h-3 w-3 rounded-sm bg-blue-700/50" />
             <div className="h-3 w-3 rounded-sm bg-blue-600/70" />
@@ -403,11 +403,11 @@ function AgentTable({ agents }: { agents: AgentPerformanceAgent[] }) {
     "hover:text-gray-200 transition-colors";
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-800">
+            <tr className="border-b border-white/[0.06]">
               <th
                 className={headerClass}
                 onClick={() => handleSort("agent_type")}
@@ -458,7 +458,7 @@ function AgentTable({ agents }: { agents: AgentPerformanceAgent[] }) {
               return (
                 <tr
                   key={agent.agent_type}
-                  className="transition-colors hover:bg-gray-800/40"
+                  className="transition-colors hover:bg-white/[0.03]"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -564,7 +564,7 @@ export default function AgentPerformance() {
             value={agentTypeFilter}
             onChange={(e) => setAgentTypeFilter(e.target.value)}
             className={clsx(
-              "rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5",
+              "rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5",
               "text-sm text-gray-300 outline-none",
               "focus:border-brand-500 focus:ring-1 focus:ring-brand-500",
             )}
@@ -578,7 +578,7 @@ export default function AgentPerformance() {
           </select>
 
           {/* Period pills */}
-          <div className="flex rounded-lg border border-gray-700 bg-gray-800">
+          <div className="flex rounded-lg border border-white/[0.1] bg-surface-3">
             {PERIODS.map(({ label, value }) => (
               <button
                 key={value}
@@ -588,7 +588,7 @@ export default function AgentPerformance() {
                   "first:rounded-l-lg last:rounded-r-lg",
                   period === value
                     ? "bg-brand-600 text-white"
-                    : "text-gray-400 hover:bg-gray-700 hover:text-gray-200",
+                    : "text-gray-400 hover:bg-white/[0.06] hover:text-gray-200",
                 )}
               >
                 {label}

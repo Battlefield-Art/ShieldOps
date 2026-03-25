@@ -1,4 +1,3 @@
-import clsx from "clsx";
 
 interface EmptyStateProps {
   icon: React.ReactNode;

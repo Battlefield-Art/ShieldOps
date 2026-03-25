@@ -46,7 +46,7 @@ export default function Settings() {
       <h1 className="text-2xl font-bold text-gray-100">Settings</h1>
 
       {/* Tab navigation */}
-      <div className="flex gap-1 rounded-lg bg-gray-900 p-1">
+      <div className="flex gap-1 rounded-lg bg-surface-1 p-1">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -54,8 +54,8 @@ export default function Settings() {
             className={clsx(
               "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
               activeTab === tab.key
-                ? "bg-gray-800 text-gray-100"
-                : "text-gray-400 hover:text-gray-200",
+                ? "bg-surface-3 text-gray-100 shadow-sm"
+                : "text-gray-500 hover:text-gray-300",
             )}
           >
             {tab.icon}

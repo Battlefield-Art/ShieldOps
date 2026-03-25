@@ -4,6 +4,9 @@ import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 
+type Confidence = "confirmed" | "high" | "medium" | "low" | "unverified" | "suspicious" | "likely" | "probable";
+
+
 const MOCK_INDICATORS = [
   { value: "185.220.101.34", type: "IP", source: "AlienVault OTX", confidence: "confirmed" as Confidence, relevance: "High" },
   { value: "malware-c2.evil.com", type: "Domain", source: "Mandiant", confidence: "confirmed" as Confidence, relevance: "Critical" },

@@ -128,7 +128,7 @@ function RunWorkflowButton({ onRun }: { onRun: (type: WorkflowType) => void }) {
         <ChevronDown className={clsx("h-4 w-4 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-lg">
+        <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-white/[0.1] bg-surface-3 py-1 shadow-lg">
           {(Object.keys(WORKFLOW_LABELS) as WorkflowType[]).map((type) => (
             <button
               key={type}
@@ -137,7 +137,7 @@ function RunWorkflowButton({ onRun }: { onRun: (type: WorkflowType) => void }) {
                 onRun(type);
                 setOpen(false);
               }}
-              className="block w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-700"
+              className="block w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-white/[0.06]"
             >
               {WORKFLOW_LABELS[type]}
             </button>
@@ -165,7 +165,7 @@ function StepIndicator({ steps }: { steps: WorkflowStep[] }) {
                     ? "border-green-500/20 bg-green-500/5"
                     : step.status === "failed"
                       ? "border-red-500/20 bg-red-500/5"
-                      : "border-gray-700 bg-gray-800/50",
+                      : "border-white/[0.1] bg-white/[0.04]",
               )}
               title={`${step.agent_type}: ${step.action.replace(/_/g, " ")}`}
             >
@@ -201,7 +201,7 @@ function ActiveRunCard({
   onCancel: (id: string) => void;
 }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
+    <div className="rounded-lg border border-white/[0.06] bg-surface-2 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ function ActiveRunCard({
           <button
             type="button"
             onClick={() => onCancel(run.id)}
-            className="inline-flex items-center gap-1.5 rounded-md border border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-red-500/50 hover:text-red-400"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-red-500/50 hover:text-red-400"
           >
             <Square className="h-3 w-3" />
             Cancel
@@ -244,7 +244,7 @@ function ExpandableRunRow({ run }: { run: WorkflowRun }) {
     <>
       <tr
         onClick={() => setExpanded(!expanded)}
-        className="cursor-pointer border-b border-gray-800 transition-colors hover:bg-gray-900"
+        className="cursor-pointer border-b border-white/[0.06] transition-colors hover:bg-surface-2"
       >
         <td className="px-5 py-3.5">
           <div className="flex items-center gap-1.5">
@@ -271,8 +271,8 @@ function ExpandableRunRow({ run }: { run: WorkflowRun }) {
         </td>
       </tr>
       {expanded && (
-        <tr className="border-b border-gray-800">
-          <td colSpan={6} className="bg-gray-900/50 px-4 py-3">
+        <tr className="border-b border-white/[0.06]">
+          <td colSpan={6} className="bg-surface-1 px-4 py-3">
             <div className="space-y-2">
               {run.steps.map((step) => {
                 const AgentIcon = AGENT_ICONS[step.agent_type] ?? Bot;
@@ -280,7 +280,7 @@ function ExpandableRunRow({ run }: { run: WorkflowRun }) {
                 return (
                   <div
                     key={step.id}
-                    className="flex items-start gap-3 rounded-md border border-gray-800 bg-gray-950 px-3 py-2"
+                    className="flex items-start gap-3 rounded-md border border-white/[0.06] bg-surface-0 px-3 py-2"
                   >
                     <AgentIcon
                       className={clsx("mt-0.5 h-4 w-4 shrink-0", STEP_STATUS_COLOR[step.status])}
@@ -406,7 +406,7 @@ export default function Workflows() {
       )}
 
       {activeRuns.length === 0 && (
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center">
+        <div className="rounded-lg border border-white/[0.06] bg-surface-2 p-8 text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-gray-600" />
           <p className="mt-2 text-sm text-gray-500">No active workflow runs.</p>
         </div>
@@ -423,7 +423,7 @@ export default function Workflows() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+              className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             >
               <option value="all">All Statuses</option>
               <option value="running">Running</option>
@@ -437,14 +437,14 @@ export default function Workflows() {
         </div>
 
         {recentRuns.length === 0 ? (
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-12 text-center">
+          <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-12 text-center">
             <p className="text-sm text-gray-500">No runs match this filter.</p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-800/80 shadow-card">
+          <div className="overflow-hidden rounded-xl border border-white/[0.06] shadow-card">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800/60 bg-gray-900">
+                <tr className="border-b border-white/[0.04] bg-surface-2">
                   <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Workflow
                   </th>
@@ -465,7 +465,7 @@ export default function Workflows() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-gray-950">
+              <tbody className="bg-surface-0">
                 {recentRuns.map((run) => (
                   <ExpandableRunRow key={run.id} run={run} />
                 ))}
@@ -480,10 +480,10 @@ export default function Workflows() {
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-500">
           Escalation Policies
         </h2>
-        <div className="overflow-hidden rounded-xl border border-gray-800/80 shadow-card">
+        <div className="overflow-hidden rounded-xl border border-white/[0.06] shadow-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 bg-gray-900">
+              <tr className="border-b border-white/[0.04] bg-surface-2">
                 <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Severity
                 </th>
@@ -498,7 +498,7 @@ export default function Workflows() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/40 bg-gray-950">
+            <tbody className="divide-y divide-gray-800/40 bg-surface-0">
               {ESCALATION_POLICIES.map((policy) => (
                 <tr key={policy.severity}>
                   <td className="px-5 py-3.5">
@@ -516,7 +516,7 @@ export default function Workflows() {
                       {policy.notify_channels.map((ch) => (
                         <span
                           key={ch}
-                          className="inline-flex rounded bg-gray-800 px-1.5 py-0.5 text-xs text-gray-300"
+                          className="inline-flex rounded bg-surface-3 px-1.5 py-0.5 text-xs text-gray-300"
                         >
                           {ch}
                         </span>

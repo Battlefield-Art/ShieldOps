@@ -92,7 +92,7 @@ export default function Investigations() {
         const pct = Math.round(row.confidence * 100);
         return (
           <div className="flex items-center gap-2">
-            <div className="h-1.5 w-16 rounded-full bg-gray-800">
+            <div className="h-1.5 w-16 rounded-full bg-surface-3">
               <div
                 className="h-1.5 rounded-full bg-brand-500"
                 style={{ width: `${pct}%` }}
@@ -164,7 +164,7 @@ export default function Investigations() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -175,7 +175,7 @@ export default function Investigations() {
         <select
           value={severityFilter}
           onChange={(e) => setSeverityFilter(e.target.value)}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           {SEVERITY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>

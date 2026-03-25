@@ -86,7 +86,7 @@ export default function Cost() {
   }) {
     if (!active || !payload?.length) return null;
     return (
-      <div className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs shadow-lg">
+      <div className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-xs shadow-lg">
         <p className="font-medium text-gray-200">{label}</p>
         <p className="text-brand-400">
           ${payload[0].value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -105,7 +105,7 @@ export default function Cost() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-100">Cost Analysis</h1>
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 text-center shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-12 text-center shadow-card">
           <ServerCrash className="mx-auto h-12 w-12 text-gray-600" />
           <h2 className="mt-4 text-lg font-semibold text-gray-200">
             Cost analysis not configured
@@ -114,7 +114,7 @@ export default function Cost() {
             To enable cost tracking, connect your cloud billing accounts in the Settings page.
             ShieldOps supports AWS Cost Explorer, GCP Billing Export, and Azure Cost Management.
           </p>
-          <div className="mt-6 rounded-lg border border-gray-800 bg-gray-950 p-4 text-left">
+          <div className="mt-6 rounded-lg border border-white/[0.06] bg-surface-0 p-4 text-left">
             <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
               Quick setup
             </p>
@@ -170,7 +170,7 @@ export default function Cost() {
       {chartData.length > 0 && (
         <section>
           <h2 className="mb-3 text-lg font-semibold text-gray-50">Cost by Service</h2>
-          <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+          <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
             <ResponsiveContainer width="100%" height={Math.max(chartData.length * 40, 200)}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
                 <XAxis

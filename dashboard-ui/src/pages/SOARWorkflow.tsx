@@ -4,7 +4,10 @@ import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 
+type AlertStatus = "in-progress" | "contained" | "eradicated" | "recovered" | "pending" | "monitoring" | "resolved" | "escalated";
 type Stage = "intake" | "enrich" | "contain" | "eradicate" | "recover";
+
+
 
 const MOCK_RESPONSES = [
   { alertId: "SOA-4821", severity: "Critical", stage: "contain" as Stage, status: "in-progress" as AlertStatus, duration: "4m 12s", actions: 6 },

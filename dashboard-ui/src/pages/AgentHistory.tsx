@@ -64,7 +64,7 @@ export default function AgentHistory() {
 
         {/* Stats pills */}
         <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-gray-800/60 px-3 py-1.5 text-xs text-gray-300">
+          <span className="rounded-lg bg-white/[0.04] px-3 py-1.5 text-xs text-gray-300">
             <span className="font-bold text-white">{stats.total}</span> total
           </span>
           <span className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400">
@@ -89,7 +89,7 @@ export default function AgentHistory() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search agent runs..."
             aria-label="Search agent runs"
-            className="w-full rounded-xl border border-gray-700 bg-gray-800/50 pl-10 pr-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] pl-10 pr-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:border-brand-500/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export default function AgentHistory() {
                 "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50",
                 filterStatus === status
                   ? "bg-brand-600/20 text-brand-400"
-                  : "text-gray-500 hover:bg-gray-800 hover:text-gray-300",
+                  : "text-gray-500 hover:bg-white/[0.04] hover:text-gray-300",
               )}
             >
               {status === "all" ? "All" : status === "awaiting-approval" ? "Pending" : status.charAt(0).toUpperCase() + status.slice(1)}
@@ -126,10 +126,10 @@ export default function AgentHistory() {
               onClick={() =>
                 navigate(`/app/agent-task?prompt=${encodeURIComponent(run.prompt)}&run=${run.id}`)
               }
-              className="flex w-full items-center gap-4 rounded-xl border border-gray-800/50 bg-gray-900/40 px-5 py-4 text-left transition-all hover:border-gray-700 hover:bg-gray-800/40 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+              className="flex w-full items-center gap-4 rounded-xl border border-white/[0.04] bg-surface-1 px-5 py-4 text-left transition-all hover:border-white/[0.1] hover:bg-white/[0.03] focus:outline-none focus:ring-2 focus:ring-brand-500/50"
             >
               {/* Icon */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-800/60">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04]">
                 <RunIcon className={clsx("h-5 w-5", run.iconColor)} />
               </div>
 

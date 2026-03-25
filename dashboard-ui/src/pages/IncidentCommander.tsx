@@ -4,6 +4,9 @@ import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 
+type Severity = "sev1" | "sev2" | "sev3" | "sev4" | "sev5";
+
+
 const MOCK_INCIDENTS = [
   { id: "INC-1042", service: "payment-service", severity: "sev1" as Severity, status: "Mitigating", agents: 4, duration: "23m" },
   { id: "INC-1041", service: "auth-gateway", severity: "sev2" as Severity, status: "Investigating", agents: 2, duration: "1h 12m" },

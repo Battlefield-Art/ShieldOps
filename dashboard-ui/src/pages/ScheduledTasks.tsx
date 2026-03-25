@@ -399,7 +399,7 @@ export default function ScheduledTasks() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-lg border border-gray-800 bg-gray-900 px-4 py-3"
+            className="rounded-lg border border-white/[0.06] bg-surface-2 px-4 py-3"
           >
             <div className="flex items-center gap-2">
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
@@ -414,17 +414,17 @@ export default function ScheduledTasks() {
 
       {/* Task list */}
       {tasks.length === 0 ? (
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-12 text-center">
+        <div className="rounded-lg border border-white/[0.06] bg-surface-2 p-12 text-center">
           <Calendar className="mx-auto h-8 w-8 text-gray-600" />
           <p className="mt-2 text-sm text-gray-500">
             No scheduled tasks yet. Create one to get started.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-800/80 shadow-card">
+        <div className="overflow-x-auto rounded-xl border border-white/[0.06] shadow-card">
           <table className="w-full min-w-[800px] text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 bg-gray-900">
+              <tr className="border-b border-white/[0.04] bg-surface-2">
                 <th className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Task
                 </th>
@@ -448,11 +448,11 @@ export default function ScheduledTasks() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/40 bg-gray-950">
+            <tbody className="divide-y divide-gray-800/40 bg-surface-0">
               {tasks.map((task) => {
                 const badge = FREQUENCY_BADGE[task.frequency];
                 return (
-                  <tr key={task.id} className="transition-colors hover:bg-gray-900/50">
+                  <tr key={task.id} className="transition-colors hover:bg-surface-1">
                     <td className="px-5 py-3.5">
                       <div>
                         <p className="font-medium text-gray-100">{task.name}</p>
@@ -526,7 +526,7 @@ export default function ScheduledTasks() {
                           onClick={() => openEdit(task)}
                           aria-label={`Edit ${task.name}`}
                           title="Edit"
-                          className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                          className="rounded p-1.5 text-gray-500 transition-colors hover:bg-white/[0.04] hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -561,8 +561,8 @@ export default function ScheduledTasks() {
       {/* Create / Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" role="dialog" aria-modal="true" aria-label={editingTask ? "Edit schedule" : "Create schedule"}>
-          <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-800/60 px-6 py-4">
+          <div className="w-full max-w-lg rounded-xl border border-white/[0.06] bg-surface-2 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.04] px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-50">
                 {editingTask ? "Edit Schedule" : "Create Schedule"}
               </h2>
@@ -585,7 +585,7 @@ export default function ScheduledTasks() {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Nightly Security Scan"
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
               </div>
 
@@ -600,7 +600,7 @@ export default function ScheduledTasks() {
                   onChange={(e) => setForm((f) => ({ ...f, prompt: e.target.value }))}
                   placeholder="Describe what the agent should do..."
                   rows={3}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
               </div>
 
@@ -614,7 +614,7 @@ export default function ScheduledTasks() {
                   value={form.workflow_type}
                   onChange={(e) => setForm((f) => ({ ...f, workflow_type: e.target.value }))}
                   disabled={!!editingTask}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                  className="w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                 >
                   {Object.entries(WORKFLOW_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -633,7 +633,7 @@ export default function ScheduledTasks() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, frequency: e.target.value as ScheduleFrequency }))
                   }
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 >
                   <option value="hourly">Hourly</option>
                   <option value="daily">Daily</option>
@@ -655,7 +655,7 @@ export default function ScheduledTasks() {
                     value={form.cron_expression}
                     onChange={(e) => setForm((f) => ({ ...f, cron_expression: e.target.value }))}
                     placeholder="0 */6 * * *"
-                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm font-mono text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                    className="w-full rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm font-mono text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                   />
                   <p className="mt-1 text-xs text-gray-600">
                     Standard cron syntax: minute hour day month weekday
@@ -663,11 +663,11 @@ export default function ScheduledTasks() {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-end gap-3 border-t border-gray-800/60 px-6 py-4">
+            <div className="flex items-center justify-end gap-3 border-t border-white/[0.04] px-6 py-4">
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800"
+                className="rounded-lg border border-white/[0.1] px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/[0.04]"
               >
                 Cancel
               </button>

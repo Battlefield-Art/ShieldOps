@@ -119,7 +119,7 @@ export default function AuditLog() {
             setEnvironment(e.target.value);
             setPage(0);
           }}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-200"
+          className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm text-gray-200"
         >
           <option value="">All Environments</option>
           {ENVIRONMENTS.map((env) => (
@@ -135,7 +135,7 @@ export default function AuditLog() {
             setAgentType(e.target.value);
             setPage(0);
           }}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-200"
+          className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm text-gray-200"
         >
           <option value="">All Agent Types</option>
           {AGENT_TYPES.map((at) => (
@@ -155,7 +155,7 @@ export default function AuditLog() {
               setAction(e.target.value);
               setPage(0);
             }}
-            className="rounded-lg border border-gray-700 bg-gray-800 py-1.5 pl-8 pr-3 text-sm text-gray-200 placeholder-gray-500"
+            className="rounded-lg border border-white/[0.1] bg-surface-3 py-1.5 pl-8 pr-3 text-sm text-gray-200 placeholder-gray-500"
           />
         </div>
       </div>
@@ -173,10 +173,10 @@ export default function AuditLog() {
 
       {/* Table */}
       {!isLoading && !isError && (
-        <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+        <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 text-left text-xs uppercase tracking-wider text-gray-500">
+              <tr className="border-b border-white/[0.04] text-left text-xs uppercase tracking-wider text-gray-500">
                 <th className="px-5 py-3.5">Timestamp</th>
                 <th className="px-5 py-3.5">Agent</th>
                 <th className="px-5 py-3.5">Action</th>
@@ -191,7 +191,7 @@ export default function AuditLog() {
               {entries.map((entry) => (
                 <tr
                   key={entry.id}
-                  className="transition-colors hover:bg-gray-800/30"
+                  className="transition-colors hover:bg-white/[0.03]"
                 >
                   <td className="whitespace-nowrap px-5 py-3.5 text-xs text-gray-400">
                     {formatTimestamp(entry.timestamp)}
@@ -261,7 +261,7 @@ export default function AuditLog() {
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
-              className="rounded-lg border border-gray-700 p-1.5 hover:bg-gray-800 disabled:opacity-40"
+              className="rounded-lg border border-white/[0.1] p-1.5 hover:bg-white/[0.04] disabled:opacity-40"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -273,7 +273,7 @@ export default function AuditLog() {
                 setPage(Math.min(totalPages - 1, page + 1))
               }
               disabled={page >= totalPages - 1}
-              className="rounded-lg border border-gray-700 p-1.5 hover:bg-gray-800 disabled:opacity-40"
+              className="rounded-lg border border-white/[0.1] p-1.5 hover:bg-white/[0.04] disabled:opacity-40"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

@@ -66,7 +66,7 @@ function RevokeDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-sm rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <div className="w-full max-w-sm rounded-xl border border-white/[0.06] bg-surface-2 p-6">
         <div className="flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 text-yellow-400" />
           <h3 className="font-semibold text-gray-100">Revoke API Key</h3>
@@ -81,9 +81,9 @@ function RevokeDialog({
           <button
             onClick={onCancel}
             className={clsx(
-              "rounded-lg border border-gray-700 px-4 py-2",
+              "rounded-lg border border-white/[0.1] px-4 py-2",
               "text-sm text-gray-300",
-              "transition-colors hover:bg-gray-800",
+              "transition-colors hover:bg-white/[0.04]",
             )}
           >
             Cancel
@@ -164,7 +164,7 @@ function CreateKeyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <div className="w-full max-w-md rounded-xl border border-white/[0.06] bg-surface-2 p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-50">
             Create New API Key
@@ -186,8 +186,8 @@ function CreateKeyModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={clsx(
-                "w-full rounded-lg border border-gray-700",
-                "bg-gray-800 px-3 py-2 text-sm",
+                "w-full rounded-lg border border-white/[0.1]",
+                "bg-surface-3 px-3 py-2 text-sm",
                 "text-gray-200 placeholder-gray-500",
                 "focus:border-brand-500 focus:outline-none",
               )}
@@ -202,7 +202,7 @@ function CreateKeyModal({
               {SCOPES.map((scope) => (
                 <label
                   key={scope.value}
-                  className="flex items-start gap-3 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 cursor-pointer"
+                  className="flex items-start gap-3 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2.5 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -232,8 +232,8 @@ function CreateKeyModal({
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
               className={clsx(
-                "w-full rounded-lg border border-gray-700",
-                "bg-gray-800 px-3 py-2 text-sm text-gray-200",
+                "w-full rounded-lg border border-white/[0.1]",
+                "bg-surface-3 px-3 py-2 text-sm text-gray-200",
               )}
             >
               {EXPIRY_OPTIONS.map((opt) => (
@@ -256,9 +256,9 @@ function CreateKeyModal({
               type="button"
               onClick={onClose}
               className={clsx(
-                "rounded-lg border border-gray-700 px-4 py-2",
+                "rounded-lg border border-white/[0.1] px-4 py-2",
                 "text-sm text-gray-300",
-                "transition-colors hover:bg-gray-800",
+                "transition-colors hover:bg-white/[0.04]",
               )}
             >
               Cancel
@@ -303,7 +303,7 @@ function KeyCreatedModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <div className="w-full max-w-lg rounded-xl border border-white/[0.06] bg-surface-2 p-6">
         <div className="flex items-center gap-3">
           <Check className="h-5 w-5 text-green-400" />
           <h3 className="font-semibold text-gray-100">API Key Created</h3>
@@ -316,14 +316,14 @@ function KeyCreatedModal({
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          <div className="flex-1 overflow-x-auto rounded-lg border border-gray-700 bg-gray-800 px-3 py-2">
+          <div className="flex-1 overflow-x-auto rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2">
             <code className="whitespace-nowrap text-sm text-gray-200">
               {rawKey}
             </code>
           </div>
           <button
             onClick={copyKey}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-700"
+            className="flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-white/[0.06]"
           >
             {copied ? (
               <>
@@ -399,7 +399,7 @@ export default function APIKeys() {
       </div>
 
       {/* Info banner */}
-      <div className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900 px-4 py-3">
+      <div className="flex items-start gap-3 rounded-lg border border-white/[0.06] bg-surface-2 px-4 py-3">
         <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
         <p className="text-sm text-gray-400">
           Use API keys to authenticate requests to the ShieldOps API. Keys are
@@ -409,11 +409,11 @@ export default function APIKeys() {
       </div>
 
       {/* Keys Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-800/80 bg-gray-900 shadow-card">
+      <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 text-left text-xs uppercase tracking-wider text-gray-500">
+              <tr className="border-b border-white/[0.04] text-left text-xs uppercase tracking-wider text-gray-500">
                 <th className="px-5 py-3.5">Name</th>
                 <th className="px-5 py-3.5">Key Prefix</th>
                 <th className="px-5 py-3.5">Scopes</th>
@@ -428,13 +428,13 @@ export default function APIKeys() {
               {keys.map((k) => (
                 <tr
                   key={k.key_id}
-                  className="transition-colors hover:bg-gray-800/30"
+                  className="transition-colors hover:bg-white/[0.03]"
                 >
                   <td className="px-5 py-3.5">
                     <span className="font-medium text-gray-100">{k.name}</span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <code className="rounded bg-gray-800 px-1.5 py-0.5 font-mono text-xs text-gray-300">
+                    <code className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-xs text-gray-300">
                       {k.prefix}...
                     </code>
                   </td>
@@ -443,7 +443,7 @@ export default function APIKeys() {
                       {k.scopes.map((scope) => (
                         <span
                           key={scope}
-                          className="rounded bg-gray-800 px-1.5 py-0.5 text-xs text-gray-400"
+                          className="rounded bg-surface-3 px-1.5 py-0.5 text-xs text-gray-400"
                         >
                           {scope}
                         </span>

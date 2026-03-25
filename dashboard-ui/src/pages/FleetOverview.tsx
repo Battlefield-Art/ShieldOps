@@ -69,7 +69,7 @@ function statusBorderColor(status: AgentStatus): string {
     case "offline":
       return "border-gray-600";
     default:
-      return "border-gray-800";
+      return "border-white/[0.06]";
   }
 }
 
@@ -297,7 +297,7 @@ export default function FleetOverview() {
               <div
                 key={type}
                 className={clsx(
-                  "rounded-xl border bg-gray-900 p-5 transition-colors",
+                  "rounded-xl border bg-surface-2 p-5 transition-colors",
                   statusBorderColor(status),
                 )}
               >

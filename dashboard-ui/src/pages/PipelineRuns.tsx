@@ -117,7 +117,7 @@ export default function PipelineRuns() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-1.5 text-sm text-gray-100 outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           <option value="all">All Statuses</option>
           <option value="pending">Pending</option>
@@ -133,14 +133,14 @@ export default function PipelineRuns() {
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 text-center shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-12 text-center shadow-card">
           <p className="text-sm text-gray-500">No pipeline runs match your filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-800/80">
+        <div className="overflow-hidden rounded-xl border border-white/[0.06]">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800/60 bg-gray-900">
+              <tr className="border-b border-white/[0.04] bg-surface-2">
                 <th className="w-8 px-5 py-3.5" />
                 <th
                   className="cursor-pointer px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 select-none"
@@ -168,7 +168,7 @@ export default function PipelineRuns() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/40 bg-gray-950">
+            <tbody className="divide-y divide-gray-800/40 bg-surface-0">
               {filtered.map((run) => {
                 const isExpanded = expandedRunId === run.id;
                 return (
@@ -208,7 +208,7 @@ function RunRow({
     <>
       <tr
         onClick={onToggle}
-        className="cursor-pointer transition-colors hover:bg-gray-900"
+        className="cursor-pointer transition-colors hover:bg-surface-2"
       >
         <td className="px-5 py-3.5 text-gray-500">
           {isExpanded ? (
@@ -248,14 +248,14 @@ function RunRow({
       {/* Expanded detail row */}
       {isExpanded && (
         <tr>
-          <td colSpan={colCount} className="bg-gray-900 px-6 py-4">
+          <td colSpan={colCount} className="bg-surface-2 px-6 py-4">
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Timeline */}
               <div>
                 <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
                   Timeline
                 </h3>
-                <ol className="space-y-2 border-l border-gray-700 pl-4">
+                <ol className="space-y-2 border-l border-white/[0.1] pl-4">
                   {run.timeline.map((entry, i) => (
                     <li key={i} className="relative">
                       <div className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-gray-600" />
@@ -283,7 +283,7 @@ function RunRow({
                     {run.recommendations.map((rec) => (
                       <li
                         key={rec.id}
-                        className="rounded-lg border border-gray-800 bg-gray-950 p-3"
+                        className="rounded-lg border border-white/[0.06] bg-surface-0 p-3"
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-medium text-gray-200">

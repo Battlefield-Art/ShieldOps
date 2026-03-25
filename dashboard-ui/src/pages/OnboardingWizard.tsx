@@ -434,7 +434,7 @@ export default function OnboardingWizard() {
       />
 
       {/* Step content */}
-      <div className="relative min-h-[420px] overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+      <div className="relative min-h-[420px] overflow-hidden rounded-xl border border-white/[0.06] bg-surface-2 shadow-depth">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={activeStep}

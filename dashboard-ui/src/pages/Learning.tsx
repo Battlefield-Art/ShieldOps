@@ -144,7 +144,7 @@ export default function Learning() {
         {playbooksLoading ? (
           <LoadingSpinner size="sm" className="py-12" />
         ) : playbooks.length === 0 ? (
-          <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-12 shadow-card text-center">
+          <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-12 shadow-card text-center">
             <Brain className="mx-auto h-10 w-10 text-gray-600" />
             <p className="mt-3 text-sm text-gray-500">
               No playbooks yet. Playbooks are automatically created and refined as the learning
@@ -169,7 +169,7 @@ function PlaybookCard({ playbook }: { playbook: Playbook }) {
   const successPercent = Math.round(playbook.success_rate * 100);
 
   return (
-    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
       {/* Name + description */}
       <h3 className="font-semibold text-gray-100">{playbook.name}</h3>
       <p className="mt-1 text-sm text-gray-400">{playbook.description}</p>
@@ -180,7 +180,7 @@ function PlaybookCard({ playbook }: { playbook: Playbook }) {
           {playbook.trigger_conditions.map((condition) => (
             <span
               key={condition}
-              className="rounded-full bg-gray-800 px-2.5 py-0.5 text-xs text-gray-300"
+              className="rounded-full bg-surface-3 px-2.5 py-0.5 text-xs text-gray-300"
             >
               {condition}
             </span>
@@ -201,7 +201,7 @@ function PlaybookCard({ playbook }: { playbook: Playbook }) {
             {successPercent}%
           </span>
         </div>
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-gray-800">
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3">
           <div
             className={clsx(
               "h-full rounded-full transition-all",

@@ -22,12 +22,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   compliance: "bg-amber-500/10 text-amber-400 ring-amber-500/20",
 };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: "bg-red-500/10 text-red-400 ring-red-500/20",
-  high: "bg-orange-500/10 text-orange-400 ring-orange-500/20",
-  medium: "bg-yellow-500/10 text-yellow-400 ring-yellow-500/20",
-  low: "bg-green-500/10 text-green-400 ring-green-500/20",
-};
 
 export default function SecurityTesting() {
   const [running, setRunning] = useState(false);

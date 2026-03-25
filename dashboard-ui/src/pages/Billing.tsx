@@ -27,7 +27,7 @@ const PLAN_ICONS: Record<string, React.ReactNode> = {
 };
 
 const PLAN_COLORS: Record<string, string> = {
-  free: "border-gray-700",
+  free: "border-white/[0.1]",
   pro: "border-brand-500 ring-1 ring-brand-500/30",
   enterprise: "border-amber-500 ring-1 ring-amber-500/30",
 };
@@ -63,7 +63,7 @@ function UsageMeter({
           {used.toLocaleString()} / {displayLimit}
         </span>
       </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-800">
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-3">
         {!isUnlimited && (
           <div
             className={clsx("h-full rounded-full transition-all", barColor)}
@@ -170,7 +170,7 @@ export default function Billing() {
       </div>
 
       {/* Current Plan Summary */}
-      <section className="rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
+      <section className="rounded-xl border border-white/[0.06] bg-surface-2 p-6 shadow-card">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-gray-400">Current Plan</p>
@@ -212,7 +212,7 @@ export default function Billing() {
 
       {/* Usage Meters */}
       {usage && (
-        <section className="rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
+        <section className="rounded-xl border border-white/[0.06] bg-surface-2 p-6 shadow-card">
           <h2 className="mb-5 text-lg font-semibold text-gray-50">
             Current Usage
           </h2>
@@ -255,10 +255,10 @@ export default function Billing() {
               <div
                 key={plan.key}
                 className={clsx(
-                  "relative flex flex-col rounded-xl border bg-gray-900 p-6",
+                  "relative flex flex-col rounded-xl border bg-surface-2 p-6",
                   isCurrent
                     ? PLAN_COLORS[plan.key] ?? "border-brand-500"
-                    : "border-gray-800",
+                    : "border-white/[0.06]",
                 )}
               >
                 {isCurrent && (
@@ -273,7 +273,7 @@ export default function Billing() {
                       "rounded-lg p-2",
                       isCurrent
                         ? "bg-brand-500/20 text-brand-400"
-                        : "bg-gray-800 text-gray-400",
+                        : "bg-surface-3 text-gray-400",
                     )}
                   >
                     {PLAN_ICONS[plan.key] ?? (
@@ -310,7 +310,7 @@ export default function Billing() {
                 </ul>
 
                 {isCurrent ? (
-                  <div className="rounded-lg bg-gray-800 px-4 py-2.5 text-center text-sm font-medium text-gray-400">
+                  <div className="rounded-lg bg-surface-3 px-4 py-2.5 text-center text-sm font-medium text-gray-400">
                     Your current plan
                   </div>
                 ) : isUpgrade ? (
@@ -325,14 +325,14 @@ export default function Billing() {
                       : `Upgrade to ${plan.name}`}
                   </button>
                 ) : isDowngrade && plan.key === "free" ? (
-                  <div className="rounded-lg border border-gray-700 px-4 py-2.5 text-center text-sm font-medium text-gray-500">
+                  <div className="rounded-lg border border-white/[0.1] px-4 py-2.5 text-center text-sm font-medium text-gray-500">
                     Cancel to downgrade
                   </div>
                 ) : (
                   <button
                     onClick={() => checkoutMutation.mutate(plan.key)}
                     disabled={checkoutMutation.isPending || !plan.has_price}
-                    className="rounded-lg border border-gray-700 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-50"
+                    className="rounded-lg border border-white/[0.1] px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-white/[0.04] disabled:opacity-50"
                   >
                     {plan.has_price ? "Select Plan" : "Contact Sales"}
                   </button>
@@ -350,7 +350,7 @@ export default function Billing() {
       </section>
 
       {/* Billing History (placeholder) */}
-      <section className="rounded-xl border border-gray-800/80 bg-gray-900 p-6 shadow-card">
+      <section className="rounded-xl border border-white/[0.06] bg-surface-2 p-6 shadow-card">
         <div className="flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-gray-400" />
           <h2 className="text-lg font-semibold text-gray-50">

@@ -128,7 +128,7 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
   const { name, value } = payload[0];
   return (
-    <div className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs shadow-lg">
+    <div className="rounded-lg border border-white/[0.1] bg-surface-3 px-3 py-2 text-xs shadow-lg">
       <span className="text-gray-300">{name}: </span>
       <span className="font-semibold text-gray-100">{value}</span>
     </div>
@@ -152,7 +152,7 @@ function MttrTrendChart() {
     })) ?? [];
 
   return (
-    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-blue-400" />
@@ -243,14 +243,14 @@ function ResolutionRateChart() {
     : [];
 
   return (
-    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CheckCircle className="h-5 w-5 text-emerald-400" />
           <h2 className="text-lg font-semibold text-gray-50">Resolution Rate</h2>
         </div>
         {data && data.total_incidents > 0 && (
-          <span className="rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-gray-400">
+          <span className="rounded-full bg-surface-3 px-3 py-1 text-xs font-medium text-gray-400">
             {data.total_incidents} incidents
           </span>
         )}
@@ -342,7 +342,7 @@ function AgentAccuracyGauge() {
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+    <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
       <div className="mb-4 flex items-center gap-2">
         <Bot className="h-5 w-5 text-sky-400" />
         <h2 className="text-lg font-semibold text-gray-50">Agent Accuracy</h2>
@@ -483,7 +483,7 @@ function ApiUsageSection() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Top endpoints table */}
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-gray-300">Top Endpoints</h3>
           {endpoints.length === 0 ? (
             <p className="py-8 text-center text-sm text-gray-500">No endpoint data yet.</p>
@@ -491,7 +491,7 @@ function ApiUsageSection() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  <tr className="border-b border-white/[0.04] text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                     <th className="pb-2 pr-4">Endpoint</th>
                     <th className="pb-2 pr-4 text-right">Calls</th>
                     <th className="pb-2 text-right">Avg Latency</th>
@@ -499,7 +499,7 @@ function ApiUsageSection() {
                 </thead>
                 <tbody>
                   {endpoints.map((ep) => (
-                    <tr key={ep.endpoint} className="border-b border-gray-800/30">
+                    <tr key={ep.endpoint} className="border-b border-white/[0.04]">
                       <td className="py-2 pr-4 font-mono text-xs text-gray-300">
                         {ep.endpoint}
                       </td>
@@ -518,7 +518,7 @@ function ApiUsageSection() {
         </div>
 
         {/* Hourly volume line chart */}
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-gray-300">Hourly Volume</h3>
           {hourlyData.length === 0 ? (
             <p className="py-8 text-center text-sm text-gray-500">No hourly data yet.</p>
@@ -562,21 +562,21 @@ function ApiUsageSection() {
 
       {/* Per-org breakdown table (admin only — hidden when 403) */}
       {orgQuery.isSuccess && orgData.length > 0 && (
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
           <h3 className="mb-4 text-sm font-semibold text-gray-300">
             Usage by Organization
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-gray-800/60 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <tr className="border-b border-white/[0.04] text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                   <th className="pb-2 pr-4">Organization</th>
                   <th className="pb-2 text-right">Total Calls</th>
                 </tr>
               </thead>
               <tbody>
                 {orgData.map((org) => (
-                  <tr key={org.org_id} className="border-b border-gray-800/30">
+                  <tr key={org.org_id} className="border-b border-white/[0.04]">
                     <td className="py-2 pr-4 text-gray-300">
                       {org.org_id === "_anonymous" ? "(anonymous)" : org.org_id}
                     </td>
@@ -670,7 +670,7 @@ export default function Analytics() {
       {/* Section 2 + 3 — Pie Charts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Investigations by Status */}
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
           <h2 className="mb-4 text-lg font-semibold text-gray-50">
             Investigations by Status
           </h2>
@@ -709,7 +709,7 @@ export default function Analytics() {
         </div>
 
         {/* Remediations by Status */}
-        <div className="rounded-xl border border-gray-800/80 bg-gray-900 p-5 shadow-card">
+        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5 shadow-card">
           <h2 className="mb-4 text-lg font-semibold text-gray-50">
             Remediations by Status
           </h2>
