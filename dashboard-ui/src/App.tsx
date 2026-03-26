@@ -110,6 +110,10 @@ const LogAnalyzer = lazy(() => import("./pages/LogAnalyzer"));
 const ChaosEngineering = lazy(() => import("./pages/ChaosEngineering"));
 const SLAMonitor = lazy(() => import("./pages/SLAMonitor"));
 const ConfigValidator = lazy(() => import("./pages/ConfigValidator"));
+const NetworkSegmentation = lazy(() => import("./pages/NetworkSegmentation"));
+const WorkflowEngine = lazy(() => import("./pages/WorkflowEngine"));
+const AlertCorrelation = lazy(() => import("./pages/AlertCorrelation"));
+const PerformanceProfiler = lazy(() => import("./pages/PerformanceProfiler"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -280,6 +284,10 @@ export default function App() {
               <Route path="chaos-engineering" element={<ChaosEngineering />} />
               <Route path="sla-monitor" element={<SLAMonitor />} />
               <Route path="config-validator" element={<ConfigValidator />} />
+              <Route path="network-segmentation" element={<NetworkSegmentation />} />
+              <Route path="workflow-engine" element={<WorkflowEngine />} />
+              <Route path="alert-correlation" element={<AlertCorrelation />} />
+              <Route path="performance-profiler" element={<PerformanceProfiler />} />
             </Route>
 
             {/* Catch-all */}

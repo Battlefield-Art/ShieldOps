@@ -238,6 +238,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/chaos-engineering", icon: Zap, label: "Chaos Engineering" },
       { to: "/app/sla-monitor", icon: Gauge, label: "SLA Monitor" },
       { to: "/app/config-validator", icon: Settings, label: "Config Validator" },
+      { to: "/app/network-segmentation", icon: Shield, label: "Network Segmentation" },
+      { to: "/app/workflow-engine", icon: Workflow, label: "Workflow Engine" },
+      { to: "/app/alert-correlation", icon: Layers, label: "Alert Correlation" },
+      { to: "/app/performance-profiler", icon: Activity, label: "Performance Profiler" },
     ],
   },
   {
