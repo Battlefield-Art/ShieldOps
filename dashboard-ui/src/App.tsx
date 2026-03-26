@@ -158,6 +158,13 @@ const IoTOTSecurity = lazy(() => import("./pages/IoTOTSecurity"));
 const SecurityAppBuilder = lazy(() => import("./pages/SecurityAppBuilder"));
 const AirGapVault = lazy(() => import("./pages/AirGapVault"));
 
+const AgentMemoryStore = lazy(() => import("./pages/AgentMemoryStore"));
+const ReflectionEngine = lazy(() => import("./pages/ReflectionEngine"));
+const SupplyChainScanner = lazy(() => import("./pages/SupplyChainScanner"));
+const CrossVendorCorrelator = lazy(() => import("./pages/CrossVendorCorrelator"));
+const SituationManager = lazy(() => import("./pages/SituationManager"));
+const TrustRelationshipMapper = lazy(() => import("./pages/TrustRelationshipMapper"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -374,6 +381,12 @@ export default function App() {
               <Route path="iot-ot-security" element={<IoTOTSecurity />} />
               <Route path="security-app-builder" element={<SecurityAppBuilder />} />
               <Route path="air-gap-vault" element={<AirGapVault />} />
+              <Route path="agent-memory-store" element={<AgentMemoryStore />} />
+              <Route path="reflection-engine" element={<ReflectionEngine />} />
+              <Route path="supply-chain-scanner" element={<SupplyChainScanner />} />
+              <Route path="cross-vendor-correlator" element={<CrossVendorCorrelator />} />
+              <Route path="situation-manager" element={<SituationManager />} />
+              <Route path="trust-relationship-mapper" element={<TrustRelationshipMapper />} />
             </Route>
 
             {/* Catch-all */}

@@ -65,6 +65,7 @@ import {
   UserX,
   Cpu,
   Blocks,
+  LayoutList,
   type LucideIcon,
 } from "lucide-react";
 
@@ -295,6 +296,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/iot-ot-security", icon: Cpu, label: "IoT/OT Security" },
       { to: "/app/security-app-builder", icon: Blocks, label: "App Builder" },
       { to: "/app/air-gap-vault", icon: Lock, label: "Air-Gap Vault" },
+      { to: "/app/agent-memory-store", icon: Brain, label: "Agent Memory" },
+      { to: "/app/reflection-engine", icon: RefreshCw, label: "Reflection" },
+      { to: "/app/supply-chain-scanner", icon: Package, label: "Supply Chain" },
+      { to: "/app/cross-vendor-correlator", icon: Layers, label: "Cross-Vendor" },
+      { to: "/app/situation-manager", icon: LayoutList, label: "Situations" },
+      { to: "/app/trust-relationship-mapper", icon: GitBranch, label: "Trust Map" },
     ],
   },
   {
