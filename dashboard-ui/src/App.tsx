@@ -127,6 +127,12 @@ const PromptShield = lazy(() => import("./pages/PromptShield"));
 const MultiAgentSecurity = lazy(() => import("./pages/MultiAgentSecurity"));
 const AICompliance = lazy(() => import("./pages/AICompliance"));
 const DigitalTwinSecurity = lazy(() => import("./pages/DigitalTwinSecurity"));
+const AgenticMDR = lazy(() => import("./pages/AgenticMDR"));
+const BreakoutDefender = lazy(() => import("./pages/BreakoutDefender"));
+const AITriageAccelerator = lazy(() => import("./pages/AITriageAccelerator"));
+const SOCTransformation = lazy(() => import("./pages/SOCTransformation"));
+const CloudRiskRanker = lazy(() => import("./pages/CloudRiskRanker"));
+const DataLossPrevention = lazy(() => import("./pages/DataLossPrevention"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -314,6 +320,12 @@ export default function App() {
               <Route path="multi-agent-security" element={<MultiAgentSecurity />} />
               <Route path="ai-compliance" element={<AICompliance />} />
               <Route path="digital-twin-security" element={<DigitalTwinSecurity />} />
+              <Route path="agentic-mdr" element={<AgenticMDR />} />
+              <Route path="breakout-defender" element={<BreakoutDefender />} />
+              <Route path="ai-triage-accelerator" element={<AITriageAccelerator />} />
+              <Route path="soc-transformation" element={<SOCTransformation />} />
+              <Route path="cloud-risk-ranker" element={<CloudRiskRanker />} />
+              <Route path="data-loss-prevention" element={<DataLossPrevention />} />
             </Route>
 
             {/* Catch-all */}

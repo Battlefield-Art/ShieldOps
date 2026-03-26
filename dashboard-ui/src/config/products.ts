@@ -56,6 +56,8 @@ import {
   Network,
   Boxes,
   Scale,
+  Bot,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 
@@ -257,6 +259,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/prompt-shield", icon: ShieldAlert, label: "Prompt Shield" },
       { to: "/app/multi-agent-security", icon: Network, label: "Multi-Agent Security" },
       { to: "/app/digital-twin-security", icon: Boxes, label: "Digital Twin Security" },
+      { to: "/app/agentic-mdr", icon: Bot, label: "Agentic MDR" },
+      { to: "/app/breakout-defender", icon: Timer, label: "Breakout Defender" },
+      { to: "/app/ai-triage-accelerator", icon: Gauge, label: "AI Triage" },
+      { to: "/app/cloud-risk-ranker", icon: Cloud, label: "Cloud Risk Ranker" },
+      { to: "/app/data-loss-prevention", icon: ShieldAlert, label: "DLP" },
     ],
   },
   {
@@ -292,6 +299,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/tail-sampling", icon: Filter, label: "Tail Sampling" },
       { to: "/app/metrics-pipeline", icon: BarChart3, label: "Metrics Pipeline" },
       { to: "/app/logs-pipeline", icon: ScrollText, label: "Logs Pipeline" },
+      { to: "/app/soc-transformation", icon: Workflow, label: "SOC Transformation" },
     ],
   },
   {
