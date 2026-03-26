@@ -151,6 +151,12 @@ const RansomwareForensics = lazy(() => import("./pages/RansomwareForensics"));
 const ThreatIntelligencePlatform = lazy(() => import("./pages/ThreatIntelligencePlatform"));
 const CodeSecurityScanner = lazy(() => import("./pages/CodeSecurityScanner"));
 const DataResilience = lazy(() => import("./pages/DataResilience"));
+const ManagedThreatHunting = lazy(() => import("./pages/ManagedThreatHunting"));
+const VulnerabilityIntelligence = lazy(() => import("./pages/VulnerabilityIntelligence"));
+const FileIntegrityMonitor = lazy(() => import("./pages/FileIntegrityMonitor"));
+const IoTOTSecurity = lazy(() => import("./pages/IoTOTSecurity"));
+const SecurityAppBuilder = lazy(() => import("./pages/SecurityAppBuilder"));
+const AirGapVault = lazy(() => import("./pages/AirGapVault"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -362,6 +368,12 @@ export default function App() {
               <Route path="threat-intel-platform" element={<ThreatIntelligencePlatform />} />
               <Route path="code-security-scanner" element={<CodeSecurityScanner />} />
               <Route path="data-resilience" element={<DataResilience />} />
+              <Route path="managed-threat-hunting" element={<ManagedThreatHunting />} />
+              <Route path="vulnerability-intelligence" element={<VulnerabilityIntelligence />} />
+              <Route path="file-integrity-monitor" element={<FileIntegrityMonitor />} />
+              <Route path="iot-ot-security" element={<IoTOTSecurity />} />
+              <Route path="security-app-builder" element={<SecurityAppBuilder />} />
+              <Route path="air-gap-vault" element={<AirGapVault />} />
             </Route>
 
             {/* Catch-all */}

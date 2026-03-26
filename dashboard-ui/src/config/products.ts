@@ -63,6 +63,8 @@ import {
   RotateCcw,
   UserCheck,
   UserX,
+  Cpu,
+  Blocks,
   type LucideIcon,
 } from "lucide-react";
 
@@ -287,6 +289,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/threat-intel-platform", icon: Globe, label: "Threat Intel Platform" },
       { to: "/app/code-security-scanner", icon: Code, label: "Code Security" },
       { to: "/app/data-resilience", icon: HardDrive, label: "Data Resilience" },
+      { to: "/app/managed-threat-hunting", icon: Crosshair, label: "Managed Hunting" },
+      { to: "/app/vulnerability-intelligence", icon: Bug, label: "Vuln Intelligence" },
+      { to: "/app/file-integrity-monitor", icon: FileSearch, label: "File Integrity" },
+      { to: "/app/iot-ot-security", icon: Cpu, label: "IoT/OT Security" },
+      { to: "/app/security-app-builder", icon: Blocks, label: "App Builder" },
+      { to: "/app/air-gap-vault", icon: Lock, label: "Air-Gap Vault" },
     ],
   },
   {
