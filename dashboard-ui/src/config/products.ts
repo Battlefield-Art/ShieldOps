@@ -60,6 +60,8 @@ import {
   Timer,
   Radar,
   Fingerprint,
+  RotateCcw,
+  UserCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -272,6 +274,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/zero-trust-network", icon: Fingerprint, label: "Zero Trust" },
       { to: "/app/intelligent-soar", icon: Workflow, label: "Intelligent SOAR" },
       { to: "/app/malware-analyzer", icon: Bug, label: "Malware Analyzer" },
+      { to: "/app/cyber-recovery", icon: RotateCcw, label: "Cyber Recovery" },
+      { to: "/app/data-threat-hunting", icon: Search, label: "Data Threat Hunting" },
+      { to: "/app/sensitive-data-monitor", icon: Eye, label: "Sensitive Data Monitor" },
+      { to: "/app/identity-protection", icon: UserCheck, label: "Identity Protection" },
+      { to: "/app/exposure-management", icon: Globe, label: "Exposure Mgmt" },
+      { to: "/app/ai-soc-assistant", icon: MessageSquare, label: "AI SOC Assistant" },
     ],
   },
   {

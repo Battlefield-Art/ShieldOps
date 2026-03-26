@@ -139,6 +139,12 @@ const CNAPPAnalyzer = lazy(() => import("./pages/CNAPPAnalyzer"));
 const ZeroTrustNetwork = lazy(() => import("./pages/ZeroTrustNetwork"));
 const IntelligentSOAR = lazy(() => import("./pages/IntelligentSOAR"));
 const MalwareAnalyzer = lazy(() => import("./pages/MalwareAnalyzer"));
+const CyberRecovery = lazy(() => import("./pages/CyberRecovery"));
+const DataThreatHunting = lazy(() => import("./pages/DataThreatHunting"));
+const SensitiveDataMonitor = lazy(() => import("./pages/SensitiveDataMonitor"));
+const IdentityProtection = lazy(() => import("./pages/IdentityProtection"));
+const ExposureManagement = lazy(() => import("./pages/ExposureManagement"));
+const AISOCAssistant = lazy(() => import("./pages/AISOCAssistant"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -338,6 +344,12 @@ export default function App() {
               <Route path="zero-trust-network" element={<ZeroTrustNetwork />} />
               <Route path="intelligent-soar" element={<IntelligentSOAR />} />
               <Route path="malware-analyzer" element={<MalwareAnalyzer />} />
+              <Route path="cyber-recovery" element={<CyberRecovery />} />
+              <Route path="data-threat-hunting" element={<DataThreatHunting />} />
+              <Route path="sensitive-data-monitor" element={<SensitiveDataMonitor />} />
+              <Route path="identity-protection" element={<IdentityProtection />} />
+              <Route path="exposure-management" element={<ExposureManagement />} />
+              <Route path="ai-soc-assistant" element={<AISOCAssistant />} />
             </Route>
 
             {/* Catch-all */}

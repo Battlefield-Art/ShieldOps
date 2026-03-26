@@ -304,6 +304,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "zero_trust_network",
                 "intelligent_soar",
                 "malware_analyzer",
+                "cyber_recovery",
+                "data_threat_hunting",
+                "sensitive_data_monitor",
+                "identity_protection",
+                "exposure_management",
+                "ai_soc_assistant",
             ):
                 try:
                     await agent_registry.register(
@@ -13960,6 +13966,12 @@ def create_app() -> FastAPI:
         "zero_trust_network",
         "intelligent_soar",
         "malware_analyzer",
+        "cyber_recovery",
+        "data_threat_hunting",
+        "sensitive_data_monitor",
+        "identity_protection",
+        "exposure_management",
+        "ai_soc_assistant",
     ):
         try:
             _mod = __import__(f"shieldops.api.routes.{_rname}", fromlist=["router"])
