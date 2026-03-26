@@ -145,6 +145,12 @@ const SensitiveDataMonitor = lazy(() => import("./pages/SensitiveDataMonitor"));
 const IdentityProtection = lazy(() => import("./pages/IdentityProtection"));
 const ExposureManagement = lazy(() => import("./pages/ExposureManagement"));
 const AISOCAssistant = lazy(() => import("./pages/AISOCAssistant"));
+const LogIntelligence = lazy(() => import("./pages/LogIntelligence"));
+const InsiderThreat = lazy(() => import("./pages/InsiderThreat"));
+const RansomwareForensics = lazy(() => import("./pages/RansomwareForensics"));
+const ThreatIntelligencePlatform = lazy(() => import("./pages/ThreatIntelligencePlatform"));
+const CodeSecurityScanner = lazy(() => import("./pages/CodeSecurityScanner"));
+const DataResilience = lazy(() => import("./pages/DataResilience"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -350,6 +356,12 @@ export default function App() {
               <Route path="identity-protection" element={<IdentityProtection />} />
               <Route path="exposure-management" element={<ExposureManagement />} />
               <Route path="ai-soc-assistant" element={<AISOCAssistant />} />
+              <Route path="log-intelligence" element={<LogIntelligence />} />
+              <Route path="insider-threat" element={<InsiderThreat />} />
+              <Route path="ransomware-forensics" element={<RansomwareForensics />} />
+              <Route path="threat-intel-platform" element={<ThreatIntelligencePlatform />} />
+              <Route path="code-security-scanner" element={<CodeSecurityScanner />} />
+              <Route path="data-resilience" element={<DataResilience />} />
             </Route>
 
             {/* Catch-all */}

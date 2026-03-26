@@ -62,6 +62,7 @@ import {
   Fingerprint,
   RotateCcw,
   UserCheck,
+  UserX,
   type LucideIcon,
 } from "lucide-react";
 
@@ -280,6 +281,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/identity-protection", icon: UserCheck, label: "Identity Protection" },
       { to: "/app/exposure-management", icon: Globe, label: "Exposure Mgmt" },
       { to: "/app/ai-soc-assistant", icon: MessageSquare, label: "AI SOC Assistant" },
+      { to: "/app/log-intelligence", icon: FileText, label: "Log Intelligence" },
+      { to: "/app/insider-threat", icon: UserX, label: "Insider Threat" },
+      { to: "/app/ransomware-forensics", icon: Shield, label: "Ransomware Forensics" },
+      { to: "/app/threat-intel-platform", icon: Globe, label: "Threat Intel Platform" },
+      { to: "/app/code-security-scanner", icon: Code, label: "Code Security" },
+      { to: "/app/data-resilience", icon: HardDrive, label: "Data Resilience" },
     ],
   },
   {
