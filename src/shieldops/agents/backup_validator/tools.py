@@ -45,17 +45,13 @@ class BackupValidatorToolkit:
         self._storage_client = storage_client
         self._recovery_client = recovery_client
 
-    async def inventory_backups(
-        self, tenant_id: str
-    ) -> list[BackupRecord]:
+    async def inventory_backups(self, tenant_id: str) -> list[BackupRecord]:
         """Discover and inventory all backups."""
         logger.info("backup_validator.inventory", tenant_id=tenant_id)
 
         if self._backup_client is not None:
             try:
-                raw = await self._backup_client.list_backups(
-                    tenant_id=tenant_id
-                )
+                raw = await self._backup_client.list_backups(tenant_id=tenant_id)
                 return [BackupRecord(**b) for b in raw]
             except Exception:
                 logger.exception("backup_validator.inventory.error")
@@ -106,9 +102,7 @@ class BackupValidatorToolkit:
             ),
         ]
 
-    async def validate_integrity(
-        self, backups: list[BackupRecord]
-    ) -> list[IntegrityCheck]:
+    async def validate_integrity(self, backups: list[BackupRecord]) -> list[IntegrityCheck]:
         """Validate integrity of each backup."""
         logger.info(
             "backup_validator.validate_integrity",
@@ -124,9 +118,7 @@ class BackupValidatorToolkit:
                 issues.append("Backup is not encrypted")
 
             if backup.status == ValidationStatus.EXPIRED:
-                issues.append(
-                    f"Backup expired (retention: {backup.retention_days}d)"
-                )
+                issues.append(f"Backup expired (retention: {backup.retention_days}d)")
                 status = ValidationStatus.EXPIRED
 
             if backup.size_gb == 0:
@@ -150,9 +142,7 @@ class BackupValidatorToolkit:
 
         return checks
 
-    async def test_recovery(
-        self, backups: list[BackupRecord]
-    ) -> list[RecoveryTest]:
+    async def test_recovery(self, backups: list[BackupRecord]) -> list[RecoveryTest]:
         """Run recovery tests on backups."""
         logger.info(
             "backup_validator.test_recovery",
@@ -166,9 +156,7 @@ class BackupValidatorToolkit:
 
             if self._recovery_client is not None:
                 try:
-                    result = await self._recovery_client.test_restore(
-                        backup_id=backup.id
-                    )
+                    result = await self._recovery_client.test_restore(backup_id=backup.id)
                     tests.append(RecoveryTest(**result))
                     continue
                 except Exception:
@@ -204,8 +192,12 @@ class BackupValidatorToolkit:
 
         # Check for expected services without backups
         expected_services = {
-            "postgres-main", "redis-cache", "kafka-topics",
-            "user-uploads", "elasticsearch", "vault-secrets",
+            "postgres-main",
+            "redis-cache",
+            "kafka-topics",
+            "user-uploads",
+            "elasticsearch",
+            "vault-secrets",
         }
         missing = expected_services - services_with_backups
         for svc in missing:
@@ -244,17 +236,13 @@ class BackupValidatorToolkit:
                         gap_type="encryption",
                         severity="high",
                         description=f"Backup for {backup.service} is not encrypted",
-                        recommendation=(
-                            f"Enable encryption for {backup.service} backups"
-                        ),
+                        recommendation=(f"Enable encryption for {backup.service} backups"),
                     )
                 )
 
         return gaps
 
-    async def remediate_gap(
-        self, gap: BackupGap
-    ) -> dict[str, Any]:
+    async def remediate_gap(self, gap: BackupGap) -> dict[str, Any]:
         """Attempt to remediate a backup gap."""
         logger.info(
             "backup_validator.remediate",

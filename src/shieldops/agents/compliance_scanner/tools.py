@@ -211,9 +211,7 @@ class ComplianceScannerToolkit:
 
         return controls
 
-    async def evaluate_findings(
-        self, controls: list[ComplianceControl]
-    ) -> list[ScanFinding]:
+    async def evaluate_findings(self, controls: list[ComplianceControl]) -> list[ScanFinding]:
         """Generate findings from control scan results."""
         logger.info(
             "compliance_scanner.evaluate_findings",
@@ -238,8 +236,10 @@ class ComplianceScannerToolkit:
                             f"is {ctrl.status.value} in {ctrl.framework}"
                         ),
                         severity=severity,
-                        auto_remediable=ctrl.category in (
-                            "monitoring", "logging",
+                        auto_remediable=ctrl.category
+                        in (
+                            "monitoring",
+                            "logging",
                         ),
                         resource=ctrl.framework,
                         recommendation=(
@@ -251,9 +251,7 @@ class ComplianceScannerToolkit:
 
         return findings
 
-    async def track_remediation(
-        self, findings: list[ScanFinding]
-    ) -> list[RemediationTracker]:
+    async def track_remediation(self, findings: list[ScanFinding]) -> list[RemediationTracker]:
         """Create remediation tracking for findings."""
         logger.info(
             "compliance_scanner.track_remediation",
@@ -269,17 +267,14 @@ class ComplianceScannerToolkit:
                     status=status,
                     assignee="compliance-team",
                     action_taken=(
-                        "Auto-remediated" if finding.auto_remediable
-                        else "Pending manual review"
+                        "Auto-remediated" if finding.auto_remediable else "Pending manual review"
                     ),
                 )
             )
 
         return trackers
 
-    async def generate_evidence(
-        self, controls: list[ComplianceControl]
-    ) -> list[EvidenceArtifact]:
+    async def generate_evidence(self, controls: list[ComplianceControl]) -> list[EvidenceArtifact]:
         """Generate or collect evidence for controls."""
         logger.info(
             "compliance_scanner.generate_evidence",
@@ -295,35 +290,23 @@ class ComplianceScannerToolkit:
                     EvidenceArtifact(
                         control_id=ctrl.id,
                         artifact_type=ctrl.evidence_type,
-                        description=(
-                            f"Automated evidence for {ctrl.control_name}"
-                        ),
+                        description=(f"Automated evidence for {ctrl.control_name}"),
                         collected_at=now,
                         storage_path=(
-                            f"s3://compliance-evidence/"
-                            f"{ctrl.framework}/{ctrl.control_id}/"
+                            f"s3://compliance-evidence/{ctrl.framework}/{ctrl.control_id}/"
                         ),
-                        hash_value=_generate_evidence_hash(
-                            ctrl.control_id, ctrl.evidence_type
-                        ),
+                        hash_value=_generate_evidence_hash(ctrl.control_id, ctrl.evidence_type),
                     )
                 )
 
         return artifacts
 
-    def calculate_compliance_score(
-        self, controls: list[ComplianceControl]
-    ) -> float:
+    def calculate_compliance_score(self, controls: list[ComplianceControl]) -> float:
         """Calculate overall compliance percentage."""
         if not controls:
             return 0.0
-        assessed = [
-            c for c in controls
-            if c.status != ControlStatus.NOT_ASSESSED
-        ]
+        assessed = [c for c in controls if c.status != ControlStatus.NOT_ASSESSED]
         if not assessed:
             return 0.0
-        passed = sum(
-            1 for c in assessed if c.status == ControlStatus.PASS
-        )
+        passed = sum(1 for c in assessed if c.status == ControlStatus.PASS)
         return round(passed / len(assessed) * 100, 1)

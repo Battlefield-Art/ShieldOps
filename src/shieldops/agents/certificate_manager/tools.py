@@ -49,17 +49,13 @@ class CertificateManagerToolkit:
         self._dns_client = dns_client
         self._notification_client = notification_client
 
-    async def discover_certificates(
-        self, tenant_id: str
-    ) -> list[Certificate]:
+    async def discover_certificates(self, tenant_id: str) -> list[Certificate]:
         """Discover all TLS certificates across infrastructure."""
         logger.info("cert_manager.discover", tenant_id=tenant_id)
 
         if self._cert_store is not None:
             try:
-                raw = await self._cert_store.list_certificates(
-                    tenant_id=tenant_id
-                )
+                raw = await self._cert_store.list_certificates(tenant_id=tenant_id)
                 return [Certificate(**c) for c in raw]
             except Exception:
                 logger.exception("cert_manager.discover.error")
@@ -101,9 +97,7 @@ class CertificateManagerToolkit:
         ]
         return certs
 
-    async def check_expiry(
-        self, certificates: list[Certificate]
-    ) -> list[ExpiryAlert]:
+    async def check_expiry(self, certificates: list[Certificate]) -> list[ExpiryAlert]:
         """Check certificates for upcoming expiry."""
         logger.info("cert_manager.check_expiry", cert_count=len(certificates))
 
@@ -134,13 +128,9 @@ class CertificateManagerToolkit:
         alerts.sort(key=lambda a: a.days_remaining)
         return alerts
 
-    async def validate_chains(
-        self, certificates: list[Certificate]
-    ) -> list[ChainValidation]:
+    async def validate_chains(self, certificates: list[Certificate]) -> list[ChainValidation]:
         """Validate certificate chains for trust issues."""
-        logger.info(
-            "cert_manager.validate_chains", cert_count=len(certificates)
-        )
+        logger.info("cert_manager.validate_chains", cert_count=len(certificates))
 
         validations: list[ChainValidation] = []
         for cert in certificates:
@@ -178,9 +168,7 @@ class CertificateManagerToolkit:
         certificates: list[Certificate],
     ) -> list[RotationPlan]:
         """Create rotation plans for expiring certificates."""
-        logger.info(
-            "cert_manager.plan_rotations", alert_count=len(expiry_alerts)
-        )
+        logger.info("cert_manager.plan_rotations", alert_count=len(expiry_alerts))
 
         cert_map = {c.id: c for c in certificates}
         plans: list[RotationPlan] = []
@@ -209,9 +197,7 @@ class CertificateManagerToolkit:
 
         return plans
 
-    async def execute_rotation(
-        self, plan: RotationPlan
-    ) -> RotationPlan:
+    async def execute_rotation(self, plan: RotationPlan) -> RotationPlan:
         """Execute a certificate rotation plan."""
         logger.info(
             "cert_manager.execute_rotation",
@@ -220,23 +206,15 @@ class CertificateManagerToolkit:
         )
 
         if plan.requires_approval:
-            return plan.model_copy(
-                update={"status": RotationStatus.PENDING}
-            )
+            return plan.model_copy(update={"status": RotationStatus.PENDING})
 
         if self._acme_client is not None:
             try:
                 await self._acme_client.renew(domain=plan.domain)
-                return plan.model_copy(
-                    update={"status": RotationStatus.COMPLETED}
-                )
+                return plan.model_copy(update={"status": RotationStatus.COMPLETED})
             except Exception:
                 logger.exception("cert_manager.execute_rotation.error")
-                return plan.model_copy(
-                    update={"status": RotationStatus.FAILED}
-                )
+                return plan.model_copy(update={"status": RotationStatus.FAILED})
 
         # Simulated successful rotation
-        return plan.model_copy(
-            update={"status": RotationStatus.COMPLETED}
-        )
+        return plan.model_copy(update={"status": RotationStatus.COMPLETED})

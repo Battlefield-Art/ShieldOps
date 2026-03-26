@@ -23,9 +23,7 @@ from .tools import AnomalyDetectorToolkit
 logger = structlog.get_logger()
 
 
-async def collect_data(
-    state: dict[str, Any], toolkit: AnomalyDetectorToolkit
-) -> dict[str, Any]:
+async def collect_data(state: dict[str, Any], toolkit: AnomalyDetectorToolkit) -> dict[str, Any]:
     """Collect telemetry data from metrics, logs, and traces."""
     logger.info("anomaly_detector.node.collect_data")
 
@@ -152,9 +150,7 @@ async def correlate_anomalies(
     }
 
 
-async def send_alerts(
-    state: dict[str, Any], toolkit: AnomalyDetectorToolkit
-) -> dict[str, Any]:
+async def send_alerts(state: dict[str, Any], toolkit: AnomalyDetectorToolkit) -> dict[str, Any]:
     """Send alerts for high-severity anomalies."""
     logger.info("anomaly_detector.node.alert")
 
@@ -179,9 +175,7 @@ async def send_alerts(
     }
 
 
-async def generate_report(
-    state: dict[str, Any], toolkit: AnomalyDetectorToolkit
-) -> dict[str, Any]:
+async def generate_report(state: dict[str, Any], toolkit: AnomalyDetectorToolkit) -> dict[str, Any]:
     """Generate final anomaly detection report."""
     logger.info("anomaly_detector.node.report")
 

@@ -23,9 +23,7 @@ from .tools import DNSSecurityToolkit
 logger = structlog.get_logger()
 
 
-async def collect_dns(
-    state: dict[str, Any], toolkit: DNSSecurityToolkit
-) -> dict[str, Any]:
+async def collect_dns(state: dict[str, Any], toolkit: DNSSecurityToolkit) -> dict[str, Any]:
     """Collect DNS query logs for analysis."""
     logger.info("dns_security.node.collect_dns")
 
@@ -42,9 +40,7 @@ async def collect_dns(
     }
 
 
-async def detect_tunneling(
-    state: dict[str, Any], toolkit: DNSSecurityToolkit
-) -> dict[str, Any]:
+async def detect_tunneling(state: dict[str, Any], toolkit: DNSSecurityToolkit) -> dict[str, Any]:
     """Detect DNS tunneling patterns."""
     logger.info("dns_security.node.detect_tunneling")
 
@@ -60,8 +56,7 @@ async def detect_tunneling(
             context = json.dumps(
                 {
                     "tunneling_threats": [
-                        {"domain": t.domain, "confidence": t.confidence}
-                        for t in threats[:10]
+                        {"domain": t.domain, "confidence": t.confidence} for t in threats[:10]
                     ],
                 },
                 default=str,
@@ -86,9 +81,7 @@ async def detect_tunneling(
     }
 
 
-async def detect_dga(
-    state: dict[str, Any], toolkit: DNSSecurityToolkit
-) -> dict[str, Any]:
+async def detect_dga(state: dict[str, Any], toolkit: DNSSecurityToolkit) -> dict[str, Any]:
     """Detect DGA-generated domains."""
     logger.info("dns_security.node.detect_dga")
 
@@ -104,8 +97,7 @@ async def detect_dga(
             context = json.dumps(
                 {
                     "dga_domains": [
-                        {"domain": t.domain, "confidence": t.confidence}
-                        for t in threats[:10]
+                        {"domain": t.domain, "confidence": t.confidence} for t in threats[:10]
                     ],
                 },
                 default=str,
@@ -152,9 +144,7 @@ async def detect_typosquatting(
     }
 
 
-async def respond_to_threats(
-    state: dict[str, Any], toolkit: DNSSecurityToolkit
-) -> dict[str, Any]:
+async def respond_to_threats(state: dict[str, Any], toolkit: DNSSecurityToolkit) -> dict[str, Any]:
     """Respond to high-severity DNS threats."""
     logger.info("dns_security.node.respond")
 
@@ -176,9 +166,7 @@ async def respond_to_threats(
     }
 
 
-async def generate_report(
-    state: dict[str, Any], toolkit: DNSSecurityToolkit
-) -> dict[str, Any]:
+async def generate_report(state: dict[str, Any], toolkit: DNSSecurityToolkit) -> dict[str, Any]:
     """Generate DNS security report."""
     logger.info("dns_security.node.report")
 

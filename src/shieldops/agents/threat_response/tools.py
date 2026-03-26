@@ -59,7 +59,9 @@ _PLAYBOOKS: dict[str, dict[str, Any]] = {
         "id": "PB-003",
         "name": "Lateral Movement Response",
         "threat_types": [
-            "lateral_movement", "privilege_escalation", "c2_communication",
+            "lateral_movement",
+            "privilege_escalation",
+            "c2_communication",
         ],
         "steps": [
             "Isolate compromised hosts",
@@ -275,30 +277,20 @@ class ThreatResponseToolkit:
                         target=tmpl["target"],
                         action_type=tmpl["action_type"],
                     )
-                    action = action.model_copy(
-                        update={"status": ActionStatus.COMPLETED}
-                    )
+                    action = action.model_copy(update={"status": ActionStatus.COMPLETED})
                 except Exception:
                     logger.exception("threat_response.containment.error")
-                    action = action.model_copy(
-                        update={"status": ActionStatus.FAILED}
-                    )
+                    action = action.model_copy(update={"status": ActionStatus.FAILED})
             elif self._edr_client and tmpl["action_type"] == "isolate_host":
                 try:
                     await self._edr_client.isolate_host(target=tmpl["target"])
-                    action = action.model_copy(
-                        update={"status": ActionStatus.COMPLETED}
-                    )
+                    action = action.model_copy(update={"status": ActionStatus.COMPLETED})
                 except Exception:
                     logger.exception("threat_response.containment.error")
-                    action = action.model_copy(
-                        update={"status": ActionStatus.FAILED}
-                    )
+                    action = action.model_copy(update={"status": ActionStatus.FAILED})
             else:
                 # Simulated execution
-                action = action.model_copy(
-                    update={"status": ActionStatus.COMPLETED}
-                )
+                action = action.model_copy(update={"status": ActionStatus.COMPLETED})
 
             actions.append(action)
 
@@ -333,9 +325,12 @@ class ThreatResponseToolkit:
             ],
         }
 
-        steps = eradication_steps.get(threat_type, [
-            {"action_type": "investigate_and_clean", "target": "affected_systems"},
-        ])
+        steps = eradication_steps.get(
+            threat_type,
+            [
+                {"action_type": "investigate_and_clean", "target": "affected_systems"},
+            ],
+        )
 
         now = datetime.now(UTC)
         actions: list[EradicationAction] = []
@@ -364,9 +359,7 @@ class ThreatResponseToolkit:
         now = datetime.now(UTC)
         verifications: list[RemediationVerification] = []
 
-        all_actions = [
-            (a.id, a.status) for a in containment_actions
-        ] + [
+        all_actions = [(a.id, a.status) for a in containment_actions] + [
             (a.id, a.status) for a in eradication_actions
         ]
 

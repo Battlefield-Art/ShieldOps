@@ -7,12 +7,8 @@ class ExpiryAnalysisResult(BaseModel):
     """Structured output from LLM-assisted expiry analysis."""
 
     summary: str = Field(description="Summary of certificate expiry status")
-    critical_certs: list[str] = Field(
-        description="Certificates requiring immediate attention"
-    )
-    risk_assessment: str = Field(
-        description="Overall risk assessment of certificate posture"
-    )
+    critical_certs: list[str] = Field(description="Certificates requiring immediate attention")
+    risk_assessment: str = Field(description="Overall risk assessment of certificate posture")
     recommendations: list[str] = Field(
         description="Prioritized recommendations for certificate management"
     )
@@ -22,30 +18,18 @@ class RotationPlanResult(BaseModel):
     """Structured output for rotation planning."""
 
     summary: str = Field(description="Summary of rotation plan")
-    rotation_order: list[str] = Field(
-        description="Recommended order for certificate rotations"
-    )
-    risks: list[str] = Field(
-        description="Risks associated with the rotation plan"
-    )
-    rollback_steps: list[str] = Field(
-        description="Steps to rollback if rotation fails"
-    )
+    rotation_order: list[str] = Field(description="Recommended order for certificate rotations")
+    risks: list[str] = Field(description="Risks associated with the rotation plan")
+    rollback_steps: list[str] = Field(description="Steps to rollback if rotation fails")
 
 
 class CertReportResult(BaseModel):
     """Structured output for certificate management report."""
 
     executive_summary: str = Field(description="Executive summary")
-    compliance_status: str = Field(
-        description="Compliance status of certificate inventory"
-    )
-    action_items: list[str] = Field(
-        description="Action items for the security team"
-    )
-    improvements: list[str] = Field(
-        description="Suggested improvements to certificate management"
-    )
+    compliance_status: str = Field(description="Compliance status of certificate inventory")
+    action_items: list[str] = Field(description="Action items for the security team")
+    improvements: list[str] = Field(description="Suggested improvements to certificate management")
 
 
 SYSTEM_EXPIRY_ANALYSIS = (

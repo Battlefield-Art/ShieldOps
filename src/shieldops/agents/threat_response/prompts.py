@@ -10,27 +10,17 @@ class ThreatClassificationResult(BaseModel):
     threat_type: str = Field(
         description="Classified threat type (e.g., malware, phishing, lateral_movement)"
     )
-    severity: str = Field(
-        description="Assessed severity: critical, high, medium, low"
-    )
-    mitre_tactics: list[str] = Field(
-        description="MITRE ATT&CK tactics identified"
-    )
-    urgency_assessment: str = Field(
-        description="Assessment of response urgency"
-    )
+    severity: str = Field(description="Assessed severity: critical, high, medium, low")
+    mitre_tactics: list[str] = Field(description="MITRE ATT&CK tactics identified")
+    urgency_assessment: str = Field(description="Assessment of response urgency")
 
 
 class PlaybookSelectionResult(BaseModel):
     """Structured output for playbook selection rationale."""
 
     summary: str = Field(description="Summary of playbook selection")
-    selected_playbook: str = Field(
-        description="Name of the selected playbook"
-    )
-    rationale: str = Field(
-        description="Rationale for playbook selection"
-    )
+    selected_playbook: str = Field(description="Name of the selected playbook")
+    rationale: str = Field(description="Rationale for playbook selection")
     customizations: list[str] = Field(
         description="Recommended customizations to the standard playbook"
     )
@@ -40,15 +30,9 @@ class ResponseReportResult(BaseModel):
     """Structured output for threat response report."""
 
     executive_summary: str = Field(description="Executive summary")
-    threat_timeline: list[str] = Field(
-        description="Timeline of threat detection and response"
-    )
-    actions_taken: list[str] = Field(
-        description="Summary of all actions taken"
-    )
-    lessons_learned: list[str] = Field(
-        description="Lessons learned for future responses"
-    )
+    threat_timeline: list[str] = Field(description="Timeline of threat detection and response")
+    actions_taken: list[str] = Field(description="Summary of all actions taken")
+    lessons_learned: list[str] = Field(description="Lessons learned for future responses")
 
 
 SYSTEM_CLASSIFY = (

@@ -7,45 +7,27 @@ class GapAnalysisResult(BaseModel):
     """Structured output from LLM-assisted backup gap analysis."""
 
     summary: str = Field(description="Summary of backup gap analysis")
-    critical_gaps: list[str] = Field(
-        description="Critical gaps in backup coverage"
-    )
-    compliance_risks: list[str] = Field(
-        description="Compliance risks from backup gaps"
-    )
-    recommendations: list[str] = Field(
-        description="Prioritized recommendations to close gaps"
-    )
+    critical_gaps: list[str] = Field(description="Critical gaps in backup coverage")
+    compliance_risks: list[str] = Field(description="Compliance risks from backup gaps")
+    recommendations: list[str] = Field(description="Prioritized recommendations to close gaps")
 
 
 class RecoveryAnalysisResult(BaseModel):
     """Structured output for recovery test analysis."""
 
     summary: str = Field(description="Summary of recovery test results")
-    rto_assessment: str = Field(
-        description="Assessment of Recovery Time Objective adherence"
-    )
-    rpo_assessment: str = Field(
-        description="Assessment of Recovery Point Objective adherence"
-    )
-    improvements: list[str] = Field(
-        description="Improvements to recovery procedures"
-    )
+    rto_assessment: str = Field(description="Assessment of Recovery Time Objective adherence")
+    rpo_assessment: str = Field(description="Assessment of Recovery Point Objective adherence")
+    improvements: list[str] = Field(description="Improvements to recovery procedures")
 
 
 class BackupReportResult(BaseModel):
     """Structured output for backup validation report."""
 
     executive_summary: str = Field(description="Executive summary")
-    compliance_status: str = Field(
-        description="Compliance status of backup program"
-    )
-    risk_areas: list[str] = Field(
-        description="Areas of risk in backup infrastructure"
-    )
-    action_items: list[str] = Field(
-        description="Action items for infrastructure team"
-    )
+    compliance_status: str = Field(description="Compliance status of backup program")
+    risk_areas: list[str] = Field(description="Areas of risk in backup infrastructure")
+    action_items: list[str] = Field(description="Action items for infrastructure team")
 
 
 SYSTEM_GAP_ANALYSIS = (

@@ -7,42 +7,28 @@ class TunnelingAnalysisResult(BaseModel):
     """Structured output from LLM-assisted tunneling detection."""
 
     summary: str = Field(description="Summary of DNS tunneling analysis")
-    suspicious_domains: list[str] = Field(
-        description="Domains exhibiting tunneling indicators"
-    )
-    confidence_assessment: str = Field(
-        description="Overall confidence in tunneling detection"
-    )
-    exfiltration_risk: str = Field(
-        description="Risk level of data exfiltration via DNS"
-    )
+    suspicious_domains: list[str] = Field(description="Domains exhibiting tunneling indicators")
+    confidence_assessment: str = Field(description="Overall confidence in tunneling detection")
+    exfiltration_risk: str = Field(description="Risk level of data exfiltration via DNS")
 
 
 class DGAAnalysisResult(BaseModel):
     """Structured output from LLM-assisted DGA detection."""
 
     summary: str = Field(description="Summary of DGA detection analysis")
-    dga_domains: list[str] = Field(
-        description="Domains identified as DGA-generated"
-    )
+    dga_domains: list[str] = Field(description="Domains identified as DGA-generated")
     malware_families: list[str] = Field(
         description="Possible malware families associated with DGA patterns"
     )
-    recommended_blocks: list[str] = Field(
-        description="Domains recommended for blocking"
-    )
+    recommended_blocks: list[str] = Field(description="Domains recommended for blocking")
 
 
 class DNSReportResult(BaseModel):
     """Structured output for DNS security report."""
 
     executive_summary: str = Field(description="Executive summary of DNS findings")
-    threat_landscape: str = Field(
-        description="Overview of DNS threat landscape observed"
-    )
-    iocs: list[str] = Field(
-        description="Indicators of compromise extracted from DNS data"
-    )
+    threat_landscape: str = Field(description="Overview of DNS threat landscape observed")
+    iocs: list[str] = Field(description="Indicators of compromise extracted from DNS data")
     recommendations: list[str] = Field(
         description="Recommendations for DNS security posture improvement"
     )

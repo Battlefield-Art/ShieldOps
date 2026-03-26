@@ -7,24 +7,16 @@ class FindingEvaluationResult(BaseModel):
     """Structured output from LLM-assisted finding evaluation."""
 
     summary: str = Field(description="Summary of compliance findings")
-    critical_gaps: list[str] = Field(
-        description="Critical compliance gaps identified"
-    )
-    risk_areas: list[str] = Field(
-        description="Risk areas requiring immediate attention"
-    )
-    remediation_priorities: list[str] = Field(
-        description="Prioritized remediation actions"
-    )
+    critical_gaps: list[str] = Field(description="Critical compliance gaps identified")
+    risk_areas: list[str] = Field(description="Risk areas requiring immediate attention")
+    remediation_priorities: list[str] = Field(description="Prioritized remediation actions")
 
 
 class EvidenceGenerationResult(BaseModel):
     """Structured output for evidence generation guidance."""
 
     summary: str = Field(description="Summary of evidence collection")
-    evidence_gaps: list[str] = Field(
-        description="Controls lacking sufficient evidence"
-    )
+    evidence_gaps: list[str] = Field(description="Controls lacking sufficient evidence")
     collection_recommendations: list[str] = Field(
         description="Recommendations for evidence collection"
     )
@@ -37,15 +29,9 @@ class ComplianceReportResult(BaseModel):
     """Structured output for compliance report."""
 
     executive_summary: str = Field(description="Executive summary")
-    compliance_posture: str = Field(
-        description="Overall compliance posture assessment"
-    )
-    framework_scores: list[str] = Field(
-        description="Compliance score per framework"
-    )
-    action_items: list[str] = Field(
-        description="Prioritized action items"
-    )
+    compliance_posture: str = Field(description="Overall compliance posture assessment")
+    framework_scores: list[str] = Field(description="Compliance score per framework")
+    action_items: list[str] = Field(description="Prioritized action items")
 
 
 SYSTEM_EVALUATE = (

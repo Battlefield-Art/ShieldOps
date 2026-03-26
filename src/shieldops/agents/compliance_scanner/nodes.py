@@ -45,9 +45,7 @@ async def select_frameworks(
     }
 
 
-async def scan_controls(
-    state: dict[str, Any], toolkit: ComplianceScannerToolkit
-) -> dict[str, Any]:
+async def scan_controls(state: dict[str, Any], toolkit: ComplianceScannerToolkit) -> dict[str, Any]:
     """Scan compliance controls."""
     logger.info("compliance_scanner.node.scan_controls")
 
@@ -109,9 +107,7 @@ async def evaluate_findings(
             )
             reasoning_note = f"{result.summary}. {reasoning_note}"
         except Exception:
-            logger.debug(
-                "llm_fallback", agent="compliance_scanner", node="evaluate"
-            )
+            logger.debug("llm_fallback", agent="compliance_scanner", node="evaluate")
 
     return {
         "stage": ComplianceStage.TRACK_REMEDIATION.value,
@@ -136,10 +132,7 @@ async def track_remediation(
         "stage": ComplianceStage.GENERATE_EVIDENCE.value,
         "remediations": trackers_data,
         "reasoning_chain": state.get("reasoning_chain", [])
-        + [
-            f"Tracking {len(trackers)} remediations "
-            f"({auto_count} auto-remediated)"
-        ],
+        + [f"Tracking {len(trackers)} remediations ({auto_count} auto-remediated)"],
     }
 
 
@@ -163,8 +156,7 @@ async def generate_evidence(
                     "total_controls": len(controls),
                     "evidence_collected": len(artifacts),
                     "controls_without_evidence": sum(
-                        1 for c in controls
-                        if c.status != ControlStatus.PASS
+                        1 for c in controls if c.status != ControlStatus.PASS
                     ),
                 },
                 default=str,
@@ -179,9 +171,7 @@ async def generate_evidence(
             )
             reasoning_note = f"{result.summary}. {reasoning_note}"
         except Exception:
-            logger.debug(
-                "llm_fallback", agent="compliance_scanner", node="evidence"
-            )
+            logger.debug("llm_fallback", agent="compliance_scanner", node="evidence")
 
     return {
         "stage": ComplianceStage.REPORT.value,
@@ -228,9 +218,7 @@ async def generate_report(
         )
         summary = result.executive_summary
     except Exception:
-        logger.debug(
-            "llm_fallback", agent="compliance_scanner", node="report"
-        )
+        logger.debug("llm_fallback", agent="compliance_scanner", node="report")
 
     return {
         "stage": ComplianceStage.REPORT.value,

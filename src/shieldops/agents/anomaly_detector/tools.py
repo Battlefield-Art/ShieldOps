@@ -58,20 +58,25 @@ class AnomalyDetectorToolkit:
         # Fallback: synthetic baseline data
         now = datetime.now(UTC)
         metrics = [
-            "cpu_utilization", "memory_usage_percent",
-            "request_latency_p99", "error_rate_5xx",
-            "disk_io_utilization", "network_throughput_mbps",
+            "cpu_utilization",
+            "memory_usage_percent",
+            "request_latency_p99",
+            "error_rate_5xx",
+            "disk_io_utilization",
+            "network_throughput_mbps",
         ]
         data_points: list[dict[str, Any]] = []
         for metric in metrics:
-            data_points.append({
-                "source": "prometheus",
-                "metric_name": metric,
-                "value": 45.0,
-                "timestamp": now.isoformat(),
-                "labels": {"tenant_id": tenant_id},
-                "data_type": "metric",
-            })
+            data_points.append(
+                {
+                    "source": "prometheus",
+                    "metric_name": metric,
+                    "value": 45.0,
+                    "timestamp": now.isoformat(),
+                    "labels": {"tenant_id": tenant_id},
+                    "data_type": "metric",
+                }
+            )
         return data_points
 
     async def collect_logs(self, tenant_id: str) -> list[dict[str, Any]]:
@@ -194,12 +199,9 @@ class AnomalyDetectorToolkit:
                         anomaly_ids=[a.id for a in group],
                         correlation_score=round(correlation_score, 3),
                         root_cause_hypothesis=(
-                            f"Multiple anomalies from {source} "
-                            f"suggest a shared root cause"
+                            f"Multiple anomalies from {source} suggest a shared root cause"
                         ),
-                        affected_services=[
-                            a.labels.get("service", source) for a in group
-                        ],
+                        affected_services=[a.labels.get("service", source) for a in group],
                     )
                 )
 

@@ -42,9 +42,7 @@ async def discover_certs(
     }
 
 
-async def check_expiry(
-    state: dict[str, Any], toolkit: CertificateManagerToolkit
-) -> dict[str, Any]:
+async def check_expiry(state: dict[str, Any], toolkit: CertificateManagerToolkit) -> dict[str, Any]:
     """Check certificates for upcoming expiry."""
     logger.info("cert_manager.node.check_expiry")
 
@@ -107,10 +105,7 @@ async def validate_chains(
         "stage": CertStage.PLAN_ROTATION.value,
         "chain_validations": validations_data,
         "reasoning_chain": state.get("reasoning_chain", [])
-        + [
-            f"Validated {len(validations)} chains, "
-            f"{invalid_count} have issues"
-        ],
+        + [f"Validated {len(validations)} chains, {invalid_count} have issues"],
     }
 
 
@@ -195,9 +190,7 @@ async def generate_report(
     total = state.get("total_certs", 0)
     expiring = state.get("expiring_count", 0)
     rotated = state.get("rotated_count", 0)
-    summary = (
-        f"Managed {total} certificates: {expiring} expiring, {rotated} rotated"
-    )
+    summary = f"Managed {total} certificates: {expiring} expiring, {rotated} rotated"
 
     try:
         context = json.dumps(

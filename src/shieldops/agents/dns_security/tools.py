@@ -47,17 +47,21 @@ def _levenshtein_distance(s1: str, s2: str) -> int:
         curr_row = [i + 1]
         for j, c2 in enumerate(s2):
             cost = 0 if c1 == c2 else 1
-            curr_row.append(
-                min(curr_row[j] + 1, prev_row[j + 1] + 1, prev_row[j] + cost)
-            )
+            curr_row.append(min(curr_row[j] + 1, prev_row[j + 1] + 1, prev_row[j] + cost))
         prev_row = curr_row
     return prev_row[-1]
 
 
 # Known brand domains for typosquatting detection
 _BRAND_DOMAINS = [
-    "google.com", "microsoft.com", "amazon.com", "apple.com",
-    "facebook.com", "github.com", "cloudflare.com", "stripe.com",
+    "google.com",
+    "microsoft.com",
+    "amazon.com",
+    "apple.com",
+    "facebook.com",
+    "github.com",
+    "cloudflare.com",
+    "stripe.com",
 ]
 
 
@@ -74,9 +78,7 @@ class DNSSecurityToolkit:
         self._threat_intel_client = threat_intel_client
         self._firewall_client = firewall_client
 
-    async def collect_dns_queries(
-        self, tenant_id: str
-    ) -> list[DNSQuery]:
+    async def collect_dns_queries(self, tenant_id: str) -> list[DNSQuery]:
         """Collect DNS query logs for analysis."""
         logger.info("dns_security.collect", tenant_id=tenant_id)
 
@@ -132,13 +134,9 @@ class DNSSecurityToolkit:
             ),
         ]
 
-    async def detect_tunneling(
-        self, queries: list[DNSQuery]
-    ) -> list[DNSThreat]:
+    async def detect_tunneling(self, queries: list[DNSQuery]) -> list[DNSThreat]:
         """Detect DNS tunneling based on query characteristics."""
-        logger.info(
-            "dns_security.detect_tunneling", query_count=len(queries)
-        )
+        logger.info("dns_security.detect_tunneling", query_count=len(queries))
 
         threats: list[DNSThreat] = []
         for i, query in enumerate(queries):
@@ -150,14 +148,10 @@ class DNSSecurityToolkit:
 
             if (entropy > 3.5 and is_long) or (is_txt and query.query_size > 100):
                 confidence = min(1.0, entropy / 5.0)
-                severity = (
-                    DNSSeverity.HIGH if confidence > 0.7 else DNSSeverity.MEDIUM
-                )
+                severity = DNSSeverity.HIGH if confidence > 0.7 else DNSSeverity.MEDIUM
                 threats.append(
                     DNSThreat(
-                        id=_generate_threat_id(
-                            query.domain, "tunneling", i
-                        ),
+                        id=_generate_threat_id(query.domain, "tunneling", i),
                         threat_type=DNSThreatType.TUNNELING,
                         domain=query.domain,
                         severity=severity,
@@ -178,9 +172,7 @@ class DNSSecurityToolkit:
 
         return threats
 
-    async def detect_dga(
-        self, queries: list[DNSQuery]
-    ) -> list[DNSThreat]:
+    async def detect_dga(self, queries: list[DNSQuery]) -> list[DNSThreat]:
         """Detect Domain Generation Algorithm domains."""
         logger.info("dns_security.detect_dga", query_count=len(queries))
 
@@ -223,13 +215,9 @@ class DNSSecurityToolkit:
 
         return threats
 
-    async def detect_typosquatting(
-        self, queries: list[DNSQuery]
-    ) -> list[DNSThreat]:
+    async def detect_typosquatting(self, queries: list[DNSQuery]) -> list[DNSThreat]:
         """Detect typosquatting domains targeting known brands."""
-        logger.info(
-            "dns_security.detect_typosquatting", query_count=len(queries)
-        )
+        logger.info("dns_security.detect_typosquatting", query_count=len(queries))
 
         threats: list[DNSThreat] = []
         for i, query in enumerate(queries):
@@ -237,16 +225,12 @@ class DNSSecurityToolkit:
                 if query.domain == brand:
                     continue
 
-                distance = _levenshtein_distance(
-                    query.domain.lower(), brand.lower()
-                )
+                distance = _levenshtein_distance(query.domain.lower(), brand.lower())
                 if 1 <= distance <= 2:
                     confidence = 1.0 - (distance / 5.0)
                     threats.append(
                         DNSThreat(
-                            id=_generate_threat_id(
-                                query.domain, "typosquatting", i
-                            ),
+                            id=_generate_threat_id(query.domain, "typosquatting", i),
                             threat_type=DNSThreatType.TYPOSQUATTING,
                             domain=query.domain,
                             severity=DNSSeverity.MEDIUM,
@@ -267,9 +251,7 @@ class DNSSecurityToolkit:
 
         return threats
 
-    async def respond_to_threat(
-        self, threat: DNSThreat
-    ) -> DNSResponse:
+    async def respond_to_threat(self, threat: DNSThreat) -> DNSResponse:
         """Take response action for a DNS threat."""
         logger.info(
             "dns_security.respond",
@@ -283,9 +265,7 @@ class DNSSecurityToolkit:
 
         if self._firewall_client is not None:
             try:
-                await self._firewall_client.block_domain(
-                    domain=threat.domain
-                )
+                await self._firewall_client.block_domain(domain=threat.domain)
                 return DNSResponse(
                     threat_id=threat.id,
                     action=action,

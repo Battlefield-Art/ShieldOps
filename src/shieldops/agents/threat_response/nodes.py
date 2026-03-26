@@ -31,9 +31,7 @@ from .tools import ThreatResponseToolkit
 logger = structlog.get_logger()
 
 
-async def classify_threat(
-    state: dict[str, Any], toolkit: ThreatResponseToolkit
-) -> dict[str, Any]:
+async def classify_threat(state: dict[str, Any], toolkit: ThreatResponseToolkit) -> dict[str, Any]:
     """Classify the incoming threat."""
     logger.info("threat_response.node.classify")
 
@@ -87,9 +85,7 @@ async def classify_threat(
     }
 
 
-async def select_playbook(
-    state: dict[str, Any], toolkit: ThreatResponseToolkit
-) -> dict[str, Any]:
+async def select_playbook(state: dict[str, Any], toolkit: ThreatResponseToolkit) -> dict[str, Any]:
     """Select the appropriate response playbook."""
     logger.info("threat_response.node.select_playbook")
 
@@ -210,9 +206,7 @@ async def verify_remediation(
     }
 
 
-async def generate_report(
-    state: dict[str, Any], toolkit: ThreatResponseToolkit
-) -> dict[str, Any]:
+async def generate_report(state: dict[str, Any], toolkit: ThreatResponseToolkit) -> dict[str, Any]:
     """Generate threat response report."""
     logger.info("threat_response.node.report")
 

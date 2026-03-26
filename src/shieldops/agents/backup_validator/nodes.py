@@ -59,9 +59,7 @@ async def validate_integrity(
     checks = await toolkit.validate_integrity(backups)
     checks_data = [c.model_dump() for c in checks]
 
-    valid_count = sum(
-        1 for c in checks if c.status == ValidationStatus.VALID
-    )
+    valid_count = sum(1 for c in checks if c.status == ValidationStatus.VALID)
     return {
         "stage": BackupStage.TEST_RECOVERY.value,
         "integrity_checks": checks_data,
@@ -71,9 +69,7 @@ async def validate_integrity(
     }
 
 
-async def test_recovery(
-    state: dict[str, Any], toolkit: BackupValidatorToolkit
-) -> dict[str, Any]:
+async def test_recovery(state: dict[str, Any], toolkit: BackupValidatorToolkit) -> dict[str, Any]:
     """Test backup recovery."""
     logger.info("backup_validator.node.test_recovery")
 
@@ -85,10 +81,7 @@ async def test_recovery(
     success_count = sum(1 for t in tests if t.success)
     rate = (success_count / len(tests) * 100) if tests else 0.0
 
-    reasoning_note = (
-        f"Tested {len(tests)} recoveries, {success_count} successful "
-        f"({rate:.0f}%)"
-    )
+    reasoning_note = f"Tested {len(tests)} recoveries, {success_count} successful ({rate:.0f}%)"
 
     if tests:
         try:
@@ -126,9 +119,7 @@ async def test_recovery(
     }
 
 
-async def assess_gaps(
-    state: dict[str, Any], toolkit: BackupValidatorToolkit
-) -> dict[str, Any]:
+async def assess_gaps(state: dict[str, Any], toolkit: BackupValidatorToolkit) -> dict[str, Any]:
     """Assess backup coverage gaps."""
     logger.info("backup_validator.node.assess_gaps")
 
@@ -176,9 +167,7 @@ async def assess_gaps(
     }
 
 
-async def remediate(
-    state: dict[str, Any], toolkit: BackupValidatorToolkit
-) -> dict[str, Any]:
+async def remediate(state: dict[str, Any], toolkit: BackupValidatorToolkit) -> dict[str, Any]:
     """Remediate identified backup gaps."""
     logger.info("backup_validator.node.remediate")
 
@@ -199,9 +188,7 @@ async def remediate(
     }
 
 
-async def generate_report(
-    state: dict[str, Any], toolkit: BackupValidatorToolkit
-) -> dict[str, Any]:
+async def generate_report(state: dict[str, Any], toolkit: BackupValidatorToolkit) -> dict[str, Any]:
     """Generate backup validation report."""
     logger.info("backup_validator.node.report")
 

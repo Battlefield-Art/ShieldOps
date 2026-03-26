@@ -7,30 +7,22 @@ class AnomalyClassificationResult(BaseModel):
     """Structured output from LLM-assisted anomaly classification."""
 
     summary: str = Field(description="Brief summary of anomaly classification")
-    classifications: list[str] = Field(
-        description="Classification labels for each anomaly"
-    )
+    classifications: list[str] = Field(description="Classification labels for each anomaly")
     severity_assessments: list[str] = Field(
         description="Severity assessment rationale for each anomaly"
     )
-    recommended_actions: list[str] = Field(
-        description="Recommended follow-up actions"
-    )
+    recommended_actions: list[str] = Field(description="Recommended follow-up actions")
 
 
 class CorrelationAnalysisResult(BaseModel):
     """Structured output from LLM-assisted correlation analysis."""
 
     summary: str = Field(description="Brief summary of correlation findings")
-    correlated_groups: list[str] = Field(
-        description="Groups of correlated anomalies"
-    )
+    correlated_groups: list[str] = Field(description="Groups of correlated anomalies")
     root_cause_hypotheses: list[str] = Field(
         description="Possible root causes for correlated anomalies"
     )
-    affected_services: list[str] = Field(
-        description="Services affected by the anomalies"
-    )
+    affected_services: list[str] = Field(description="Services affected by the anomalies")
 
 
 class AnomalyReportResult(BaseModel):
@@ -40,9 +32,7 @@ class AnomalyReportResult(BaseModel):
     critical_findings: list[str] = Field(
         description="Critical anomalies requiring immediate attention"
     )
-    trends: list[str] = Field(
-        description="Emerging trends identified in the data"
-    )
+    trends: list[str] = Field(description="Emerging trends identified in the data")
     recommendations: list[str] = Field(
         description="Prioritized recommendations for operations team"
     )
