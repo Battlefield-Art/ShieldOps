@@ -53,6 +53,9 @@ import {
   ClipboardCheck,
   Tag,
   RefreshCw,
+  Network,
+  Boxes,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 
@@ -249,6 +252,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/vulnerability-manager", icon: Bug, label: "Vulnerability Manager" },
       { to: "/app/compliance-scanner", icon: FileCheck, label: "Compliance Scanner" },
       { to: "/app/threat-response", icon: Zap, label: "Threat Response" },
+      { to: "/app/agent-governance", icon: ShieldCheck, label: "Agent Governance" },
+      { to: "/app/model-security", icon: Lock, label: "Model Security" },
+      { to: "/app/prompt-shield", icon: ShieldAlert, label: "Prompt Shield" },
+      { to: "/app/multi-agent-security", icon: Network, label: "Multi-Agent Security" },
+      { to: "/app/digital-twin-security", icon: Boxes, label: "Digital Twin Security" },
     ],
   },
   {
@@ -269,6 +277,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/app/compliance", icon: ShieldCheck, label: "Compliance" },
       { to: "/app/audit-log", icon: FileText, label: "Audit Log" },
+      { to: "/app/ai-compliance", icon: Scale, label: "AI Compliance" },
     ],
   },
   {

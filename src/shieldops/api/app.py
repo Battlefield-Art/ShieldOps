@@ -286,6 +286,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "vulnerability_manager",
                 "compliance_scanner",
                 "threat_response",
+                "agent_governance",
+                "model_security",
+                "prompt_shield",
+                "multi_agent_security",
+                "ai_compliance",
+                "digital_twin_security",
             ):
                 try:
                     await agent_registry.register(
@@ -13924,6 +13930,12 @@ def create_app() -> FastAPI:
         "vulnerability_manager",
         "compliance_scanner",
         "threat_response",
+        "agent_governance",
+        "model_security",
+        "prompt_shield",
+        "multi_agent_security",
+        "ai_compliance",
+        "digital_twin_security",
     ):
         try:
             _mod = __import__(f"shieldops.api.routes.{_rname}", fromlist=["router"])
@@ -13934,7 +13946,7 @@ def create_app() -> FastAPI:
         _tag = _rname.replace("_", " ").title()
         app.include_router(_rmod.router, prefix=settings.api_prefix, tags=[_tag])
     if _p142_routes:
-        logger.info("phase_142_145_routes_registered", count=len(_p142_routes))
+        logger.info("phase_142_150_routes_registered", count=len(_p142_routes))
 
     if audit_reports_routes is not None:
         app.include_router(

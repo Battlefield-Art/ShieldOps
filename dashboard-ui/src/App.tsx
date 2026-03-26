@@ -121,6 +121,12 @@ const BackupValidator = lazy(() => import("./pages/BackupValidator"));
 const VulnerabilityManager = lazy(() => import("./pages/VulnerabilityManager"));
 const ComplianceScanner = lazy(() => import("./pages/ComplianceScanner"));
 const ThreatResponse = lazy(() => import("./pages/ThreatResponse"));
+const AgentGovernance = lazy(() => import("./pages/AgentGovernance"));
+const ModelSecurity = lazy(() => import("./pages/ModelSecurity"));
+const PromptShield = lazy(() => import("./pages/PromptShield"));
+const MultiAgentSecurity = lazy(() => import("./pages/MultiAgentSecurity"));
+const AICompliance = lazy(() => import("./pages/AICompliance"));
+const DigitalTwinSecurity = lazy(() => import("./pages/DigitalTwinSecurity"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -302,6 +308,12 @@ export default function App() {
               <Route path="vulnerability-manager" element={<VulnerabilityManager />} />
               <Route path="compliance-scanner" element={<ComplianceScanner />} />
               <Route path="threat-response" element={<ThreatResponse />} />
+              <Route path="agent-governance" element={<AgentGovernance />} />
+              <Route path="model-security" element={<ModelSecurity />} />
+              <Route path="prompt-shield" element={<PromptShield />} />
+              <Route path="multi-agent-security" element={<MultiAgentSecurity />} />
+              <Route path="ai-compliance" element={<AICompliance />} />
+              <Route path="digital-twin-security" element={<DigitalTwinSecurity />} />
             </Route>
 
             {/* Catch-all */}
