@@ -114,6 +114,13 @@ const NetworkSegmentation = lazy(() => import("./pages/NetworkSegmentation"));
 const WorkflowEngine = lazy(() => import("./pages/WorkflowEngine"));
 const AlertCorrelation = lazy(() => import("./pages/AlertCorrelation"));
 const PerformanceProfiler = lazy(() => import("./pages/PerformanceProfiler"));
+const AnomalyDetector = lazy(() => import("./pages/AnomalyDetector"));
+const CertificateManager = lazy(() => import("./pages/CertificateManager"));
+const DNSSecurity = lazy(() => import("./pages/DNSSecurity"));
+const BackupValidator = lazy(() => import("./pages/BackupValidator"));
+const VulnerabilityManager = lazy(() => import("./pages/VulnerabilityManager"));
+const ComplianceScanner = lazy(() => import("./pages/ComplianceScanner"));
+const ThreatResponse = lazy(() => import("./pages/ThreatResponse"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -288,6 +295,13 @@ export default function App() {
               <Route path="workflow-engine" element={<WorkflowEngine />} />
               <Route path="alert-correlation" element={<AlertCorrelation />} />
               <Route path="performance-profiler" element={<PerformanceProfiler />} />
+              <Route path="anomaly-detector" element={<AnomalyDetector />} />
+              <Route path="certificate-manager" element={<CertificateManager />} />
+              <Route path="dns-security" element={<DNSSecurity />} />
+              <Route path="backup-validator" element={<BackupValidator />} />
+              <Route path="vulnerability-manager" element={<VulnerabilityManager />} />
+              <Route path="compliance-scanner" element={<ComplianceScanner />} />
+              <Route path="threat-response" element={<ThreatResponse />} />
             </Route>
 
             {/* Catch-all */}

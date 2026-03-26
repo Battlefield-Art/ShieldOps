@@ -242,6 +242,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/workflow-engine", icon: Workflow, label: "Workflow Engine" },
       { to: "/app/alert-correlation", icon: Layers, label: "Alert Correlation" },
       { to: "/app/performance-profiler", icon: Activity, label: "Performance Profiler" },
+      { to: "/app/anomaly-detector", icon: Activity, label: "Anomaly Detector" },
+      { to: "/app/certificate-manager", icon: Lock, label: "Certificate Manager" },
+      { to: "/app/dns-security", icon: Globe, label: "DNS Security" },
+      { to: "/app/backup-validator", icon: Database, label: "Backup Validator" },
+      { to: "/app/vulnerability-manager", icon: Bug, label: "Vulnerability Manager" },
+      { to: "/app/compliance-scanner", icon: FileCheck, label: "Compliance Scanner" },
+      { to: "/app/threat-response", icon: Zap, label: "Threat Response" },
     ],
   },
   {
