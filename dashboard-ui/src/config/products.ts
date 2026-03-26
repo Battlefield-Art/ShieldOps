@@ -58,6 +58,8 @@ import {
   Scale,
   Bot,
   Timer,
+  Radar,
+  Fingerprint,
   type LucideIcon,
 } from "lucide-react";
 
@@ -264,6 +266,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/ai-triage-accelerator", icon: Gauge, label: "AI Triage" },
       { to: "/app/cloud-risk-ranker", icon: Cloud, label: "Cloud Risk Ranker" },
       { to: "/app/data-loss-prevention", icon: ShieldAlert, label: "DLP" },
+      { to: "/app/autonomous-xdr", icon: Radar, label: "Autonomous XDR" },
+      { to: "/app/autonomous-soc", icon: Brain, label: "Autonomous SOC" },
+      { to: "/app/cnapp-analyzer", icon: Cloud, label: "CNAPP" },
+      { to: "/app/zero-trust-network", icon: Fingerprint, label: "Zero Trust" },
+      { to: "/app/intelligent-soar", icon: Workflow, label: "Intelligent SOAR" },
+      { to: "/app/malware-analyzer", icon: Bug, label: "Malware Analyzer" },
     ],
   },
   {

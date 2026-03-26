@@ -133,6 +133,12 @@ const AITriageAccelerator = lazy(() => import("./pages/AITriageAccelerator"));
 const SOCTransformation = lazy(() => import("./pages/SOCTransformation"));
 const CloudRiskRanker = lazy(() => import("./pages/CloudRiskRanker"));
 const DataLossPrevention = lazy(() => import("./pages/DataLossPrevention"));
+const AutonomousXDR = lazy(() => import("./pages/AutonomousXDR"));
+const AutonomousSOC = lazy(() => import("./pages/AutonomousSOC"));
+const CNAPPAnalyzer = lazy(() => import("./pages/CNAPPAnalyzer"));
+const ZeroTrustNetwork = lazy(() => import("./pages/ZeroTrustNetwork"));
+const IntelligentSOAR = lazy(() => import("./pages/IntelligentSOAR"));
+const MalwareAnalyzer = lazy(() => import("./pages/MalwareAnalyzer"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -326,6 +332,12 @@ export default function App() {
               <Route path="soc-transformation" element={<SOCTransformation />} />
               <Route path="cloud-risk-ranker" element={<CloudRiskRanker />} />
               <Route path="data-loss-prevention" element={<DataLossPrevention />} />
+              <Route path="autonomous-xdr" element={<AutonomousXDR />} />
+              <Route path="autonomous-soc" element={<AutonomousSOC />} />
+              <Route path="cnapp-analyzer" element={<CNAPPAnalyzer />} />
+              <Route path="zero-trust-network" element={<ZeroTrustNetwork />} />
+              <Route path="intelligent-soar" element={<IntelligentSOAR />} />
+              <Route path="malware-analyzer" element={<MalwareAnalyzer />} />
             </Route>
 
             {/* Catch-all */}
