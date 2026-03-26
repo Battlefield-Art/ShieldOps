@@ -104,6 +104,12 @@ const ServiceAccountTracker = lazy(() => import("./pages/ServiceAccountTracker")
 const DataClassification = lazy(() => import("./pages/DataClassification"));
 const AccessReview = lazy(() => import("./pages/AccessReview"));
 const RunbookAutomation = lazy(() => import("./pages/RunbookAutomation"));
+const CapacityPlanner = lazy(() => import("./pages/CapacityPlanner"));
+const DisasterRecovery = lazy(() => import("./pages/DisasterRecovery"));
+const LogAnalyzer = lazy(() => import("./pages/LogAnalyzer"));
+const ChaosEngineering = lazy(() => import("./pages/ChaosEngineering"));
+const SLAMonitor = lazy(() => import("./pages/SLAMonitor"));
+const ConfigValidator = lazy(() => import("./pages/ConfigValidator"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -268,6 +274,12 @@ export default function App() {
               <Route path="data-classification" element={<DataClassification />} />
               <Route path="access-review" element={<AccessReview />} />
               <Route path="runbook-automation" element={<RunbookAutomation />} />
+              <Route path="capacity-planner" element={<CapacityPlanner />} />
+              <Route path="disaster-recovery" element={<DisasterRecovery />} />
+              <Route path="log-analyzer" element={<LogAnalyzer />} />
+              <Route path="chaos-engineering" element={<ChaosEngineering />} />
+              <Route path="sla-monitor" element={<SLAMonitor />} />
+              <Route path="config-validator" element={<ConfigValidator />} />
             </Route>
 
             {/* Catch-all */}

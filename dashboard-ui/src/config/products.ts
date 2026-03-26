@@ -232,6 +232,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/data-classification", icon: Tag, label: "Data Classification" },
       { to: "/app/access-review", icon: ClipboardCheck, label: "Access Review" },
       { to: "/app/runbook-automation", icon: BookOpen, label: "Runbook Automation" },
+      { to: "/app/capacity-planner", icon: Server, label: "Capacity Planner" },
+      { to: "/app/disaster-recovery", icon: Shield, label: "Disaster Recovery" },
+      { to: "/app/log-analyzer", icon: FileText, label: "Log Analyzer" },
+      { to: "/app/chaos-engineering", icon: Zap, label: "Chaos Engineering" },
+      { to: "/app/sla-monitor", icon: Gauge, label: "SLA Monitor" },
+      { to: "/app/config-validator", icon: Settings, label: "Config Validator" },
     ],
   },
   {
