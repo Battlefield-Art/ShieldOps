@@ -22,7 +22,7 @@ def test_graph_compiles():
 def test_state_defaults():
     s = AIComplianceState()
     assert s.error == ""
-    assert s.compliance_score == 0.0
+    assert s.tenant_id == ""
 
 
 @pytest.mark.asyncio

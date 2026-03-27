@@ -147,16 +147,19 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_store_false_positive(self, toolkit):
         result = await toolkit.store_false_positive(
-            agent_id="agent-1",
-            content="Scheduled task alert is benign",
-            entities=["cron-job-1"],
+            alert_hash="hash-001",
+            reason="Scheduled task alert is benign",
+            confidence=0.95,
         )
         assert isinstance(result, MemoryRecord)
         assert result.memory_type == MemoryType.FALSE_POSITIVE_PATTERN
 
     @pytest.mark.asyncio
     async def test_retrieve_similar_incidents(self, toolkit):
-        result = await toolkit.retrieve_similar_incidents(entities=["host-1"], limit=5)
+        result = await toolkit.retrieve_similar_incidents(
+            indicators=["host-1"],
+            limit=5,
+        )
         assert isinstance(result, RetrievalResult)
 
     @pytest.mark.asyncio

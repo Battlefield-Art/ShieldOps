@@ -24,8 +24,9 @@ def test_graph_compiles():
 
 
 def test_state_defaults():
-    s = FileIntegrityMonitorState()
+    s = FileIntegrityMonitorState(tenant_id="t-01")
     assert s.error == ""
+    assert s.tenant_id == "t-01"
 
 
 @pytest.mark.asyncio
