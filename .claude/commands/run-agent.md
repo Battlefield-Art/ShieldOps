@@ -41,7 +41,9 @@ Test-run a ShieldOps agent workflow locally with mock data.
 
 **Specialized:** `dns_security`, `certificate_manager`, `malware_analyzer`, `insider_threat`, `security_app_builder`, `trust_relationship_mapper`
 
-**Knowledge & Learning:** `knowledge`, `ai_runtime_guardian`
+**Knowledge & Learning:** `knowledge`, `ai_runtime_guardian`, `incident_learning`
+
+**Utility Modules** (single-file agents — `src/shieldops/agents/{name}.py`): `benchmarker`, `calibration`, `collaboration`, `consensus_engine`, `context_store`, `custom`, `decision_explainer`, `knowledge_mesh`, `prompt_cache`, `resource_quotas`, `roi_tracker`, `routing_optimizer`, `swarm_coordinator`, `telemetry_analyzer`, `token_optimizer`, `tracing`, `registry`
 
 ## Process
 

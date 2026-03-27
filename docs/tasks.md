@@ -20,7 +20,7 @@
 | Metric | Value |
 |--------|-------|
 | **New Agents** | 6 (it_asset_intelligence, ai_runtime_guardian, data_intelligence, endpoint_dlp, unified_cloud_security, backup_security_posture) — total 150 |
-| **Target** | CrowdStrike Falcon for IT, Palo Alto Prisma AIRS, Rubrik Annapurna |
+| **Target** | IT asset management, AI runtime security, data intelligence |
 
 ---
 
@@ -38,43 +38,43 @@
 | Metric | Value |
 |--------|-------|
 | **New Agents** | 6 (managed_threat_hunting, vulnerability_intelligence, file_integrity_monitor, iot_ot_security, security_app_builder, air_gap_vault) — total 139 |
-| **Target** | CS OverWatch, CS Spotlight, CS FileVantage, PA IoT Security, CS Foundry, Rubrik Cloud Vault |
+| **Target** | Managed hunting, vulnerability intelligence, FIM, IoT/OT, app builder, air-gap vault |
 
 ---
 
-## Phase 154 — Deep Rubrik+CrowdStrike+Palo Alto Disruption (Done)
+## Phase 154 — Deep vendor+vendor+vendor Disruption (Done)
 
 | Metric | Value |
 |--------|-------|
 | **New Agents** | 6 (log_intelligence, insider_threat, ransomware_forensics, threat_intelligence_platform, code_security_scanner, data_resilience) — total 133 |
-| **Target** | CS LogScale, PA Cortex Behavioral, Rubrik Investigation, CS Counter Adversary, PA Prisma Code, Rubrik Data Lock |
+| **Target** | Log analytics, insider threat, ransomware forensics, threat intel, code security, data resilience |
 
 ---
 
-## Phase 153 — Rubrik + CrowdStrike + Palo Alto Triple Disruption (Done)
+## Phase 153 — vendor + vendor + vendor Triple Disruption (Done)
 
 | Metric | Value |
 |--------|-------|
 | **New Agents** | 6 (cyber_recovery, data_threat_hunting, sensitive_data_monitor, identity_protection, exposure_management, ai_soc_assistant) — total 127 |
-| **Target** | Rubrik Cyber Recovery, Rubrik Data Threat Analytics, CS Falcon Identity, CS+PA Exposure Mgmt, CS Charlotte AI |
+| **Target** | Cyber recovery, data threat hunting, identity protection, exposure management, AI SOC assistant |
 
 ---
 
-## Phase 152 — Palo Alto XDR/XSIAM/Prisma Disruption (Done)
+## Phase 152 — XDR & Cloud Security Platform (Done)
 
 | Metric | Value |
 |--------|-------|
 | **New Agents** | 6 (autonomous_xdr, autonomous_soc, cnapp_analyzer, zero_trust_network, intelligent_soar, malware_analyzer) — total 121 |
-| **Target** | Cortex XDR, Cortex XSIAM, Prisma Cloud, Prisma Access, Cortex XSOAR, WildFire |
+| **Target** | Autonomous XDR, autonomous SOC, CNAPP, ZTNA, intelligent SOAR, malware analysis |
 
 ---
 
-## Phase 151 — CrowdStrike Agentic MDR Counter (Done)
+## Phase 151 — Agentic MDR Counter (Done)
 
 | Metric | Value |
 |--------|-------|
 | **New Agents** | 6 (agentic_mdr, breakout_defender, ai_triage_accelerator, soc_transformation, cloud_risk_ranker, data_loss_prevention) — total 115 |
-| **Target** | CrowdStrike Agentic MDR (RSA 2026 announcement) |
+| **Target** | Agentic MDR (RSA 2026 announcement) |
 
 ---
 
@@ -185,7 +185,7 @@
 
 | Decision | Rationale |
 |----------|-----------|
-| OAuth Grant Analyzer | CrowdStrike has zero OAuth grant visibility — this is the #1 identity-based attack vector for lateral movement |
+| OAuth Grant Analyzer | vendor has zero OAuth grant visibility — this is the #1 identity-based attack vector for lateral movement |
 | Lateral Movement Detector | Identity-graph-based detection catches OAuth token reuse and cross-cloud pivots that network-based EDR completely misses |
 | Shadow AI Discovery | Top CISO ask for 2026 — "what AI tools are running that we don't know about?" |
 | Secrets Scanner | Table-stakes security capability — blocks the most common credential leak vector |
@@ -201,7 +201,7 @@
 | Metric | Value |
 |--------|-------|
 | **Phase** | 142 |
-| **Theme** | Close strategic gaps from CrowdStrike disruption plan: RAG pipeline protection, JIT credential management, OCSF vendor normalization, attack campaign orchestration, alert-to-situation composition, audit-ready compliance reporting |
+| **Theme** | Close strategic gaps from vendor disruption plan: RAG pipeline protection, JIT credential management, OCSF vendor normalization, attack campaign orchestration, alert-to-situation composition, audit-ready compliance reporting |
 | **New Agents** | 6 (data_pipeline_security, credential_lifecycle, vendor_normalizer, attack_campaign, situation_composer, compliance_reporter) — total now 67 |
 | **New Engines** | 12 (4 security, 4 security/attack, 2 observability, 2 compliance) |
 | **New Dashboard Pages** | 6 — total now 76 |
@@ -298,7 +298,7 @@
 | 19 | UI audit: zero purple, zero glassmorphism, all animations functional (not decorative) | High | Done |
 | 20 | Final verified: 62,169 unit + 150 integration = 62,319 tests, dashboard build clean | Critical | Done |
 | 21 | AI Security Control Plane — Agent Firewall, NHI Registry, MCP Security, SOC Brain (11 new agents) | Critical | Done |
-| 22 | Vendor connectors — CrowdStrike Falcon, Microsoft Defender, Wiz (17 total connectors) | High | Done |
+| 22 | Vendor connectors — EDR, endpoint protection, cloud security (18 total connectors) | High | Done |
 | 23 | Design system migration — 69 dashboard pages with unified SRE theme | High | Done |
 | 24 | SDK & GitOps — ShieldOps SDK, GitOps agent, observability connectors (Datadog, Grafana, Splunk, Dynatrace, Honeycomb) | High | Done |
 | 25 | AI Security operational runbook (docs/AIOPS_RUNBOOK.md) | Medium | Done |

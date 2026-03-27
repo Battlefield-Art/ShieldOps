@@ -46,7 +46,7 @@ shieldops --help
 ## Architecture
 
 ### Four Layers
-1. **Connector Layer** — 18 connectors: AWS, GCP, Azure, Kubernetes, Linux, Windows, CrowdStrike, Microsoft Defender, Wiz, Splunk, Elastic, Datadog, New Relic, PagerDuty, ServiceNow, Jira, OpsGenie (`src/shieldops/connectors/{provider}/`)
+1. **Connector Layer** — 18 connectors across cloud, EDR, SIEM, observability, incident, and ITSM platforms (`src/shieldops/connectors/{provider}/`)
 2. **Observability Ingestion** — Vendor-neutral OpenTelemetry (Splunk, Datadog, Prometheus)
 3. **Agent Orchestration** — LangGraph-based agents with graph→nodes→tools pattern
 4. **Policy & Safety** — OPA policies, approval workflows, rollback, compliance
@@ -112,7 +112,7 @@ The bulk of the codebase (~1,709+ modules) are analytics/intelligence engines ac
 
 ### Connectors (18 total)
 - **Cloud**: AWS (`connectors/aws/`), GCP, Azure, Kubernetes, Linux, Windows
-- **Security**: CrowdStrike Falcon (OAuth2 + RTR + Threat Graph), Microsoft Defender (MSAL + KQL), Wiz (GraphQL + attack paths)
+- **Security**: EDR (OAuth2 + RTR), endpoint protection (MSAL + KQL), cloud security (GraphQL + attack paths)
 - **Observability**: Splunk (REST + HEC + SPL + ITSI), Elastic (DSL + EQL + SIEM), Datadog (metrics + logs + monitors), New Relic (NerdGraph + NRQL + SLIs)
 - **Incident**: PagerDuty (REST + Events API v2), OpsGenie (alerts + on-call)
 - **ITSM**: ServiceNow (Table API + CMDB + change requests), Jira (REST v3 + JQL)
@@ -204,7 +204,10 @@ VAULT_ADDR=            # Secret management
 `/audit-compliance`, `/manage-identity`, `/manage-mcp`, `/protect-data`, `/manage-vulns`
 
 ### Infrastructure & Platform
-`/manage-otel`, `/manage-gitops`, `/manage-cloud`, `/manage-costs`, `/check-health`
+`/manage-otel`, `/manage-gitops`, `/manage-cloud`, `/manage-costs`, `/manage-sla`, `/check-health`
+
+### Analytics & Intelligence
+`/analyze-analytics`, `/analyze-topology`, `/manage-knowledge`
 
 ### Scaffolding & Integration
 `/add-connector`, `/add-integration`, `/create-playbook`, `/design-system`, `/context-hub`

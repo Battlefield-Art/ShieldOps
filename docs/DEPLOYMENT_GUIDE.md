@@ -648,7 +648,7 @@ alembic upgrade head
 
 ```bash
 # Set connector credentials via API
-curl -X POST https://shieldops.io/api/v1/connectors/crowdstrike/configure \
+curl -X POST https://shieldops.io/api/v1/connectors/edr/configure \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"client_id": "...", "client_secret": "..."}'
 

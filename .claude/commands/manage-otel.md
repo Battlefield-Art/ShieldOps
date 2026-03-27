@@ -85,15 +85,35 @@ runner = OTelPipelineRunner()
 result = await runner.run(cluster_name="prod", namespace="default")
 ```
 
+## Agents Used
+- `otel_pipeline` — OTel pipeline health monitoring and optimization
+- `otel_collector_manager` — Collector lifecycle management (deploy, upgrade, scale)
+- `otel_deployer` — K8s deployment orchestration (DaemonSet, Deployment, Sidecar)
+- `otel_semantic` — Semantic convention enforcement and naming standards
+- `otel_tail_sampling` — Tail-based sampling policy management
+- `otel_metrics_pipeline` — Golden signals, aggregation, SLI calculation
+- `otel_logs_pipeline` — Log quality, trace-log correlation, cost optimization
+- `telemetry_optimizer` — End-to-end telemetry optimization
+- `telemetry_analyzer` — Telemetry analysis module
+- `log_analyzer` — AI-powered log anomaly detection
+
 ## Key Files
 - `src/shieldops/agents/otel_pipeline/` — OTel Pipeline LangGraph agent
+- `src/shieldops/agents/otel_collector_manager/` — Collector manager agent
+- `src/shieldops/agents/otel_deployer/` — Deployment orchestrator agent
+- `src/shieldops/agents/otel_semantic/` — Semantic conventions agent
+- `src/shieldops/agents/otel_tail_sampling/` — Tail sampling agent
+- `src/shieldops/agents/otel_metrics_pipeline/` — Metrics pipeline agent
+- `src/shieldops/agents/otel_logs_pipeline/` — Logs pipeline agent
+- `src/shieldops/agents/telemetry_optimizer/` — Telemetry optimizer agent
 - `src/shieldops/integrations/otel/kafka_receiver.py` — Kafka-based OTel receiver
 - `src/shieldops/integrations/otel/pipeline_processor.py` — Telemetry processors
 - `src/shieldops/integrations/otel/collector_manager.py` — Collector lifecycle management
 - `src/shieldops/integrations/otel/python_instrumentor.py` — Python auto-instrumentation
+- `src/shieldops/observability/` — 232 observability engines
 - `src/shieldops/observability/otel_pipeline_health_engine.py` — Pipeline health analytics
 - `src/shieldops/observability/otel_kafka_ingestion_engine.py` — Kafka ingestion analytics
-- `src/shieldops/observability/auto_instrumentation_engine.py` — Instrumentation coverage tracking
+- `src/shieldops/observability/auto_instrumentation_engine.py` — Instrumentation coverage
 
 ## Conventions
 - Always dry-run before deploying collectors
@@ -101,3 +121,5 @@ result = await runner.run(cluster_name="prod", namespace="default")
 - Default to full-fidelity tracing (no sampling) — incident data should never be dropped
 - All collector configs must include resource limits
 - Kafka topics follow pattern: `otel.{signal_type}` (traces, metrics, logs)
+- Semantic conventions enforced via `otel_semantic` agent before deployment
+- Three-pillar completeness: all services should emit traces + metrics + logs

@@ -412,11 +412,11 @@ This phase deploys the AI-specific security controls that protect autonomous age
 
 1. **Configure vendor credentials:**
    ```bash
-   # CrowdStrike
-   SHIELDOPS_CROWDSTRIKE_CLIENT_ID=<client-id>
-   SHIELDOPS_CROWDSTRIKE_CLIENT_SECRET=<client-secret>
+   # EDR
+   SHIELDOPS_EDR_CLIENT_ID=<client-id>
+   SHIELDOPS_EDR_CLIENT_SECRET=<client-secret>
 
-   # Microsoft Defender
+   # Microsoft endpoint protection
    SHIELDOPS_DEFENDER_TENANT_ID=<tenant-id>
    SHIELDOPS_DEFENDER_CLIENT_ID=<client-id>
    SHIELDOPS_DEFENDER_CLIENT_SECRET=<client-secret>
@@ -429,7 +429,7 @@ This phase deploys the AI-specific security controls that protect autonomous age
 2. **Enable webhook receivers** for real-time events:
    ```bash
    # Verify webhook endpoints are reachable
-   curl -s https://api.shieldops.io/api/v1/webhooks/crowdstrike/health
+   curl -s https://api.shieldops.io/api/v1/webhooks/edr/health
    curl -s https://api.shieldops.io/api/v1/webhooks/defender/health
    curl -s https://api.shieldops.io/api/v1/webhooks/wiz/health
    ```
@@ -517,7 +517,7 @@ SHIELDOPS_SOC_BRAIN_AUTO_EXECUTE=false
 - [ ] Agent Firewall proxy deployed and receiving events
 - [ ] NHI scan completed, orphaned identities addressed
 - [ ] MCP servers registered, God Key risks mitigated
-- [ ] CrowdStrike/Defender/Wiz webhooks verified
+- [ ] EDR/endpoint protection/Wiz webhooks verified
 - [ ] SOC Brain creating situations from vendor events
 - [ ] Grafana dashboards showing metrics
 - [ ] Prometheus alerts firing correctly

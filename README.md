@@ -8,7 +8,7 @@
 <p align="center">
   <a href="#quick-start">Quick Start</a> ·
   <a href="#product-modules">Modules</a> ·
-  <a href="#competitive-positioning">vs CrowdStrike/Palo Alto/Rubrik</a> ·
+  <a href="#capabilities">Capabilities</a> ·
   <a href="#deployment">Deploy</a> ·
   <a href="#docs">Docs</a>
 </p>
@@ -32,7 +32,6 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 | Cloud/vendor connectors | **18** |
 | Test files | **1,961** |
 | OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
-| Modular CLAUDE.md files | 29 (hierarchical documentation) |
 
 ## Product Modules
 
@@ -44,47 +43,70 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 | **SOC Brain** | Cross-vendor AI-driven security operations | Situations queue, auto-triage, closed-loop learning |
 | **Agentic MDR** | Machine-speed managed detection & response | Vendor-neutral, <5min MTTR, 97%+ accuracy |
 | **AI Runtime Guardian** | Comprehensive AI runtime protection | Prompt injection, model behavior, tool abuse, output sanitization |
-| **Situation Manager** | Outcome-centric alert management | 847 alerts → 3 actionable situations with narratives |
-| **Cross-Vendor Correlator** | Unified signal correlation | CrowdStrike + Defender + Wiz + Splunk + Okta → OCSF |
+| **Situation Manager** | Outcome-centric alert management | Hundreds of alerts → actionable situations with narratives |
+| **Cross-Vendor Correlator** | Unified signal correlation across vendors | Multi-vendor normalization to OCSF, kill chain mapping |
 | **Agent Memory Store** | Persistent episodic memory for agents | Cross-agent learning, FP pattern recall |
 | **Reflection Engine** | Agent self-evaluation & improvement | "Did my action work?" threshold auto-tuning |
 
-## Competitive Positioning
+## Capabilities
 
-### vs CrowdStrike
-
-| CrowdStrike Product | ShieldOps Agent | Advantage |
+### Detection & Response
+| Capability | Agent | Key Differentiator |
 |---|---|---|
-| Agentic MDR | `agentic_mdr` | Vendor-neutral across ANY vendor, not Falcon-locked |
-| Falcon OverWatch ($250K/yr) | `managed_threat_hunting` | Autonomous 24/7, included in platform |
-| Charlotte AI | `ai_soc_assistant` | Open, cross-vendor, Claude-powered |
-| Falcon Identity | `identity_protection` | Multi-IdP (Okta+Entra+AWS+GCP+K8s) |
-| Falcon LogScale | `log_intelligence` | Any log source, LLM reasoning |
-| Falcon Spotlight | `vulnerability_intelligence` | Scanless, multi-vendor telemetry |
-| Falcon Foundry | `security_app_builder` | Real LangGraph code, not no-code |
+| Vendor-neutral MDR | `agentic_mdr` | Works across any EDR/SIEM/identity provider |
+| Autonomous 24/7 threat hunting | `managed_threat_hunting` | AI-driven, no human analyst dependency |
+| AI SOC assistant | `ai_soc_assistant` | Natural language investigation, cross-vendor context |
+| Multi-IdP identity protection | `identity_protection` | Covers all identity providers + AI agent identities |
+| AI-native log analytics | `log_intelligence` | LLM reasoning across any log source |
+| Scanless vulnerability assessment | `vulnerability_intelligence` | Uses existing telemetry, no active scanning |
+| Sub-5-min breakout containment | `breakout_defender` | Automated containment with cross-cloud detection |
 
-### vs Palo Alto Networks
-
-| Palo Alto Product | ShieldOps Agent | Advantage |
+### Extended Detection & Response (XDR)
+| Capability | Agent | Key Differentiator |
 |---|---|---|
-| Cortex XDR | `autonomous_xdr` | Any sensor, not PA-locked |
-| Cortex XSIAM ($1M+) | `autonomous_soc` | Open AI SOC, no proprietary data lake |
-| Prisma Cloud CNAPP | `cnapp_analyzer` | CSPM+CWPP+CIEM unified, multi-cloud |
-| Prisma Access ZTNA | `zero_trust_network` | ZTNA for AI agents + NHIs |
-| Cortex XSOAR | `intelligent_soar` | LangGraph adaptive playbooks |
-| WildFire | `malware_analyzer` | LLM analysis in seconds vs sandbox minutes |
-| Prisma AIRS | `ai_runtime_guardian` | Deeper: prompt+model+tool+agent+output |
+| Autonomous XDR | `autonomous_xdr` | Correlates ANY endpoint/network/cloud/identity source |
+| Autonomous SOC | `autonomous_soc` | Open AI-native SOC, works with existing SIEM |
+| Intelligent SOAR | `intelligent_soar` | LangGraph-native adaptive playbooks |
+| Cross-vendor correlation | `cross_vendor_correlator` | OCSF normalization across 8+ vendors |
 
-### vs Rubrik
-
-| Rubrik Product | ShieldOps Agent | Advantage |
+### Cloud & Infrastructure Security
+| Capability | Agent | Key Differentiator |
 |---|---|---|
-| Cyber Recovery | `cyber_recovery` | Clean room validation, multi-cloud |
-| Data Threat Analytics | `data_threat_hunting` | LLM-powered, backups+prod+AI pipelines |
-| Sensitive Data Monitoring | `sensitive_data_monitor` | Continuous, includes AI pipeline data |
-| Ransomware Investigation | `ransomware_forensics` | LLM forensics + blast radius prediction |
-| Data Lock | `data_resilience` | Immutable protection for AI models too |
-| Cloud Vault | `air_gap_vault` | Air-gapped vault for models+configs |
+| Unified cloud security | `unified_cloud_security` | CSPM+CWPP+CDR+CIEM+DSPM, multi-cloud |
+| CNAPP analysis | `cnapp_analyzer` | Unified posture + workload + identity + code |
+| Zero trust network access | `zero_trust_network` | Identity-first ZTNA for humans + AI agents + NHIs |
+| IoT/OT security | `iot_ot_security` | Device discovery + behavioral profiling + segmentation |
+| IT asset intelligence | `it_asset_intelligence` | Security + IT asset convergence with AI risk context |
+
+### AI Security
+| Capability | Agent | Key Differentiator |
+|---|---|---|
+| AI runtime protection | `ai_runtime_guardian` | Prompt/model/tool/agent/output guardrails |
+| Prompt injection defense | `prompt_shield` | Multi-layer: regex + semantic + behavioral + LLM |
+| Model security | `model_security` | Integrity verification, backdoor detection, provenance |
+| AI supply chain scanning | `supply_chain_scanner` | RAG poisoning, model registry, prompt template integrity |
+| Multi-agent security | `multi_agent_security` | Trust chains, communication auditing, impersonation detection |
+| AI compliance | `ai_compliance` | EU AI Act, NIST AI RMF, ISO 42001 automated evidence |
+
+### Data Protection & Recovery
+| Capability | Agent | Key Differentiator |
+|---|---|---|
+| Data loss prevention | `data_loss_prevention` | Cross-surface DLP including AI pipelines + MCP tools |
+| Endpoint DLP | `endpoint_dlp` | Clipboard, USB, AI prompt paste, screen capture |
+| Cyber recovery | `cyber_recovery` | Clean room validation, ransomware-safe restore |
+| Data resilience | `data_resilience` | Immutable protection for databases + AI models |
+| Air-gap vault | `air_gap_vault` | Air-gapped storage with continuous integrity |
+| Ransomware forensics | `ransomware_forensics` | LLM-powered forensics + blast radius prediction |
+| Sensitive data monitoring | `sensitive_data_monitor` | Continuous classification including AI pipeline data |
+
+### Agentic Best Practices
+| Capability | Agent | Key Differentiator |
+|---|---|---|
+| Agent memory | `agent_memory_store` | Persistent episodic memory across all agents |
+| Self-reflection | `reflection_engine` | Retrospective analysis + automatic threshold tuning |
+| Trust mapping | `trust_relationship_mapper` | Federation, delegation, cross-account trust chains |
+| Security app builder | `security_app_builder` | Generate LangGraph apps from natural language |
+| Situation management | `situation_manager` | Outcome-centric queue replacing alert dashboards |
 
 ## Quick Start
 
@@ -138,11 +160,10 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 │   Supervisor · Memory · Reflection · Cross-Vendor Correlation │
 ├──────────────────────────────────────────────────────────────┤
 │            Observability Ingestion (OpenTelemetry)            │
-│     Splunk · Datadog · Prometheus · CloudWatch · Elastic      │
+│          Multi-vendor telemetry normalization (OCSF)          │
 ├──────────────────────────────────────────────────────────────┤
 │            Multi-Cloud & Vendor Connectors (18)               │
-│  AWS · GCP · Azure · K8s · CrowdStrike · Defender · Wiz      │
-│  Splunk · Elastic · Datadog · New Relic · PagerDuty · Jira    │
+│     AWS · GCP · Azure · K8s · EDR · SIEM · IdP · ITSM       │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -166,18 +187,15 @@ helm install shieldops infrastructure/helm/ \
   --values infrastructure/helm/values-production.yaml
 ```
 
-### Cloud (Terraform)
+### Cloud (Native)
 
-```bash
-# AWS
-cd infrastructure/terraform/aws && terraform apply
-
-# GCP
-cd infrastructure/terraform/gcp && terraform apply
-
-# Azure
-cd infrastructure/terraform/azure && terraform apply
-```
+| Cloud | Tool | Command |
+|-------|------|---------|
+| AWS | CDK | `cd infrastructure/aws-cdk && cdk deploy --all` |
+| AWS | CloudFormation | `aws cloudformation deploy --template-file template.yaml` |
+| GCP | gcloud CLI | `cd infrastructure/gcp-native && ./deploy.sh` |
+| Azure | Bicep | `cd infrastructure/azure-bicep && ./deploy.sh` |
+| On-Prem | Ansible | `cd infrastructure/onprem-ansible && ansible-playbook playbook.yml` |
 
 See [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) for detailed multi-cloud deployment instructions.
 
@@ -217,7 +235,7 @@ ShieldOps/
 │   └── utils/                   # LLM integration, routing
 ├── dashboard-ui/                # React dashboard (158 pages)
 ├── tests/                       # 1,961 test files
-├── infrastructure/              # Docker, K8s, Terraform, Helm
+├── infrastructure/              # Docker, K8s, Terraform, CDK, Helm
 └── docs/                        # Documentation
 ```
 
@@ -228,8 +246,7 @@ ShieldOps/
 | [CLAUDE.md](CLAUDE.md) | Root project instructions (+ 28 modular CLAUDE.md files) |
 | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) | AWS, GCP, Azure, On-Prem deployment |
 | [Production Runbook](docs/PRODUCTION_LAUNCH_RUNBOOK.md) | 8-phase launch guide |
-| [Task Tracker](docs/tasks.md) | Phase 142-157 history |
-| [CrowdStrike Disruption Plan](docs/strategy/crowdstrike-disruption-plan.md) | 5-phase competitive strategy |
+| [Task Tracker](docs/tasks.md) | Development phase history |
 | [API Docs](http://localhost:8000/api/v1/docs) | Interactive OpenAPI (when running) |
 
 ## Contributing

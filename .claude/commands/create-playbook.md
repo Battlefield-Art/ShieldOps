@@ -3,7 +3,12 @@
 Create a new remediation playbook for ShieldOps agents.
 
 ## Usage
-`/create-playbook <name> [--trigger <alert-type>] [--risk-level <level>]`
+`/create-playbook <name> [--trigger <alert-type>] [--risk-level <level>] [--type <remediation|investigation|compliance>]`
+
+## Agents Used
+- `soar_workflow` — SOAR workflow orchestration (intake → enrich → contain → eradicate → recover)
+- `intelligent_soar` — LangGraph-native adaptive playbooks
+- `runbook_automation` — SRE runbook execution with approval workflows
 
 ## Process
 
@@ -11,8 +16,10 @@ Create a new remediation playbook for ShieldOps agents.
 2. **Define investigation steps**: What data should the agent gather?
 3. **Design decision tree**: What conditions map to which remediation actions?
 4. **Specify remediation actions**: What does the agent do for each condition?
-5. **Define validation checks**: How do we confirm the fix worked?
-6. **Set failure handling**: What happens if remediation fails?
+5. **Add OPA policy gates**: What approval/policy checks are required?
+6. **Define validation checks**: How do we confirm the fix worked?
+7. **Set failure handling**: What happens if remediation fails?
+8. **Register playbook**: Add to runbook recommender for auto-suggestion
 
 ## Playbook YAML Structure
 ```yaml
@@ -36,6 +43,7 @@ remediation:
       action: action_name
       risk_level: low|medium|high|critical
       params: {}
+      approval: auto|manual  # manual for high/critical risk
 
 validation:
   checks:
@@ -49,7 +57,32 @@ validation:
     escalation_channel: "#sre-oncall"
 ```
 
-## Runbook Recommendation
-After creating a playbook, register it with the Runbook Recommender (`src/shieldops/playbooks/runbook_recommender.py`) so it can be auto-suggested for matching incident symptoms via `RunbookRecommender.register_runbook()`.
+## Registration
 
-## Save playbook to `playbooks/{name}.yaml`
+```python
+from shieldops.playbooks.runbook_recommender import RunbookRecommender
+
+recommender = RunbookRecommender()
+recommender.register_runbook(
+    name="oomkilled-remediation",
+    trigger_patterns=["OOMKilled", "memory_pressure", "container_restart"],
+    playbook_path="playbooks/oomkilled-remediation.yaml",
+)
+```
+
+## Key Files
+- `playbooks/` — YAML playbook definitions
+- `src/shieldops/playbooks/runbook_recommender.py` — Runbook auto-suggestion engine
+- `src/shieldops/agents/soar_workflow/` — SOAR workflow agent
+- `src/shieldops/agents/intelligent_soar/` — Adaptive SOAR agent
+- `src/shieldops/agents/runbook_automation/` — Runbook automation agent
+- `src/shieldops/security/soar_workflow_intelligence.py` — SOAR intelligence engine
+- `src/shieldops/policy/approval_workflow.py` — Approval gate integration
+
+## Conventions
+- Save playbooks to `playbooks/{name}.yaml`
+- Every remediation action MUST have a corresponding rollback action
+- High-risk actions (risk_level: high|critical) require `approval: manual`
+- All playbook executions logged to immutable audit trail
+- Test playbooks in dry-run mode before production activation
+- Register playbooks with RunbookRecommender for auto-suggestion
