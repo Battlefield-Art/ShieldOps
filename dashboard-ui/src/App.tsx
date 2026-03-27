@@ -181,6 +181,12 @@ const ConfigRemediation = lazy(() => import("./pages/ConfigRemediation"));
 const AccessRemediation = lazy(() => import("./pages/AccessRemediation"));
 const VulnerabilityRemediation = lazy(() => import("./pages/VulnerabilityRemediation"));
 const RemediationVerifier = lazy(() => import("./pages/RemediationVerifier"));
+const MITRECoverage = lazy(() => import("./pages/MITRECoverage"));
+const DetectionGapFinder = lazy(() => import("./pages/DetectionGapFinder"));
+const SecurityScorecard = lazy(() => import("./pages/SecurityScorecard"));
+const ComplianceGapAnalyzer = lazy(() => import("./pages/ComplianceGapAnalyzer"));
+const AttackReadiness = lazy(() => import("./pages/AttackReadiness"));
+const ExecutiveReporter = lazy(() => import("./pages/ExecutiveReporter"));
 const RemediationOrchestrator = lazy(() => import("./pages/RemediationOrchestrator"));
 const PhishingSimulator = lazy(() => import("./pages/PhishingSimulator"));
 
@@ -424,6 +430,12 @@ export default function App() {
               <Route path="vulnerability-remediation" element={<VulnerabilityRemediation />} />
               <Route path="remediation-verifier" element={<RemediationVerifier />} />
               <Route path="remediation-orchestrator" element={<RemediationOrchestrator />} />
+              <Route path="mitre-coverage" element={<MITRECoverage />} />
+              <Route path="detection-gaps" element={<DetectionGapFinder />} />
+              <Route path="security-scorecard" element={<SecurityScorecard />} />
+              <Route path="compliance-gaps" element={<ComplianceGapAnalyzer />} />
+              <Route path="attack-readiness" element={<AttackReadiness />} />
+              <Route path="executive-reports" element={<ExecutiveReporter />} />
             </Route>
 
             {/* Catch-all */}
