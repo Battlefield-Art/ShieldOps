@@ -328,6 +328,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "cross_vendor_correlator",
                 "situation_manager",
                 "trust_relationship_mapper",
+                "it_asset_intelligence",
+                "ai_runtime_guardian",
+                "data_intelligence",
+                "endpoint_dlp",
+                "unified_cloud_security",
+                "backup_security_posture",
             ):
                 try:
                     await agent_registry.register(
@@ -14008,6 +14014,12 @@ def create_app() -> FastAPI:
         "cross_vendor_correlator",
         "situation_manager",
         "trust_relationship_mapper",
+        "it_asset_intelligence",
+        "ai_runtime_guardian",
+        "data_intelligence",
+        "endpoint_dlp",
+        "unified_cloud_security",
+        "backup_security_posture",
     ):
         try:
             _mod = __import__(f"shieldops.api.routes.{_rname}", fromlist=["router"])

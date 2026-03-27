@@ -302,6 +302,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cross-vendor-correlator", icon: Layers, label: "Cross-Vendor" },
       { to: "/app/situation-manager", icon: LayoutList, label: "Situations" },
       { to: "/app/trust-relationship-mapper", icon: GitBranch, label: "Trust Map" },
+      { to: "/app/it-asset-intelligence", icon: Server, label: "IT Asset Intel" },
+      { to: "/app/ai-runtime-guardian", icon: ShieldCheck, label: "AI Guardian" },
+      { to: "/app/data-intelligence", icon: Database, label: "Data Intelligence" },
+      { to: "/app/endpoint-dlp", icon: Monitor, label: "Endpoint DLP" },
+      { to: "/app/unified-cloud-security", icon: Cloud, label: "Unified Cloud" },
+      { to: "/app/backup-security-posture", icon: HardDrive, label: "Backup Posture" },
     ],
   },
   {

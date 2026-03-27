@@ -164,6 +164,12 @@ const SupplyChainScanner = lazy(() => import("./pages/SupplyChainScanner"));
 const CrossVendorCorrelator = lazy(() => import("./pages/CrossVendorCorrelator"));
 const SituationManager = lazy(() => import("./pages/SituationManager"));
 const TrustRelationshipMapper = lazy(() => import("./pages/TrustRelationshipMapper"));
+const ITAssetIntelligence = lazy(() => import("./pages/ITAssetIntelligence"));
+const AIRuntimeGuardian = lazy(() => import("./pages/AIRuntimeGuardian"));
+const DataIntelligence = lazy(() => import("./pages/DataIntelligence"));
+const EndpointDLP = lazy(() => import("./pages/EndpointDLP"));
+const UnifiedCloudSecurity = lazy(() => import("./pages/UnifiedCloudSecurity"));
+const BackupSecurityPosture = lazy(() => import("./pages/BackupSecurityPosture"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -387,6 +393,12 @@ export default function App() {
               <Route path="cross-vendor-correlator" element={<CrossVendorCorrelator />} />
               <Route path="situation-manager" element={<SituationManager />} />
               <Route path="trust-relationship-mapper" element={<TrustRelationshipMapper />} />
+              <Route path="it-asset-intelligence" element={<ITAssetIntelligence />} />
+              <Route path="ai-runtime-guardian" element={<AIRuntimeGuardian />} />
+              <Route path="data-intelligence" element={<DataIntelligence />} />
+              <Route path="endpoint-dlp" element={<EndpointDLP />} />
+              <Route path="unified-cloud-security" element={<UnifiedCloudSecurity />} />
+              <Route path="backup-security-posture" element={<BackupSecurityPosture />} />
             </Route>
 
             {/* Catch-all */}
