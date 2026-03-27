@@ -2,6 +2,10 @@
 
 This runbook covers every step from zero to live production deployment.
 
+> **See also:** [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for multi-cloud (AWS/GCP/Azure/On-Prem) instructions.
+
+**Platform:** 151 LangGraph agents, 1,709 engine modules, 158 dashboard pages, 749 API endpoints.
+
 ---
 
 ## Prerequisites
