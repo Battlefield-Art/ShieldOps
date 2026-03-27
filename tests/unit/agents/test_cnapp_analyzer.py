@@ -80,7 +80,7 @@ class TestModels:
 
     def test_posture_finding_defaults(self) -> None:
         pf = PostureFinding()
-        assert pf.status == "pass"
+        assert pf.status == "pass"  # noqa: S105
         assert pf.severity == SeverityLevel.MEDIUM
         assert pf.auto_remediable is False
         assert 0.0 <= pf.risk_score <= 100.0
