@@ -35,15 +35,14 @@ if [[ "$MODIFIED_PY" -gt 0 ]]; then
   fi
 fi
 
-# If warnings exist, add context for Claude
+# Output valid hook JSON
 if [[ -n "$WARNINGS" ]]; then
   jq -n --arg w "$WARNINGS" '{
-    "decision": "continue",
-    "reason": "Advisory",
-    "additionalContext": ("Pre-stop check: " + $w + "Consider committing or stashing before ending session.")
+    "decision": "approve",
+    "reason": ("Pre-stop advisory: " + $w)
   }'
 else
-  echo '{"decision":"continue","reason":"Clean state"}'
+  echo '{"decision":"approve","reason":"Clean state"}'
 fi
 
 exit 0
