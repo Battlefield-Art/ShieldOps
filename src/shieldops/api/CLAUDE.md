@@ -1,6 +1,6 @@
 # api/ — FastAPI REST API
 
-RESTful API at `/api/v1/` with JWT auth, OpenAPI auto-gen, 700+ endpoints.
+RESTful API at `/api/v1/` with JWT auth, OpenAPI auto-gen, 749 endpoints.
 
 ## Route Architecture
 

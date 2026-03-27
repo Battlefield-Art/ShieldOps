@@ -1,6 +1,6 @@
 # operations/ — Operations Engine Modules
 
-160+ operations engines for runbooks, automation, chaos engineering, and capacity management.
+160 operations engines for runbooks, automation, chaos engineering, and capacity management.
 
 ## Domains
 - Runbook execution + automation

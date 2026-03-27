@@ -1,6 +1,6 @@
 # billing/ — FinOps & Cost Engines
 
-84+ engines for cost optimization, RI planning, and waste classification.
+87 engines for cost optimization, RI planning, and waste classification.
 
 ## Domains
 - FinOps cost tracking

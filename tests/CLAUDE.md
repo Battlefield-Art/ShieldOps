@@ -1,17 +1,17 @@
 # tests/ — Test Suite
 
-1,800+ test files with comprehensive coverage.
+1,961 test files with comprehensive coverage.
 
 ## Test Structure
 ```
 tests/
 ├── conftest.py          # Root fixtures (auth mock, middleware reset)
 ├── unit/                # Unit tests (mirror source structure)
-│   ├── agents/          # Agent-specific tests (26 files)
+│   ├── agents/          # Agent-specific tests (151 files)
 │   ├── api/             # API route tests
 │   ├── middleware/       # Middleware tests
 │   └── test_*.py        # Engine/module tests
-├── integration/         # Integration tests (93 files)
+├── integration/         # Integration tests (93+ files)
 │   ├── test_*_graph.py  # Agent graph compilation + pipeline tests
 │   ├── test_e2e_*.py    # End-to-end workflow tests
 │   └── test_bdd_*.py    # BDD security scenario tests

@@ -1,6 +1,6 @@
 # security/ — Security Engine Modules
 
-400+ security engine modules covering threat detection, SOAR, zero trust, XDR, identity security, AI security, and data protection.
+518 security engine modules covering threat detection, SOAR, zero trust, XDR, identity security, AI security, and data protection.
 
 ## Engine Categories
 

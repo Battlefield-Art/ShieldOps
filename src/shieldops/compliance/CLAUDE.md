@@ -1,6 +1,6 @@
 # compliance/ — Compliance Engine Modules
 
-100+ compliance engines for evidence collection, audit, regulatory policy, and AI compliance.
+116 compliance engines for evidence collection, audit, regulatory policy, and AI compliance.
 
 ## Domains
 - Evidence collection + packaging

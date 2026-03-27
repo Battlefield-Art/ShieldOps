@@ -1,6 +1,6 @@
 # observability/ — Observability & Telemetry Engines
 
-200+ engine modules for alert intelligence, telemetry, SLI/SLO, and OTel pipeline management.
+232 engine modules for alert intelligence, telemetry, SLI/SLO, and OTel pipeline management.
 
 ## Domains
 - Alert intelligence + correlation

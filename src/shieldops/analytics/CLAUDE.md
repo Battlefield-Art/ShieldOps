@@ -1,6 +1,6 @@
 # analytics/ — Analytics Engine Modules
 
-250+ analytics engines for DORA metrics, AIOps, root cause analysis, and agent intelligence.
+255 analytics engines for DORA metrics, AIOps, root cause analysis, and agent intelligence.
 
 ## Domains
 - DORA metrics + engineering productivity

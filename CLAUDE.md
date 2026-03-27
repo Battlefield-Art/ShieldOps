@@ -46,7 +46,7 @@ shieldops --help
 ## Architecture
 
 ### Four Layers
-1. **Connector Layer** — 17 connectors: AWS, GCP, Azure, Kubernetes, Linux, Windows, CrowdStrike, Microsoft Defender, Wiz, Splunk, Elastic, Datadog, New Relic, PagerDuty, ServiceNow, Jira, OpsGenie (`src/shieldops/connectors/{provider}/`)
+1. **Connector Layer** — 18 connectors: AWS, GCP, Azure, Kubernetes, Linux, Windows, CrowdStrike, Microsoft Defender, Wiz, Splunk, Elastic, Datadog, New Relic, PagerDuty, ServiceNow, Jira, OpsGenie (`src/shieldops/connectors/{provider}/`)
 2. **Observability Ingestion** — Vendor-neutral OpenTelemetry (Splunk, Datadog, Prometheus)
 3. **Agent Orchestration** — LangGraph-based agents with graph→nodes→tools pattern
 4. **Policy & Safety** — OPA policies, approval workflows, rollback, compliance
@@ -66,7 +66,7 @@ policy.py     # OPA policy integration (optional)
 There are 151 LangGraph agents: investigation, remediation, security, learning, supervisor, soc_analyst, threat_hunter, forensics, deception, incident_response, attack_surface, ml_governance, finops_intelligence, zero_trust, threat_automation, soar_orchestration, itdr, auto_remediation, observability_intelligence, xdr, intelligent_automation, platform_intelligence, security_convergence, autonomous_defense, chatops, enterprise_integration, automation_orchestrator, cost, prediction, otel_pipeline, risk_scoring, auto_learning, security_automation, gitops, telemetry_optimizer, threat_intel, incident_commander, compliance_auditor, otel_collector_manager, adaptive_security, otel_deployer, security_posture, otel_semantic, soar_workflow, otel_tail_sampling, detection_engineering, otel_metrics_pipeline, security_testing, otel_logs_pipeline, threat_modeling, ai_runtime_defense, soc_brain, identity_graph, ai_red_team, ai_blue_team, agent_firewall, nhi_registry, mcp_security, data_pipeline_security, credential_lifecycle, vendor_normalizer, attack_campaign, situation_composer, compliance_reporter, oauth_analyzer, lateral_movement, shadow_ai_discovery, secrets_scanner, api_security, policy_engine, cloud_posture, container_security, supply_chain_security, incident_triage, change_risk_analyzer, cost_anomaly, adversarial_validation, mcp_gateway, service_account_tracker, data_classification, access_review, runbook_automation, capacity_planner, disaster_recovery, log_analyzer, chaos_engineering, sla_monitor, config_validator, network_segmentation, workflow_engine, alert_correlation, performance_profiler, anomaly_detector, certificate_manager, dns_security, backup_validator, vulnerability_manager, compliance_scanner, threat_response, agent_governance, model_security, prompt_shield, multi_agent_security, ai_compliance, digital_twin_security, agentic_mdr, breakout_defender, ai_triage_accelerator, soc_transformation, cloud_risk_ranker, data_loss_prevention, autonomous_xdr, autonomous_soc, cnapp_analyzer, zero_trust_network, intelligent_soar, malware_analyzer, cyber_recovery, data_threat_hunting, sensitive_data_monitor, identity_protection, exposure_management, ai_soc_assistant, log_intelligence, insider_threat, ransomware_forensics, threat_intelligence_platform, code_security_scanner, data_resilience, managed_threat_hunting, vulnerability_intelligence, file_integrity_monitor, iot_ot_security, security_app_builder, air_gap_vault, agent_memory_store, reflection_engine, supply_chain_scanner, cross_vendor_correlator, situation_manager, trust_relationship_mapper, it_asset_intelligence, ai_runtime_guardian, data_intelligence, endpoint_dlp, unified_cloud_security, backup_security_posture.
 
 ### Engine Module Pattern
-The bulk of the codebase (~1,574+ modules) are analytics/intelligence engines across 13 packages. Each follows a strict pattern:
+The bulk of the codebase (~1,709+ modules) are analytics/intelligence engines across 13 packages. Each follows a strict pattern:
 ```python
 # 3 StrEnum classes, 3 Pydantic models (Record, Analysis, Report)
 # Engine class with: add_record()/record_item(), process(key),
@@ -79,18 +79,18 @@ The bulk of the codebase (~1,574+ modules) are analytics/intelligence engines ac
 ### Key Packages
 | Package | Purpose | Count |
 |---------|---------|-------|
-| `observability/` | Alert intelligence, telemetry, SLI/SLO, OTel pipeline/autoscaler/sampling/attribution/cost, SLO-aware sampling, cardinality control, eBPF telemetry, collector fleet management, backpressure analysis, span-to-metric conversion | 204+ |
-| `security/` | Threat detection, SOAR, zero trust, XDR, RBA pipeline (detection→risk→notable), MITRE mapping, hunt automation, playbook selection, IOC lifecycle, identity risk, threat feed quality, entity risk aggregation, AI runtime defense (prompt injection, LLM firewall, exfiltration guard), identity graph (OAuth grants, service accounts, trust relationships), attack simulation, defense hardening, cross-vendor SOC correlation, agent behavioral firewall (runtime interception, tool call auditing, behavioral baselines), NHI governance (registry, posture monitoring, shadow AI discovery, JIT credentials), MCP security (gateway, supply chain, zero-trust, God Key detection), AI agent governance (capability tracking, escalation chains, boundary enforcement), model security (provenance verification, backdoor detection), prompt shield (injection classification, jailbreak pattern tracking), multi-agent trust (trust chains, communication auditing), digital twin security (simulation, posture validation) | 400+ |
-| `operations/` | Runbooks, automation, chaos, capacity, resource budgets | 128+ |
-| `analytics/` | DORA, AIOps, root cause, experiment lifecycle, agent benchmarking, hyperparameter tuning, swarm intelligence, self-healing, knowledge distillation, autoresearch experiments, compute budget management | 222+ |
-| `incidents/` | Triage, escalation, postmortem, on-call burden, notification | 85+ |
-| `compliance/` | Evidence, audit, regulatory, policy enforcement, cost governance, AI compliance (EU AI Act, NIST AI RMF, ISO 42001) | 101+ |
-| `billing/` | FinOps, cost optimization, RI planning, waste classification | 84+ |
-| `topology/` | Service mesh, dependencies, API lifecycle, traffic patterns | 63+ |
-| `sla/` | SLO tracking, error budgets, reliability, API SLA compliance | 52+ |
-| `knowledge/` | Knowledge base, onboarding, feedback, agent knowledge distillation | 26+ |
-| `audit/` | Audit trails, evidence, compliance mapping, governance | 30+ |
-| `changes/` | GitOps, IaC validation, deployment intelligence, canary | 58+ |
+| `security/` | Threat detection, SOAR, XDR, identity, AI security, DLP, agent governance, model security, prompt defense, multi-agent trust, ransomware forensics, vulnerability intelligence | 518 |
+| `observability/` | Alert intelligence, telemetry, SLI/SLO, OTel pipeline, sampling, cardinality, eBPF, collector fleet, backpressure, span-to-metric | 232 |
+| `analytics/` | DORA, AIOps, root cause, agent benchmarking, swarm intelligence, hunt analytics, productivity metrics | 255 |
+| `operations/` | Runbooks, automation, chaos, capacity, SIEM migration, playbook effectiveness, app deployment | 160 |
+| `compliance/` | Evidence, audit, regulatory, AI compliance (EU AI Act, NIST AI RMF, ISO 42001), data encryption | 116 |
+| `incidents/` | Triage, escalation, postmortem, on-call burden, notification | 88 |
+| `billing/` | FinOps, cost optimization, RI planning, waste classification | 87 |
+| `changes/` | GitOps, IaC validation, deployment intelligence, canary | 66 |
+| `topology/` | Service mesh, dependencies, API lifecycle, traffic patterns | 65 |
+| `sla/` | SLO tracking, error budgets, reliability, API SLA compliance | 54 |
+| `audit/` | Audit trails, evidence, compliance mapping, governance | 30 |
+| `knowledge/` | Knowledge base, onboarding, feedback, agent knowledge distillation | 27 |
 | `config/` | Feature flags, drift analysis, validation | 11 |
 
 ### API & Dashboard
@@ -110,7 +110,7 @@ The bulk of the codebase (~1,574+ modules) are analytics/intelligence engines ac
 - Modes: audit (observe only) or enforce (block risky calls)
 - OTEL-compatible telemetry export to any collector (Splunk, Datadog, etc.)
 
-### Connectors (17 total)
+### Connectors (18 total)
 - **Cloud**: AWS (`connectors/aws/`), GCP, Azure, Kubernetes, Linux, Windows
 - **Security**: CrowdStrike Falcon (OAuth2 + RTR + Threat Graph), Microsoft Defender (MSAL + KQL), Wiz (GraphQL + attack paths)
 - **Observability**: Splunk (REST + HEC + SPL + ITSI), Elastic (DSL + EQL + SIEM), Datadog (metrics + logs + monitors), New Relic (NerdGraph + NRQL + SLIs)

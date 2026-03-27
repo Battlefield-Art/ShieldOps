@@ -1,6 +1,6 @@
 # knowledge/ — Knowledge Base & Onboarding
 
-26+ engines for knowledge management, onboarding, and agent knowledge distillation.
+27 engines for knowledge management, onboarding, and agent knowledge distillation.
 
 ## Domains
 - Knowledge base management

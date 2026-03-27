@@ -1,6 +1,6 @@
 # connectors/ — Vendor Connectors
 
-17 connectors for cloud, security, observability, incident, and ITSM platforms.
+18 connectors for cloud, security, observability, incident, and ITSM platforms.
 
 ## Connector Architecture
 
