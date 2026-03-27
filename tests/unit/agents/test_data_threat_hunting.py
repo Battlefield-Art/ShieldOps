@@ -148,10 +148,10 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_collect_evidence(self, toolkit) -> None:
         result = await toolkit.collect_evidence(
-            sources=["production"],
-            hypotheses=[{"hypothesis_id": "h1", "target_sources": ["production"]}],
+            source_type="production",
+            scope={"time_range": "24h"},
         )
-        assert isinstance(result, list)
+        assert isinstance(result, dict)
 
     @pytest.mark.asyncio
     async def test_analyze_indicators(self, toolkit) -> None:
@@ -164,7 +164,7 @@ class TestToolkit:
     async def test_scan_backup_snapshot(self, toolkit) -> None:
         result = await toolkit.scan_backup_snapshot(
             snapshot_id="snap-001",
-            iocs=["evil.exe"],
+            scan_config={"iocs": ["evil.exe"]},
         )
         assert isinstance(result, dict)
         assert "snapshot_id" in result
@@ -172,7 +172,8 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_correlate_cross_source(self, toolkit) -> None:
         result = await toolkit.correlate_cross_source(
-            indicators=[{"indicator_value": "10.0.0.1"}],
+            findings=[{"verdict": "suspicious"}],
+            evidence=[{"artifacts": []}],
             backup_scans=[{"threats_found": 1}],
         )
         assert isinstance(result, list)

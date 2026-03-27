@@ -155,6 +155,7 @@ class TestToolkit:
             recovery_point_id="rp-001",
             target_system="db-primary",
             recovery_type="full_restore",
+            cloud_provider="aws",
         )
         assert isinstance(result, dict)
         assert "success" in result
@@ -168,7 +169,7 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_record_recovery_metric(self, toolkit) -> None:
         await toolkit.record_recovery_metric(
-            metric_name="recovery.rto_actual",
+            metric_type="recovery.rto_actual",
             value=1200.0,
         )
         # No exception = success

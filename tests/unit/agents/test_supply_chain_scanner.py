@@ -131,27 +131,29 @@ class TestToolkit:
 
     @pytest.mark.asyncio
     async def test_scan_model_registry(self, toolkit) -> None:
-        assets = [{"id": "a1", "name": "model-v1", "asset_type": "model_weight", "checksum": "abc"}]
+        assets = [
+            AIAsset(id="a1", name="model-v1", asset_type=AssetType.MODEL_WEIGHT, checksum="abc")
+        ]
         result = await toolkit.scan_model_registry(assets)
         assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_scan_rag_sources(self, toolkit) -> None:
         assets = [
-            {"id": "a1", "name": "corpus", "asset_type": "rag_document", "source": "s3://bucket"}
+            AIAsset(id="a1", name="corpus", asset_type=AssetType.RAG_DOCUMENT, source="s3://bucket")
         ]
         result = await toolkit.scan_rag_sources(assets)
         assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_audit_prompt_templates(self, toolkit) -> None:
-        assets = [{"id": "a1", "name": "sys-prompt", "asset_type": "prompt_template"}]
+        assets = [AIAsset(id="a1", name="sys-prompt", asset_type=AssetType.PROMPT_TEMPLATE)]
         result = await toolkit.audit_prompt_templates(assets)
         assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_audit_tool_definitions(self, toolkit) -> None:
-        assets = [{"id": "a1", "name": "web_search", "asset_type": "tool_definition"}]
+        assets = [AIAsset(id="a1", name="web_search", asset_type=AssetType.TOOL_DEFINITION)]
         result = await toolkit.audit_tool_definitions(assets)
         assert isinstance(result, list)
 

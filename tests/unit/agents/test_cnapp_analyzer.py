@@ -125,45 +125,46 @@ class TestToolkit:
 
     @pytest.mark.asyncio
     async def test_scan_cloud_posture_aws(self, toolkit) -> None:
-        findings = await toolkit.scan_cloud_posture(["aws"])
+        findings = await toolkit.scan_cloud_posture("tenant-1", ["aws"], ["cis"])
         assert isinstance(findings, list)
         assert len(findings) >= 1
-        assert all("control_id" in f for f in findings)
 
     @pytest.mark.asyncio
     async def test_scan_cloud_posture_multi_provider(self, toolkit) -> None:
-        findings = await toolkit.scan_cloud_posture(["aws", "gcp"])
-        providers = {f.get("provider") for f in findings}
+        findings = await toolkit.scan_cloud_posture("tenant-1", ["aws", "gcp"], ["cis"])
+        providers = {f.provider for f in findings}
         assert "aws" in providers
         assert "gcp" in providers
 
     @pytest.mark.asyncio
     async def test_assess_workload_protection(self, toolkit) -> None:
-        threats = await toolkit.assess_workload_protection()
+        threats = await toolkit.assess_workload_protection("tenant-1", ["aws"])
         assert isinstance(threats, list)
         assert len(threats) >= 1
 
     @pytest.mark.asyncio
     async def test_analyze_identity_entitlements(self, toolkit) -> None:
-        risks = await toolkit.analyze_identity_entitlements()
+        risks = await toolkit.analyze_identity_entitlements("tenant-1", ["aws"])
         assert isinstance(risks, list)
         assert len(risks) >= 1
 
     @pytest.mark.asyncio
     async def test_scan_code_security(self, toolkit) -> None:
-        vulns = await toolkit.scan_code_security()
+        vulns = await toolkit.scan_code_security("tenant-1", ["aws"])
         assert isinstance(vulns, list)
         assert len(vulns) >= 1
 
     @pytest.mark.asyncio
     async def test_correlate_risks(self, toolkit) -> None:
-        posture = [{"severity": "critical", "auto_remediable": True}]
-        workload = [{"severity": "high", "cvss_score": 9.0}]
-        entitlement = [{"severity": "high", "unused_ratio": 0.9}]
-        code = [{"severity": "medium"}]
-        result = await toolkit.correlate_risks(posture, workload, entitlement, code)
-        assert "overall_score" in result
-        assert "risk_level" in result
+        posture = await toolkit.scan_cloud_posture("t1", ["aws"], ["cis"])
+        workload = await toolkit.assess_workload_protection("t1", ["aws"])
+        entitlement = await toolkit.analyze_identity_entitlements("t1", ["aws"])
+        code = await toolkit.scan_code_security("t1", ["aws"])
+        result, coverage = await toolkit.correlate_risks(
+            posture, workload, entitlement, code, ["cis"]
+        )
+        assert isinstance(result, UnifiedRiskScore)
+        assert isinstance(coverage, dict)
 
 
 # ---------------------------------------------------------------------------

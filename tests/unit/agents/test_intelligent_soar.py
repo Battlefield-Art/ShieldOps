@@ -129,31 +129,35 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_ingest_trigger(self, toolkit) -> None:
         result = await toolkit.ingest_trigger(
-            source="siem",
-            alert_type="malware_detected",
-            severity="critical",
-            raw_payload={"host": "prod-01"},
-            indicators=["evil.exe"],
+            trigger_data={
+                "source": "siem",
+                "alert_type": "malware_detected",
+                "severity": "critical",
+                "raw_payload": {"host": "prod-01"},
+                "indicators": ["evil.exe"],
+            }
         )
         assert isinstance(result, dict)
         assert "trigger_id" in result
 
     @pytest.mark.asyncio
-    async def test_select_playbook_returns_match(self, toolkit) -> None:
+    async def test_select_playbook_returns_list(self, toolkit) -> None:
         result = await toolkit.select_playbook(
             alert_type="malware_detected",
             severity="critical",
             indicators=["evil.exe"],
         )
-        assert isinstance(result, dict)
-        assert "playbook_id" in result
+        assert isinstance(result, list)
+        assert len(result) >= 1
+        assert "playbook_id" in result[0]
 
     @pytest.mark.asyncio
     async def test_execute_step(self, toolkit) -> None:
         result = await toolkit.execute_step(
-            playbook_id="pb-investigate-malware",
             step_name="isolate_endpoint",
             target="host-01",
+            vendor="crowdstrike",
+            execution_mode="automatic",
         )
         assert isinstance(result, dict)
         assert "status" in result
@@ -161,17 +165,17 @@ class TestToolkit:
     @pytest.mark.asyncio
     async def test_evaluate_adaptation(self, toolkit) -> None:
         result = await toolkit.evaluate_adaptation(
-            current_step="collect_artifacts",
-            step_results={"artifacts": 5},
+            completed_steps=[{"step_name": "isolate_endpoint", "status": "completed"}],
             remaining_steps=["analyze_binary"],
+            findings={"artifacts": 5},
         )
         assert isinstance(result, dict)
 
     @pytest.mark.asyncio
     async def test_validate_outcome(self, toolkit) -> None:
         result = await toolkit.validate_outcome(
-            playbook_id="pb-investigate-malware",
-            step_results=[{"status": "completed"}],
+            execution_results=[{"status": "completed"}],
+            trigger_indicators=["evil.exe"],
         )
         assert isinstance(result, dict)
 
@@ -179,14 +183,15 @@ class TestToolkit:
     async def test_track_effectiveness(self, toolkit) -> None:
         await toolkit.track_effectiveness(
             playbook_id="pb-investigate-malware",
-            outcome_validated=True,
+            success_rate=0.9,
+            adaptation_count=2,
         )
         # No exception = success
 
     @pytest.mark.asyncio
     async def test_record_metric(self, toolkit) -> None:
         await toolkit.record_metric(
-            metric_name="soar.steps_completed",
+            metric_type="soar.steps_completed",
             value=5,
         )
         # No exception = success

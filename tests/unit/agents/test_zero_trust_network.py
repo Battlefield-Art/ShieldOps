@@ -127,15 +127,15 @@ class TestToolkit:
 
     @pytest.mark.asyncio
     async def test_assess_identity_trust(self, toolkit) -> None:
-        result = await toolkit.assess_identity_trust("tenant-1")
-        assert isinstance(result, list)
-        assert len(result) >= 1
+        result = await toolkit.assess_identity_trust("id-1", IdentityType.HUMAN)
+        assert isinstance(result, IdentityTrustScore)
+        assert result.identity_id == "id-1"
 
     @pytest.mark.asyncio
     async def test_evaluate_device_posture(self, toolkit) -> None:
-        result = await toolkit.evaluate_device_posture("tenant-1")
-        assert isinstance(result, list)
-        assert len(result) >= 1
+        result = await toolkit.evaluate_device_posture("dev-1", "id-1")
+        assert isinstance(result, DevicePosture)
+        assert result.device_id == "dev-1"
 
     @pytest.mark.asyncio
     async def test_enforce_policy(self, toolkit) -> None:
@@ -163,6 +163,7 @@ class TestToolkit:
         result = await toolkit.monitor_session(
             session_id="sess-1",
             identity_id="id-1",
+            identity_type=IdentityType.HUMAN,
             access_point_id="ap-1",
         )
         assert isinstance(result, SessionMonitor)
