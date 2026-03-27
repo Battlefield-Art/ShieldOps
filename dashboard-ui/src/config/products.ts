@@ -66,6 +66,8 @@ import {
   Cpu,
   Blocks,
   LayoutList,
+  Monitor,
+  FileSearch,
   type LucideIcon,
 } from "lucide-react";
 
