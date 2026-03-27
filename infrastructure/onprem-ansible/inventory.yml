@@ -1,0 +1,98 @@
+# =============================================================================
+# ShieldOps On-Premises Inventory
+# =============================================================================
+# Customize hostnames, IPs, and SSH credentials for your environment.
+# Copy this file to inventory.local.yml and fill in real values.
+# =============================================================================
+
+all:
+  vars:
+    ansible_user: shieldops
+    ansible_ssh_private_key_file: ~/.ssh/shieldops_deploy
+    ansible_python_interpreter: /usr/bin/python3
+
+    # -- ShieldOps configuration
+    shieldops_domain: shieldops.internal.example.com
+    shieldops_version: "0.1.0"
+    shieldops_environment: production
+    shieldops_log_level: info
+
+    # -- K3s configuration
+    k3s_version: "v1.29.4+k3s1"
+    k3s_token: "CHANGE_ME_secure_cluster_token"
+    k3s_cluster_cidr: "10.42.0.0/16"
+    k3s_service_cidr: "10.43.0.0/16"
+
+    # -- TLS configuration
+    tls_mode: self_signed  # self_signed | letsencrypt
+    letsencrypt_email: ops@example.com
+
+    # -- Helm chart source
+    helm_chart_path: "../../helm/shieldops"
+
+    # -- Docker registry (local registry for air-gapped deployments)
+    docker_registry: "registry.internal.example.com:5000"
+
+    # -- PostgreSQL
+    postgresql_database: shieldops
+    postgresql_username: shieldops
+    # Set via --extra-vars or ansible-vault
+    postgresql_password: "{{ vault_postgresql_password }}"
+
+    # -- Redis
+    redis_password: ""
+
+    # -- Kafka
+    kafka_broker_count: 3
+
+    # -- OPA policies directory (relative to playbook)
+    opa_policies_dir: "../../playbooks/policies"
+
+    # -- Monitoring
+    grafana_admin_password: "{{ vault_grafana_admin_password }}"
+    prometheus_retention_days: 30
+
+  children:
+    # -----------------------------------------------------------------
+    # K3s master node (control plane)
+    # -----------------------------------------------------------------
+    master:
+      hosts:
+        k3s-master-01:
+          ansible_host: 10.0.1.10
+          # Additional master nodes for HA (optional):
+          # k3s-master-02:
+          #   ansible_host: 10.0.1.11
+          # k3s-master-03:
+          #   ansible_host: 10.0.1.12
+
+    # -----------------------------------------------------------------
+    # K3s worker nodes
+    # -----------------------------------------------------------------
+    workers:
+      hosts:
+        k3s-worker-01:
+          ansible_host: 10.0.1.20
+        k3s-worker-02:
+          ansible_host: 10.0.1.21
+        k3s-worker-03:
+          ansible_host: 10.0.1.22
+
+    # -----------------------------------------------------------------
+    # HAProxy load balancer
+    # -----------------------------------------------------------------
+    load_balancer:
+      hosts:
+        haproxy-01:
+          ansible_host: 10.0.1.5
+          # Secondary for keepalived HA (optional):
+          # haproxy-02:
+          #   ansible_host: 10.0.1.6
+
+    # -----------------------------------------------------------------
+    # Logical groups
+    # -----------------------------------------------------------------
+    k3s_cluster:
+      children:
+        master:
+        workers:

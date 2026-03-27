@@ -1,0 +1,1007 @@
+# =============================================================================
+# ShieldOps On-Premises Deployment Playbook
+# =============================================================================
+# Deploys a complete ShieldOps stack on bare-metal / VM infrastructure using
+# K3s, Helm, HAProxy, and Prometheus+Grafana.
+#
+# Usage:
+#   ansible-playbook -i inventory.yml playbook.yml
+#   ansible-playbook -i inventory.yml playbook.yml --tags "k3s,helm"
+#   ansible-playbook -i inventory.yml playbook.yml -e @secrets.enc.yml --ask-vault-pass
+#
+# Requirements:
+#   - Ansible 2.15+
+#   - Target hosts: Ubuntu 22.04+ or RHEL 8+
+#   - SSH access with sudo privileges
+#   - Internet access (or pre-pulled images for air-gapped)
+# =============================================================================
+
+---
+# ============================================================================
+# PLAY 1: Common prerequisites on all nodes
+# ============================================================================
+- name: Prepare all hosts
+  hosts: all
+  become: true
+  tags: [prereqs]
+  tasks:
+    - name: Update apt cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install common packages (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name:
+          - curl
+          - wget
+          - gnupg
+          - apt-transport-https
+          - ca-certificates
+          - software-properties-common
+          - python3-pip
+          - jq
+          - unzip
+          - open-iscsi
+          - nfs-common
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install common packages (RHEL/CentOS)
+      ansible.builtin.yum:
+        name:
+          - curl
+          - wget
+          - jq
+          - unzip
+          - python3-pip
+          - iscsi-initiator-utils
+          - nfs-utils
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Disable swap
+      ansible.builtin.command: swapoff -a
+      changed_when: false
+
+    - name: Remove swap from fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '\s+swap\s+'
+        state: absent
+
+    - name: Load required kernel modules
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - br_netfilter
+        - overlay
+        - ip_tables
+
+    - name: Persist kernel modules
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k3s.conf
+        content: |
+          br_netfilter
+          overlay
+          ip_tables
+        mode: "0644"
+
+    - name: Set sysctl parameters for Kubernetes
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        sysctl_file: /etc/sysctl.d/99-k3s.conf
+        reload: true
+      loop:
+        - { key: net.bridge.bridge-nf-call-iptables, value: "1" }
+        - { key: net.bridge.bridge-nf-call-ip6tables, value: "1" }
+        - { key: net.ipv4.ip_forward, value: "1" }
+        - { key: vm.max_map_count, value: "262144" }
+
+    - name: Configure firewall rules (UFW)
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "6443"   # K3s API server
+        - "10250"  # Kubelet
+        - "8472"   # VXLAN (Flannel)
+        - "443"    # HTTPS
+        - "80"     # HTTP
+      when: ansible_os_family == "Debian"
+      ignore_errors: true
+
+# ============================================================================
+# PLAY 2: Install K3s on master node
+# ============================================================================
+- name: Install K3s master
+  hosts: master
+  become: true
+  tags: [k3s, k3s-master]
+  tasks:
+    - name: Install K3s server
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | \
+          INSTALL_K3S_VERSION="{{ k3s_version }}" \
+          K3S_TOKEN="{{ k3s_token }}" \
+          sh -s - server \
+            --cluster-cidr="{{ k3s_cluster_cidr }}" \
+            --service-cidr="{{ k3s_service_cidr }}" \
+            --disable=traefik \
+            --write-kubeconfig-mode=644 \
+            --tls-san="{{ ansible_host }}" \
+            --tls-san="{{ shieldops_domain }}"
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Wait for K3s to be ready
+      ansible.builtin.command: k3s kubectl get nodes
+      register: k3s_nodes
+      retries: 30
+      delay: 10
+      until: k3s_nodes.rc == 0
+      changed_when: false
+
+    - name: Read K3s node token
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_node_token_raw
+
+    - name: Set K3s node token fact
+      ansible.builtin.set_fact:
+        k3s_node_token: "{{ k3s_node_token_raw.content | b64decode | trim }}"
+
+    - name: Fetch kubeconfig to controller
+      ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /tmp/shieldops-kubeconfig.yaml
+        flat: true
+
+    - name: Install Helm on master
+      ansible.builtin.shell: |
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      args:
+        creates: /usr/local/bin/helm
+
+    - name: Add Bitnami Helm repo
+      ansible.builtin.command: helm repo add bitnami https://charts.bitnami.com/bitnami
+      changed_when: false
+      ignore_errors: true
+
+    - name: Add Prometheus community Helm repo
+      ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      changed_when: false
+      ignore_errors: true
+
+    - name: Add Grafana Helm repo
+      ansible.builtin.command: helm repo add grafana https://grafana.github.io/helm-charts
+      changed_when: false
+      ignore_errors: true
+
+    - name: Update Helm repos
+      ansible.builtin.command: helm repo update
+      changed_when: false
+
+    - name: Create shieldops namespace
+      ansible.builtin.command: k3s kubectl create namespace shieldops
+      register: ns_result
+      changed_when: ns_result.rc == 0
+      failed_when: ns_result.rc != 0 and 'already exists' not in ns_result.stderr
+
+    - name: Create monitoring namespace
+      ansible.builtin.command: k3s kubectl create namespace monitoring
+      register: ns_mon_result
+      changed_when: ns_mon_result.rc == 0
+      failed_when: ns_mon_result.rc != 0 and 'already exists' not in ns_mon_result.stderr
+
+# ============================================================================
+# PLAY 3: Join worker nodes to K3s cluster
+# ============================================================================
+- name: Join K3s workers
+  hosts: workers
+  become: true
+  tags: [k3s, k3s-workers]
+  tasks:
+    - name: Get master host
+      ansible.builtin.set_fact:
+        k3s_master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] }}"
+        k3s_node_token: "{{ hostvars[groups['master'][0]]['k3s_node_token'] }}"
+
+    - name: Install K3s agent
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | \
+          INSTALL_K3S_VERSION="{{ k3s_version }}" \
+          K3S_URL="https://{{ k3s_master_ip }}:6443" \
+          K3S_TOKEN="{{ k3s_node_token }}" \
+          sh -s - agent
+      args:
+        creates: /usr/local/bin/k3s-agent
+
+    - name: Wait for agent to register
+      ansible.builtin.pause:
+        seconds: 15
+
+# ============================================================================
+# PLAY 4: Deploy infrastructure services via Helm
+# ============================================================================
+- name: Deploy infrastructure services
+  hosts: master
+  become: true
+  tags: [helm, infra]
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    # -- PostgreSQL --------------------------------------------------------
+    - name: Deploy PostgreSQL via Helm
+      ansible.builtin.command: >
+        helm upgrade --install postgresql bitnami/postgresql
+          --namespace shieldops
+          --set auth.database={{ postgresql_database }}
+          --set auth.username={{ postgresql_username }}
+          --set auth.password={{ postgresql_password }}
+          --set primary.persistence.size=50Gi
+          --set primary.resources.requests.memory=512Mi
+          --set primary.resources.requests.cpu=250m
+          --set primary.resources.limits.memory=2Gi
+          --set primary.resources.limits.cpu=2
+          --set metrics.enabled=true
+          --set metrics.serviceMonitor.enabled=true
+          --wait --timeout=5m
+      tags: [postgresql]
+
+    # -- Redis -------------------------------------------------------------
+    - name: Deploy Redis via Helm
+      ansible.builtin.command: >
+        helm upgrade --install redis bitnami/redis
+          --namespace shieldops
+          --set architecture=standalone
+          --set auth.enabled=false
+          --set master.persistence.size=10Gi
+          --set master.resources.requests.memory=256Mi
+          --set master.resources.requests.cpu=100m
+          --set master.resources.limits.memory=1Gi
+          --set master.resources.limits.cpu=1
+          --set metrics.enabled=true
+          --set metrics.serviceMonitor.enabled=true
+          --wait --timeout=5m
+      tags: [redis]
+
+    # -- Kafka (3 brokers) -------------------------------------------------
+    - name: Deploy Kafka via Helm
+      ansible.builtin.command: >
+        helm upgrade --install kafka bitnami/kafka
+          --namespace shieldops
+          --set replicaCount={{ kafka_broker_count }}
+          --set persistence.size=50Gi
+          --set resources.requests.memory=1Gi
+          --set resources.requests.cpu=500m
+          --set resources.limits.memory=4Gi
+          --set resources.limits.cpu=2
+          --set kraft.enabled=true
+          --set metrics.kafka.enabled=true
+          --set metrics.serviceMonitor.enabled=true
+          --wait --timeout=10m
+      tags: [kafka]
+
+    # -- OPA ---------------------------------------------------------------
+    - name: Deploy OPA via Helm
+      ansible.builtin.command: >
+        helm upgrade --install opa bitnami/opa
+          --namespace shieldops
+          --set replicaCount=2
+          --set resources.requests.memory=128Mi
+          --set resources.requests.cpu=100m
+          --set resources.limits.memory=512Mi
+          --set resources.limits.cpu=500m
+          --wait --timeout=3m
+      tags: [opa]
+      ignore_errors: true
+
+    - name: Deploy OPA standalone (fallback if no Bitnami chart)
+      when: false  # Enable if bitnami/opa chart unavailable
+      ansible.builtin.shell: |
+        cat <<'OPAEOF' | k3s kubectl apply -n shieldops -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: opa
+          labels:
+            app: opa
+        spec:
+          replicas: 2
+          selector:
+            matchLabels:
+              app: opa
+          template:
+            metadata:
+              labels:
+                app: opa
+            spec:
+              containers:
+                - name: opa
+                  image: openpolicyagent/opa:latest-static
+                  args: ["run", "--server", "--addr=0.0.0.0:8181"]
+                  ports:
+                    - containerPort: 8181
+                  resources:
+                    requests:
+                      memory: 128Mi
+                      cpu: 100m
+                    limits:
+                      memory: 512Mi
+                      cpu: 500m
+                  readinessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8181
+                    initialDelaySeconds: 5
+                    periodSeconds: 10
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: opa
+        spec:
+          selector:
+            app: opa
+          ports:
+            - port: 8181
+              targetPort: 8181
+        OPAEOF
+      tags: [opa]
+
+# ============================================================================
+# PLAY 5: Build and deploy ShieldOps application
+# ============================================================================
+- name: Build and deploy ShieldOps
+  hosts: master
+  become: true
+  tags: [shieldops, build, deploy]
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    - name: Install Docker for image builds
+      ansible.builtin.shell: |
+        curl -fsSL https://get.docker.com | sh
+        usermod -aG docker {{ ansible_user }}
+      args:
+        creates: /usr/bin/docker
+      tags: [build]
+
+    - name: Clone ShieldOps repository
+      ansible.builtin.git:
+        repo: https://github.com/ghantakiran/ShieldOps.git
+        dest: /opt/shieldops
+        version: main
+        force: true
+      tags: [build]
+
+    - name: Build API Docker image
+      ansible.builtin.command: >
+        docker build
+          -t {{ docker_registry }}/shieldops/api:{{ shieldops_version }}
+          -t {{ docker_registry }}/shieldops/api:latest
+          -f /opt/shieldops/infrastructure/docker/Dockerfile
+          /opt/shieldops
+      tags: [build]
+
+    - name: Build Dashboard Docker image
+      ansible.builtin.command: >
+        docker build
+          -t {{ docker_registry }}/shieldops/dashboard:{{ shieldops_version }}
+          -t {{ docker_registry }}/shieldops/dashboard:latest
+          -f /opt/shieldops/dashboard-ui/Dockerfile
+          /opt/shieldops/dashboard-ui
+      tags: [build]
+      ignore_errors: true
+
+    - name: Import API image into K3s containerd
+      ansible.builtin.shell: |
+        docker save {{ docker_registry }}/shieldops/api:{{ shieldops_version }} | \
+          k3s ctr images import -
+      tags: [build]
+
+    - name: Import Dashboard image into K3s containerd
+      ansible.builtin.shell: |
+        docker save {{ docker_registry }}/shieldops/dashboard:{{ shieldops_version }} | \
+          k3s ctr images import -
+      tags: [build]
+      ignore_errors: true
+
+    - name: Create ShieldOps secrets
+      ansible.builtin.shell: |
+        k3s kubectl create secret generic shieldops-secrets \
+          --namespace shieldops \
+          --from-literal=DATABASE_URL="postgresql://{{ postgresql_username }}:{{ postgresql_password }}@postgresql.shieldops.svc:5432/{{ postgresql_database }}" \
+          --from-literal=REDIS_URL="redis://redis-master.shieldops.svc:6379/0" \
+          --from-literal=ANTHROPIC_API_KEY="{{ anthropic_api_key | default('') }}" \
+          --from-literal=JWT_SECRET_KEY="{{ jwt_secret_key | default('changeme') }}" \
+          --dry-run=client -o yaml | k3s kubectl apply -f -
+      tags: [deploy]
+
+    - name: Deploy ShieldOps via Helm chart
+      ansible.builtin.command: >
+        helm upgrade --install shieldops /opt/shieldops/infrastructure/helm/shieldops
+          --namespace shieldops
+          --set image.repository={{ docker_registry }}/shieldops/api
+          --set image.tag={{ shieldops_version }}
+          --set frontend.image.repository={{ docker_registry }}/shieldops/dashboard
+          --set frontend.image.tag={{ shieldops_version }}
+          --set image.pullPolicy=IfNotPresent
+          --set env.SHIELDOPS_ENVIRONMENT={{ shieldops_environment }}
+          --set env.SHIELDOPS_LOG_LEVEL={{ shieldops_log_level }}
+          --set env.SHIELDOPS_OPA_ENDPOINT=http://opa.shieldops.svc:8181
+          --set existingSecret=shieldops-secrets
+          --set postgresql.enabled=false
+          --set redis.enabled=false
+          --set kafka.enabled=false
+          --set ingress.enabled=false
+          --set autoscaling.enabled=true
+          --set autoscaling.minReplicas=2
+          --set autoscaling.maxReplicas=10
+          --wait --timeout=5m
+      tags: [deploy]
+
+    - name: Wait for ShieldOps pods to be ready
+      ansible.builtin.command: >
+        k3s kubectl wait --for=condition=ready pod
+          -l app.kubernetes.io/name=shieldops
+          --namespace shieldops
+          --timeout=300s
+      retries: 3
+      delay: 10
+      tags: [deploy]
+
+# ============================================================================
+# PLAY 6: Configure HAProxy load balancer
+# ============================================================================
+- name: Configure HAProxy
+  hosts: load_balancer
+  become: true
+  tags: [haproxy, lb]
+  vars:
+    k3s_master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] }}"
+    k3s_worker_ips: "{{ groups['workers'] | map('extract', hostvars, 'ansible_host') | list }}"
+  tasks:
+    - name: Install HAProxy
+      ansible.builtin.apt:
+        name: haproxy
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install HAProxy (RHEL)
+      ansible.builtin.yum:
+        name: haproxy
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Configure HAProxy
+      ansible.builtin.copy:
+        dest: /etc/haproxy/haproxy.cfg
+        mode: "0644"
+        content: |
+          # =================================================================
+          # ShieldOps HAProxy Configuration
+          # =================================================================
+          global
+              log /dev/log local0
+              log /dev/log local1 notice
+              chroot /var/lib/haproxy
+              stats socket /run/haproxy/admin.sock mode 660 level admin
+              stats timeout 30s
+              user haproxy
+              group haproxy
+              daemon
+
+              # TLS tuning
+              ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256
+              ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384
+              ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+              tune.ssl.default-dh-param 2048
+
+          defaults
+              log     global
+              mode    http
+              option  httplog
+              option  dontlognull
+              option  forwardfor
+              option  http-server-close
+              timeout connect 5s
+              timeout client  30s
+              timeout server  30s
+              timeout http-request 10s
+              timeout http-keep-alive 10s
+              errorfile 400 /etc/haproxy/errors/400.http
+              errorfile 403 /etc/haproxy/errors/403.http
+              errorfile 500 /etc/haproxy/errors/500.http
+              errorfile 502 /etc/haproxy/errors/502.http
+              errorfile 503 /etc/haproxy/errors/503.http
+              errorfile 504 /etc/haproxy/errors/504.http
+
+          # -- Stats dashboard -----------------------------------------------
+          listen stats
+              bind *:8404
+              mode http
+              stats enable
+              stats uri /stats
+              stats refresh 10s
+              stats admin if LOCALHOST
+
+          # -- HTTPS frontend ------------------------------------------------
+          frontend https_front
+              bind *:443 ssl crt /etc/haproxy/certs/shieldops.pem
+              http-request set-header X-Forwarded-Proto https
+              http-request set-header X-Real-IP %[src]
+
+              # Route API traffic
+              acl is_api path_beg /api /health /ready /metrics
+              use_backend api_backend if is_api
+              default_backend dashboard_backend
+
+          # -- HTTP redirect to HTTPS ----------------------------------------
+          frontend http_front
+              bind *:80
+              http-request redirect scheme https unless { ssl_fc }
+
+          # -- K3s API (for kubectl access) ----------------------------------
+          frontend k3s_api
+              bind *:6443
+              mode tcp
+              default_backend k3s_api_backend
+
+          # -- API backend ---------------------------------------------------
+          backend api_backend
+              balance roundrobin
+              option httpchk GET /health
+              http-check expect status 200
+              default-server inter 5s fall 3 rise 2
+
+              {% for worker_ip in k3s_worker_ips %}
+              server worker-{{ loop.index }} {{ worker_ip }}:30080 check
+              {% endfor %}
+              server master {{ k3s_master_ip }}:30080 check
+
+          # -- Dashboard backend ---------------------------------------------
+          backend dashboard_backend
+              balance roundrobin
+              option httpchk GET /
+              default-server inter 10s fall 3 rise 2
+
+              {% for worker_ip in k3s_worker_ips %}
+              server worker-{{ loop.index }} {{ worker_ip }}:30081 check
+              {% endfor %}
+              server master {{ k3s_master_ip }}:30081 check
+
+          # -- K3s API backend -----------------------------------------------
+          backend k3s_api_backend
+              mode tcp
+              balance roundrobin
+              server master {{ k3s_master_ip }}:6443 check
+      notify: Restart HAProxy
+
+    - name: Create HAProxy certs directory
+      ansible.builtin.file:
+        path: /etc/haproxy/certs
+        state: directory
+        owner: haproxy
+        group: haproxy
+        mode: "0700"
+
+    - name: Validate HAProxy configuration
+      ansible.builtin.command: haproxy -c -f /etc/haproxy/haproxy.cfg
+      changed_when: false
+
+    - name: Enable and start HAProxy
+      ansible.builtin.systemd:
+        name: haproxy
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Restart HAProxy
+      ansible.builtin.systemd:
+        name: haproxy
+        state: restarted
+
+# ============================================================================
+# PLAY 7: Setup TLS certificates
+# ============================================================================
+- name: Setup TLS certificates
+  hosts: load_balancer
+  become: true
+  tags: [tls, certs]
+  tasks:
+    # -- Self-signed certificates ------------------------------------------
+    - name: Generate self-signed TLS certificate
+      when: tls_mode == "self_signed"
+      block:
+        - name: Install openssl
+          ansible.builtin.apt:
+            name: openssl
+            state: present
+          when: ansible_os_family == "Debian"
+
+        - name: Generate private key
+          ansible.builtin.command: >
+            openssl genrsa -out /etc/haproxy/certs/shieldops.key 4096
+          args:
+            creates: /etc/haproxy/certs/shieldops.key
+
+        - name: Generate self-signed certificate
+          ansible.builtin.command: >
+            openssl req -new -x509
+              -key /etc/haproxy/certs/shieldops.key
+              -out /etc/haproxy/certs/shieldops.crt
+              -days 365
+              -subj "/C=US/ST=CA/L=SanFrancisco/O=ShieldOps/CN={{ shieldops_domain }}"
+              -addext "subjectAltName=DNS:{{ shieldops_domain }},DNS:*.{{ shieldops_domain }}"
+          args:
+            creates: /etc/haproxy/certs/shieldops.crt
+
+        - name: Combine key and cert for HAProxy
+          ansible.builtin.shell: >
+            cat /etc/haproxy/certs/shieldops.crt /etc/haproxy/certs/shieldops.key
+            > /etc/haproxy/certs/shieldops.pem
+          args:
+            creates: /etc/haproxy/certs/shieldops.pem
+          notify: Restart HAProxy
+
+        - name: Set certificate permissions
+          ansible.builtin.file:
+            path: /etc/haproxy/certs/shieldops.pem
+            owner: haproxy
+            group: haproxy
+            mode: "0600"
+
+    # -- Let's Encrypt certificates ----------------------------------------
+    - name: Obtain Let's Encrypt certificate
+      when: tls_mode == "letsencrypt"
+      block:
+        - name: Install certbot
+          ansible.builtin.apt:
+            name:
+              - certbot
+            state: present
+          when: ansible_os_family == "Debian"
+
+        - name: Obtain certificate via HTTP-01 challenge
+          ansible.builtin.command: >
+            certbot certonly --standalone
+              --non-interactive
+              --agree-tos
+              --email {{ letsencrypt_email }}
+              -d {{ shieldops_domain }}
+              --preferred-challenges http
+              --http-01-port 8888
+          args:
+            creates: /etc/letsencrypt/live/{{ shieldops_domain }}/fullchain.pem
+
+        - name: Combine Let's Encrypt cert for HAProxy
+          ansible.builtin.shell: >
+            cat /etc/letsencrypt/live/{{ shieldops_domain }}/fullchain.pem
+                /etc/letsencrypt/live/{{ shieldops_domain }}/privkey.pem
+            > /etc/haproxy/certs/shieldops.pem
+          notify: Restart HAProxy
+
+        - name: Setup certbot renewal cron
+          ansible.builtin.cron:
+            name: "Renew Let's Encrypt certificate"
+            minute: "30"
+            hour: "2"
+            weekday: "1"
+            job: >
+              certbot renew --quiet &&
+              cat /etc/letsencrypt/live/{{ shieldops_domain }}/fullchain.pem
+                  /etc/letsencrypt/live/{{ shieldops_domain }}/privkey.pem
+              > /etc/haproxy/certs/shieldops.pem &&
+              systemctl reload haproxy
+
+  handlers:
+    - name: Restart HAProxy
+      ansible.builtin.systemd:
+        name: haproxy
+        state: restarted
+
+# ============================================================================
+# PLAY 8: Deploy Prometheus + Grafana monitoring
+# ============================================================================
+- name: Deploy monitoring stack
+  hosts: master
+  become: true
+  tags: [monitoring, prometheus, grafana]
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    - name: Deploy kube-prometheus-stack
+      ansible.builtin.command: >
+        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack
+          --namespace monitoring
+          --set prometheus.prometheusSpec.retention={{ prometheus_retention_days }}d
+          --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage=50Gi
+          --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+          --set grafana.adminPassword={{ grafana_admin_password }}
+          --set grafana.persistence.enabled=true
+          --set grafana.persistence.size=10Gi
+          --set grafana.service.type=NodePort
+          --set grafana.service.nodePort=30300
+          --set alertmanager.enabled=true
+          --set alertmanager.alertmanagerSpec.storage.volumeClaimTemplate.spec.resources.requests.storage=5Gi
+          --wait --timeout=10m
+
+    - name: Copy ShieldOps Prometheus recording rules
+      ansible.builtin.command: >
+        k3s kubectl create configmap shieldops-recording-rules
+          --namespace monitoring
+          --from-file=/opt/shieldops/infrastructure/monitoring/ai-security-recording-rules.yml
+          --dry-run=client -o yaml
+      register: recording_rules_cm
+
+    - name: Apply recording rules configmap
+      ansible.builtin.shell: |
+        echo '{{ recording_rules_cm.stdout }}' | \
+          k3s kubectl label -f - --local -o yaml \
+            prometheus=kube-prometheus-stack \
+            release=prometheus | \
+          k3s kubectl apply -f -
+      ignore_errors: true
+
+    - name: Copy ShieldOps Prometheus alert rules
+      ansible.builtin.command: >
+        k3s kubectl create configmap shieldops-alert-rules
+          --namespace monitoring
+          --from-file=/opt/shieldops/infrastructure/monitoring/ai-security-alert-rules.yml
+          --dry-run=client -o yaml
+      register: alert_rules_cm
+
+    - name: Apply alert rules configmap
+      ansible.builtin.shell: |
+        echo '{{ alert_rules_cm.stdout }}' | \
+          k3s kubectl label -f - --local -o yaml \
+            prometheus=kube-prometheus-stack \
+            release=prometheus | \
+          k3s kubectl apply -f -
+      ignore_errors: true
+
+    - name: Wait for Prometheus to be ready
+      ansible.builtin.command: >
+        k3s kubectl wait --for=condition=ready pod
+          -l app.kubernetes.io/name=prometheus
+          --namespace monitoring
+          --timeout=300s
+      retries: 3
+      delay: 10
+      changed_when: false
+
+    - name: Wait for Grafana to be ready
+      ansible.builtin.command: >
+        k3s kubectl wait --for=condition=ready pod
+          -l app.kubernetes.io/name=grafana
+          --namespace monitoring
+          --timeout=300s
+      retries: 3
+      delay: 10
+      changed_when: false
+
+# ============================================================================
+# PLAY 9: Apply OPA policies
+# ============================================================================
+- name: Apply OPA policies
+  hosts: master
+  become: true
+  tags: [opa, policies]
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    - name: Get OPA service endpoint
+      ansible.builtin.command: >
+        k3s kubectl get svc -n shieldops -l app=opa -o jsonpath='{.items[0].spec.clusterIP}'
+      register: opa_cluster_ip
+      changed_when: false
+      ignore_errors: true
+
+    - name: Create OPA policies configmap
+      ansible.builtin.command: >
+        k3s kubectl create configmap opa-policies
+          --namespace shieldops
+          --from-file=/opt/shieldops/playbooks/policies/
+          --dry-run=client -o yaml
+      register: opa_policies_cm
+
+    - name: Apply OPA policies configmap
+      ansible.builtin.shell: echo '{{ opa_policies_cm.stdout }}' | k3s kubectl apply -f -
+
+    - name: Load HIPAA policy into OPA
+      ansible.builtin.uri:
+        url: "http://{{ opa_cluster_ip.stdout }}:8181/v1/policies/hipaa"
+        method: PUT
+        body: "{{ lookup('file', '/opt/shieldops/playbooks/policies/hipaa.rego') }}"
+        headers:
+          Content-Type: text/plain
+        status_code: [200, 201]
+      when: opa_cluster_ip.rc == 0
+      ignore_errors: true
+
+    - name: Load SOC 2 policy into OPA
+      ansible.builtin.uri:
+        url: "http://{{ opa_cluster_ip.stdout }}:8181/v1/policies/soc2"
+        method: PUT
+        body: "{{ lookup('file', '/opt/shieldops/playbooks/policies/soc2.rego') }}"
+        headers:
+          Content-Type: text/plain
+        status_code: [200, 201]
+      when: opa_cluster_ip.rc == 0
+      ignore_errors: true
+
+    - name: Load PCI DSS policy into OPA
+      ansible.builtin.uri:
+        url: "http://{{ opa_cluster_ip.stdout }}:8181/v1/policies/pci_dss"
+        method: PUT
+        body: "{{ lookup('file', '/opt/shieldops/playbooks/policies/pci_dss.rego') }}"
+        headers:
+          Content-Type: text/plain
+        status_code: [200, 201]
+      when: opa_cluster_ip.rc == 0
+      ignore_errors: true
+
+    - name: Load GDPR policy into OPA
+      ansible.builtin.uri:
+        url: "http://{{ opa_cluster_ip.stdout }}:8181/v1/policies/gdpr"
+        method: PUT
+        body: "{{ lookup('file', '/opt/shieldops/playbooks/policies/gdpr.rego') }}"
+        headers:
+          Content-Type: text/plain
+        status_code: [200, 201]
+      when: opa_cluster_ip.rc == 0
+      ignore_errors: true
+
+    - name: Load FedRAMP policy into OPA
+      ansible.builtin.uri:
+        url: "http://{{ opa_cluster_ip.stdout }}:8181/v1/policies/fedramp"
+        method: PUT
+        body: "{{ lookup('file', '/opt/shieldops/playbooks/policies/fedramp.rego') }}"
+        headers:
+          Content-Type: text/plain
+        status_code: [200, 201]
+      when: opa_cluster_ip.rc == 0
+      ignore_errors: true
+
+    - name: Verify OPA policies loaded
+      ansible.builtin.uri:
+        url: "http://{{ opa_cluster_ip.stdout }}:8181/v1/policies"
+        method: GET
+        return_content: true
+      register: opa_policies_list
+      when: opa_cluster_ip.rc == 0
+      ignore_errors: true
+
+    - name: Display loaded OPA policies
+      ansible.builtin.debug:
+        msg: "OPA policies loaded: {{ opa_policies_list.json.result | map(attribute='id') | list }}"
+      when: opa_policies_list is defined and opa_policies_list.json is defined
+      ignore_errors: true
+
+# ============================================================================
+# PLAY 10: Health checks and smoke tests
+# ============================================================================
+- name: Health checks and smoke tests
+  hosts: master
+  become: true
+  tags: [healthcheck, smoke]
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    - name: Verify all nodes are Ready
+      ansible.builtin.command: k3s kubectl get nodes -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}'
+      register: node_status
+      failed_when: "'False' in node_status.stdout"
+      changed_when: false
+
+    - name: Display node status
+      ansible.builtin.command: k3s kubectl get nodes -o wide
+      register: nodes_output
+      changed_when: false
+
+    - name: Show node status
+      ansible.builtin.debug:
+        msg: "{{ nodes_output.stdout_lines }}"
+
+    - name: Verify ShieldOps pods are running
+      ansible.builtin.command: k3s kubectl get pods -n shieldops -o wide
+      register: pods_output
+      changed_when: false
+
+    - name: Show pod status
+      ansible.builtin.debug:
+        msg: "{{ pods_output.stdout_lines }}"
+
+    - name: Check ShieldOps API health endpoint
+      ansible.builtin.uri:
+        url: "http://localhost:30080/health"
+        method: GET
+        return_content: true
+        status_code: 200
+      register: health_check
+      retries: 5
+      delay: 10
+      ignore_errors: true
+
+    - name: Display API health status
+      ansible.builtin.debug:
+        msg: "API Health: {{ health_check.json | default('unreachable') }}"
+
+    - name: Check ShieldOps API readiness
+      ansible.builtin.uri:
+        url: "http://localhost:30080/ready"
+        method: GET
+        return_content: true
+        status_code: 200
+      register: ready_check
+      retries: 3
+      delay: 5
+      ignore_errors: true
+
+    - name: Verify PostgreSQL connectivity
+      ansible.builtin.command: >
+        k3s kubectl exec -n shieldops deploy/postgresql -c postgresql --
+        pg_isready -U {{ postgresql_username }} -d {{ postgresql_database }}
+      register: pg_ready
+      changed_when: false
+      ignore_errors: true
+
+    - name: Verify Redis connectivity
+      ansible.builtin.command: >
+        k3s kubectl exec -n shieldops deploy/redis-master --
+        redis-cli ping
+      register: redis_ready
+      changed_when: false
+      ignore_errors: true
+
+    - name: Verify Kafka brokers
+      ansible.builtin.command: >
+        k3s kubectl get pods -n shieldops -l app.kubernetes.io/name=kafka
+        -o jsonpath='{.items[*].status.phase}'
+      register: kafka_status
+      changed_when: false
+      ignore_errors: true
+
+    - name: Verify monitoring stack
+      ansible.builtin.command: k3s kubectl get pods -n monitoring
+      register: monitoring_pods
+      changed_when: false
+
+    - name: Show monitoring pods
+      ansible.builtin.debug:
+        msg: "{{ monitoring_pods.stdout_lines }}"
+
+    - name: Run smoke test - list agents
+      ansible.builtin.uri:
+        url: "http://localhost:30080/api/v1/agents"
+        method: GET
+        return_content: true
+        status_code: [200, 401]
+      register: agents_check
+      ignore_errors: true
+
+    - name: Deployment summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+          ShieldOps On-Premises Deployment Complete
+          ============================================================
+          Domain:      {{ shieldops_domain }}
+          API:         https://{{ shieldops_domain }}/api/v1
+          Dashboard:   https://{{ shieldops_domain }}/
+          Grafana:     http://{{ hostvars[groups['master'][0]]['ansible_host'] }}:30300
+          HAProxy:     http://{{ hostvars[groups['load_balancer'][0]]['ansible_host'] }}:8404/stats
+          K3s API:     https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:6443
+          ============================================================
+          Nodes:       {{ groups['k3s_cluster'] | length }}
+          PostgreSQL:  {{ 'OK' if pg_ready.rc == 0 else 'WARN' }}
+          Redis:       {{ 'OK' if redis_ready.rc == 0 else 'WARN' }}
+          Kafka:       {{ kafka_status.stdout | default('UNKNOWN') }}
+          API Health:  {{ health_check.status | default('UNREACHABLE') }}
+          ============================================================
