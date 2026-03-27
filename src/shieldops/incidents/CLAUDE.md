@@ -1,0 +1,13 @@
+# incidents/ — Incident Lifecycle Engines
+
+85+ engines for incident triage, escalation, postmortem, and on-call management.
+
+## Domains
+- Triage classification + routing
+- Escalation chains + notification
+- Postmortem analysis + lessons learned
+- On-call burden tracking
+- Notification management
+
+## Engine Pattern
+Same standard engine pattern. Use `add_record(**kwargs)`.
