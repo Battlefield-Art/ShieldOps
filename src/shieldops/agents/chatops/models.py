@@ -118,7 +118,7 @@ class ChatOpsState(BaseModel):
     processing_duration_ms: int = 0
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""
 
     # AI Security ChatOps
     security_commands_handled: list[dict[str, Any]] = Field(default_factory=list)

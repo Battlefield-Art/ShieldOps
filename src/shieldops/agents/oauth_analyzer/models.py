@@ -128,4 +128,4 @@ class OAuthAnalyzerState(BaseModel):
     current_step: str = "init"
     session_start: float = 0.0
     session_duration_ms: int = 0
-    error: str | None = None
+    error: str = ""

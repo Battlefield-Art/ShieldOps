@@ -106,7 +106,7 @@ class ResponseAction(BaseModel):
     result: dict[str, Any] = Field(default_factory=dict)
     started_at: str = ""
     completed_at: str = ""
-    error: str | None = None
+    error: str = ""
 
 
 class ValidationResult(BaseModel):
@@ -172,4 +172,4 @@ class AgenticMDRState(BaseModel):
     mean_time_to_respond_seconds: float = 0.0
     session_start: datetime | None = None
     session_duration_ms: int = 0
-    error: str | None = None
+    error: str = ""

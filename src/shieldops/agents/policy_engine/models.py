@@ -130,4 +130,4 @@ class PolicyEngineState(BaseModel):
     current_step: int = 0
     session_start: float = 0.0
     session_duration_ms: float = 0.0
-    error: str | None = None
+    error: str = ""

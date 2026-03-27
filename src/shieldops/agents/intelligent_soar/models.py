@@ -141,4 +141,4 @@ class IntelligentSOARState(BaseModel):
         default_factory=list,
     )
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

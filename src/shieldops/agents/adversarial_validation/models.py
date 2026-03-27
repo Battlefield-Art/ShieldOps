@@ -124,4 +124,4 @@ class AdversarialValidationState(BaseModel):
     current_step: str = "init"
     session_start: datetime | None = None
     session_duration_ms: int = 0
-    error: str | None = None
+    error: str = ""

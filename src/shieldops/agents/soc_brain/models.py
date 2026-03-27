@@ -127,7 +127,7 @@ class ExecutedAction(BaseModel):
     result: dict[str, Any] = Field(default_factory=dict)
     started_at: str = ""
     completed_at: str = ""
-    error: str | None = None
+    error: str = ""
 
 
 class ReasoningStep(BaseModel):
@@ -169,7 +169,7 @@ class SOCBrainState(BaseModel):
     current_step: str = "init"
     session_start: datetime | None = None
     session_duration_ms: int = 0
-    error: str | None = None
+    error: str = ""
 
     # Metrics
     mttd_ms: int = 0

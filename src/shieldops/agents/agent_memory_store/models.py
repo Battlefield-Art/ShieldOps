@@ -148,5 +148,5 @@ class AgentMemoryStoreState(BaseModel):
 
     # Metadata
     current_stage: str = "init"
-    error: str | None = None
+    error: str = ""
     processing_steps: list[dict[str, Any]] = Field(default_factory=list)

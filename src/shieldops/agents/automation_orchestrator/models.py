@@ -98,7 +98,7 @@ class ActionResult(BaseModel):
     status: str = "success"  # success, failed, skipped, timeout
     output: dict[str, Any] = Field(default_factory=dict)
     duration_ms: int = 0
-    error: str | None = None
+    error: str = ""
 
 
 class ReasoningStep(BaseModel):
@@ -138,4 +138,4 @@ class AutomationState(BaseModel):
     execution_duration_ms: int = 0
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

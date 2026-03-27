@@ -189,4 +189,4 @@ class DataThreatHuntingState(BaseModel):
         default_factory=list,
     )
     current_step: str = HuntStage.init
-    error: str | None = None
+    error: str = ""

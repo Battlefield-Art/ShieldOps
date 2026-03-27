@@ -80,4 +80,4 @@ class RemediationState(BaseModel):
     remediation_duration_ms: int = 0
     reasoning_chain: list[RemediationStep] = Field(default_factory=list)
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

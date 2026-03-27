@@ -129,7 +129,7 @@ class ResponseOrchestration(BaseModel):
     started_at: str = ""
     completed_at: str = ""
     outcome: str = ""
-    error: str | None = None
+    error: str = ""
 
 
 class OutcomeMeasurement(BaseModel):
@@ -219,7 +219,7 @@ class AutonomousSOCState(BaseModel):
     session_id: str = ""
     session_start: datetime | None = None
     session_duration_ms: int = 0
-    error: str | None = None
+    error: str = ""
 
     # Report
     report: dict[str, Any] = Field(

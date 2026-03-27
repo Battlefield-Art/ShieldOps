@@ -65,7 +65,7 @@ class DelegatedTask(BaseModel):
     status: TaskStatus = TaskStatus.PENDING
     input_data: dict[str, Any] = Field(default_factory=dict)
     result: dict[str, Any] | None = None
-    error: str | None = None
+    error: str = ""
     started_at: datetime | None = None
     completed_at: datetime | None = None
     duration_ms: int = 0
@@ -134,7 +134,7 @@ class SupervisorState(BaseModel):
     session_duration_ms: int = 0
     reasoning_chain: list[SupervisorStep] = Field(default_factory=list)
     current_step: str = "pending"
-    error: str | None = None
+    error: str = ""
 
     # AI Security orchestration
     ai_security_scan_results: dict[str, Any] = Field(default_factory=dict)

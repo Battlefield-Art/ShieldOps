@@ -105,4 +105,4 @@ class LearningState(BaseModel):
     learning_duration_ms: int = 0
     reasoning_chain: list[LearningStep] = Field(default_factory=list)
     current_step: str = "pending"
-    error: str | None = None
+    error: str = ""

@@ -142,4 +142,4 @@ class FileIntegrityMonitorState(BaseModel):
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     started_at: float = 0.0
     duration_ms: int = 0
-    error: str | None = None
+    error: str = ""

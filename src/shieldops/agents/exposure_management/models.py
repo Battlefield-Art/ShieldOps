@@ -175,4 +175,4 @@ class ExposureManagementState(BaseModel):
         default_factory=list,
     )
     current_stage: str = "init"
-    error: str | None = None
+    error: str = ""

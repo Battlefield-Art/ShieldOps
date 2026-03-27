@@ -23,7 +23,7 @@ class DriftType(StrEnum):
     CONFIG_DRIFT = "config_drift"
     RESOURCE_DRIFT = "resource_drift"
     POLICY_DRIFT = "policy_drift"
-    SECRET_DRIFT = "secret_drift"
+    SECRET_DRIFT = "secret_drift"  # noqa: S105
     VERSION_DRIFT = "version_drift"
 
 
@@ -66,7 +66,7 @@ class ApplyResult(BaseModel):
     success: bool
     duration_seconds: float = 0.0
     rollback_available: bool = False
-    error: str | None = None
+    error: str = ""
 
 
 class GitOpsState(BaseModel):
@@ -100,7 +100,7 @@ class GitOpsState(BaseModel):
     reasoning_chain: list[dict[str, Any]] = Field(default_factory=list)
 
     # Metadata
-    error: str | None = None
+    error: str = ""
     current_step: str = "init"
     started_at: datetime | None = None
     duration_ms: int = 0

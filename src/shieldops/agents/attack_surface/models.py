@@ -67,4 +67,4 @@ class AttackSurfaceState(BaseModel):
     session_duration_ms: int = 0
     reasoning_chain: list[SurfaceReasoningStep] = Field(default_factory=list)
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

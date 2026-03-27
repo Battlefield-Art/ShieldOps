@@ -149,4 +149,4 @@ class AISOCAssistantState(BaseModel):
     # Workflow tracking
     session_start: datetime | None = None
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

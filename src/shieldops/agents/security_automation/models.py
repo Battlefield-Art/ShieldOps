@@ -23,7 +23,7 @@ class ContainmentAction(StrEnum):
     BLOCK_IP = "block_ip"
     DISABLE_ACCOUNT = "disable_account"
     QUARANTINE_FILE = "quarantine_file"
-    REVOKE_TOKEN = "revoke_token"
+    REVOKE_TOKEN = "revoke_token"  # noqa: S105
     NONE = "none"
 
 
@@ -131,4 +131,4 @@ class SecurityAutomationState(BaseModel):
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     autonomous_threshold: float = 0.85
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

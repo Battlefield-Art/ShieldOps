@@ -159,4 +159,4 @@ class RansomwareForensicsState(BaseModel):
     session_start: datetime | None = None
     session_duration_ms: int = 0
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
-    error: str | None = None
+    error: str = ""

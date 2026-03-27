@@ -134,5 +134,5 @@ class ChaosEngineeringState(BaseModel):
     # Metadata
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     current_stage: str = "init"
-    error: str | None = None
+    error: str = ""
     duration_ms: int = 0

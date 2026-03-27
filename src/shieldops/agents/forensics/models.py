@@ -60,4 +60,4 @@ class ForensicsState(BaseModel):
     session_duration_ms: int = 0
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

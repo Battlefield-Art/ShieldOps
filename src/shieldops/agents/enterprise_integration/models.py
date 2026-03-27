@@ -100,7 +100,7 @@ class SyncEvent(BaseModel):
     status: str  # success, failed, partial
     timestamp: datetime
     duration_ms: int = 0
-    error: str | None = None
+    error: str = ""
 
 
 class DiagnosticFinding(BaseModel):
@@ -148,4 +148,4 @@ class IntegrationState(BaseModel):
     processing_duration_ms: int = 0
     reasoning_chain: list[ReasoningStep] = Field(default_factory=list)
     current_step: str = "init"
-    error: str | None = None
+    error: str = ""

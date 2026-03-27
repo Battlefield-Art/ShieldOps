@@ -76,4 +76,4 @@ class PredictionState(BaseModel):
     prediction_start: datetime | None = None
     prediction_duration_ms: int = 0
     reasoning_chain: list[dict[str, Any]] = Field(default_factory=list)
-    error: str | None = None
+    error: str = ""
