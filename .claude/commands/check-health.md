@@ -1,573 +1,88 @@
 # Check Health Skill
 
-Run health checks on all ShieldOps platform dependencies.
+Run health checks on ShieldOps platform — environment, services, code quality, tests, and engine modules.
 
 ## Usage
-`/check-health [--fix]`
+`/check-health [--scope <env|services|code|tests|engines|all>] [--fix]`
+
+## Agents Used
+- `sla_monitor` — SLO compliance and error budget monitoring
+- `config_validator` — Configuration baseline compliance
+- `observability_intelligence` — Platform observability health
 
 ## Process
 
-1. **Check Python environment**:
-   - Verify Python 3.12+: `python3 --version`
-   - Check virtual env: verify `.venv` or `VIRTUAL_ENV` is set
-   - Validate dependencies: `pip check` for conflicts
+### 1. Check Python Environment
+- Verify Python 3.12+: `python3 --version`
+- Check virtual env: verify `.venv` or `VIRTUAL_ENV` is set
+- Validate dependencies: `pip check` for conflicts
 
-2. **Check service dependencies**:
-   - PostgreSQL: `pg_isready -h localhost -p 5432` or connect test
-   - Redis: `redis-cli ping`
-   - OPA: `curl http://localhost:8181/health`
-   - Kafka: Check `docker ps` for kafka container
+### 2. Check Service Dependencies
+- PostgreSQL: `pg_isready -h localhost -p 5432` or connect test
+- Redis: `redis-cli ping`
+- OPA: `curl http://localhost:8181/health`
+- Kafka: Check `docker ps` for kafka container
 
-3. **Check code quality**:
-   - Lint: `python3 -m ruff check src/ tests/`
-   - Format: `python3 -m ruff format --check src/ tests/`
-   - Type check: `python3 -m mypy src/shieldops/ --ignore-missing-imports`
+### 3. Check Code Quality
+- Lint: `python3 -m ruff check src/ tests/`
+- Format: `python3 -m ruff format --check src/ tests/`
+- Type check: `python3 -m mypy src/shieldops/ --ignore-missing-imports`
 
-4. **Run test suite**:
-   - Unit tests: `python3 -m pytest tests/unit/ -v --tb=short`
-   - Integration tests: `python3 -m pytest tests/integration/ -v --tb=short`
-   - Report: total tests, passed, failed, coverage
+### 4. Run Test Suite
+- Unit tests: `python3 -m pytest tests/unit/ -v --tb=short`
+- Integration tests: `python3 -m pytest tests/integration/ -v --tb=short`
+- Report: total tests, passed, failed, coverage
 
-5. **Platform feature health** (Phase 11–58 modules):
-   - Capacity trends: `src/shieldops/analytics/capacity_trends.py` — CapacityTrendAnalyzer
-   - SRE metrics: `src/shieldops/analytics/sre_metrics.py` — SREMetricsAggregator
-   - Health reports: `src/shieldops/observability/health_report.py` — ServiceHealthReportGenerator
-   - Cost forecasts: `src/shieldops/billing/cost_forecast.py` — CostForecastEngine
-   - Deployment risk: `src/shieldops/changes/deployment_risk.py` — DeploymentRiskPredictor
-   - Incident clustering: `src/shieldops/analytics/incident_clustering.py` — IncidentClusteringEngine
-   - Tenant isolation: `src/shieldops/policy/tenant_isolation.py` — TenantResourceIsolationManager
-   - Alert noise: `src/shieldops/observability/alert_noise.py` — AlertNoiseAnalyzer
-   - Threshold tuner: `src/shieldops/observability/threshold_tuner.py` — ThresholdTuningEngine
-   - Severity predictor: `src/shieldops/incidents/severity_predictor.py` — IncidentSeverityPredictor
-   - Impact analyzer: `src/shieldops/topology/impact_analyzer.py` — ServiceDependencyImpactAnalyzer
-   - Config audit: `src/shieldops/audit/config_audit.py` — ConfigurationAuditTrail
-   - Deployment velocity: `src/shieldops/analytics/deployment_velocity.py` — DeploymentVelocityTracker
-   - Compliance automation: `src/shieldops/compliance/automation_rules.py` — ComplianceAutomationEngine
-   - Knowledge base: `src/shieldops/knowledge/article_manager.py` — KnowledgeBaseManager
-   - On-call fatigue: `src/shieldops/incidents/oncall_fatigue.py` — OnCallFatigueAnalyzer
-   - Backup verification: `src/shieldops/observability/backup_verification.py` — BackupVerificationEngine
-   - Cost tag enforcer: `src/shieldops/billing/cost_tag_enforcer.py` — CostAllocationTagEnforcer
-   - DR readiness: `src/shieldops/observability/dr_readiness.py` — DisasterRecoveryReadinessTracker
-   - Service catalog: `src/shieldops/topology/service_catalog.py` — ServiceCatalogManager
-   - Contract testing: `src/shieldops/api/contract_testing.py` — APIContractTestingEngine
-   - Orphan detector: `src/shieldops/billing/orphan_detector.py` — OrphanedResourceDetector
-   - Latency profiler: `src/shieldops/analytics/latency_profiler.py` — ServiceLatencyProfiler
-   - License scanner: `src/shieldops/compliance/license_scanner.py` — DependencyLicenseScanner
-   - Release manager: `src/shieldops/changes/release_manager.py` — ReleaseManagementTracker
-   - Budget manager: `src/shieldops/billing/budget_manager.py` — InfrastructureCostBudgetManager
-   - Config parity: `src/shieldops/config/parity_validator.py` — ConfigurationParityValidator
-   - Incident dedup: `src/shieldops/incidents/dedup_engine.py` — IncidentDeduplicationEngine
-   - Access certification: `src/shieldops/compliance/access_certification.py` — AccessCertificationManager
-   - Toil tracker: `src/shieldops/analytics/toil_tracker.py` — ToilMeasurementTracker
-   - Trace analyzer: `src/shieldops/analytics/trace_analyzer.py` — DistributedTraceAnalyzer
-   - Log anomaly: `src/shieldops/analytics/log_anomaly.py` — LogAnomalyDetector
-   - Event correlation: `src/shieldops/analytics/event_correlation.py` — EventCorrelationEngine
-   - Security incidents: `src/shieldops/security/incident_response.py` — SecurityIncidentResponseTracker
-   - Vuln lifecycle: `src/shieldops/security/vuln_lifecycle.py` — VulnerabilityLifecycleManager
-   - API security: `src/shieldops/security/api_security.py` — APISecurityMonitor
-   - Tag governance: `src/shieldops/billing/tag_governance.py` — ResourceTagGovernanceEngine
-   - Team performance: `src/shieldops/analytics/team_performance.py` — TeamPerformanceAnalyzer
-   - Runbook engine: `src/shieldops/operations/runbook_engine.py` — RunbookExecutionEngine
-   - Dependency scorer: `src/shieldops/topology/dependency_scorer.py` — DependencyHealthScorer
-   - Burn predictor: `src/shieldops/sla/burn_predictor.py` — SLOBurnRatePredictor
-   - Change intelligence: `src/shieldops/changes/change_intelligence.py` — ChangeIntelligenceAnalyzer
-   - DB performance: `src/shieldops/analytics/db_performance.py` — DatabasePerformanceAnalyzer
-   - Queue health: `src/shieldops/observability/queue_health.py` — QueueHealthMonitor
-   - Cert monitor: `src/shieldops/security/cert_monitor.py` — CertificateExpiryMonitor
-   - Network flow: `src/shieldops/security/network_flow.py` — NetworkFlowAnalyzer
-   - DNS health: `src/shieldops/observability/dns_health.py` — DNSHealthMonitor
-   - Escalation analyzer: `src/shieldops/incidents/escalation_analyzer.py` — EscalationPatternAnalyzer
-   - Right sizer: `src/shieldops/billing/right_sizer.py` — CapacityRightSizer
-   - Storage optimizer: `src/shieldops/billing/storage_optimizer.py` — StorageTierOptimizer
-   - Resource lifecycle: `src/shieldops/billing/resource_lifecycle.py` — ResourceLifecycleTracker
-   - Alert routing: `src/shieldops/observability/alert_routing.py` — AlertRoutingOptimizer
-   - SLO advisor: `src/shieldops/sla/slo_advisor.py` — SLOTargetAdvisor
-   - Workload scheduler: `src/shieldops/operations/workload_scheduler.py` — WorkloadSchedulingOptimizer
-   - Cascade predictor: `src/shieldops/topology/cascade_predictor.py` — CascadingFailurePredictor
-   - Resilience scorer: `src/shieldops/observability/resilience_scorer.py` — ResilienceScoreCalculator
-   - Timeline reconstructor: `src/shieldops/incidents/timeline_reconstructor.py` — IncidentTimelineReconstructor
-   - RI optimizer: `src/shieldops/billing/reserved_instance_optimizer.py` — ReservedInstanceOptimizer
-   - Cost anomaly RCA: `src/shieldops/billing/cost_anomaly_rca.py` — CostAnomalyRootCauseAnalyzer
-   - Spend allocation: `src/shieldops/billing/spend_allocation.py` — SpendAllocationEngine
-   - Container scanner: `src/shieldops/security/container_scanner.py` — ContainerImageScanner
-   - Cloud posture: `src/shieldops/security/cloud_posture_manager.py` — CloudSecurityPostureManager
-   - Secrets detector: `src/shieldops/security/secrets_detector.py` — SecretsSprawlDetector
-   - Runbook effectiveness: `src/shieldops/operations/runbook_effectiveness.py` — RunbookEffectivenessAnalyzer
-   - API deprecation: `src/shieldops/analytics/api_deprecation_tracker.py` — APIDeprecationTracker
-   - Dependency freshness: `src/shieldops/analytics/dependency_freshness.py` — DependencyFreshnessMonitor
-   - Chaos designer: `src/shieldops/observability/chaos_designer.py` — ChaosExperimentDesigner
-   - Game day planner: `src/shieldops/operations/game_day_planner.py` — GameDayPlanner
-   - Failure mode catalog: `src/shieldops/topology/failure_mode_catalog.py` — FailureModeCatalog
-   - On-call optimizer: `src/shieldops/incidents/oncall_optimizer.py` — OnCallRotationOptimizer
-   - Alert correlation rules: `src/shieldops/observability/alert_correlation_rules.py` — AlertCorrelationRuleEngine
-   - Incident review board: `src/shieldops/incidents/review_board.py` — IncidentReviewBoard
-   - Commitment planner: `src/shieldops/billing/commitment_planner.py` — CloudCommitmentPlanner
-   - Cost simulator: `src/shieldops/billing/cost_simulator.py` — CostSimulationEngine
-   - FinOps maturity: `src/shieldops/billing/finops_maturity.py` — FinOpsMaturityScorer
-   - Change failure tracker: `src/shieldops/changes/change_failure_tracker.py` — ChangeFailureRateTracker
-   - Toil recommender: `src/shieldops/operations/toil_recommender.py` — ToilAutomationRecommender
-   - SLI pipeline: `src/shieldops/sla/sli_pipeline.py` — SLICalculationPipeline
-   - Deployment cadence: `src/shieldops/analytics/deployment_cadence.py` — DeploymentCadenceAnalyzer
-   - Metric baseline: `src/shieldops/observability/metric_baseline.py` — MetricBaselineManager
-   - Incident timeline: `src/shieldops/incidents/incident_timeline.py` — IncidentTimelineAnalyzer
-   - Service health agg: `src/shieldops/topology/service_health_agg.py` — ServiceHealthAggregator
-   - Alert fatigue: `src/shieldops/observability/alert_fatigue.py` — AlertFatigueScorer
-   - Change window: `src/shieldops/changes/change_window.py` — ChangeWindowOptimizer
-   - Resource waste: `src/shieldops/billing/resource_waste.py` — ResourceWasteDetector
-   - Evidence chain: `src/shieldops/compliance/evidence_chain.py` — ComplianceEvidenceChain
-   - Dependency update planner: `src/shieldops/topology/dependency_update_planner.py` — DependencyUpdatePlanner
-   - Capacity forecast engine: `src/shieldops/analytics/capacity_forecast_engine.py` — CapacityForecastEngine
-   - Runbook versioner: `src/shieldops/operations/runbook_versioner.py` — RunbookVersionManager
-   - Team skill matrix: `src/shieldops/operations/team_skill_matrix.py` — TeamSkillMatrix
-   - Error budget policy: `src/shieldops/sla/error_budget_policy.py` — ErrorBudgetPolicyEngine
-   - Reliability target: `src/shieldops/sla/reliability_target.py` — ReliabilityTargetAdvisor
-   - Severity calibrator: `src/shieldops/incidents/severity_calibrator.py` — IncidentSeverityCalibrator
-   - Dependency mapper: `src/shieldops/topology/dependency_mapper.py` — ServiceDependencyMapper
-   - Alert rule linter: `src/shieldops/observability/alert_rule_linter.py` — AlertRuleLinter
-   - Deployment gate: `src/shieldops/changes/deployment_gate.py` — DeploymentApprovalGate
-   - Billing reconciler: `src/shieldops/billing/billing_reconciler.py` — CloudBillingReconciler
-   - Chargeback engine: `src/shieldops/billing/chargeback_engine.py` — CostChargebackEngine
-   - Compliance drift: `src/shieldops/compliance/compliance_drift.py` — ComplianceDriftDetector
-   - Comm planner: `src/shieldops/incidents/comm_planner.py` — IncidentCommunicationPlanner
-   - Infra drift reconciler: `src/shieldops/operations/infra_drift_reconciler.py` — InfrastructureDriftReconciler
-   - Service maturity: `src/shieldops/topology/service_maturity.py` — ServiceMaturityModel
-   - Capacity right-timing: `src/shieldops/operations/capacity_right_timing.py` — CapacityRightTimingAdvisor
-   - Outage predictor: `src/shieldops/observability/outage_predictor.py` — PredictiveOutageDetector
-   - Impact quantifier: `src/shieldops/incidents/impact_quantifier.py` — IncidentImpactQuantifier
-   - Policy violation tracker: `src/shieldops/compliance/policy_violation_tracker.py` — PolicyViolationTracker
-   - Deploy health scorer: `src/shieldops/changes/deploy_health_scorer.py` — DeploymentHealthScorer
-   - Runbook gap analyzer: `src/shieldops/operations/runbook_gap_analyzer.py` — RunbookGapAnalyzer
-   - Credential expiry forecaster: `src/shieldops/security/credential_expiry_forecaster.py` — CredentialExpiryForecaster
-   - On-call workload balancer: `src/shieldops/incidents/oncall_workload_balancer.py` — OnCallWorkloadBalancer
-   - Cost anomaly predictor: `src/shieldops/billing/cost_anomaly_predictor.py` — CostAnomalyPredictor
-   - Evidence scheduler: `src/shieldops/compliance/evidence_scheduler.py` — ComplianceEvidenceScheduler
-   - Latency budget tracker: `src/shieldops/analytics/latency_budget_tracker.py` — LatencyBudgetTracker
-   - Change conflict detector: `src/shieldops/changes/change_conflict_detector.py` — ChangeConflictDetector
-   - Duration predictor: `src/shieldops/incidents/duration_predictor.py` — IncidentDurationPredictor
-   - Resource exhaustion: `src/shieldops/analytics/resource_exhaustion.py` — ResourceExhaustionForecaster
-   - Alert storm correlator: `src/shieldops/observability/alert_storm_correlator.py` — AlertStormCorrelator
-   - Canary analyzer: `src/shieldops/changes/canary_analyzer.py` — DeploymentCanaryAnalyzer
-   - SLA cascader: `src/shieldops/sla/sla_cascader.py` — ServiceSLACascader
-   - Handoff tracker: `src/shieldops/incidents/handoff_tracker.py` — IncidentHandoffTracker
-   - Unit economics: `src/shieldops/billing/unit_economics.py` — CostUnitEconomicsEngine
-   - Idle resource detector: `src/shieldops/billing/idle_resource_detector.py` — IdleResourceDetector
-   - Penalty calculator: `src/shieldops/sla/penalty_calculator.py` — SLAPenaltyCalculator
-   - Posture trend: `src/shieldops/security/posture_trend.py` — SecurityPostureTrendAnalyzer
-   - Evidence freshness: `src/shieldops/compliance/evidence_freshness.py` — EvidenceFreshnessMonitor
-   - Access anomaly: `src/shieldops/security/access_anomaly.py` — AccessAnomalyDetector
-   - Response advisor: `src/shieldops/incidents/response_advisor.py` — IncidentResponseAdvisor
-   - Metric RCA: `src/shieldops/analytics/metric_rca.py` — MetricRootCauseAnalyzer
-   - SLO forecast: `src/shieldops/sla/slo_forecast.py` — SLOComplianceForecaster
-   - Remediation decision: `src/shieldops/operations/remediation_decision.py` — AutoRemediationDecisionEngine
-   - Dependency lag: `src/shieldops/topology/dependency_lag.py` — DependencyLagMonitor
-   - Escalation effectiveness: `src/shieldops/incidents/escalation_effectiveness.py` — EscalationEffectivenessTracker
-   - Discount optimizer: `src/shieldops/billing/discount_optimizer.py` — CloudDiscountOptimizer
-   - Audit trail analyzer: `src/shieldops/compliance/audit_trail_analyzer.py` — ComplianceAuditTrailAnalyzer
-   - Velocity throttle: `src/shieldops/changes/velocity_throttle.py` — ChangeVelocityThrottle
-   - Alert tuning feedback: `src/shieldops/observability/alert_tuning_feedback.py` — AlertTuningFeedbackLoop
-   - Knowledge decay: `src/shieldops/knowledge/knowledge_decay.py` — KnowledgeDecayDetector
-   - Coverage scorer: `src/shieldops/observability/coverage_scorer.py` — ObservabilityCoverageScorer
-   - Cardinality manager: `src/shieldops/observability/cardinality_manager.py` — MetricCardinalityManager
-   - Log retention optimizer: `src/shieldops/observability/log_retention_optimizer.py` — LogRetentionOptimizer
-   - Dashboard quality: `src/shieldops/observability/dashboard_quality.py` — DashboardQualityScorer
-   - Action tracker: `src/shieldops/incidents/action_tracker.py` — PostIncidentActionTracker
-   - Deployment confidence: `src/shieldops/changes/deployment_confidence.py` — DeploymentConfidenceScorer
-   - Reliability regression: `src/shieldops/sla/reliability_regression.py` — ReliabilityRegressionDetector
-   - Permission drift: `src/shieldops/security/permission_drift.py` — PermissionDriftDetector
-   - Flag lifecycle: `src/shieldops/config/flag_lifecycle.py` — FeatureFlagLifecycleManager
-   - API version health: `src/shieldops/topology/api_version_health.py` — APIVersionHealthMonitor
-   - SRE maturity: `src/shieldops/operations/sre_maturity.py` — SREMaturityAssessor
-   - Learning tracker: `src/shieldops/incidents/learning_tracker.py` — IncidentLearningTracker
-   - Cache effectiveness: `src/shieldops/analytics/cache_effectiveness.py` — CacheEffectivenessAnalyzer
-   - Build pipeline: `src/shieldops/analytics/build_pipeline.py` — BuildPipelineAnalyzer
-   - Review velocity: `src/shieldops/analytics/review_velocity.py` — CodeReviewVelocityTracker
-   - Dev environment: `src/shieldops/operations/dev_environment.py` — DevEnvironmentHealthMonitor
-   - Traffic pattern: `src/shieldops/topology/traffic_pattern.py` — TrafficPatternAnalyzer
-   - Rate limit policy: `src/shieldops/topology/rate_limit_policy.py` — RateLimitPolicyManager
-   - Circuit breaker health: `src/shieldops/topology/circuit_breaker_health.py` — CircuitBreakerHealthMonitor
-   - Data pipeline: `src/shieldops/observability/data_pipeline.py` — DataPipelineReliabilityMonitor
-   - Queue depth forecast: `src/shieldops/observability/queue_depth_forecast.py` — QueueDepthForecaster
-   - Connection pool: `src/shieldops/analytics/connection_pool.py` — ConnectionPoolMonitor
-   - License risk: `src/shieldops/compliance/license_risk.py` — DependencyLicenseRiskAnalyzer
-   - Comm effectiveness: `src/shieldops/incidents/comm_effectiveness.py` — CommEffectivenessAnalyzer
-   - Readiness scorer: `src/shieldops/operations/readiness_scorer.py` — OperationalReadinessScorer
-   - Auto triage: `src/shieldops/incidents/auto_triage.py` — IncidentAutoTriageEngine
-   - Self healing: `src/shieldops/operations/self_healing.py` — SelfHealingOrchestrator
-   - Recurrence pattern: `src/shieldops/incidents/recurrence_pattern.py` — RecurrencePatternDetector
-   - Policy impact: `src/shieldops/compliance/policy_impact.py` — PolicyImpactScorer
-   - Audit intelligence: `src/shieldops/audit/audit_intelligence.py` — AuditIntelligenceAnalyzer
-   - Automation gap: `src/shieldops/operations/automation_gap.py` — AutomationGapIdentifier
-   - Capacity demand: `src/shieldops/analytics/capacity_demand.py` — CapacityDemandModeler
-   - Spot advisor: `src/shieldops/billing/spot_advisor.py` — SpotInstanceAdvisor
-   - Scaling efficiency: `src/shieldops/operations/scaling_efficiency.py` — ScalingEfficiencyTracker
-   - Reliability antipattern: `src/shieldops/topology/reliability_antipattern.py` — ReliabilityAntiPatternDetector
-   - Error budget forecast: `src/shieldops/sla/error_budget_forecast.py` — ErrorBudgetForecaster
-   - Dependency risk: `src/shieldops/topology/dependency_risk.py` — DependencyRiskScorer
-   - Incident similarity: `src/shieldops/incidents/incident_similarity.py` — IncidentSimilarityEngine
-   - Incident cost: `src/shieldops/incidents/incident_cost.py` — IncidentCostCalculator
-   - Followup tracker: `src/shieldops/incidents/followup_tracker.py` — PostIncidentFollowupTracker
-   - Cognitive load: `src/shieldops/operations/cognitive_load.py` — TeamCognitiveLoadTracker
-   - Collaboration scorer: `src/shieldops/analytics/collaboration_scorer.py` — CrossTeamCollaborationScorer
-   - Contribution tracker: `src/shieldops/knowledge/contribution_tracker.py` — KnowledgeContributionTracker
-   - API performance: `src/shieldops/analytics/api_performance.py` — APIPerformanceProfiler
-   - Resource contention: `src/shieldops/analytics/resource_contention.py` — ResourceContentionDetector
-   - Rollback analyzer: `src/shieldops/changes/rollback_analyzer.py` — DeploymentRollbackAnalyzer
-   - Attack surface: `src/shieldops/security/attack_surface.py` — AttackSurfaceMonitor
-   - Runbook recommender: `src/shieldops/operations/runbook_recommender.py` — RunbookRecommendationEngine
-   - Reliability scorecard: `src/shieldops/sla/reliability_scorecard.py` — PlatformReliabilityScorecard
-   - LLM cost tracker: `src/shieldops/billing/llm_cost_tracker.py` — LLMTokenCostTracker
-   - Cloud arbitrage: `src/shieldops/billing/cloud_arbitrage.py` — CloudCostArbitrageAnalyzer
-   - Observability cost: `src/shieldops/observability/observability_cost.py` — ObservabilityCostAllocator
-   - Lead time analyzer: `src/shieldops/changes/lead_time_analyzer.py` — ChangeLeadTimeAnalyzer
-   - Flag impact: `src/shieldops/config/flag_impact.py` — FeatureFlagImpactAnalyzer
-   - Deployment dependency: `src/shieldops/changes/deployment_dependency.py` — DeploymentDependencyTracker
-   - Postmortem quality: `src/shieldops/incidents/postmortem_quality.py` — PostmortemQualityScorer
-   - DR drill tracker: `src/shieldops/operations/dr_drill_tracker.py` — DRDrillTracker
-   - Escalation optimizer: `src/shieldops/incidents/escalation_optimizer.py` — IncidentEscalationPathOptimizer
-   - Tenant quota: `src/shieldops/operations/tenant_quota.py` — TenantResourceQuotaManager
-   - Decision audit: `src/shieldops/audit/decision_audit.py` — DecisionAuditLogger
-   - Retention policy: `src/shieldops/observability/retention_policy.py` — DataRetentionPolicyManager
-   - Incident replay: `src/shieldops/incidents/incident_replay.py` — IncidentReplayEngine
-   - Response timer: `src/shieldops/incidents/response_timer.py` — IncidentResponseTimer
-   - SLO aggregator: `src/shieldops/sla/slo_aggregator.py` — SLOAggregationEngine
-   - Network latency: `src/shieldops/analytics/network_latency.py` — NetworkLatencyAnalyzer
-   - Change freeze: `src/shieldops/changes/change_freeze.py` — ChangeFreezePolicyManager
-   - Pipeline analyzer: `src/shieldops/analytics/pipeline_analyzer.py` — PipelinePerformanceAnalyzer
-   - Release readiness: `src/shieldops/changes/release_readiness.py` — ReleaseReadinessValidator
-   - Ownership tracker: `src/shieldops/operations/ownership_tracker.py` — ServiceOwnershipTracker
-   - Config validator: `src/shieldops/config/config_validator.py` — ConfigurationValidator
-   - Observability gap: `src/shieldops/observability/observability_gap.py` — ObservabilityGapAnalyzer
-   - **Phase 36 (Planned):** Twilio SMS gateway, Twilio voice alerts, Teams notifier, agent swarm coordinator, agent consensus engine, agent knowledge mesh, risk signal aggregator, dynamic risk scorer, predictive alert engine, agent token optimizer, prompt cache manager, agent routing optimizer
-   - **Phase 37 (Planned):** Threat hunt orchestrator, security response automator, zero trust verifier, remediation pipeline orchestrator, recovery coordinator, runbook chain executor, SLO auto-scaler, reliability automation engine, incident prevention engine, cross-agent policy enforcer, agent telemetry analyzer, agent compliance auditor
-   - **Phase 38 (Planned):** War room orchestrator, root cause verifier, comm automator, security posture simulator, credential rotation orchestrator, compliance evidence automator, chaos experiment automator, multi-region failover coordinator, capacity burst manager, platform cost optimizer, service mesh intelligence, operational runbook generator
-   - **Phase 39 (Planned):** Breach predictor, error budget allocator, dependency topology analyzer, infra capacity planner, DNS health monitor, drift analyzer, deployment impact analyzer, governance dashboard
-   - **Phase 40:** Incident replay engine, incident response timer, SLO aggregator, network latency mapper, platform health index, observability gap detector, capacity anomaly detector, change freeze manager, deployment pipeline analyzer, release readiness checker, config validation engine
-   - **Phase 41:** Vendor lock-in analyzer: `src/shieldops/billing/vendor_lockin.py` — VendorLockinAnalyzer
-   - Cost efficiency scorer: `src/shieldops/billing/cost_efficiency.py` — CostEfficiencyScorer
-   - Budget variance tracker: `src/shieldops/billing/budget_variance.py` — BudgetVarianceTracker
-   - Compliance evidence validator: `src/shieldops/compliance/evidence_validator.py` — ComplianceEvidenceValidator
-   - Policy enforcement monitor: `src/shieldops/compliance/policy_enforcer.py` — PolicyEnforcementMonitor
-   - Audit readiness scorer: `src/shieldops/audit/audit_readiness.py` — AuditReadinessScorer
-   - Operational toil classifier: `src/shieldops/operations/toil_classifier.py` — OperationalToilClassifier
-   - Platform governance scorer: `src/shieldops/policy/governance_scorer.py` — PlatformGovernanceScorer
-   - Service deprecation tracker: `src/shieldops/topology/deprecation_tracker.py` — ServiceDeprecationTracker
-   - Incident severity validator: `src/shieldops/incidents/severity_validator.py` — IncidentSeverityValidator
-   - Change approval analyzer: `src/shieldops/changes/approval_analyzer.py` — ChangeApprovalAnalyzer
-   - SLO compliance checker: `src/shieldops/sla/slo_compliance.py` — SLOComplianceChecker
-   - **Phase 42:** Alert dedup: `src/shieldops/observability/alert_dedup.py` — AlertDeduplicationEngine
-   - Incident priority ranker: `src/shieldops/incidents/priority_ranker.py` — IncidentPriorityRanker
-   - Deploy frequency analyzer: `src/shieldops/changes/deploy_frequency.py` — DeploymentFrequencyAnalyzer
-   - Infra cost allocator: `src/shieldops/billing/infra_cost_allocator.py` — InfrastructureCostAllocator
-   - Team velocity tracker: `src/shieldops/analytics/team_velocity.py` — TeamVelocityTracker
-   - Service comm mapper: `src/shieldops/topology/comm_mapper.py` — ServiceCommunicationMapper
-   - Compliance automation scorer: `src/shieldops/compliance/automation_scorer.py` — ComplianceAutomationScorer
-   - Predictive scaling advisor: `src/shieldops/operations/scaling_advisor.py` — PredictiveScalingAdvisor
-   - Error pattern classifier: `src/shieldops/analytics/error_classifier.py` — ErrorPatternClassifier
-   - Security compliance bridge: `src/shieldops/security/compliance_bridge.py` — SecurityComplianceBridge
-   - Capacity utilization scorer: `src/shieldops/analytics/utilization_scorer.py` — CapacityUtilizationScorer
-   - Incident knowledge linker: `src/shieldops/incidents/knowledge_linker.py` — IncidentKnowledgeLinker
-   - **Phase 43:** Dep vuln mapper: `src/shieldops/topology/dep_vuln_mapper.py` — DependencyVulnerabilityMapper
-   - Incident trend forecaster: `src/shieldops/incidents/trend_forecaster.py` — IncidentTrendForecaster
-   - Change risk predictor: `src/shieldops/changes/risk_predictor.py` — ChangeRiskPredictor
-   - Cost optimization planner: `src/shieldops/billing/optimization_planner.py` — CostOptimizationPlanner
-   - Alert noise classifier: `src/shieldops/observability/noise_classifier.py` — AlertNoiseClassifier
-   - SLA impact analyzer: `src/shieldops/sla/impact_analyzer.py` — SLAImpactAnalyzer
-   - Runbook coverage analyzer: `src/shieldops/operations/runbook_coverage.py` — RunbookCoverageAnalyzer
-   - Security posture benchmarker: `src/shieldops/security/posture_benchmark.py` — SecurityPostureBenchmarker
-   - Team workload balancer: `src/shieldops/operations/workload_balancer.py` — TeamWorkloadBalancer
-   - Compliance report automator: `src/shieldops/compliance/report_automator.py` — ComplianceReportAutomator
-   - Infrastructure health scorer: `src/shieldops/topology/infra_health_scorer.py` — InfrastructureHealthScorer
-   - Deployment impact predictor: `src/shieldops/changes/impact_predictor.py` — DeploymentImpactPredictor
-   - **Phase 44:** Response time analyzer: `src/shieldops/incidents/response_time.py` — IncidentResponseTimeAnalyzer
-   - Service dep risk scorer: `src/shieldops/topology/service_dep_risk.py` — ServiceDependencyRiskScorer
-   - Alert escalation analyzer: `src/shieldops/observability/escalation_analyzer.py` — AlertEscalationAnalyzer
-   - Capacity utilization optimizer: `src/shieldops/billing/capacity_utilizer.py` — CapacityUtilizationOptimizer
-   - Change freeze validator: `src/shieldops/changes/freeze_validator.py` — ChangeFreezeValidator
-   - Platform availability tracker: `src/shieldops/sla/availability_tracker.py` — PlatformAvailabilityTracker
-   - Root cause classifier: `src/shieldops/incidents/root_cause_classifier.py` — IncidentRootCauseClassifier
-   - Canary scorer: `src/shieldops/changes/canary_scorer.py` — DeploymentCanaryScorer
-   - Config drift monitor: `src/shieldops/operations/config_drift_monitor.py` — ConfigDriftMonitor
-   - Security compliance mapper: `src/shieldops/security/compliance_mapper.py` — SecurityComplianceMapper
-   - On-call equity analyzer: `src/shieldops/operations/oncall_equity.py` — TeamOnCallEquityAnalyzer
-   - **Phase 45:** Incident cluster engine: `src/shieldops/incidents/incident_cluster.py` — IncidentClusterEngine
-   - Dependency latency tracker: `src/shieldops/topology/dep_latency.py` — DependencyLatencyTracker
-   - Alert suppression manager: `src/shieldops/observability/alert_suppression.py` — AlertSuppressionManager
-   - Cost trend forecaster: `src/shieldops/billing/cost_trend.py` — CostTrendForecaster
-   - Change batch analyzer: `src/shieldops/changes/batch_analyzer.py` — ChangeBatchAnalyzer
-   - SLO alignment validator: `src/shieldops/sla/slo_alignment.py` — SLOAlignmentValidator
-   - Runbook execution tracker: `src/shieldops/operations/runbook_exec_tracker.py` — RunbookExecutionTracker
-   - Threat intelligence correlator: `src/shieldops/security/threat_correlator.py` — ThreatIntelligenceCorrelator
-   - Knowledge freshness monitor: `src/shieldops/knowledge/freshness_monitor.py` — KnowledgeFreshnessMonitor
-   - Compliance control tester: `src/shieldops/compliance/control_tester.py` — ComplianceControlTester
-   - Capacity bottleneck detector: `src/shieldops/analytics/bottleneck_detector.py` — CapacityBottleneckDetector
-   - Metric anomaly scorer: `src/shieldops/analytics/anomaly_scorer.py` — MetricAnomalyScorer
-   - **Phase 46:** Incident noise filter: `src/shieldops/incidents/noise_filter.py` — IncidentNoiseFilter
-   - Service dependency validator: `src/shieldops/topology/dep_validator.py` — ServiceDependencyValidator
-   - Alert priority optimizer: `src/shieldops/observability/alert_priority.py` — AlertPriorityOptimizer
-   - Cost allocation validator: `src/shieldops/billing/cost_alloc_validator.py` — CostAllocationValidator
-   - Change correlation engine: `src/shieldops/changes/change_correlator.py` — ChangeCorrelationEngine
-   - SLO dependency mapper: `src/shieldops/sla/slo_dep_mapper.py` — SLODependencyMapper
-   - Operational metric aggregator: `src/shieldops/operations/metric_aggregator.py` — OperationalMetricAggregator
-   - Security event correlator: `src/shieldops/security/event_correlator.py` — SecurityEventCorrelator
-   - Knowledge search optimizer: `src/shieldops/knowledge/search_optimizer.py` — KnowledgeSearchOptimizer
-   - Compliance evidence consolidator: `src/shieldops/compliance/evidence_consolidator.py` — ComplianceEvidenceConsolidator
-   - Service latency analyzer: `src/shieldops/analytics/service_latency.py` — ServiceLatencyAnalyzer
-   - Audit compliance reporter: `src/shieldops/audit/compliance_reporter.py` — AuditComplianceReporter
-   - **Phase 47:** Incident response optimizer: `src/shieldops/incidents/response_optimizer.py` — IncidentResponseOptimizer
-   - Dependency change tracker: `src/shieldops/topology/dep_change_tracker.py` — DependencyChangeTracker
-   - Alert correlation optimizer: `src/shieldops/observability/alert_correlation_opt.py` — AlertCorrelationOptimizer
-   - Cost forecast validator: `src/shieldops/billing/forecast_validator.py` — CostForecastValidator
-   - Deployment rollback tracker: `src/shieldops/changes/rollback_tracker.py` — DeploymentRollbackTracker
-   - SLO health dashboard: `src/shieldops/sla/slo_health.py` — SLOHealthDashboard
-   - Runbook compliance checker: `src/shieldops/operations/runbook_compliance.py` — RunbookComplianceChecker
-   - Vulnerability prioritizer: `src/shieldops/security/vuln_prioritizer.py` — VulnerabilityPrioritizer
-   - Knowledge usage analyzer: `src/shieldops/knowledge/usage_analyzer.py` — KnowledgeUsageAnalyzer
-   - Compliance risk scorer: `src/shieldops/compliance/risk_scorer.py` — ComplianceRiskScorer
-   - Performance benchmark tracker: `src/shieldops/analytics/perf_benchmark.py` — PerformanceBenchmarkTracker
-   - Audit evidence tracker: `src/shieldops/audit/evidence_tracker.py` — AuditEvidenceTracker
-   - **Phase 48:** Triage quality analyzer: `src/shieldops/incidents/triage_quality.py` — TriageQualityAnalyzer
-   - Service health trend analyzer: `src/shieldops/topology/health_trend.py` — ServiceHealthTrendAnalyzer
-   - Metric quality scorer: `src/shieldops/observability/metric_quality.py` — MetricQualityScorer
-   - Invoice validation engine: `src/shieldops/billing/invoice_validator.py` — InvoiceValidationEngine
-   - Deployment stability tracker: `src/shieldops/changes/deploy_stability.py` — DeploymentStabilityTracker
-   - SLA breach impact analyzer: `src/shieldops/sla/breach_impact.py` — SLABreachImpactAnalyzer
-   - Shift schedule optimizer: `src/shieldops/operations/shift_optimizer.py` — ShiftScheduleOptimizer
-   - Lateral movement detector: `src/shieldops/security/lateral_movement.py` — LateralMovementDetector
-   - Knowledge coverage analyzer: `src/shieldops/knowledge/knowledge_coverage.py` — KnowledgeCoverageAnalyzer
-   - Regulatory change tracker: `src/shieldops/compliance/regulation_tracker.py` — RegulatoryChangeTracker
-   - Workflow efficiency analyzer: `src/shieldops/analytics/workflow_analyzer.py` — WorkflowEfficiencyAnalyzer
-   - Audit finding tracker: `src/shieldops/audit/finding_tracker.py` — AuditFindingTracker
-   - **Phase 49:** Incident blast radius analyzer: `src/shieldops/incidents/blast_radius.py` — IncidentBlastRadiusAnalyzer
-   - API gateway health monitor: `src/shieldops/topology/api_gateway_health.py` — APIGatewayHealthMonitor
-   - Log quality analyzer: `src/shieldops/observability/log_quality.py` — LogQualityAnalyzer
-   - Commitment utilization tracker: `src/shieldops/billing/commitment_tracker.py` — CommitmentUtilizationTracker
-   - Feature flag impact analyzer: `src/shieldops/changes/feature_flag_impact.py` — FeatureFlagImpactAnalyzer
-   - Customer impact scorer: `src/shieldops/sla/customer_impact.py` — CustomerImpactScorer
-   - Toil automation tracker: `src/shieldops/operations/toil_automator.py` — ToilAutomationTracker
-   - Insider threat detector: `src/shieldops/security/insider_threat.py` — InsiderThreatDetector
-   - Team expertise mapper: `src/shieldops/knowledge/expertise_mapper.py` — TeamExpertiseMapper
-   - Control effectiveness tracker: `src/shieldops/compliance/control_effectiveness.py` — ControlEffectivenessTracker
-   - Reliability metrics collector: `src/shieldops/analytics/reliability_metrics.py` — ReliabilityMetricsCollector
-   - Audit remediation tracker: `src/shieldops/audit/remediation_tracker.py` — AuditRemediationTracker
-   - **Phase 50:** Response playbook manager: `src/shieldops/incidents/response_playbook.py` — ResponsePlaybookManager
-   - Service communication analyzer: `src/shieldops/topology/service_communication.py` — ServiceCommunicationAnalyzer
-   - Dashboard effectiveness scorer: `src/shieldops/observability/dashboard_effectiveness.py` — DashboardEffectivenessScorer
-   - Procurement optimizer: `src/shieldops/billing/procurement_optimizer.py` — ProcurementOptimizer
-   - Merge risk assessor: `src/shieldops/changes/merge_risk.py` — MergeRiskAssessor
-   - Degradation tracker: `src/shieldops/sla/degradation_tracker.py` — DegradationTracker
-   - Handover quality analyzer: `src/shieldops/operations/handover_quality.py` — HandoverQualityAnalyzer
-   - Data classification engine: `src/shieldops/security/data_classification.py` — DataClassificationEngine
-   - Feedback loop manager: `src/shieldops/knowledge/feedback_loop.py` — FeedbackLoopManager
-   - Policy coverage analyzer: `src/shieldops/compliance/policy_coverage.py` — PolicyCoverageAnalyzer
-   - Alert response tracker: `src/shieldops/analytics/alert_response.py` — AlertResponseTracker
-   - Change audit logger: `src/shieldops/audit/change_audit.py` — ChangeAuditLogger
-   - **Phase 51:** Severity impact analyzer: `src/shieldops/incidents/severity_impact.py` — SeverityImpactAnalyzer
-   - API contract drift detector: `src/shieldops/topology/api_contract_drift.py` — APIContractDriftDetector
-   - Trace coverage optimizer: `src/shieldops/observability/trace_coverage.py` — TraceCoverageOptimizer
-   - Showback engine: `src/shieldops/billing/showback_engine.py` — ShowbackEngine
-   - Deploy canary health monitor: `src/shieldops/changes/deploy_canary_health.py` — DeployCanaryHealthMonitor
-   - Maintenance impact scorer: `src/shieldops/sla/maintenance_impact.py` — MaintenanceImpactScorer
-   - Reservation optimizer: `src/shieldops/operations/reservation_optimizer.py` — ReservationOptimizer
-   - Secret rotation planner: `src/shieldops/security/secret_rotation_planner.py` — SecretRotationPlanner
-   - Taxonomy manager: `src/shieldops/knowledge/taxonomy_manager.py` — TaxonomyManager
-   - Audit evidence mapper: `src/shieldops/compliance/audit_evidence_mapper.py` — AuditEvidenceMapper
-   - Capacity simulation engine: `src/shieldops/analytics/capacity_simulation.py` — CapacitySimulationEngine
-   - Access review automator: `src/shieldops/audit/access_review.py` — AccessReviewAutomator
-   - **Phase 52:** Incident pattern detector: `src/shieldops/incidents/incident_pattern.py` — IncidentPatternDetector
-   - Escalation path analyzer: `src/shieldops/incidents/escalation_path.py` — EscalationPathAnalyzer
-   - Dependency freshness monitor: `src/shieldops/topology/dependency_freshness_monitor.py` — DependencyFreshnessMonitor
-   - Cost attribution engine: `src/shieldops/billing/cost_attribution_engine.py` — CostAttributionEngine
-   - Deploy rollback health tracker: `src/shieldops/changes/deploy_rollback_health.py` — DeployRollbackHealthTracker
-   - SLO error budget tracker: `src/shieldops/sla/slo_error_budget_tracker.py` — SLOErrorBudgetTracker
-   - Operational readiness scorer: `src/shieldops/operations/operational_readiness.py` — OperationalReadinessScorer
-   - Threat intelligence tracker: `src/shieldops/security/threat_intelligence.py` — ThreatIntelligenceTracker
-   - Knowledge graph manager: `src/shieldops/knowledge/knowledge_graph.py` — KnowledgeGraphManager
-   - Compliance evidence chain tracker: `src/shieldops/compliance/compliance_evidence_chain.py` — ComplianceEvidenceChainTracker
-   - Capacity headroom analyzer: `src/shieldops/analytics/capacity_headroom.py` — CapacityHeadroomAnalyzer
-   - Change velocity tracker: `src/shieldops/changes/change_velocity.py` — ChangeVelocityTracker
-   - **Phase 53:** Incident debrief tracker: `src/shieldops/incidents/incident_debrief.py` — IncidentDebriefTracker
-   - Dependency circuit breaker monitor: `src/shieldops/topology/dependency_circuit_breaker.py` — DependencyCircuitBreakerMonitor
-   - Metric cardinality planner: `src/shieldops/observability/metric_cardinality_planner.py` — MetricCardinalityPlanner
-   - Cost forecast accuracy tracker: `src/shieldops/billing/cost_forecast_accuracy.py` — CostForecastAccuracyTracker
-   - Deploy gate tracker: `src/shieldops/changes/deploy_gate_tracker.py` — DeployGateTracker
-   - SLO window analyzer: `src/shieldops/sla/slo_window_analyzer.py` — SLOWindowAnalyzer
-   - Runbook dependency mapper: `src/shieldops/operations/runbook_dependency.py` — RunbookDependencyMapper
-   - Security posture gap analyzer: `src/shieldops/security/security_posture_gap.py` — SecurityPostureGapAnalyzer
-   - Knowledge retention tracker: `src/shieldops/knowledge/knowledge_retention.py` — KnowledgeRetentionTracker
-   - Audit finding tracker: `src/shieldops/audit/audit_finding_tracker.py` — AuditFindingTracker
-   - Capacity reservation planner: `src/shieldops/billing/capacity_reservation_planner.py` — CapacityReservationPlanner
-   - Change approval flow tracker: `src/shieldops/changes/change_approval_flow.py` — ChangeApprovalFlowTracker
-   - **Phase 54:** Incident response time tracker: `src/shieldops/incidents/incident_response_time.py` — IncidentResponseTimeTracker
-   - Topology change tracker: `src/shieldops/topology/topology_change_tracker.py` — TopologyChangeTracker
-   - Observability budget planner: `src/shieldops/observability/observability_budget_planner.py` — ObservabilityBudgetPlanner
-   - Cost variance analyzer: `src/shieldops/billing/cost_variance_analyzer.py` — CostVarianceAnalyzer
-   - Deploy dependency tracker: `src/shieldops/changes/deploy_dependency_tracker.py` — DeployDependencyTracker
-   - SLO breach analyzer: `src/shieldops/sla/slo_breach_analyzer.py` — SLOBreachAnalyzer
-   - Runbook effectiveness scorer: `src/shieldops/operations/runbook_effectiveness_scorer.py` — RunbookEffectivenessScorer
-   - Threat response tracker: `src/shieldops/security/threat_response_tracker.py` — ThreatResponseTracker
-   - Knowledge gap detector: `src/shieldops/knowledge/knowledge_gap_detector.py` — KnowledgeGapDetector
-   - Audit compliance mapper: `src/shieldops/audit/audit_compliance_mapper.py` — AuditComplianceMapper
-   - Capacity scaling advisor: `src/shieldops/analytics/capacity_scaling_advisor.py` — CapacityScalingAdvisor
-   - Change risk classifier: `src/shieldops/changes/change_risk_classifier.py` — ChangeRiskClassifier
-   - Incident pattern analyzer: `src/shieldops/incidents/incident_pattern_analyzer.py` — IncidentPatternAnalyzer
-   - Service dependency scorer: `src/shieldops/topology/service_dependency_scorer.py` — ServiceDependencyScorer
-   - Alert noise profiler: `src/shieldops/observability/alert_noise_profiler.py` — AlertNoiseProfiler
-   - Cost optimization tracker: `src/shieldops/billing/cost_optimization_tracker.py` — CostOptimizationTracker
-   - Deploy verification tracker: `src/shieldops/changes/deploy_verification_tracker.py` — DeployVerificationTracker
-   - SLO compliance monitor: `src/shieldops/sla/slo_compliance_monitor.py` — SLOComplianceMonitor
-   - Runbook quality scorer: `src/shieldops/operations/runbook_quality_scorer.py` — RunbookQualityScorer
-   - Vulnerability response tracker: `src/shieldops/security/vulnerability_response_tracker.py` — VulnerabilityResponseTracker
-   - Knowledge freshness scorer: `src/shieldops/knowledge/knowledge_freshness_scorer.py` — KnowledgeFreshnessScorer
-   - Audit control assessor: `src/shieldops/audit/audit_control_assessor.py` — AuditControlAssessor
-   - Capacity utilization tracker: `src/shieldops/analytics/capacity_utilization_tracker.py` — CapacityUtilizationTracker
-   - Change impact predictor: `src/shieldops/changes/change_impact_predictor.py` — ChangeImpactPredictor
-   - **Phase 56:** Incident escalation scorer: `src/shieldops/incidents/incident_escalation_scorer.py` — IncidentEscalationScorer
-   - Topology drift detector: `src/shieldops/topology/topology_drift_detector.py` — TopologyDriftDetector
-   - Alert correlation profiler: `src/shieldops/observability/alert_correlation_profiler.py` — AlertCorrelationProfiler
-   - Cost allocation validator: `src/shieldops/billing/cost_allocation_validator.py` — CostAllocationValidator
-   - Deploy canary analyzer: `src/shieldops/changes/deploy_canary_analyzer.py` — DeployCanaryAnalyzer
-   - SLO error budget forecaster: `src/shieldops/sla/slo_error_budget_forecaster.py` — SLOErrorBudgetForecaster
-   - Runbook automation scorer: `src/shieldops/operations/runbook_automation_scorer.py` — RunbookAutomationScorer
-   - Threat surface analyzer: `src/shieldops/security/threat_surface_analyzer.py` — ThreatSurfaceAnalyzer
-   - Knowledge quality assessor: `src/shieldops/knowledge/knowledge_quality_assessor.py` — KnowledgeQualityAssessor
-   - Audit remediation tracker: `src/shieldops/audit/audit_remediation_tracker.py` — AuditRemediationTracker
-   - Capacity forecast validator: `src/shieldops/analytics/capacity_forecast_validator.py` — CapacityForecastValidator
-   - Change window analyzer: `src/shieldops/changes/change_window_analyzer.py` — ChangeWindowAnalyzer
-   - **Phase 57:** Incident mitigation tracker: `src/shieldops/incidents/incident_mitigation_tracker.py` — IncidentMitigationTracker
-   - Service routing optimizer: `src/shieldops/topology/service_routing_optimizer.py` — ServiceRoutingOptimizer
-   - Metric anomaly classifier: `src/shieldops/observability/metric_anomaly_classifier.py` — MetricAnomalyClassifier
-   - Cost governance enforcer: `src/shieldops/billing/cost_governance_enforcer.py` — CostGovernanceEnforcer
-   - Change rollout planner: `src/shieldops/changes/change_rollout_planner.py` — ChangeRolloutPlanner
-   - SLO threshold optimizer: `src/shieldops/sla/slo_threshold_optimizer.py` — SloThresholdOptimizer
-   - Operational hygiene scorer: `src/shieldops/operations/operational_hygiene_scorer.py` — OperationalHygieneScorer
-   - Security signal correlator: `src/shieldops/security/security_signal_correlator.py` — SecuritySignalCorrelator
-   - Knowledge reuse tracker: `src/shieldops/knowledge/knowledge_reuse_tracker.py` — KnowledgeReuseTracker
-   - Audit workflow optimizer: `src/shieldops/audit/audit_workflow_optimizer.py` — AuditWorkflowOptimizer
-   - Performance baseline tracker: `src/shieldops/analytics/performance_baseline_tracker.py` — PerformanceBaselineTracker
-   - Compliance control mapper: `src/shieldops/compliance/compliance_control_mapper.py` — ComplianceControlMapper
-   - **Phase 58:** Stakeholder impact tracker: `src/shieldops/incidents/stakeholder_impact_tracker.py` — StakeholderImpactTracker
-   - Service health predictor: `src/shieldops/topology/service_health_predictor.py` — ServiceHealthPredictor
-   - Metric collection optimizer: `src/shieldops/observability/metric_collection_optimizer.py` — MetricCollectionOptimizer
-   - Cost forecast precision: `src/shieldops/billing/cost_forecast_precision.py` — CostForecastPrecision
-   - Change coordination planner: `src/shieldops/changes/change_coordination_planner.py` — ChangeCoordinationPlanner
-   - SLO cross-correlation: `src/shieldops/sla/slo_cross_correlation.py` — SLOCrossCorrelation
-   - Team capacity planner: `src/shieldops/operations/team_capacity_planner.py` — TeamCapacityPlanner
-   - Security compliance scorer: `src/shieldops/security/security_compliance_scorer.py` — SecurityComplianceScorer
-   - Knowledge impact analyzer: `src/shieldops/knowledge/knowledge_impact_analyzer.py` — KnowledgeImpactAnalyzer
-   - Audit scope optimizer: `src/shieldops/audit/audit_scope_optimizer.py` — AuditScopeOptimizer
-   - Data quality scorer: `src/shieldops/analytics/data_quality_scorer.py` — DataQualityScorer
-   - Regulatory impact tracker: `src/shieldops/compliance/regulatory_impact_tracker.py` — RegulatoryImpactTracker
-   - **Phase 59 (SOC Foundation):**
-   - MITRE ATT&CK mapper: `src/shieldops/security/mitre_attack_mapper.py` — MitreAttackMapper
-   - Threat intel aggregator: `src/shieldops/security/threat_intel_aggregator.py` — ThreatIntelAggregator
-   - SOAR playbook engine: `src/shieldops/security/soar_playbook_engine.py` — SOARPlaybookEngine
-   - Attack chain reconstructor: `src/shieldops/security/attack_chain_reconstructor.py` — AttackChainReconstructor
-   - SOC metrics dashboard: `src/shieldops/security/soc_metrics_dashboard.py` — SOCMetricsDashboard
-   - Adversary simulation engine: `src/shieldops/security/adversary_simulation_engine.py` — AdversarySimulationEngine
-   - Risk quantification engine: `src/shieldops/security/risk_quantification_engine.py` — RiskQuantificationEngine
-   - Alert enrichment engine: `src/shieldops/security/alert_enrichment_engine.py` — AlertEnrichmentEngine
-   - Detection rule effectiveness: `src/shieldops/security/detection_rule_effectiveness.py` — DetectionRuleEffectiveness
-   - IOC sweep engine: `src/shieldops/security/ioc_sweep_engine.py` — IOCSweepEngine
-   - Security alert dedup engine: `src/shieldops/security/security_alert_dedup_engine.py` — SecurityAlertDedupEngine
-   - Alert triage scorer: `src/shieldops/analytics/alert_triage_scorer.py` — AlertTriageScorer
-   - **Phase 60 (SOC Analyst Agent):**
-   - SOC Analyst agent: `src/shieldops/agents/soc_analyst/` — LangGraph agent (graph, nodes, tools, runner)
-   - SOC Analyst API: `src/shieldops/api/routes/soc_analyst.py` — POST /api/v1/soc/analyze, GET /api/v1/soc/results
-   - Hunt hypothesis generator: `src/shieldops/security/hunt_hypothesis_generator.py` — HuntHypothesisGenerator
-   - Hunt effectiveness tracker: `src/shieldops/security/hunt_effectiveness_tracker.py` — HuntEffectivenessTracker
-   - Threat campaign tracker: `src/shieldops/security/threat_campaign_tracker.py` — ThreatCampaignTracker
-   - Anomalous access detector: `src/shieldops/security/anomalous_access_detector.py` — AnomalousAccessDetector
-   - Network flow analyzer: `src/shieldops/security/network_flow_analyzer.py` — NetworkFlowAnalyzer
-   - Analyst workload balancer: `src/shieldops/operations/analyst_workload_balancer.py` — AnalystWorkloadBalancer
-   - **Phase 61 (Threat Hunter Agent):**
-   - Threat Hunter agent: `src/shieldops/agents/threat_hunter/` — LangGraph agent (graph, nodes, tools, runner)
-   - Evidence integrity verifier: `src/shieldops/security/evidence_integrity_verifier.py` — EvidenceIntegrityVerifier
-   - Honeypot interaction analyzer: `src/shieldops/security/honeypot_interaction_analyzer.py` — HoneypotInteractionAnalyzer
-   - Attacker profile builder: `src/shieldops/security/attacker_profile_builder.py` — AttackerProfileBuilder
-   - Zero-day detection engine: `src/shieldops/security/zero_day_detection_engine.py` — ZeroDayDetectionEngine
-   - Supply chain attack detector: `src/shieldops/security/supply_chain_attack_detector.py` — SupplyChainAttackDetector
-   - APT detection engine: `src/shieldops/security/apt_detection_engine.py` — APTDetectionEngine
-   - **Phase 62 (Forensics & Deception Agents):**
-   - Forensics agent: `src/shieldops/agents/forensics/` — LangGraph agent (graph, nodes, tools, runner)
-   - Deception agent: `src/shieldops/agents/deception/` — LangGraph agent (graph, nodes, tools, runner)
-   - Forensic timeline builder: `src/shieldops/incidents/forensic_timeline_builder.py` — ForensicTimelineBuilder
-   - Incident forensics tracker: `src/shieldops/incidents/incident_forensics_tracker.py` — IncidentForensicsTracker
-   - Alert escalation intelligence: `src/shieldops/incidents/alert_escalation_intelligence.py` — AlertEscalationIntelligence
-   - Incident containment tracker: `src/shieldops/incidents/incident_containment_tracker.py` — IncidentContainmentTracker
-   - **Phase 63 (Advanced Defense):**
-   - Ransomware defense engine: `src/shieldops/security/ransomware_defense_engine.py` — RansomwareDefenseEngine
-   - DLP scorer: `src/shieldops/security/dlp_scorer.py` — DLPScorer
-   - Insider threat AI scorer: `src/shieldops/security/insider_threat_ai_scorer.py` — InsiderThreatAIScorer
-   - Cloud security posture scorer: `src/shieldops/security/cloud_security_posture_scorer.py` — CloudSecurityPostureScorer
-   - Container runtime security: `src/shieldops/security/container_runtime_security.py` — ContainerRuntimeSecurity
-   - Identity threat detection: `src/shieldops/security/identity_threat_detection.py` — IdentityThreatDetection
-   - Threat intel correlation: `src/shieldops/security/threat_intel_correlation.py` — ThreatIntelCorrelation
-   - Security automation coverage: `src/shieldops/security/security_automation_coverage.py` — SecurityAutomationCoverage
-   - Purple team exercise tracker: `src/shieldops/security/purple_team_exercise_tracker.py` — PurpleTeamExerciseTracker
-   - Security maturity model: `src/shieldops/security/security_maturity_model.py` — SecurityMaturityModel
-   - Behavioral baseline engine: `src/shieldops/analytics/behavioral_baseline_engine.py` — BehavioralBaselineEngine
-   - Risk prediction engine: `src/shieldops/analytics/risk_prediction_engine.py` — RiskPredictionEngine
-   - **Phase 64 (Risk & Compliance):**
-   - Compliance evidence automator v2: `src/shieldops/compliance/compliance_evidence_automator_v2.py` — ComplianceEvidenceAutomatorV2
-   - FAIR risk modeler: `src/shieldops/compliance/fair_risk_modeler.py` — FAIRRiskModeler
-   - Continuous compliance monitor: `src/shieldops/compliance/continuous_compliance_monitor.py` — ContinuousComplianceMonitor
-   - Regulatory change impact: `src/shieldops/compliance/regulatory_change_impact.py` — RegulatoryChangeImpact
-   - Control effectiveness scorer: `src/shieldops/compliance/control_effectiveness_scorer.py` — ControlEffectivenessScorer
-   - Vendor risk intelligence: `src/shieldops/compliance/vendor_risk_intelligence.py` — VendorRiskIntelligence
-   - Compliance gap prioritizer: `src/shieldops/compliance/compliance_gap_prioritizer.py` — ComplianceGapPrioritizer
-   - Risk treatment tracker: `src/shieldops/compliance/risk_treatment_tracker.py` — RiskTreatmentTracker
-   - Compliance automation scorer: `src/shieldops/compliance/compliance_automation_scorer.py` — ComplianceAutomationScorer
-   - Data privacy impact assessor: `src/shieldops/compliance/data_privacy_impact_assessor.py` — DataPrivacyImpactAssessor
-   - Audit readiness scorer: `src/shieldops/audit/audit_readiness_scorer.py` — AuditReadinessScorer
-   - Deception tech manager: `src/shieldops/operations/deception_tech_manager.py` — DeceptionTechManager
-   - Verify each module initializes in `src/shieldops/api/app.py` lifespan
+### 5. Platform Engine Health
+Verify key engines across all 13 packages can instantiate and report stats:
 
-   - **Phase 101–103 (Enterprise & Automation):**
-   - ChatOps agent: `src/shieldops/agents/chatops/` — ChatOps Agent health, Slack/Teams webhook connectivity
-   - Enterprise integration agent: `src/shieldops/agents/enterprise_integration/` — Enterprise Integration Agent health
-   - Automation orchestrator agent: `src/shieldops/agents/automation_orchestrator/` — Automation Orchestrator Agent health
-   - ChatOps routes: `src/shieldops/api/routes/chatops.py` — ChatOps API endpoint availability
-   - Enterprise integration routes: `src/shieldops/api/routes/enterprise_integrations.py` — Integration API health
-   - Automation rules routes: `src/shieldops/api/routes/automation_rules.py` — Automation Rules API health
-   - Verify each module initializes in `src/shieldops/api/app.py` lifespan
+**Analytics (255 engines)**: Capacity trends, SRE metrics, incident clustering, DORA, agent benchmarking
+**Observability (232 engines)**: Health reports, alert noise, threshold tuning, backup verification, OTel pipeline
+**Security (518 engines)**: Vulnerability lifecycle, API security, cert expiry, network flows, cloud posture
+**Operations (160 engines)**: Runbook execution, workload scheduling, self-healing, scaling efficiency
+**Compliance (116 engines)**: Gap analysis, automation rules, license scanning, access certification, evidence chain
+**Incidents (88 engines)**: Severity prediction, deduplication, escalation analysis, on-call fatigue
+**Billing (87 engines)**: Cost forecast, orphan detection, tag governance, budget management, RI optimization
+**Changes (66 engines)**: Deployment risk, change intelligence, canary analysis, velocity tracking
+**Topology (65 engines)**: Service catalog, dependency scoring, API health, circuit breakers, cascade prediction
+**SLA (54 engines)**: SLO burn rate, error budget, availability patterns, reliability scoring
+**Audit (30 engines)**: Config audit, decision audit, audit intelligence
+**Knowledge (27 engines)**: Article manager, knowledge gaps, decay detection, onboarding
+**Config (11 engines)**: Feature flags, parity validation, drift analysis
 
-6. **Enterprise integration health**:
-   - Check all registered enterprise integrations status (ITSM, SIEM, CMDB)
-   - Verify webhook endpoint reachability for each configured integration
-   - Test bidirectional connectivity (inbound webhook reception, outbound event delivery)
-   - Validate integration credentials and API key freshness
-   - Check dead-letter queue depth for failed integration events
-   - Verify circuit breaker states for each integration endpoint
+```python
+# Example: verify an engine instantiates correctly
+from shieldops.analytics.capacity_trends import CapacityTrendAnalyzer
 
-7. **ChatOps connectivity verification**:
-   - Slack webhook health: verify Slack app token validity and webhook URL reachability
-   - Microsoft Teams webhook health: verify Teams connector URL and bot registration
-   - Test message send/receive round-trip for each configured channel
-   - Validate ChatOps command routing table completeness
-   - Check ChatOps approval workflow button/action registration
+engine = CapacityTrendAnalyzer()
+stats = engine.get_stats()
+assert stats["record_count"] == 0  # Fresh engine, no data
+```
 
-8. **Automation rules health**:
-   - Validate all automation rule trigger conditions parse correctly
-   - Check policy gate evaluation for each active automation rule
-   - Verify approval workflow configuration for high-impact rules
-   - Report stale/disabled automation rules with no recent execution
-   - Check rule execution queue depth and processing latency
-   - Validate rule dependency chains (no circular dependencies)
+### 6. Agent Health
+Verify agent runners can instantiate and compile their LangGraph workflows:
 
-9. **Observability 2.0 pipeline health**:
-   - Telemetry pipeline: verify OpenTelemetry collector ingestion rates
-   - Metric federation: check cross-cluster metric federation endpoints
-   - Multi-signal correlation: verify correlation engine processing lag
-   - Streaming telemetry: check streaming telemetry processor throughput
-   - Adaptive sampling: verify sampling engine decision rates
-   - Context propagation: check trace context propagation completeness across services
-   - OTel pipeline optimizer: verify pipeline optimization rules are active
+```python
+from shieldops.agents.investigation.runner import InvestigationRunner
 
-10. **Check configuration**:
-   - Verify `.env` file exists (warn if missing)
-   - Check required env vars are set (DATABASE_URL, REDIS_URL, etc.)
-   - Validate OPA policies: check `playbooks/policies/` for syntax
+runner = InvestigationRunner()
+assert runner._app is not None  # Graph compiled successfully
+```
 
-## Output Format
-Report each check as PASS/FAIL/WARN with details.
-If `--fix` is passed, auto-fix what's possible (format, install missing deps).
+## Key Files
+- `src/shieldops/api/routes/health.py` — Health check endpoints (/health, /ready)
+- `src/shieldops/agents/` — 179 agent directories/modules
+- `src/shieldops/analytics/` — 255 analytics engines
+- `src/shieldops/security/` — 518 security engines
+- `src/shieldops/observability/` — 232 observability engines
+- `src/shieldops/operations/` — 160 operations engines
+- `src/shieldops/compliance/` — 116 compliance engines
+- `pyproject.toml` — Dependencies and tool configuration
+- `infrastructure/docker/docker-compose.yml` — Service dependencies
+
+## Conventions
+- Health checks must complete within 30 seconds
+- `--fix` flag auto-fixes lint/format issues but never modifies business logic
+- Failed health checks should suggest specific remediation steps
+- Engine health verified by instantiation + get_stats() (no data required)
+- Agent health verified by runner instantiation + graph compilation

@@ -5,6 +5,12 @@ Build a new ShieldOps agent or extend an existing one.
 ## Usage
 `/build-agent <agent-type> [--playbook <name>] [--connector <provider>]`
 
+## Agents Used
+- `supervisor` — Central dispatcher that routes events to appropriate agents
+- `automation_orchestrator` — Multi-agent automation chaining with policy gates
+- `enterprise_integration` — Bidirectional enterprise tool integration
+- `chatops` — Slack/Teams ChatOps integration
+
 ## Process
 
 1. **Read the PRD**: Check `docs/prd/` for relevant requirements
@@ -259,8 +265,24 @@ src/shieldops/{package}/{module_name}.py
 - Mesh security posture: `src/shieldops/observability/mesh_security_posture_analyzer.py`
 - API SLA compliance: `src/shieldops/sla/api_sla_compliance_tracker.py`
 
-## Safety Requirements
+## Key Files
+- `src/shieldops/agents/` — 179 existing agents (reference patterns)
+- `src/shieldops/agents/{type}/runner.py` — Agent entry point
+- `src/shieldops/agents/{type}/graph.py` — LangGraph workflow
+- `src/shieldops/agents/supervisor/` — Central agent dispatcher
+- `src/shieldops/connectors/base.py` — Connector protocol (7 methods)
+- `src/shieldops/utils/llm.py` — LLM utility (llm_structured)
+- `src/shieldops/policy/opa_client.py` — OPA policy integration
+- `src/shieldops/api/routes/` — API route modules
+- `dashboard-ui/src/pages/` — Dashboard pages
+- `tests/unit/` — Unit tests
+- `playbooks/` — YAML playbook definitions
+
+## Conventions
 - ALL infrastructure-modifying actions MUST pass OPA policy evaluation
 - Implement rollback capability for every remediation action
 - Log all decisions with full reasoning chain to audit trail
 - Set confidence thresholds: autonomous action >0.85, human approval 0.5-0.85, escalate <0.5
+- All methods async, all logging via structlog, all models Pydantic v2
+- LLM calls via `llm_structured()` with try/except fallback in nodes.py
+- Register new agents in `src/shieldops/api/app.py` lifespan

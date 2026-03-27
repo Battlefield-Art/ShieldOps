@@ -1,415 +1,103 @@
 # Security Scan Skill
 
-Run security audits on ShieldOps codebase and agent configurations.
+Run security audits on ShieldOps codebase, agents, infrastructure, and compliance posture.
 
 ## Usage
 `/scan-security [--scope <area>] [--severity <level>]`
 
 ## Scopes
-- `code` — Static analysis of Python code (ruff, bandit, safety)
+- `code` — Static analysis (ruff, bandit, safety)
 - `deps` — Dependency vulnerability scan
-- `policies` — OPA policy completeness check (includes PolicyCodeGenerator output)
-- `agents` — Agent blast-radius and permission audit (includes AgentDecisionExplainer)
-- `compliance` — Compliance gap analysis via `ComplianceGapAnalyzer` + `ComplianceAutomationEngine`
-- `audit` — Configuration audit trail via `ConfigurationAuditTrail`
-- `isolation` — Tenant resource isolation checks via `TenantResourceIsolationManager`
-- `licenses` — Dependency license compliance via `DependencyLicenseScanner`
-- `access` — Access certification review via `AccessCertificationManager`
-- `contracts` — API contract drift and breaking changes via `APIContractTestingEngine`
-- `incidents` — Security incident response tracking via `SecurityIncidentResponseTracker`
-- `vulns` — Vulnerability lifecycle and exploit risk via `VulnerabilityLifecycleManager`
-- `api-threats` — API endpoint threat detection via `APISecurityMonitor`
+- `policies` — OPA policy completeness check
+- `agents` — Agent blast-radius and permission audit
+- `compliance` — Compliance gap analysis (SOC 2, PCI-DSS, HIPAA, GDPR, FedRAMP)
+- `audit` — Configuration audit trail review
+- `isolation` — Tenant resource isolation checks
+- `licenses` — Dependency license compliance
+- `access` — Access certification review
+- `contracts` — API contract drift and breaking changes
+- `vulns` — Vulnerability lifecycle and exploit risk
+- `secrets` — Hardcoded credential and secrets sprawl detection
 - `infra` — Infrastructure-as-code security scan (checkov, tfsec)
-- `all` — Full security audit
+- `containers` — Container image vulnerability scanning
+- `cloud` — Cloud posture management (CIS benchmarks)
+- `network` — Network flow analysis and exfiltration detection
+- `certs` — Certificate expiry monitoring
+- `all` — Full security audit (all scopes)
+
+## Agents Used
+- `code_security_scanner` — Shift-left SAST/SCA/IaC scanning
+- `vulnerability_manager` — Vulnerability lifecycle tracking
+- `secrets_scanner` — Secret exposure tracking and credential leak analysis
+- `container_security` — Container image and runtime scanning
+- `cloud_posture` — Cloud misconfiguration and CIS benchmark scoring
+- `compliance_scanner` — Continuous compliance scanning and drift detection
+- `exposure_management` — Unified attack surface monitoring
+- `api_security` — API endpoint threat detection
 
 ## Process
 
-1. **Code Security**: Run bandit for Python security issues, check for hardcoded secrets
-2. **Dependency Audit**: Check all dependencies against CVE databases
-3. **OPA Policy Review**: Verify all agent actions have corresponding policy rules
-4. **Agent Permissions**: Audit blast-radius limits per environment
-5. **Compliance Gap Analysis**: Run `ComplianceGapAnalyzer` from `src/shieldops/compliance/gap_analyzer.py`
-6. **Compliance Automation**: Check auto-remediation rules via `ComplianceAutomationEngine` (`src/shieldops/compliance/automation_rules.py`)
-7. **Configuration Audit**: Review config change trail via `ConfigurationAuditTrail` (`src/shieldops/audit/config_audit.py`)
-8. **Tenant Isolation**: Verify resource boundaries via `TenantResourceIsolationManager` (`src/shieldops/policy/tenant_isolation.py`)
-9. **Infrastructure**: Scan Terraform/K8s configs for misconfigurations
-10. **License Compliance**: Scan dependency licenses via `DependencyLicenseScanner` (`src/shieldops/compliance/license_scanner.py`)
-11. **Access Certification**: Review expired/uncertified grants via `AccessCertificationManager` (`src/shieldops/compliance/access_certification.py`)
-12. **API Contract Testing**: Detect breaking changes and schema drift via `APIContractTestingEngine` (`src/shieldops/api/contract_testing.py`)
-13. **Security Incident Review**: Check active incidents via `SecurityIncidentResponseTracker` (`src/shieldops/security/incident_response.py`)
-14. **Vulnerability Lifecycle**: Review overdue patches and exploit risk via `VulnerabilityLifecycleManager` (`src/shieldops/security/vuln_lifecycle.py`)
-15. **API Threat Detection**: Assess endpoint risk and suspicious patterns via `APISecurityMonitor` (`src/shieldops/security/api_security.py`)
-16. **Certificate Expiry**: Check for expiring/expired TLS certs via `CertificateExpiryMonitor` (`src/shieldops/security/cert_monitor.py`)
-17. **Network Flow Analysis**: Detect anomalies and exfiltration via `NetworkFlowAnalyzer` (`src/shieldops/security/network_flow.py`)
-18. **Container Image Scanning**: Scan images for vulnerabilities via `ContainerImageScanner` (`src/shieldops/security/container_scanner.py`)
-19. **Cloud Posture Management**: Detect cloud misconfigurations via `CloudSecurityPostureManager` (`src/shieldops/security/cloud_posture_manager.py`)
-20. **Secrets Sprawl Detection**: Detect hardcoded credentials via `SecretsSprawlDetector` (`src/shieldops/security/secrets_detector.py`)
-21. **Alert Correlation Rules**: Evaluate alert correlation patterns via `AlertCorrelationRuleEngine` (`src/shieldops/observability/alert_correlation_rules.py`)
-22. **Incident Review Board**: Review incident response quality via `IncidentReviewBoard` (`src/shieldops/incidents/review_board.py`)
-23. **Compliance Evidence Chain**: Verify evidence integrity via `ComplianceEvidenceChain` (`src/shieldops/compliance/evidence_chain.py`)
-24. **Alert Fatigue Scoring**: Assess alert fatigue risk via `AlertFatigueScorer` (`src/shieldops/observability/alert_fatigue.py`)
-25. **Compliance Drift Detection**: Detect compliance policy drift via `ComplianceDriftDetector` (`src/shieldops/compliance/compliance_drift.py`)
-26. **Alert Rule Linting**: Validate alert rule quality via `AlertRuleLinter` (`src/shieldops/observability/alert_rule_linter.py`)
-27. **Credential Expiry Forecasting**: Forecast credential renewal timelines via `CredentialExpiryForecaster` (`src/shieldops/security/credential_expiry_forecaster.py`)
-28. **Policy Violation Tracking**: Track OPA policy violations via `PolicyViolationTracker` (`src/shieldops/compliance/policy_violation_tracker.py`)
-29. **Security Posture Trend Analysis**: Track posture over time via `SecurityPostureTrendAnalyzer` (`src/shieldops/security/posture_trend.py`)
-30. **Access Anomaly Detection**: Detect anomalous access patterns via `AccessAnomalyDetector` (`src/shieldops/security/access_anomaly.py`)
-31. **Audit Trail Analysis**: Analyze audit trail for suspicious patterns via `ComplianceAuditTrailAnalyzer` (`src/shieldops/compliance/audit_trail_analyzer.py`)
-32. **Alert Tuning Feedback**: Evaluate alert rule effectiveness via `AlertTuningFeedbackLoop` (`src/shieldops/observability/alert_tuning_feedback.py`)
-33. **Discount Coverage**: Identify uncovered resources via `CloudDiscountOptimizer` (`src/shieldops/billing/discount_optimizer.py`)
-34. **Knowledge Decay**: Detect stale knowledge articles via `KnowledgeDecayDetector` (`src/shieldops/knowledge/knowledge_decay.py`)
-35. **Permission Drift Detection**: Detect IAM/RBAC permission creep via `PermissionDriftDetector` (`src/shieldops/security/permission_drift.py`)
-36. **Feature Flag Lifecycle**: Track stale/risky feature flags via `FeatureFlagLifecycleManager` (`src/shieldops/config/flag_lifecycle.py`)
-37. **Cache Effectiveness**: Analyze cache health and hit rates via `CacheEffectivenessAnalyzer` (`src/shieldops/analytics/cache_effectiveness.py`)
-38. **License Risk Analysis**: Analyze transitive dependency license risks via `DependencyLicenseRiskAnalyzer` (`src/shieldops/compliance/license_risk.py`)
-39. **Rate Limit Policy**: Evaluate service-to-service rate limit policies via `RateLimitPolicyManager` (`src/shieldops/topology/rate_limit_policy.py`)
-40. **Permission Drift Detection**: Detect IAM/RBAC permission creep via `PermissionDriftDetector` (`src/shieldops/security/permission_drift.py`)
-41. **Data Pipeline Reliability**: Monitor data pipeline health via `DataPipelineReliabilityMonitor` (`src/shieldops/observability/data_pipeline.py`)
-42. **Generate Report**: Severity-rated findings with remediation guidance
-43. **Audit Intelligence**: AI-powered audit analysis via `AuditIntelligenceAnalyzer` (`src/shieldops/audit/audit_intelligence.py`)
-44. **Policy Impact Scoring**: Analyze impact of policy changes via `PolicyImpactScorer` (`src/shieldops/compliance/policy_impact.py`)
-45. **Dependency Risk Scoring**: Score dependency failure risk via `DependencyRiskScorer` (`src/shieldops/topology/dependency_risk.py`)
-46. **Automation Gap Analysis**: Identify manual security processes via `AutomationGapIdentifier` (`src/shieldops/operations/automation_gap.py`)
-47. **Attack Surface Monitoring**: Monitor exposed endpoints and services via `AttackSurfaceMonitor` (`src/shieldops/security/attack_surface.py`)
-48. **Incident Cost Analysis**: Calculate financial impact of security incidents via `IncidentCostCalculator` (`src/shieldops/incidents/incident_cost.py`)
-49. **Resource Contention Detection**: Detect resource contention from security events via `ResourceContentionDetector` (`src/shieldops/analytics/resource_contention.py`)
-50. **Cross-Team Collaboration Scoring**: Assess security collaboration across teams via `CrossTeamCollaborationScorer` (`src/shieldops/analytics/collaboration_scorer.py`)
-51. **Decision Audit Logging**: Review agent decision audit trails via `DecisionAuditLogger` (`src/shieldops/audit/decision_audit.py`)
-52. **Data Retention Policy**: Validate data retention compliance via `DataRetentionPolicyManager` (`src/shieldops/observability/retention_policy.py`)
-53. **Tenant Resource Quotas**: Verify per-tenant resource quota enforcement via `TenantResourceQuotaManager` (`src/shieldops/operations/tenant_quota.py`)
-54. **LLM Cost Tracking**: Audit AI/LLM token usage and costs via `LLMTokenCostTracker` (`src/shieldops/billing/llm_cost_tracker.py`)
-55. **Risk Signal Aggregation**: Aggregate multi-domain risk signals via `RiskSignalAggregator` (`src/shieldops/security/risk_aggregator.py`)
-56. **Dynamic Risk Scoring**: Real-time risk scoring via `DynamicRiskScorer` (`src/shieldops/analytics/dynamic_risk_scorer.py`)
-57. **Predictive Alerting**: Pre-incident alerting via `PredictiveAlertEngine` (`src/shieldops/observability/predictive_alert.py`)
-58. **Threat Hunting**: Automated threat hunting campaigns via `ThreatHuntOrchestrator` (`src/shieldops/security/threat_hunt.py`)
-59. **Security Response Automation**: Automated containment via `SecurityResponseAutomator` (`src/shieldops/security/response_automator.py`)
-60. **Zero Trust Verification**: Continuous trust verification via `ZeroTrustVerifier` (`src/shieldops/security/zero_trust_verifier.py`)
-61. **Agent Compliance Audit**: Audit agent actions against compliance via `AgentComplianceAuditor` (`src/shieldops/agents/compliance_auditor.py`)
-62. **Security Posture Simulation**: Simulate attack scenarios via `SecurityPostureSimulator` (`src/shieldops/security/posture_simulator.py`)
-63. **Credential Rotation**: Automated credential rotation via `CredentialRotationOrchestrator` (`src/shieldops/security/credential_rotator.py`)
-64. **Compliance Evidence Automation**: Auto-collect compliance evidence via `ComplianceEvidenceAutomator` (`src/shieldops/compliance/evidence_automator.py`)
-65. **Breach Prediction**: Predict imminent security breaches via `BreachPredictor` (`src/shieldops/security/breach_predictor.py`)
-66. **Compliance Posture Scoring**: Score overall compliance posture via `GovernanceDashboard` (`src/shieldops/compliance/governance_dashboard.py`)
-67. **Alert Routing Optimization**: Optimize alert routing to correct responders via `AlertRoutingOptimizer` (`src/shieldops/observability/alert_routing.py`)
-68. **DNS Health Monitoring**: Detect DNS misconfigurations and anomalies via `DNSHealthMonitor` (`src/shieldops/observability/dns_health_monitor.py`)
-69. **Configuration Drift Analysis**: Detect infrastructure and config drift via `DriftAnalyzer` (`src/shieldops/operations/drift_analyzer.py`)
-70. **Attack Surface Assessment**: Map and monitor exposed attack surfaces via `AttackSurfaceMonitor` (`src/shieldops/security/attack_surface.py`)
-71. **Deployment Impact Analysis**: Assess security impact of deployments via `DeploymentImpactAnalyzer` (`src/shieldops/changes/deployment_impact.py`)
-72. **Configuration Validation**: Validate configuration consistency and security via `ConfigurationValidator` (`src/shieldops/config/config_validator.py`)
-73. **Observability Gap Detection**: Identify missing observability and monitoring via `ObservabilityGapAnalyzer` (`src/shieldops/observability/observability_gap.py`)
-74. **Change Freeze Policy Enforcement**: Monitor and enforce change freeze windows via `ChangeFreezePolicyManager` (`src/shieldops/changes/change_freeze.py`)
-75. **Service Ownership Tracking**: Verify service ownership and accountability via `ServiceOwnershipTracker` (`src/shieldops/operations/ownership_tracker.py`)
-76. **Policy Enforcement Monitoring**: Monitor real-time policy enforcement across agents and infrastructure via `PolicyEnforcementMonitor` (`src/shieldops/compliance/policy_enforcer.py`)
-77. **Compliance Evidence Validation**: Validate compliance evidence completeness and freshness via `ComplianceEvidenceValidator` (`src/shieldops/compliance/evidence_validator.py`)
-78. **Audit Readiness Scoring**: Score audit readiness across all compliance frameworks via `AuditReadinessScorer` (`src/shieldops/audit/audit_readiness.py`)
-79. **Vendor Lock-in Analysis**: Analyze vendor lock-in risk and portability across cloud providers via `VendorLockinAnalyzer` (`src/shieldops/billing/vendor_lockin.py`)
-80. **Security Compliance Bridge**: Map security findings to compliance control failures via `SecurityComplianceBridge` (`src/shieldops/security/compliance_bridge.py`)
-81. **Alert Deduplication**: Deduplicate noisy alerts and surface unique security incidents via `AlertDeduplicationEngine` (`src/shieldops/observability/alert_dedup.py`)
-82. **Compliance Automation Scoring**: Score automation coverage for each compliance control via `ComplianceAutomationScorer` (`src/shieldops/compliance/automation_scorer.py`)
-83. **Error Pattern Classification**: Classify error patterns by type and detect novel security-related error signatures via `ErrorPatternClassifier` (`src/shieldops/analytics/error_classifier.py`)
-84. **Dependency Vulnerability Mapping**: Map vulnerabilities across service dependencies via `DependencyVulnerabilityMapper` (`src/shieldops/topology/dep_vuln_mapper.py`)
-85. **Security Posture Benchmarking**: Benchmark security posture against industry standards via `SecurityPostureBenchmarker` (`src/shieldops/security/posture_benchmark.py`)
-86. **Alert Noise Classification**: Classify alerts as actionable vs noise to reduce alert fatigue via `AlertNoiseClassifier` (`src/shieldops/observability/noise_classifier.py`)
-87. **Compliance Report Automation**: Automate compliance report generation and evidence aggregation via `ComplianceReportAutomator` (`src/shieldops/compliance/report_automator.py`)
-88. **Alert Escalation Analysis**: Analyze alert escalation patterns, timing, and outcomes via `AlertEscalationAnalyzer` (`src/shieldops/observability/escalation_analyzer.py`)
-89. **Security Compliance Mapping**: Map security controls to compliance frameworks and detect gaps via `SecurityComplianceMapper` (`src/shieldops/security/compliance_mapper.py`)
-90. **Config Drift Monitoring**: Monitor configuration drift and detect unauthorized changes via `ConfigDriftMonitor` (`src/shieldops/operations/config_drift_monitor.py`)
-91. **Service Dependency Risk**: Score dependency risk across services via `ServiceDependencyRiskScorer` (`src/shieldops/topology/service_dep_risk.py`)
-92. **Threat Intelligence Correlation**: Correlate threat intelligence feeds and detect relevant threats via `ThreatIntelligenceCorrelator` (`src/shieldops/security/threat_correlator.py`)
-93. **Compliance Control Testing**: Test compliance controls for effectiveness via `ComplianceControlTester` (`src/shieldops/compliance/control_tester.py`)
-94. **Alert Suppression Management**: Track alert suppression effectiveness via `AlertSuppressionManager` (`src/shieldops/observability/alert_suppression.py`)
-95. **Metric Anomaly Scoring**: Score and classify metric anomalies via `MetricAnomalyScorer` (`src/shieldops/analytics/anomaly_scorer.py`)
-96. **Incident Noise Filtering**: Filter incident noise and identify false alarms via `IncidentNoiseFilter` (`src/shieldops/incidents/noise_filter.py`)
-97. **Dependency Validation**: Validate service dependencies against traffic via `ServiceDependencyValidator` (`src/shieldops/topology/dep_validator.py`)
-98. **Alert Priority Optimization**: Optimize alert priority levels via `AlertPriorityOptimizer` (`src/shieldops/observability/alert_priority.py`)
-99. **Cost Allocation Validation**: Validate cost allocations via `CostAllocationValidator` (`src/shieldops/billing/cost_alloc_validator.py`)
-100. **Change Correlation**: Correlate changes with incidents via `ChangeCorrelationEngine` (`src/shieldops/changes/change_correlator.py`)
-101. **SLO Dependency Mapping**: Map SLO dependencies via `SLODependencyMapper` (`src/shieldops/sla/slo_dep_mapper.py`)
-102. **Security Event Correlation**: Correlate security events via `SecurityEventCorrelator` (`src/shieldops/security/event_correlator.py`)
-103. **Evidence Consolidation**: Consolidate compliance evidence via `ComplianceEvidenceConsolidator` (`src/shieldops/compliance/evidence_consolidator.py`)
-104. **Audit Compliance Reporting**: Generate audit compliance reports via `AuditComplianceReporter` (`src/shieldops/audit/compliance_reporter.py`)
-105. **Vulnerability Prioritization**: Prioritize vulnerabilities by exploitability and impact via `VulnerabilityPrioritizer` (`src/shieldops/security/vuln_prioritizer.py`)
-106. **Compliance Risk Scoring**: Score compliance risk across frameworks and detect high-risk areas via `ComplianceRiskScorer` (`src/shieldops/compliance/risk_scorer.py`)
-107. **Audit Evidence Tracking**: Track audit evidence collection and monitor freshness via `AuditEvidenceTracker` (`src/shieldops/audit/evidence_tracker.py`)
-108. **Performance Benchmarking**: Track performance benchmarks and detect regressions via `PerformanceBenchmarkTracker` (`src/shieldops/analytics/perf_benchmark.py`)
-109. **Alert Correlation Optimization**: Optimize alert correlation rules and reduce false correlations via `AlertCorrelationOptimizer` (`src/shieldops/observability/alert_correlation_opt.py`)
-110. **Lateral Movement Detection**: Detect lateral movement patterns and compromised credentials via `LateralMovementDetector` (`src/shieldops/security/lateral_movement.py`)
-111. **Regulatory Change Tracking**: Track regulatory changes and assess compliance impact via `RegulatoryChangeTracker` (`src/shieldops/compliance/regulation_tracker.py`)
-112. **Audit Finding Tracking**: Track audit findings and monitor remediation progress via `AuditFindingTracker` (`src/shieldops/audit/finding_tracker.py`)
-113. **Invoice Validation**: Validate cloud invoices against usage and detect billing anomalies via `InvoiceValidationEngine` (`src/shieldops/billing/invoice_validator.py`)
-114. **Metric Quality Scoring**: Score metric quality and detect stale/noisy metrics via `MetricQualityScorer` (`src/shieldops/observability/metric_quality.py`)
-115. **Insider Threat Detection**: Detect insider threat patterns and anomalous access behavior via `InsiderThreatDetector` (`src/shieldops/security/insider_threat.py`)
-116. **Control Effectiveness Tracking**: Track compliance control effectiveness and detect control failures via `ControlEffectivenessTracker` (`src/shieldops/compliance/control_effectiveness.py`)
-117. **Audit Remediation Tracking**: Track audit remediation progress and detect overdue remediations via `AuditRemediationTracker` (`src/shieldops/audit/remediation_tracker.py`)
-118. **Log Quality Analysis**: Analyze log quality across services and detect missing fields via `LogQualityAnalyzer` (`src/shieldops/observability/log_quality.py`)
-119. **Reliability Metrics Collection**: Collect and aggregate reliability metrics and track MTTR/MTBF via `ReliabilityMetricsCollector` (`src/shieldops/analytics/reliability_metrics.py`)
-120. **Data Classification**: Classify data sensitivity levels and enforce classification policies via `DataClassificationEngine` (`src/shieldops/security/data_classification.py`)
-121. **Policy Coverage Analysis**: Analyze policy coverage across infrastructure and detect unprotected resources via `PolicyCoverageAnalyzer` (`src/shieldops/compliance/policy_coverage.py`)
-122. **Change Audit Logging**: Audit all infrastructure changes and detect unauthorized modifications via `ChangeAuditLogger` (`src/shieldops/audit/change_audit.py`)
-123. **Alert Response Tracking**: Track alert response times and outcomes and detect slow response patterns via `AlertResponseTracker` (`src/shieldops/analytics/alert_response.py`)
-124. **Secret Rotation Planning**: Plan and schedule secret rotations and detect overdue credentials via `SecretRotationPlanner` (`src/shieldops/security/secret_rotation_planner.py`)
-125. **Access Review Automation**: Automate periodic access reviews and detect excessive permissions via `AccessReviewAutomator` (`src/shieldops/audit/access_review.py`)
-126. **Audit Evidence Mapping**: Map audit evidence to compliance controls and detect evidence gaps via `AuditEvidenceMapper` (`src/shieldops/compliance/audit_evidence_mapper.py`)
-127. **Threat Intelligence Tracking**: Track threat intelligence feeds and correlate threats to infrastructure via `ThreatIntelligenceTracker` (`src/shieldops/security/threat_intelligence.py`)
-128. **Compliance Evidence Chain Tracking**: Track compliance evidence chains end-to-end and verify chain integrity via `ComplianceEvidenceChainTracker` (`src/shieldops/compliance/compliance_evidence_chain.py`)
-129. **Incident Pattern Detection**: Detect recurring incident patterns and identify systemic issues via `IncidentPatternDetector` (`src/shieldops/incidents/incident_pattern.py`)
-130. **Cost Attribution**: Attribute costs to teams, services, and features and track cost drivers via `CostAttributionEngine` (`src/shieldops/billing/cost_attribution_engine.py`)
-131. **Security Posture Gap Analysis**: Analyze security posture gaps across infrastructure and prioritize remediation via `SecurityPostureGapAnalyzer` (`src/shieldops/security/security_posture_gap.py`)
-132. **Audit Finding Tracking**: Track audit finding lifecycle, remediation timelines, and recurring findings via `AuditFindingTracker` (`src/shieldops/audit/audit_finding_tracker.py`)
-133. **Dependency Circuit Breaker Monitoring**: Monitor dependency circuit breaker states and detect unhealthy patterns via `DependencyCircuitBreakerMonitor` (`src/shieldops/topology/dependency_circuit_breaker.py`)
-134. **Metric Cardinality Planning**: Plan metric cardinality budgets and detect cardinality explosions via `MetricCardinalityPlanner` (`src/shieldops/observability/metric_cardinality_planner.py`)
-135. **Knowledge Retention Tracking**: Track knowledge retention across teams and detect knowledge loss risks via `KnowledgeRetentionTracker` (`src/shieldops/knowledge/knowledge_retention.py`)
-136. **Cost Forecast Accuracy**: Track cost forecast accuracy and detect forecast drift via `CostForecastAccuracyTracker` (`src/shieldops/billing/cost_forecast_accuracy.py`)
-137. **Threat Response Tracking**: Track threat response activities and measure response effectiveness via `ThreatResponseTracker` (`src/shieldops/security/threat_response_tracker.py`)
-138. **Audit Compliance Mapping**: Map audit findings to compliance frameworks and detect unmapped findings via `AuditComplianceMapper` (`src/shieldops/audit/audit_compliance_mapper.py`)
-139. **Change Risk Classification**: Classify change risk levels and analyze risk factors via `ChangeRiskClassifier` (`src/shieldops/changes/change_risk_classifier.py`)
-140. **Incident Response Time Tracking**: Track incident response times and identify slow response patterns via `IncidentResponseTimeTracker` (`src/shieldops/incidents/incident_response_time.py`)
-141. **Vulnerability Response Tracking**: Track vulnerability remediation and measure patch velocity via `VulnerabilityResponseTracker` (`src/shieldops/security/vulnerability_response_tracker.py`)
-142. **Audit Control Assessment**: Assess control effectiveness and detect control gaps via `AuditControlAssessor` (`src/shieldops/audit/audit_control_assessor.py`)
-143. **Alert Noise Profiling**: Profile alert noise patterns and track signal-to-noise ratio via `AlertNoiseProfiler` (`src/shieldops/observability/alert_noise_profiler.py`)
-144. **Incident Pattern Analysis**: Analyze incident patterns and identify recurring failure modes via `IncidentPatternAnalyzer` (`src/shieldops/incidents/incident_pattern_analyzer.py`)
-145. **Threat Surface Analysis**: Analyze threat surface exposure and risk patterns via `ThreatSurfaceAnalyzer` (`src/shieldops/security/threat_surface_analyzer.py`)
-146. **Cost Allocation Validation**: Validate cost allocation accuracy and compliance via `CostAllocationValidator` (`src/shieldops/billing/cost_allocation_validator.py`)
-147. **Audit Remediation Tracking**: Track audit finding remediation progress and timelines via `AuditRemediationTracker` (`src/shieldops/audit/audit_remediation_tracker.py`)
-148. **Alert Correlation Profiling**: Profile and score alert correlation patterns via `AlertCorrelationProfiler` (`src/shieldops/observability/alert_correlation_profiler.py`)
-149. **Security Signal Correlation**: Correlate security signals across disparate sources to detect attack patterns via `SecuritySignalCorrelator` (`src/shieldops/security/security_signal_correlator.py`)
-150. **Cost Governance Enforcement**: Enforce cost governance policies and detect violations via `CostGovernanceEnforcer` (`src/shieldops/billing/cost_governance_enforcer.py`)
-151. **Compliance Control Mapping**: Map controls to multiple compliance frameworks and identify gaps via `ComplianceControlMapper` (`src/shieldops/compliance/compliance_control_mapper.py`)
-152. **Audit Workflow Optimization**: Optimize audit workflow execution and identify bottlenecks via `AuditWorkflowOptimizer` (`src/shieldops/audit/audit_workflow_optimizer.py`)
-153. **Security Compliance Scoring**: Score security control alignment with compliance requirements via `SecurityComplianceScorer` (`src/shieldops/security/security_compliance_scorer.py`)
-154. **Regulatory Impact Tracking**: Track regulatory changes and score compliance impact via `RegulatoryImpactTracker` (`src/shieldops/compliance/regulatory_impact_tracker.py`)
-155. **Audit Scope Optimization**: Optimize audit scope by analyzing historical finding density via `AuditScopeOptimizer` (`src/shieldops/audit/audit_scope_optimizer.py`)
-156. **Cost Forecast Precision**: Measure and improve cost forecasting accuracy via `CostForecastPrecision` (`src/shieldops/billing/cost_forecast_precision.py`)
+### Code Security
+1. **Static analysis**: Run bandit for Python security issues
+2. **Secret detection**: Scan for hardcoded credentials
+3. **Dependency audit**: Check all dependencies against CVE databases
+4. **License compliance**: Verify dependency licenses
 
-### Phase 103: Security Automation & Zero Trust (Items 157–170)
-157. **Zero Trust Policy Enforcement**: Validate zero trust policies across all access paths via `ZeroTrustPolicyEnforcer` (`src/shieldops/security/zero_trust_policy_enforcer.py`)
-158. **Compliance-as-Code Validation**: Validate compliance policies defined as code via `ComplianceAsCodeValidator` (`src/shieldops/compliance/compliance_as_code_validator.py`)
-159. **DevSecOps Pipeline Gate**: Scan CI/CD pipeline security gates and enforce policy via `DevSecOpsPipelineGate` (`src/shieldops/security/devsecops_pipeline_gate.py`)
-160. **Security Chaos Engineering**: Recommend and validate security chaos experiments via `SecurityChaosEngineer` (`src/shieldops/security/security_chaos_engineer.py`)
-161. **Automation Rule Security Audit**: Audit automation rules for security policy compliance via `AutomationRuleSecurityAuditor` (`src/shieldops/security/automation_rule_auditor.py`)
-162. **ChatOps Security Validation**: Validate ChatOps command permissions and audit trails via `ChatOpsSecurityValidator` (`src/shieldops/security/chatops_security_validator.py`)
-163. **Enterprise Integration Security**: Scan enterprise integration webhook endpoints and credentials via `IntegrationSecurityScanner` (`src/shieldops/security/integration_security_scanner.py`)
-164. **Cross-Agent Policy Enforcement**: Verify cross-agent policy enforcement consistency via `CrossAgentPolicyValidator` (`src/shieldops/policy/cross_agent_policy_validator.py`)
-165. **Webhook Endpoint Security**: Scan webhook endpoints for authentication and authorization via `WebhookSecurityScanner` (`src/shieldops/security/webhook_security_scanner.py`)
-166. **Approval Workflow Integrity**: Verify approval workflow integrity and bypass detection via `ApprovalWorkflowAuditor` (`src/shieldops/security/approval_workflow_auditor.py`)
+```bash
+# Quick code scan
+python3 -m ruff check src/ tests/ --select S  # security rules
+bandit -c pyproject.toml -ll -r src/
+```
 
-### Phase 104-106: Advanced Observability, Security Ops & GitOps (Items 167–190)
-167. **eBPF Network Flow Analysis**: Analyze eBPF network flows for anomalies via `EbpfNetworkFlowAnalyzer` (`src/shieldops/observability/ebpf_network_flow_analyzer.py`)
-168. **ML Anomaly Detection**: Multi-variate anomaly detection with isolation forest scoring via `MlAnomalyDetectionEngine` (`src/shieldops/observability/ml_anomaly_detection_engine.py`)
-169. **Alert Grouping Intelligence**: ML-based alert clustering and deduplication via `IntelligentAlertGrouping` (`src/shieldops/observability/intelligent_alert_grouping.py`)
-170. **Metric Cardinality Governance**: Cardinality explosion prevention and label policy enforcement via `MetricCardinalityGovernor` (`src/shieldops/observability/metric_cardinality_governor.py`)
-171. **Trace Bottleneck Analysis**: Critical path analysis and latency attribution via `TraceBottleneckAnalyzer` (`src/shieldops/observability/trace_bottleneck_analyzer.py`)
-172. **Purple Team Campaign Tracking**: Purple team exercise coverage and detection validation via `PurpleTeamCampaignEngine` (`src/shieldops/security/purple_team_campaign_engine.py`)
-173. **Detection Engineering Pipeline**: Detection rule lifecycle and effectiveness scoring via `DetectionEngineeringPipelineV2` (`src/shieldops/security/detection_engineering_pipeline_v2.py`)
-174. **SOAR Workflow Intelligence**: Playbook effectiveness and bottleneck detection via `SoarWorkflowIntelligence` (`src/shieldops/security/soar_workflow_intelligence.py`)
-175. **Threat Exposure Management**: External exposure mapping and remediation prioritization via `ThreatExposureManagement` (`src/shieldops/security/threat_exposure_management.py`)
-176. **Security Data Lake**: Security data ingestion and retention tier management via `SecurityDataLakeEngine` (`src/shieldops/security/security_data_lake_engine.py`)
-177. **Identity Analytics**: Identity behavior profiling and privilege anomaly detection via `IdentityAnalyticsEngine` (`src/shieldops/security/identity_analytics_engine.py`)
-178. **Cloud Workload Protection**: Runtime security and micro-segmentation assessment via `CloudWorkloadProtection` (`src/shieldops/security/cloud_workload_protection.py`)
-179. **Security Orchestration Hub**: Cross-tool workflow orchestration and routing via `SecurityOrchestrationHub` (`src/shieldops/security/security_orchestration_hub.py`)
-180. **Security SLA Tracking**: MTTD/MTTR and security SLA compliance via `SecuritySlaTracker` (`src/shieldops/operations/security_sla_tracker.py`)
-181. **Continuous Audit**: Automated control testing and finding management via `ContinuousAuditEngine` (`src/shieldops/compliance/continuous_audit_engine.py`)
-182. **Regulatory Intelligence**: Regulatory change tracking and impact assessment via `RegulatoryIntelligenceEngine` (`src/shieldops/compliance/regulatory_intelligence_engine.py`)
-183. **GitOps Reconciliation**: Git-to-cluster state drift detection via `GitOpsReconciliationEngine` (`src/shieldops/changes/gitops_reconciliation_engine.py`)
-184. **IaC Validation**: Terraform/OpenTofu blast radius and policy compliance via `IacValidationEngine` (`src/shieldops/changes/iac_validation_engine.py`)
-185. **Deployment Intelligence**: Rollback risk prediction and success pattern analysis via `DeploymentIntelligenceEngine` (`src/shieldops/changes/deployment_intelligence_engine.py`)
-186. **Infrastructure Drift Intelligence**: Advanced drift root cause classification via `InfrastructureDriftIntelligenceV2` (`src/shieldops/changes/infrastructure_drift_intelligence.py`)
-187. **Environment Parity**: Cross-environment comparison and deviation alerting via `EnvironmentParityEngine` (`src/shieldops/operations/environment_parity_engine.py`)
-188. **Disaster Recovery Intelligence**: RTO/RPO compliance and readiness scoring via `DisasterRecoveryIntelligence` (`src/shieldops/operations/disaster_recovery_intelligence.py`)
-189. **DORA Metrics Intelligence**: Deployment frequency, lead time, MTTR classification via `DeploymentAnalyticsEngine` (`src/shieldops/analytics/deployment_analytics_engine.py`)
-190. **Operational Risk Intelligence**: Composite risk scoring and heat map generation via `OperationalRiskIntelligence` (`src/shieldops/analytics/operational_risk_intelligence.py`)
+### Agent Security Audit
+1. **Blast radius**: Verify per-environment limits enforced
+2. **OPA policies**: Confirm all agent actions have policy rules
+3. **Permissions**: Audit tool call permissions per agent type
+4. **Decision audit**: Review agent decision trails
 
-### Phase 107-109: AIOps, Developer Experience & Resilience Engineering (Items 191–214)
-191. **AIOps Root Cause Analysis**: ML-based probable cause identification and causal graph building via `AIOpsRootCauseEngine` (`src/shieldops/analytics/aiops_root_cause_engine.py`)
-192. **Cognitive Runbook Analysis**: Runbook modification suggestions and staleness detection via `CognitiveRunbookEngine` (`src/shieldops/operations/cognitive_runbook_engine.py`)
-193. **Anomaly Self-Learning**: Model accuracy tracking and sensitivity adjustment via `AnomalySelfLearningEngine` (`src/shieldops/observability/anomaly_self_learning_engine.py`)
-194. **Event Pattern Discovery**: Sequence discovery and early warning identification via `EventPatternDiscoveryEngine` (`src/shieldops/observability/event_pattern_discovery_engine.py`)
-195. **Intelligent Noise Reduction**: Alert clustering and noise ratio computation via `IntelligentNoiseReductionEngine` (`src/shieldops/incidents/intelligent_noise_reduction_engine.py`)
-196. **Operational Forecasting**: Demand forecasting and threshold breach detection via `OperationalForecastingEngine` (`src/shieldops/analytics/operational_forecasting_engine.py`)
-197. **Causal Inference**: Causality evaluation and counterfactual analysis via `CausalInferenceEngine` (`src/shieldops/analytics/causal_inference_engine.py`)
-198. **Adaptive Thresholds**: Optimal threshold computation and false positive rate evaluation via `AdaptiveThresholdEngine` (`src/shieldops/observability/adaptive_threshold_engine.py`)
-199. **Temporal Anomaly Detection**: Temporal violation detection and schedule adherence via `TemporalAnomalyEngine` (`src/shieldops/observability/temporal_anomaly_engine.py`)
-200. **Cognitive Incident Triage**: Triage recommendations and responder load analysis via `CognitiveIncidentTriageEngine` (`src/shieldops/incidents/cognitive_incident_triage_engine.py`)
-201. **Self-Tuning Alerts**: Signal-to-noise optimization and tuning impact evaluation via `SelfTuningAlertEngine` (`src/shieldops/observability/self_tuning_alert_engine.py`)
-202. **Predictive Resource Sizing**: Demand prediction and right-sizing recommendations via `PredictiveResourceEngine` (`src/shieldops/billing/predictive_resource_engine.py`)
-203. **Service Catalog Intelligence**: Service catalog health and ownership tracking via `ServiceCatalogIntelligenceEngine` (`src/shieldops/topology/service_catalog_intelligence_engine.py`)
-204. **Developer Onboarding Analytics**: Time-to-productivity and bottleneck identification via `DeveloperOnboardingEngine` (`src/shieldops/knowledge/developer_onboarding_engine.py`)
-205. **API Lifecycle Management**: API versioning health and deprecation tracking via `APILifecycleEngine` (`src/shieldops/topology/api_lifecycle_engine.py`)
-206. **Self-Service Provisioning**: Provisioning request tracking and approval analysis via `SelfServiceProvisioningEngine` (`src/shieldops/operations/self_service_provisioning_engine.py`)
-207. **Developer Productivity**: Productivity metrics and bottleneck detection via `DeveloperProductivityEngine` (`src/shieldops/analytics/developer_productivity_engine.py`)
-208. **Platform API Gateway**: Gateway health and rate limit policy tracking via `PlatformAPIGatewayEngine` (`src/shieldops/topology/platform_api_gateway_engine.py`)
-209. **Service Templates**: Template usage and compliance tracking via `ServiceTemplateEngine` (`src/shieldops/changes/service_template_engine.py`)
-210. **Environment Lifecycle**: Environment provisioning and drift monitoring via `EnvironmentLifecycleEngine` (`src/shieldops/operations/environment_lifecycle_engine.py`)
-211. **Steady-State Hypotheses**: Hypothesis validation and baseline tracking via `SteadyStateHypothesisEngine` (`src/shieldops/sla/steady_state_hypothesis_engine.py`)
-212. **Failure Domain Mapping**: Failure domain identification and blast radius estimation via `FailureDomainMapperEngine` (`src/shieldops/topology/failure_domain_mapper_engine.py`)
-213. **Resilience Experiments**: Chaos experiment tracking and outcome analysis via `ResilienceExperimentEngine` (`src/shieldops/operations/resilience_experiment_engine.py`)
-214. **Recovery Pattern Analysis**: Recovery pattern identification and optimization via `RecoveryPatternEngine` (`src/shieldops/incidents/recovery_pattern_engine.py`)
-215. **Chaos Game Days**: Game day planning and execution tracking via `ChaosGameDayEngine` (`src/shieldops/operations/chaos_game_day_engine.py`)
-216. **Fault Propagation Analysis**: Fault propagation path identification via `FaultPropagationEngine` (`src/shieldops/topology/fault_propagation_engine.py`)
-217. **Resilience Benchmarking**: Resilience score computation and benchmark tracking via `ResilienceBenchmarkEngine` (`src/shieldops/sla/resilience_benchmark_engine.py`)
-218. **Adaptive Load Management**: Load pattern analysis and capacity recommendations via `AdaptiveLoadEngine` (`src/shieldops/analytics/adaptive_load_engine.py`)
-219. **Service Degradation Tracking**: Degradation pattern detection and impact analysis via `ServiceDegradationEngine` (`src/shieldops/sla/service_degradation_engine.py`)
-220. **Resilience Debt Scoring**: Resilience debt quantification and prioritization via `ResilienceDebtEngine` (`src/shieldops/analytics/resilience_debt_engine.py`)
-221. **Chaos Observability**: Chaos experiment observability and blast radius tracking via `ChaosObservabilityEngine` (`src/shieldops/observability/chaos_observability_engine.py`)
-222. **Disaster Simulation**: Disaster scenario simulation and recovery validation via `DisasterSimulationEngine` (`src/shieldops/operations/disaster_simulation_engine.py`)
+```python
+from shieldops.agents.agent_governance.runner import AgentGovernanceRunner
 
-### Phase 110-112: Observability 2.0, Security Intelligence & Autonomous Ops (Items 223–258)
-223. **Edge Telemetry Processing**: Edge node classification and routing optimization via `EdgeTelemetryProcessor` (`src/shieldops/observability/edge_telemetry_processor.py`)
-224. **Observability ROI Optimization**: Signal ROI computation and budget allocation via `ObservabilityRoiOptimizer` (`src/shieldops/observability/observability_roi_optimizer.py`)
-225. **Distributed Query Acceleration**: Query pattern analysis and cache efficiency via `DistributedQueryAccelerator` (`src/shieldops/observability/distributed_query_accelerator.py`)
-226. **Telemetry Compliance**: Data residency audit and PII detection in telemetry via `TelemetryComplianceEngine` (`src/shieldops/observability/telemetry_compliance_engine.py`)
-227. **Hybrid Cloud Telemetry Bridge**: Cross-cloud metric reconciliation and format mismatch detection via `HybridCloudTelemetryBridge` (`src/shieldops/observability/hybrid_cloud_telemetry_bridge.py`)
-228. **Intelligent Sampling**: Sampling accuracy computation and bias detection via `IntelligentSamplingCoordinator` (`src/shieldops/observability/intelligent_sampling_coordinator.py`)
-229. **Observability Dependency Mapping**: Signal dependency mapping and orphaned signal detection via `ObservabilityDependencyMapper` (`src/shieldops/observability/observability_dependency_mapper.py`)
-230. **Real-time SLI Calculation**: Composite SLI computation and breach forecasting via `RealtimeSliCalculator` (`src/shieldops/observability/realtime_sli_calculator.py`)
-231. **Telemetry Anomaly Forensics**: Anomaly origin tracing and forensic timeline generation via `TelemetryAnomalyForensics` (`src/shieldops/observability/telemetry_anomaly_forensics.py`)
-232. **Multi-Tenant Observability**: Tenant quota enforcement and noisy neighbor detection via `MultiTenantObservabilityEngine` (`src/shieldops/observability/multi_tenant_observability_engine.py`)
-233. **Observability Automation**: Trigger condition evaluation and automated response via `ObservabilityAutomationEngine` (`src/shieldops/observability/observability_automation_engine.py`)
-234. **Service Level Intelligence**: Error budget velocity and SLO adjustment recommendations via `ServiceLevelIntelligence` (`src/shieldops/observability/service_level_intelligence.py`)
-235. **Threat Prediction**: Attack probability prediction and precursor pattern identification via `ThreatPredictionEngine` (`src/shieldops/security/threat_prediction_engine.py`)
-236. **Adversary Emulation**: Emulation plan generation and defense readiness scoring via `AdversaryEmulationEngine` (`src/shieldops/security/adversary_emulation_engine.py`)
-237. **Security Knowledge Graph**: Threat subgraph building and entity centrality computation via `SecurityKnowledgeGraphEngine` (`src/shieldops/security/security_knowledge_graph_engine.py`)
-238. **Automated Incident Classification**: ML-based incident classification and misclassification detection via `AutomatedIncidentClassifier` (`src/shieldops/security/automated_incident_classifier.py`)
-239. **Vulnerability Exploit Prediction**: Exploit timeline prediction and risk-adjusted scoring via `VulnerabilityExploitPredictor` (`src/shieldops/security/vulnerability_exploit_predictor.py`)
-240. **Security Posture Trends**: Posture trajectory computation and regression signal detection via `SecurityPostureTrendEngine` (`src/shieldops/security/security_posture_trend_engine.py`)
-241. **Cross-Domain Threat Fusion**: Multi-stage attack detection and signal reliability scoring via `CrossDomainThreatFusion` (`src/shieldops/security/cross_domain_threat_fusion.py`)
-242. **Compliance Violation Prediction**: Violation risk prediction and control weakness identification via `ComplianceViolationPredictor` (`src/shieldops/security/compliance_violation_predictor.py`)
-243. **Attack Narrative Construction**: Attack story construction and narrative gap identification via `AttackNarrativeEngine` (`src/shieldops/security/attack_narrative_engine.py`)
-244. **Runtime Threat Analysis**: Runtime behavior analysis and evasion technique detection via `RuntimeThreatAnalyzer` (`src/shieldops/security/runtime_threat_analyzer.py`)
-245. **Security Debt Quantification**: Security debt interest rate computation and reduction prioritization via `SecurityDebtQuantifier` (`src/shieldops/security/security_debt_quantifier.py`)
-246. **Threat Hunting Playbooks**: Hunt hypothesis generation and playbook coverage evaluation via `ThreatHuntingPlaybookEngine` (`src/shieldops/security/threat_hunting_playbook_engine.py`)
-247. **Autonomous Incident Command**: Incident complexity assessment and response strategy selection via `AutonomousIncidentCommander` (`src/shieldops/operations/autonomous_incident_commander.py`)
-248. **Predictive Maintenance V2**: Component failure prediction and maintenance ROI computation via `PredictiveMaintenancePlannerV2` (`src/shieldops/operations/predictive_maintenance_planner_v2.py`)
-249. **Workflow Intelligence**: Workflow bottleneck analysis and efficiency computation via `WorkflowIntelligenceEngine` (`src/shieldops/operations/workflow_intelligence_engine.py`)
-250. **Autonomous Capacity Optimization**: Capacity need prediction and scaling outcome evaluation via `AutonomousCapacityOptimizer` (`src/shieldops/operations/autonomous_capacity_optimizer.py`)
-251. **Automation Effectiveness**: Automation ROI computation and gap identification via `AutomationEffectivenessEngine` (`src/shieldops/analytics/automation_effectiveness_engine.py`)
-252. **Intelligent Root Cause Ranking**: Bayesian cause ranking and cascading failure detection via `IntelligentRootCauseRanker` (`src/shieldops/analytics/intelligent_root_cause_ranker.py`)
-253. **Operational Complexity Scoring**: Complexity hotspot identification and simplification recommendations via `OperationalComplexityScorer` (`src/shieldops/analytics/operational_complexity_scorer.py`)
-254. **Autonomous Triage**: Auto-triage and triage accuracy tracking via `AutonomousTriageEngine` (`src/shieldops/incidents/autonomous_triage_engine.py`)
-255. **Incident Learning Synthesis**: Learning extraction and recommendation synthesis via `IncidentLearningSynthesizer` (`src/shieldops/incidents/incident_learning_synthesizer.py`)
-256. **Autonomous Compliance**: Auto control assessment and compliance velocity via `AutonomousComplianceEngine` (`src/shieldops/compliance/autonomous_compliance_engine.py`)
-257. **Policy Drift Intelligence**: Policy drift detection and alignment recommendations via `PolicyDriftIntelligence` (`src/shieldops/compliance/policy_drift_intelligence.py`)
-258. **Intelligent Audit Planning**: Audit plan generation and coverage optimization via `IntelligentAuditPlanner` (`src/shieldops/audit/intelligent_audit_planner.py`)
+runner = AgentGovernanceRunner()
+result = await runner.assess(
+    agent_type="remediation",
+    environment="production",
+    check_capabilities=True,
+    check_escalation=True,
+)
+```
 
-### Phase 113-115: Auto-Learning, OTel Tooling & Risk-Based Security (Items 259–294)
-259. **Agent Experiment Engine**: Experiment cycle execution and metric delta evaluation via `AgentExperimentEngine` (`src/shieldops/analytics/agent_experiment_engine.py`)
-260. **Model Self-Tuning**: Tuning trajectory computation and overfitting detection via `ModelSelfTuningEngine` (`src/shieldops/analytics/model_self_tuning_engine.py`)
-261. **Lightweight Training**: Resource usage estimation and batch schedule optimization via `LightweightTrainingEngine` (`src/shieldops/analytics/lightweight_training_engine.py`)
-262. **Agent Knowledge Distillation**: Learning distillation and knowledge density computation via `AgentKnowledgeDistiller` (`src/shieldops/knowledge/agent_knowledge_distiller.py`)
-263. **Experiment Replay**: Experiment replay and nondeterminism detection via `ExperimentReplayEngine` (`src/shieldops/analytics/experiment_replay_engine.py`)
-264. **Resource Budget Management**: Experiment budget allocation and utilization tracking via `ResourceBudgetManager` (`src/shieldops/operations/resource_budget_manager.py`)
-265. **Hypothesis Generation**: Hypothesis ranking and pruning via `HypothesisGeneratorEngine` (`src/shieldops/analytics/hypothesis_generator_engine.py`)
-266. **Agent Fitness Scoring**: Composite fitness and plateau detection via `AgentFitnessScorer` (`src/shieldops/analytics/agent_fitness_scorer.py`)
-267. **Iteration Scheduling**: Throughput computation and bottleneck detection via `IterationSchedulerEngine` (`src/shieldops/operations/iteration_scheduler_engine.py`)
-268. **Metric Convergence Tracking**: Convergence point detection and rate computation via `MetricConvergenceTracker` (`src/shieldops/analytics/metric_convergence_tracker.py`)
-269. **Learning Feedback Loops**: Feedback signal processing and adaptation rate via `LearningFeedbackLoopEngine` (`src/shieldops/knowledge/learning_feedback_loop_engine.py`)
-270. **Agent Evolution Tracking**: Generational progress and evolution velocity via `AgentEvolutionTracker` (`src/shieldops/analytics/agent_evolution_tracker.py`)
-271. **Kafka Telemetry Pipeline**: Pipeline throughput and backpressure detection via `KafkaTelemetryPipeline` (`src/shieldops/observability/kafka_telemetry_pipeline.py`)
-272. **OTel Collector Orchestration**: Collector fleet assessment and gap detection via `OtelCollectorOrchestrator` (`src/shieldops/observability/otel_collector_orchestrator.py`)
-273. **Auto-Instrumentation Management**: Instrumentation coverage and missing instrumentor detection via `AutoInstrumentationManager` (`src/shieldops/observability/auto_instrumentation_manager.py`)
-274. **Telemetry Exporter Management**: Exporter health evaluation and data loss detection via `TelemetryExporterManager` (`src/shieldops/observability/telemetry_exporter_manager.py`)
-275. **Signal Routing**: Routing rule evaluation and conflict detection via `SignalRoutingEngine` (`src/shieldops/observability/signal_routing_engine.py`)
-276. **Collector Config Validation**: Pipeline config validation and conflict detection via `CollectorConfigValidator` (`src/shieldops/observability/collector_config_validator.py`)
-277. **Telemetry Schema Evolution**: Schema drift detection and migration planning via `TelemetrySchemaEvolution` (`src/shieldops/observability/telemetry_schema_evolution.py`)
-278. **OTel Service Graph**: Service graph building and edge discovery via `OtelServiceGraphEngine` (`src/shieldops/topology/otel_service_graph_engine.py`)
-279. **Resource Detection**: Resource attribute detection and conflict reconciliation via `ResourceDetectionEngine` (`src/shieldops/observability/resource_detection_engine.py`)
-280. **Telemetry Cost Attribution**: Cost attribution and hotspot identification via `TelemetryCostAttribution` (`src/shieldops/billing/telemetry_cost_attribution.py`)
-281. **Processor Chain Optimization**: Chain performance analysis and redundancy detection via `ProcessorChainOptimizer` (`src/shieldops/observability/processor_chain_optimizer.py`)
-282. **Trace Context Propagation**: Propagation break detection and coverage computation via `TraceContextPropagation` (`src/shieldops/observability/trace_context_propagation.py`)
-283. **Entity Risk Scoring**: Entity risk score computation and threshold breach detection via `EntityRiskScoringEngine` (`src/shieldops/security/entity_risk_scoring_engine.py`)
-284. **Risk Factor Aggregation**: Risk factor aggregation and correlation detection via `RiskFactorAggregator` (`src/shieldops/security/risk_factor_aggregator.py`)
-285. **MITRE Risk Mapping**: Detection-to-technique mapping and tactic coverage via `MitreRiskMapperEngine` (`src/shieldops/security/mitre_risk_mapper_engine.py`)
-286. **Alert Risk Enrichment**: Alert enrichment with risk context and completeness scoring via `AlertRiskEnrichmentEngine` (`src/shieldops/security/alert_risk_enrichment_engine.py`)
-287. **Risk-Based Prioritization**: Alert queue prioritization and priority inversion detection via `RiskBasedPrioritizer` (`src/shieldops/security/risk_based_prioritizer.py`)
-288. **Risk Observation Consolidation**: Observation consolidation and pattern detection via `RiskObservationEngine` (`src/shieldops/security/risk_observation_engine.py`)
-289. **Risk Alert Correlation**: Risk alert correlation and attack timeline building via `RiskAlertCorrelationEngine` (`src/shieldops/incidents/risk_alert_correlation_engine.py`)
-290. **Detection Risk Calibration**: Detection risk calibration and false positive impact via `DetectionRiskCalibrator` (`src/shieldops/security/detection_risk_calibrator.py`)
-291. **Risk Trend Intelligence**: Risk trajectory computation and anomaly detection via `RiskTrendIntelligence` (`src/shieldops/analytics/risk_trend_intelligence.py`)
-292. **Entity Behavior Risk**: Behavioral risk scoring and baseline deviation detection via `EntityBehaviorRiskEngine` (`src/shieldops/security/entity_behavior_risk_engine.py`)
-293. **Risk Compliance Bridge**: Risk-to-control mapping and compliance risk scoring via `RiskComplianceBridge` (`src/shieldops/compliance/risk_compliance_bridge.py`)
-294. **Risk Response Automation**: Response action selection and effectiveness computation via `RiskResponseAutomator` (`src/shieldops/security/risk_response_automator.py`)
+### Infrastructure Security
+1. **IaC scan**: Scan Terraform/K8s configs (checkov, tfsec)
+2. **Container scan**: Image vulnerability scanning
+3. **Cloud posture**: CIS benchmark assessment
+4. **Network**: Flow analysis and segmentation audit
 
-### Phase 116-118: Incident Lifecycle, Compliance Intelligence & Reliability (Items 295–330)
-295. **Incident Lifecycle State**: Phase dwell time computation and lifecycle bottleneck detection via `IncidentLifecycleStateEngine` (`src/shieldops/incidents/incident_lifecycle_state_engine.py`)
-296. **Recovery Verification**: Recovery completeness verification and partial recovery detection via `RecoveryVerificationEngine` (`src/shieldops/incidents/recovery_verification_engine.py`)
-297. **Blast Radius Containment**: Containment effectiveness computation and blast radius expansion detection via `BlastRadiusContainmentEngine` (`src/shieldops/incidents/blast_radius_containment_engine.py`)
-298. **Postmortem Insight Extraction**: Actionable insight extraction and recurring theme detection via `PostmortemInsightExtractor` (`src/shieldops/incidents/postmortem_insight_extractor.py`)
-299. **Incident Recurrence Patterns**: Recurrence frequency computation and systemic pattern detection via `IncidentRecurrencePatternEngine` (`src/shieldops/incidents/incident_recurrence_pattern_engine.py`)
-300. **Recovery Runbook Effectiveness**: Runbook success rate computation and gap detection via `RecoveryRunbookEffectivenessEngine` (`src/shieldops/operations/recovery_runbook_effectiveness_engine.py`)
-301. **Incident Cost Attribution**: Cost breakdown computation and high-cost pattern detection via `IncidentCostAttributionEngine` (`src/shieldops/incidents/incident_cost_attribution_engine.py`)
-302. **Cascade Failure Analysis**: Cascade depth computation and trigger service detection via `CascadeFailureAnalyzer` (`src/shieldops/incidents/cascade_failure_analyzer.py`)
-303. **Mitigation Efficacy Tracking**: Mitigation success rate computation and ineffective mitigation detection via `MitigationEfficacyTracker` (`src/shieldops/incidents/mitigation_efficacy_tracker.py`)
-304. **Incident Communication Effectiveness**: Communication score computation and gap detection via `IncidentCommunicationEffectivenessEngine` (`src/shieldops/incidents/incident_communication_effectiveness_engine.py`)
-305. **Recovery Dependency Mapping**: Recovery critical path computation and circular dependency detection via `RecoveryDependencyMapper` (`src/shieldops/operations/recovery_dependency_mapper.py`)
-306. **Incident Knowledge Graph**: Knowledge connection computation and gap detection via `IncidentKnowledgeGraphEngine` (`src/shieldops/knowledge/incident_knowledge_graph_engine.py`)
-307. **Evidence Freshness Monitoring**: Evidence freshness scoring and stale evidence detection via `ContinuousEvidenceFreshnessEngine` (`src/shieldops/compliance/continuous_evidence_freshness_engine.py`)
-308. **Regulatory Change Velocity**: Change velocity tracking and high-impact change detection via `RegulatoryChangeVelocityTracker` (`src/shieldops/compliance/regulatory_change_velocity_tracker.py`)
-309. **Audit Finding Remediation**: Remediation velocity computation and overdue finding detection via `AuditFindingRemediationEngine` (`src/shieldops/audit/audit_finding_remediation_engine.py`)
-310. **Cross-Framework Control Mapping**: Control overlap matrix and unmapped control detection via `CrossFrameworkControlMapper` (`src/shieldops/compliance/cross_framework_control_mapper.py`)
-311. **Compliance Posture Drift**: Posture drift scoring and drift acceleration detection via `CompliancePostureDriftEngine` (`src/shieldops/compliance/compliance_posture_drift_engine.py`)
-312. **Audit Scope Coverage**: Scope coverage ratio computation and untested control detection via `AuditScopeCoverageEngine` (`src/shieldops/audit/audit_scope_coverage_engine.py`)
-313. **Evidence Chain Integrity**: Chain integrity scoring and broken chain detection via `EvidenceChainIntegrityEngine` (`src/shieldops/compliance/evidence_chain_integrity_engine.py`)
-314. **Compliance Automation Gaps**: Automation potential computation and manual bottleneck detection via `ComplianceAutomationGapAnalyzer` (`src/shieldops/compliance/compliance_automation_gap_analyzer.py`)
-315. **Audit Timeline Optimization**: Optimal timeline computation and preparation bottleneck detection via `AuditTimelineOptimizer` (`src/shieldops/audit/audit_timeline_optimizer.py`)
-316. **Regulatory Obligation Tracking**: Obligation completion rate and approaching deadline detection via `RegulatoryObligationTracker` (`src/shieldops/compliance/regulatory_obligation_tracker.py`)
-317. **Evidence Correlation**: Evidence reuse ratio computation and redundant collection detection via `ComplianceEvidenceCorrelationEngine` (`src/shieldops/audit/compliance_evidence_correlation_engine.py`)
-318. **Policy Effectiveness Scoring**: Policy effectiveness computation and violation trend detection via `PolicyEffectivenessScorer` (`src/shieldops/compliance/policy_effectiveness_scorer.py`)
-319. **Service Reliability Scoring**: Composite reliability scoring and degradation detection via `ServiceReliabilityScorer` (`src/shieldops/sla/service_reliability_scorer.py`)
-320. **Performance Regression Detection**: Regression magnitude computation and latent regression detection via `PerfRegressionDetector` (`src/shieldops/analytics/perf_regression_detector.py`)
-321. **Capacity Demand Forecasting**: Demand forecasting and capacity exhaustion risk detection via `CapacityDemandForecaster` (`src/shieldops/analytics/capacity_demand_forecaster.py`)
-322. **SRE Golden Signals**: Golden signal health computation and signal anomaly detection via `SreGoldenSignalEngine` (`src/shieldops/analytics/sre_golden_signal_engine.py`)
-323. **Error Budget Burn Intelligence**: Burn rate trajectory computation and accelerated burn detection via `ErrorBudgetBurnIntelligence` (`src/shieldops/sla/error_budget_burn_intelligence.py`)
-324. **Latency Distribution Analysis**: Percentile shift computation and tail latency spike detection via `LatencyDistributionAnalyzer` (`src/shieldops/analytics/latency_distribution_analyzer.py`)
-325. **Resource Saturation Prediction**: Saturation timeline computation and approaching saturation detection via `ResourceSaturationPredictor` (`src/shieldops/operations/resource_saturation_predictor.py`)
-326. **Deployment Reliability Impact**: Deployment reliability delta computation and degrading deploy detection via `DeploymentReliabilityImpactEngine` (`src/shieldops/changes/deployment_reliability_impact_engine.py`)
-327. **Toil Reduction Intelligence**: Toil reduction trend computation and toil regression detection via `ToilReductionIntelligence` (`src/shieldops/analytics/toil_reduction_intelligence.py`)
-328. **Availability Pattern Analysis**: Temporal availability patterns and recurring unavailability detection via `AvailabilityPatternEngine` (`src/shieldops/sla/availability_pattern_engine.py`)
-329. **Performance-Capacity Correlation**: Capacity-performance correlation and capacity-driven degradation detection via `PerformanceCapacityCorrelationEngine` (`src/shieldops/analytics/performance_capacity_correlation_engine.py`)
-330. **Reliability Improvement Tracking**: Improvement effectiveness computation and stalled initiative detection via `ReliabilityImprovementTracker` (`src/shieldops/sla/reliability_improvement_tracker.py`)
+### Compliance Scan
+1. **Framework assessment**: Check controls against SOC 2, PCI-DSS, HIPAA, GDPR, FedRAMP
+2. **Evidence freshness**: Verify evidence is current
+3. **Policy drift**: Detect compliance policy drift
+4. **Access review**: Check expired/uncertified access grants
 
-### Phase 119-121: Alerting Intelligence, FinOps Automation & Service Mesh (Items 331–366)
-331. **Notification Fatigue Detection**: Fatigue pattern detection and risk scoring via `NotificationFatigueDetector` (`src/shieldops/observability/notification_fatigue_detector.py`)
-332. **Alert Deduplication**: Fingerprint generation and duplicate cluster identification via `AlertDedupIntelligence` (`src/shieldops/observability/alert_dedup_intelligence.py`)
-333. **Alert Quality Scoring**: Actionability scoring and low-value alert identification via `AlertQualityLifecycleScorer` (`src/shieldops/observability/alert_quality_lifecycle_scorer.py`)
-334. **Escalation Path Optimization**: Escalation efficiency analysis and antipattern detection via `EscalationPathOptimizer` (`src/shieldops/incidents/escalation_path_optimizer.py`)
-335. **On-Call Burden Analysis**: Burden index calculation and burnout risk forecasting via `OncallBurdenAnalyzer` (`src/shieldops/incidents/oncall_burden_analyzer.py`)
-336. **Notification Channel Effectiveness**: Channel response rate ranking and degradation detection via `NotificationChannelEffectiveness` (`src/shieldops/incidents/notification_channel_effectiveness.py`)
-337. **Alert Suppression Intelligence**: Suppression window learning and safety evaluation via `AlertSuppressionIntelligence` (`src/shieldops/observability/alert_suppression_intelligence.py`)
-338. **Smart Alert Routing**: Skill-based routing planning and timezone coverage optimization via `SmartAlertRoutingPlanner` (`src/shieldops/operations/smart_alert_routing_planner.py`)
-339. **Alert Correlation Cascades**: Cascade tree building and root cause alert identification via `AlertCorrelationCascadeEngine` (`src/shieldops/observability/alert_correlation_cascade_engine.py`)
-340. **Responder Effectiveness**: Performance scoring and peer benchmarking via `ResponderEffectivenessScorer` (`src/shieldops/analytics/responder_effectiveness_scorer.py`)
-341. **Notification Delivery Optimization**: Delivery timing optimization and batching planning via `NotificationDeliveryOptimizer` (`src/shieldops/operations/notification_delivery_optimizer.py`)
-342. **Alert Lifecycle Intelligence**: Alert aging tracking and retirement recommendations via `AlertLifecycleIntelligence` (`src/shieldops/analytics/alert_lifecycle_intelligence.py`)
-343. **Cloud Spend Forecasting**: Multi-horizon spend projection and seasonality detection via `CloudSpendForecaster` (`src/shieldops/billing/cloud_spend_forecaster.py`)
-344. **Reservation Yield Optimization**: Coverage analysis and exchange recommendations via `ReservationYieldOptimizer` (`src/shieldops/billing/reservation_yield_optimizer.py`)
-345. **Intelligent Waste Classification**: Waste categorization and recovery value estimation via `IntelligentWasteClassifier` (`src/shieldops/billing/intelligent_waste_classifier.py`)
-346. **Cost Anomaly Root Cause**: Anomaly-event correlation and contributor decomposition via `CostAnomalyRootCauseEngine` (`src/shieldops/billing/cost_anomaly_root_cause_engine.py`)
-347. **Showback/Chargeback Automation**: Allocation model computation and chargeback invoice generation via `ShowbackChargebackAutomator` (`src/shieldops/billing/showback_chargeback_automator.py`)
-348. **Commitment Utilization Tracking**: Utilization measurement and underutilization detection via `CommitmentUtilizationTracker` (`src/shieldops/billing/commitment_utilization_tracker.py`)
-349. **Multi-Cloud Cost Normalization**: Billing taxonomy normalization and cross-cloud reconciliation via `MultiCloudCostNormalizer` (`src/shieldops/billing/multi_cloud_cost_normalizer.py`)
-350. **FinOps Recommendation Ranking**: ROI-adjusted ranking and adoption tracking via `FinopsRecommendationRanker` (`src/shieldops/analytics/finops_recommendation_ranker.py`)
-351. **Cost Governance Policies**: Budget gate enforcement and policy violation detection via `CostGovernancePolicyEngine` (`src/shieldops/compliance/cost_governance_policy_engine.py`)
-352. **Cloud Contract Optimization**: Contract term analysis and negotiation leverage identification via `CloudContractOptimizer` (`src/shieldops/billing/cloud_contract_optimizer.py`)
-353. **Resource Rightsizing**: Workload profiling and instance family recommendations via `ResourceRightsizingIntelligence` (`src/shieldops/operations/resource_rightsizing_intelligence.py`)
-354. **Cost Trend Correlation**: Cost-deployment correlation and trend continuation forecasting via `CostTrendAnomalyCorrelator` (`src/shieldops/analytics/cost_trend_anomaly_correlator.py`)
-355. **API Health Scoring**: Composite health computation and degraded endpoint identification via `ApiHealthCompositeScorer` (`src/shieldops/topology/api_health_composite_scorer.py`)
-356. **Service Dependency Risk**: Dependency risk quantification and failure domain detection via `ServiceDependencyRiskEngine` (`src/shieldops/topology/service_dependency_risk_engine.py`)
-357. **Traffic Pattern Intelligence**: Traffic anomaly detection and seasonality classification via `TrafficPatternIntelligence` (`src/shieldops/topology/traffic_pattern_intelligence.py`)
-358. **Circuit Breaker Intelligence**: Trip frequency analysis and flapping breaker detection via `CircuitBreakerIntelligenceEngine` (`src/shieldops/topology/circuit_breaker_intelligence_engine.py`)
-359. **API Versioning Lifecycle**: Version adoption tracking and deprecation readiness forecasting via `ApiVersioningLifecycleEngine` (`src/shieldops/topology/api_versioning_lifecycle_engine.py`)
-360. **Mesh Control Plane Observability**: Config propagation monitoring and sync divergence detection via `MeshControlPlaneObserver` (`src/shieldops/observability/mesh_control_plane_observer.py`)
-361. **API Consumer Impact**: Consumer dependency mapping and change impact simulation via `ApiConsumerImpactAnalyzer` (`src/shieldops/topology/api_consumer_impact_analyzer.py`)
-362. **Service Mesh Latency Profiling**: Hop latency profiling and proxy overhead identification via `ServiceMeshLatencyProfiler` (`src/shieldops/analytics/service_mesh_latency_profiler.py`)
-363. **API Rate Limit Intelligence**: Throttling event prediction and quota utilization analysis via `ApiRateLimitIntelligence` (`src/shieldops/topology/api_rate_limit_intelligence.py`)
-364. **Mesh Security Posture**: mTLS coverage assessment and authorization gap detection via `MeshSecurityPostureAnalyzer` (`src/shieldops/observability/mesh_security_posture_analyzer.py`)
-365. **API SLA Compliance**: SLA adherence measurement and breach risk detection via `ApiSlaComplianceTracker` (`src/shieldops/sla/api_sla_compliance_tracker.py`)
-366. **Service Mesh Capacity Forecasting**: Proxy resource forecasting and capacity bottleneck detection via `ServiceMeshCapacityForecaster` (`src/shieldops/analytics/service_mesh_capacity_forecaster.py`)
+## Key Files
+- `src/shieldops/agents/code_security_scanner/` — Code scanning agent
+- `src/shieldops/agents/vulnerability_manager/` — Vuln lifecycle agent
+- `src/shieldops/agents/secrets_scanner/` — Secrets scanning agent
+- `src/shieldops/agents/container_security/` — Container security agent
+- `src/shieldops/agents/cloud_posture/` — Cloud posture agent
+- `src/shieldops/agents/compliance_scanner/` — Compliance scanning agent
+- `src/shieldops/agents/api_security/` — API security agent
+- `src/shieldops/security/` — 518 security engines
+- `src/shieldops/compliance/` — 116 compliance engines
+- `src/shieldops/audit/` — 30 audit engines
+- `src/shieldops/policy/` — OPA policies (hipaa.rego, pci_dss.rego, soc2.rego, gdpr.rego, fedramp.rego)
+- `infrastructure/terraform/` — Terraform configs to scan
+- `infrastructure/kubernetes/` — K8s manifests to scan
 
-## Severity Levels
-- **CRITICAL**: Hardcoded secrets, SQL injection, unauthenticated endpoints
-- **HIGH**: Missing OPA policies, overly permissive agent actions
-- **MEDIUM**: Outdated dependencies with known CVEs
-- **LOW**: Code style issues, missing type hints
-
-## Output
-Security report saved to `docs/security/scan-{date}.md`
+## Conventions
+- Critical findings require remediation within 24 hours
+- All scan results logged to immutable audit trail
+- Secret scanning runs on every commit via pre-commit hooks
+- Container images must pass scan before deployment
+- OPA policy coverage must be 100% for production agents
+- Compliance scans run continuously; drift alerts within 15 minutes

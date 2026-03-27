@@ -55,3 +55,7 @@ service-account.json
 # Docker
 *.log
 junit.xml
+
+# Claude Code audit logs (local only)
+.claude/audit/
+.claude/settings.local.json

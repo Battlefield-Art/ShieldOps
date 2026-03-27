@@ -171,6 +171,13 @@ const EndpointDLP = lazy(() => import("./pages/EndpointDLP"));
 const UnifiedCloudSecurity = lazy(() => import("./pages/UnifiedCloudSecurity"));
 const BackupSecurityPosture = lazy(() => import("./pages/BackupSecurityPosture"));
 
+const NetworkPentest = lazy(() => import("./pages/NetworkPentest"));
+const WebAppScanner = lazy(() => import("./pages/WebAppScanner"));
+const CloudPentest = lazy(() => import("./pages/CloudPentest"));
+const APIPentest = lazy(() => import("./pages/APIPentest"));
+const CredentialTester = lazy(() => import("./pages/CredentialTester"));
+const PhishingSimulator = lazy(() => import("./pages/PhishingSimulator"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -399,6 +406,12 @@ export default function App() {
               <Route path="endpoint-dlp" element={<EndpointDLP />} />
               <Route path="unified-cloud-security" element={<UnifiedCloudSecurity />} />
               <Route path="backup-security-posture" element={<BackupSecurityPosture />} />
+              <Route path="network-pentest" element={<NetworkPentest />} />
+              <Route path="web-app-scanner" element={<WebAppScanner />} />
+              <Route path="cloud-pentest" element={<CloudPentest />} />
+              <Route path="api-pentest" element={<APIPentest />} />
+              <Route path="credential-tester" element={<CredentialTester />} />
+              <Route path="phishing-simulator" element={<PhishingSimulator />} />
             </Route>
 
             {/* Catch-all */}

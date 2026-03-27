@@ -68,6 +68,8 @@ import {
   LayoutList,
   Monitor,
   FileSearch,
+  Wifi,
+  Mail,
   type LucideIcon,
 } from "lucide-react";
 
@@ -310,6 +312,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/endpoint-dlp", icon: Monitor, label: "Endpoint DLP" },
       { to: "/app/unified-cloud-security", icon: Cloud, label: "Unified Cloud" },
       { to: "/app/backup-security-posture", icon: HardDrive, label: "Backup Posture" },
+      { to: "/app/network-pentest", icon: Wifi, label: "Network Pentest" },
+      { to: "/app/web-app-scanner", icon: Globe, label: "Web App Scanner" },
+      { to: "/app/cloud-pentest", icon: Cloud, label: "Cloud Pentest" },
+      { to: "/app/api-pentest", icon: Plug, label: "API Pentest" },
+      { to: "/app/credential-tester", icon: Key, label: "Credential Tester" },
+      { to: "/app/phishing-simulator", icon: Mail, label: "Phishing Simulator" },
     ],
   },
   {

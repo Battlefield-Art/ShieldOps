@@ -259,7 +259,23 @@ sla_config = {"services": ["api-server", "payment-service"], "slo_targets": {"av
 capacity_config = {"target_service": "api-server", "forecast_days": 90, "include_bottlenecks": True}
 ```
 
-## Tips
+## Key Files
+- `src/shieldops/agents/{type}/runner.py` — Agent entry point (Runner class)
+- `src/shieldops/agents/{type}/graph.py` — LangGraph workflow definition
+- `src/shieldops/agents/{type}/tools.py` — Toolkit with business logic
+- `src/shieldops/agents/{type}/models.py` — State and data models
+- `src/shieldops/agents/{type}/nodes.py` — Node function implementations
+- `src/shieldops/utils/llm.py` — LLM utility (llm_structured)
+- `tests/unit/test_{type}.py` — Unit tests
+- `tests/integration/` — Integration tests
+
+## Conventions
 - Set `ANTHROPIC_API_KEY` if you want real LLM calls (otherwise agents use mock/fallback)
 - Use `--mock` flag to force mock mode for all external dependencies
-- For domain-specific workflows, use dedicated skills: `/hunt-threats`, `/respond-incident`, `/manage-soc`, `/audit-compliance`, `/manage-identity`, `/secure-agents`, `/manage-cloud`, `/protect-data`, `/manage-vulns`, `/run-redteam`, `/orchestrate-soar`, `/run-xdr`, `/manage-costs`, `/run-forensics`, `/manage-mcp`
+- All runners follow the pattern: instantiate → call main method → check result.error
+- Mock connectors, policy engine, and repository for isolated testing
+- Verify reasoning_chain is populated after each run
+- Validate output model is well-formed
+
+## Related Skills
+For domain-specific workflows, use dedicated skills: `/hunt-threats`, `/respond-incident`, `/manage-soc`, `/audit-compliance`, `/manage-identity`, `/secure-agents`, `/manage-cloud`, `/protect-data`, `/manage-vulns`, `/run-redteam`, `/orchestrate-soar`, `/run-xdr`, `/manage-costs`, `/run-forensics`, `/manage-mcp`, `/analyze-analytics`, `/analyze-topology`, `/manage-sla`, `/manage-knowledge`
