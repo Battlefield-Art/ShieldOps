@@ -340,6 +340,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "api_pentest",
                 "credential_tester",
                 "phishing_simulator",
+                "patch_orchestrator",
+                "config_remediation",
+                "access_remediation",
+                "vulnerability_remediation",
+                "remediation_verifier",
+                "remediation_orchestrator",
             ):
                 try:
                     await agent_registry.register(
@@ -14032,12 +14038,30 @@ def create_app() -> FastAPI:
         "api_pentest",
         "credential_tester",
         "phishing_simulator",
+        "patch_orchestrator",
+        "config_remediation",
+        "access_remediation",
+        "vulnerability_remediation",
+        "remediation_verifier",
+        "remediation_orchestrator",
         "network_pentest",
         "web_app_scanner",
         "cloud_pentest",
         "api_pentest",
         "credential_tester",
         "phishing_simulator",
+        "patch_orchestrator",
+        "config_remediation",
+        "access_remediation",
+        "vulnerability_remediation",
+        "remediation_verifier",
+        "remediation_orchestrator",
+        "patch_orchestrator",
+        "config_remediation",
+        "access_remediation",
+        "vulnerability_remediation",
+        "remediation_verifier",
+        "remediation_orchestrator",
     ):
         try:
             _mod = __import__(f"shieldops.api.routes.{_rname}", fromlist=["router"])

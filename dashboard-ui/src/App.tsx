@@ -176,6 +176,12 @@ const WebAppScanner = lazy(() => import("./pages/WebAppScanner"));
 const CloudPentest = lazy(() => import("./pages/CloudPentest"));
 const APIPentest = lazy(() => import("./pages/APIPentest"));
 const CredentialTester = lazy(() => import("./pages/CredentialTester"));
+const PatchOrchestrator = lazy(() => import("./pages/PatchOrchestrator"));
+const ConfigRemediation = lazy(() => import("./pages/ConfigRemediation"));
+const AccessRemediation = lazy(() => import("./pages/AccessRemediation"));
+const VulnerabilityRemediation = lazy(() => import("./pages/VulnerabilityRemediation"));
+const RemediationVerifier = lazy(() => import("./pages/RemediationVerifier"));
+const RemediationOrchestrator = lazy(() => import("./pages/RemediationOrchestrator"));
 const PhishingSimulator = lazy(() => import("./pages/PhishingSimulator"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
@@ -412,6 +418,12 @@ export default function App() {
               <Route path="api-pentest" element={<APIPentest />} />
               <Route path="credential-tester" element={<CredentialTester />} />
               <Route path="phishing-simulator" element={<PhishingSimulator />} />
+              <Route path="patch-orchestrator" element={<PatchOrchestrator />} />
+              <Route path="config-remediation" element={<ConfigRemediation />} />
+              <Route path="access-remediation" element={<AccessRemediation />} />
+              <Route path="vulnerability-remediation" element={<VulnerabilityRemediation />} />
+              <Route path="remediation-verifier" element={<RemediationVerifier />} />
+              <Route path="remediation-orchestrator" element={<RemediationOrchestrator />} />
             </Route>
 
             {/* Catch-all */}

@@ -70,6 +70,9 @@ import {
   FileSearch,
   Wifi,
   Mail,
+  Download,
+  UserMinus,
+  CheckCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -318,6 +321,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/api-pentest", icon: Plug, label: "API Pentest" },
       { to: "/app/credential-tester", icon: Key, label: "Credential Tester" },
       { to: "/app/phishing-simulator", icon: Mail, label: "Phishing Simulator" },
+      { to: "/app/patch-orchestrator", icon: Download, label: "Patch Orchestrator" },
+      { to: "/app/config-remediation", icon: Settings, label: "Config Remediation" },
+      { to: "/app/access-remediation", icon: Users, label: "Access Remediation" },
+      { to: "/app/vulnerability-remediation", icon: Wrench, label: "Vuln Remediation" },
+      { to: "/app/remediation-verifier", icon: CheckCircle, label: "Remediation Verifier" },
+      { to: "/app/remediation-orchestrator", icon: Workflow, label: "Remediation Pipeline" },
     ],
   },
   {
