@@ -243,7 +243,7 @@ class ChangeRiskAnalyzerToolkit:
                     risk_factors=factors,
                     historical_failure_rate=historical_rate,
                     similar_changes_count=42,
-                    confidence=round(0.72 + risk_score * 0.24, 4),
+                    confidence=round(0.72 + score * 0.24, 4),
                 )
             )
         return assessments

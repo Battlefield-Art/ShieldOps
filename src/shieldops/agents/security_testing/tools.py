@@ -190,7 +190,7 @@ class SecurityTestingToolkit:
         # Mock fallback — select random subset of vulnerability findings
         findings: list[SecurityFinding] = []
         vuln_pool = _MOCK_CVES[TestCategory.VULNERABILITY]
-        selected = random.sample(vuln_pool, k=min(len(vuln_pool), random.randint(1, 3)))
+        selected = random.sample(vuln_pool, k=min(len(vuln_pool), random.randint(1, 3)))  # noqa: S311
 
         for vuln in selected:
             finding_id = hashlib.sha256(
@@ -228,7 +228,7 @@ class SecurityTestingToolkit:
         # Mock fallback — select config and compliance findings
         findings: list[SecurityFinding] = []
         config_pool = _MOCK_CVES[TestCategory.CONFIGURATION]
-        selected = random.sample(config_pool, k=min(len(config_pool), random.randint(1, 3)))
+        selected = random.sample(config_pool, k=min(len(config_pool), random.randint(1, 3)))  # noqa: S311
 
         for item in selected:
             finding_id = hashlib.sha256(
@@ -266,7 +266,7 @@ class SecurityTestingToolkit:
         # Mock fallback
         findings: list[SecurityFinding] = []
         cred_pool = _MOCK_CVES[TestCategory.CREDENTIAL]
-        selected = random.sample(cred_pool, k=min(len(cred_pool), random.randint(1, 2)))
+        selected = random.sample(cred_pool, k=min(len(cred_pool), random.randint(1, 2)))  # noqa: S311
 
         for item in selected:
             finding_id = hashlib.sha256(

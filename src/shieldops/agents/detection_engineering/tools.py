@@ -105,7 +105,7 @@ class DetectionEngineeringToolkit:
         # Mock fallback — generate coverage gaps
         gaps: list[CoverageGap] = []
         for tech in _MITRE_TECHNIQUES:
-            coverage = round(random.uniform(0.0, 0.85), 2)
+            coverage = round(random.uniform(0.0, 0.85), 2)  # noqa: S311
             if coverage < 0.6:  # Only report gaps below 60% coverage
                 priority = (
                     "critical" if coverage < 0.2 else ("high" if coverage < 0.4 else "medium")
@@ -213,9 +213,9 @@ class DetectionEngineeringToolkit:
                 logger.exception("detection_engineering.test_rule.error")
 
         # Mock backtest results
-        tp_rate = round(random.uniform(0.6, 0.98), 4)
-        fp_rate = round(random.uniform(0.02, 0.25), 4)
-        total_alerts = random.randint(10, 500)
+        tp_rate = round(random.uniform(0.6, 0.98), 4)  # noqa: S311
+        fp_rate = round(random.uniform(0.02, 0.25), 4)  # noqa: S311
+        total_alerts = random.randint(10, 500)  # noqa: S311
         true_positives = int(total_alerts * tp_rate)
         false_positives = int(total_alerts * fp_rate)
 
@@ -227,7 +227,7 @@ class DetectionEngineeringToolkit:
             "false_positives": false_positives,
             "true_positive_rate": tp_rate,
             "false_positive_rate": fp_rate,
-            "mean_time_to_detect_seconds": round(random.uniform(30.0, 600.0), 1),
+            "mean_time_to_detect_seconds": round(random.uniform(30.0, 600.0), 1),  # noqa: S311
             "status": "passed" if fp_rate < 0.15 else "needs_tuning",
         }
 
@@ -257,7 +257,7 @@ class DetectionEngineeringToolkit:
         original_fp = (
             rule.false_positive_rate
             if rule.false_positive_rate > 0
-            else round(random.uniform(0.05, 0.25), 4)
+            else round(random.uniform(0.05, 0.25), 4)  # noqa: S311
         )
 
         # Tuning strategies
@@ -268,14 +268,14 @@ class DetectionEngineeringToolkit:
             "Excluded service accounts from detection scope",
             "Added baseline comparison to reduce noise",
         ]
-        tuning_action = random.choice(strategies)
+        tuning_action = random.choice(strategies)  # noqa: S311
 
         # Calculate tuned FP rate — bring it closer to threshold
-        reduction = random.uniform(0.4, 0.8)
+        reduction = random.uniform(0.4, 0.8)  # noqa: S311
         tuned_fp = round(original_fp * (1 - reduction), 4)
 
         # Detection rate impact (slight decrease from tuning)
-        detection_impact = round(random.uniform(-0.08, -0.01), 4)
+        detection_impact = round(random.uniform(-0.08, -0.01), 4)  # noqa: S311
 
         return TuningResult(
             rule_id=rule.rule_id,

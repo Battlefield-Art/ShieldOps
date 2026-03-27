@@ -210,16 +210,17 @@ class SOARWorkflowToolkit:
             indicator_type = _classify_indicator(indicator)
             profile = _ENRICHMENT_PROFILES.get(indicator_type, _ENRICHMENT_PROFILES["domain"])
 
-            is_malicious = random.random() < profile["malicious_probability"]
+            is_malicious = random.random() < profile["malicious_probability"]  # noqa: S311
             confidence = round(
-                random.uniform(0.7, 0.99) if is_malicious else random.uniform(0.1, 0.4), 2
+                random.uniform(0.7, 0.99) if is_malicious else random.uniform(0.1, 0.4),  # noqa: S311
+                2,  # noqa: S311
             )
 
             result_data: dict[str, Any] = {
                 "indicator_type": indicator_type,
                 "is_malicious": is_malicious,
                 "sources_checked": profile["sources"],
-                "hits": random.randint(1, len(profile["sources"])) if is_malicious else 0,
+                "hits": random.randint(1, len(profile["sources"])) if is_malicious else 0,  # noqa: S311
                 "first_seen": "2025-01-15T10:30:00Z" if is_malicious else None,
                 "tags": ["suspicious", "automated"] if is_malicious else ["benign"],
             }
@@ -266,8 +267,8 @@ class SOARWorkflowToolkit:
                 logger.exception("soar_workflow.execute_containment.error")
 
         # Mock fallback
-        success = random.random() < action_profile["success_rate"]
-        duration_ms = action_profile["avg_duration_ms"] + random.randint(-200, 500)
+        success = random.random() < action_profile["success_rate"]  # noqa: S311
+        duration_ms = action_profile["avg_duration_ms"] + random.randint(-200, 500)  # noqa: S311
 
         return ResponseAction(
             action_id=f"ACT-{uuid.uuid4().hex[:8].upper()}",
@@ -314,8 +315,8 @@ class SOARWorkflowToolkit:
                 logger.exception("soar_workflow.execute_eradication.error")
 
         # Mock fallback
-        success = random.random() < action_profile["success_rate"]
-        duration_ms = action_profile["avg_duration_ms"] + random.randint(-500, 1000)
+        success = random.random() < action_profile["success_rate"]  # noqa: S311
+        duration_ms = action_profile["avg_duration_ms"] + random.randint(-500, 1000)  # noqa: S311
 
         return ResponseAction(
             action_id=f"ACT-{uuid.uuid4().hex[:8].upper()}",
@@ -346,8 +347,8 @@ class SOARWorkflowToolkit:
         action_profile = _RECOVERY_ACTIONS.get(action_type, _RECOVERY_ACTIONS["restore_service"])
 
         # Mock fallback (no external client pattern for recovery)
-        success = random.random() < action_profile["success_rate"]
-        duration_ms = action_profile["avg_duration_ms"] + random.randint(-500, 1000)
+        success = random.random() < action_profile["success_rate"]  # noqa: S311
+        duration_ms = action_profile["avg_duration_ms"] + random.randint(-500, 1000)  # noqa: S311
 
         return ResponseAction(
             action_id=f"ACT-{uuid.uuid4().hex[:8].upper()}",

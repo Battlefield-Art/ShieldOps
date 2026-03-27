@@ -513,9 +513,9 @@ class DriftDetector:
 
         # Coerce comparable numerics
         try:
-            if isinstance(expected, (int, float)) and isinstance(actual, str):
+            if isinstance(expected, int | float) and isinstance(actual, str):
                 return expected == type(expected)(actual)
-            if isinstance(actual, (int, float)) and isinstance(expected, str):
+            if isinstance(actual, int | float) and isinstance(expected, str):
                 return actual == type(actual)(expected)
         except (ValueError, TypeError):
             pass

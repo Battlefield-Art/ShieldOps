@@ -91,7 +91,7 @@ class AdaptiveSecurityToolkit:
         for metric_def in defaults:
             baseline_val = metric_def["baseline_value"]
             # Simulate current value with some noise
-            noise = random.gauss(0, baseline_val * _MOCK_STD_FRACTION)
+            noise = random.gauss(0, baseline_val * _MOCK_STD_FRACTION)  # noqa: S311
             current_val = max(0.0, baseline_val + noise)
             drift_pct = ((current_val - baseline_val) / baseline_val * 100) if baseline_val else 0.0
 
@@ -245,12 +245,12 @@ class AdaptiveSecurityToolkit:
 
         # Simulate impact metrics
         if accepted:
-            fp_delta = round(random.uniform(-0.15, -0.02), 4)
-            det_delta = round(random.uniform(0.01, 0.10), 4)
+            fp_delta = round(random.uniform(-0.15, -0.02), 4)  # noqa: S311
+            det_delta = round(random.uniform(0.01, 0.10), 4)  # noqa: S311
             impact = "Threshold adjustment reduces false positives while maintaining detection rate"
         else:
-            fp_delta = round(random.uniform(0.0, 0.05), 4)
-            det_delta = round(random.uniform(-0.10, -0.01), 4)
+            fp_delta = round(random.uniform(0.0, 0.05), 4)  # noqa: S311
+            det_delta = round(random.uniform(-0.10, -0.01), 4)  # noqa: S311
             impact = "Adjustment rejected: risk too high or confidence too low"
 
         return AdaptationResult(

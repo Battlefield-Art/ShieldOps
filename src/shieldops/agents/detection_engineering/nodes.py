@@ -39,10 +39,9 @@ async def assess_coverage(
     gap_dicts = [g.model_dump() for g in gaps]
 
     # Calculate overall coverage
-    if gaps:
-        avg_coverage = sum(g.current_coverage for g in gaps) / len(gaps)
-    else:
-        avg_coverage = 1.0  # No gaps means full coverage
+    avg_coverage = (
+        sum(g.current_coverage for g in gaps) / len(gaps) if gaps else 1.0
+    )  # No gaps means full coverage
 
     return {
         "stage": DetectionStage.CREATE_RULES.value,
