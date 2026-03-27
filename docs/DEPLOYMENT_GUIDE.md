@@ -24,7 +24,7 @@ Complete deployment guide for AWS, GCP, Azure, and On-Premises.
 │              (ALB / Cloud LB / Nginx / Traefik)         │
 ├─────────────┬──────────────┬────────────────────────────┤
 │  Dashboard  │   API Server │    Agent Workers            │
-│  (React)    │   (FastAPI)  │    (151 LangGraph agents)  │
+│  (React)    │   (FastAPI)  │    (150 LangGraph agents)  │
 │  Static CDN │   3+ replicas│    Auto-scaled pods        │
 ├─────────────┴──────────────┴────────────────────────────┤
 │                    Service Mesh                          │
@@ -41,7 +41,7 @@ Complete deployment guide for AWS, GCP, Azure, and On-Premises.
 | Component | Purpose | Min Specs |
 |-----------|---------|-----------|
 | **API Server** | FastAPI, 749 endpoints, JWT auth | 2 vCPU, 4GB RAM, 3 replicas |
-| **Agent Workers** | 151 LangGraph agents, LLM calls | 4 vCPU, 8GB RAM, auto-scaled |
+| **Agent Workers** | 150 LangGraph agents, LLM calls | 4 vCPU, 8GB RAM, auto-scaled |
 | **Dashboard** | React SPA, 158 pages | Static files on CDN |
 | **PostgreSQL** | Primary database | 4 vCPU, 16GB RAM, 100GB SSD |
 | **Redis** | Cache, pub/sub, rate limiting | 2 vCPU, 4GB RAM |
@@ -635,7 +635,7 @@ curl https://shieldops.io/ready
 # Agent registry
 curl -H "Authorization: Bearer $TOKEN" \
   https://shieldops.io/api/v1/agents
-# Expected: 151 agents registered
+# Expected: 150 agents registered
 ```
 
 ### Step 2: Run Database Migrations

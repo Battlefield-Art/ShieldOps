@@ -4,7 +4,7 @@
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 151 |
+| **LangGraph Agents** | 150 |
 | **Engine Modules** | 1,709 |
 | **Dashboard Pages** | 158 |
 | **API Routes** | 749 |
@@ -19,7 +19,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **New Agents** | 6 (it_asset_intelligence, ai_runtime_guardian, data_intelligence, endpoint_dlp, unified_cloud_security, backup_security_posture) — total 151 |
+| **New Agents** | 6 (it_asset_intelligence, ai_runtime_guardian, data_intelligence, endpoint_dlp, unified_cloud_security, backup_security_posture) — total 150 |
 | **Target** | CrowdStrike Falcon for IT, Palo Alto Prisma AIRS, Rubrik Annapurna |
 
 ---
