@@ -351,6 +351,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/evidence-collector", icon: FileSearch, label: "Evidence Collector" },
       { to: "/app/post-incident-analyzer", icon: Search, label: "Post-Incident" },
       { to: "/app/incident-simulator", icon: Play, label: "Incident Simulator" },
+      { to: "/app/threat-feed-manager", icon: Globe, label: "Threat Feeds" },
+      { to: "/app/ioc-lifecycle", icon: Target, label: "IOC Lifecycle" },
+      { to: "/app/threat-attribution", icon: Crosshair, label: "Threat Attribution" },
+      { to: "/app/security-awareness", icon: Users, label: "Security Awareness" },
+      { to: "/app/compliance-workflow", icon: ClipboardCheck, label: "Compliance Workflow" },
+      { to: "/app/governance-dashboard", icon: LayoutDashboard, label: "Governance" },
     ],
   },
   {

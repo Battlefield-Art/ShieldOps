@@ -216,6 +216,25 @@ const IncidentSimulator2 = lazy(
   () => import("./pages/IncidentSimulator2"),
 );
 
+const ThreatFeedManager = lazy(
+  () => import("./pages/ThreatFeedManager"),
+);
+const IOCLifecycle = lazy(
+  () => import("./pages/IOCLifecycle"),
+);
+const ThreatAttribution = lazy(
+  () => import("./pages/ThreatAttribution"),
+);
+const SecurityAwareness = lazy(
+  () => import("./pages/SecurityAwareness"),
+);
+const ComplianceWorkflow = lazy(
+  () => import("./pages/ComplianceWorkflow"),
+);
+const GovernanceDashboard = lazy(
+  () => import("./pages/GovernanceDashboard"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -479,6 +498,12 @@ export default function App() {
               <Route path="evidence-collector" element={<EvidenceCollector />} />
               <Route path="post-incident-analyzer" element={<PostIncidentAnalyzer />} />
               <Route path="incident-simulator" element={<IncidentSimulator2 />} />
+              <Route path="threat-feed-manager" element={<ThreatFeedManager />} />
+              <Route path="ioc-lifecycle" element={<IOCLifecycle />} />
+              <Route path="threat-attribution" element={<ThreatAttribution />} />
+              <Route path="security-awareness" element={<SecurityAwareness />} />
+              <Route path="compliance-workflow" element={<ComplianceWorkflow />} />
+              <Route path="governance-dashboard" element={<GovernanceDashboard />} />
             </Route>
 
             {/* Catch-all */}

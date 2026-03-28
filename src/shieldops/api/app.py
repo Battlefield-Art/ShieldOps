@@ -14176,6 +14176,12 @@ def create_app() -> FastAPI:
         "evidence_collector_agent",
         "post_incident_analyzer",
         "incident_simulator",
+        "threat_feed_manager",
+        "ioc_lifecycle",
+        "threat_attribution",
+        "security_awareness",
+        "compliance_workflow",
+        "governance_dashboard",
     ):
         try:
             _mod = __import__(
