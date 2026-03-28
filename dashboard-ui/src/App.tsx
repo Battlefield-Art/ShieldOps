@@ -191,6 +191,12 @@ const FindingCorrelator = lazy(() => import("./pages/FindingCorrelator"));
 const AutoTicketManager = lazy(() => import("./pages/AutoTicketManager"));
 const ContinuousScanner = lazy(() => import("./pages/ContinuousScanner"));
 const RiskPrioritizer = lazy(() => import("./pages/RiskPrioritizer"));
+const APTEmulator = lazy(() => import("./pages/APTEmulator"));
+const PurpleTeam = lazy(() => import("./pages/PurpleTeam"));
+const ThreatScenarioRunner = lazy(() => import("./pages/ThreatScenarioRunner"));
+const AgentFleetOptimizer = lazy(() => import("./pages/AgentFleetOptimizer"));
+const SecurityDataLake = lazy(() => import("./pages/SecurityDataLake"));
+const CustomAgentFactory2 = lazy(() => import("./pages/CustomAgentFactory"));
 const SecurityDashboardAggregator = lazy(() => import("./pages/SecurityDashboardAggregator"));
 const ExecutiveReporter = lazy(() => import("./pages/ExecutiveReporter"));
 const RemediationOrchestrator = lazy(() => import("./pages/RemediationOrchestrator"));
@@ -448,6 +454,12 @@ export default function App() {
               <Route path="continuous-scanner" element={<ContinuousScanner />} />
               <Route path="risk-prioritizer" element={<RiskPrioritizer />} />
               <Route path="security-dashboard-agg" element={<SecurityDashboardAggregator />} />
+              <Route path="apt-emulator" element={<APTEmulator />} />
+              <Route path="purple-team" element={<PurpleTeam />} />
+              <Route path="threat-scenarios" element={<ThreatScenarioRunner />} />
+              <Route path="fleet-optimizer" element={<AgentFleetOptimizer />} />
+              <Route path="security-data-lake" element={<SecurityDataLake />} />
+              <Route path="agent-factory" element={<CustomAgentFactory2 />} />
             </Route>
 
             {/* Catch-all */}
