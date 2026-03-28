@@ -14182,6 +14182,12 @@ def create_app() -> FastAPI:
         "security_awareness",
         "compliance_workflow",
         "governance_dashboard",
+        "data_encryption_monitor",
+        "privilege_escalation_detector",
+        "session_hijack_detector",
+        "api_rate_limiter",
+        "vulnerability_lifecycle",
+        "asset_inventory",
     ):
         try:
             _mod = __import__(

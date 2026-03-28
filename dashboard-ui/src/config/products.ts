@@ -357,6 +357,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/security-awareness", icon: Users, label: "Security Awareness" },
       { to: "/app/compliance-workflow", icon: ClipboardCheck, label: "Compliance Workflow" },
       { to: "/app/governance-dashboard", icon: LayoutDashboard, label: "Governance" },
+      { to: "/app/data-encryption-monitor", icon: Lock, label: "Encryption Monitor" },
+      { to: "/app/privilege-escalation", icon: ShieldAlert, label: "Privilege Escalation" },
+      { to: "/app/session-hijack", icon: Eye, label: "Session Hijack" },
+      { to: "/app/api-rate-limiter", icon: Gauge, label: "API Rate Limiter" },
+      { to: "/app/vulnerability-lifecycle", icon: Bug, label: "Vuln Lifecycle" },
+      { to: "/app/asset-inventory", icon: Server, label: "Asset Inventory" },
     ],
   },
   {

@@ -235,6 +235,25 @@ const GovernanceDashboard = lazy(
   () => import("./pages/GovernanceDashboard"),
 );
 
+const DataEncryptionMonitor = lazy(
+  () => import("./pages/DataEncryptionMonitor"),
+);
+const PrivilegeEscalationDetector = lazy(
+  () => import("./pages/PrivilegeEscalationDetector"),
+);
+const SessionHijackDetector = lazy(
+  () => import("./pages/SessionHijackDetector"),
+);
+const APIRateLimiter = lazy(
+  () => import("./pages/APIRateLimiter"),
+);
+const VulnerabilityLifecycle = lazy(
+  () => import("./pages/VulnerabilityLifecycle"),
+);
+const AssetInventory = lazy(
+  () => import("./pages/AssetInventory"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -504,6 +523,12 @@ export default function App() {
               <Route path="security-awareness" element={<SecurityAwareness />} />
               <Route path="compliance-workflow" element={<ComplianceWorkflow />} />
               <Route path="governance-dashboard" element={<GovernanceDashboard />} />
+              <Route path="data-encryption-monitor" element={<DataEncryptionMonitor />} />
+              <Route path="privilege-escalation" element={<PrivilegeEscalationDetector />} />
+              <Route path="session-hijack" element={<SessionHijackDetector />} />
+              <Route path="api-rate-limiter" element={<APIRateLimiter />} />
+              <Route path="vulnerability-lifecycle" element={<VulnerabilityLifecycle />} />
+              <Route path="asset-inventory" element={<AssetInventory />} />
             </Route>
 
             {/* Catch-all */}
