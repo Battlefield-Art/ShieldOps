@@ -186,6 +186,12 @@ const DetectionGapFinder = lazy(() => import("./pages/DetectionGapFinder"));
 const SecurityScorecard = lazy(() => import("./pages/SecurityScorecard"));
 const ComplianceGapAnalyzer = lazy(() => import("./pages/ComplianceGapAnalyzer"));
 const AttackReadiness = lazy(() => import("./pages/AttackReadiness"));
+const SecurityPipeline2 = lazy(() => import("./pages/SecurityPipeline"));
+const FindingCorrelator = lazy(() => import("./pages/FindingCorrelator"));
+const AutoTicketManager = lazy(() => import("./pages/AutoTicketManager"));
+const ContinuousScanner = lazy(() => import("./pages/ContinuousScanner"));
+const RiskPrioritizer = lazy(() => import("./pages/RiskPrioritizer"));
+const SecurityDashboardAggregator = lazy(() => import("./pages/SecurityDashboardAggregator"));
 const ExecutiveReporter = lazy(() => import("./pages/ExecutiveReporter"));
 const RemediationOrchestrator = lazy(() => import("./pages/RemediationOrchestrator"));
 const PhishingSimulator = lazy(() => import("./pages/PhishingSimulator"));
@@ -436,6 +442,12 @@ export default function App() {
               <Route path="compliance-gaps" element={<ComplianceGapAnalyzer />} />
               <Route path="attack-readiness" element={<AttackReadiness />} />
               <Route path="executive-reports" element={<ExecutiveReporter />} />
+              <Route path="security-pipeline" element={<SecurityPipeline2 />} />
+              <Route path="finding-correlator" element={<FindingCorrelator />} />
+              <Route path="auto-tickets" element={<AutoTicketManager />} />
+              <Route path="continuous-scanner" element={<ContinuousScanner />} />
+              <Route path="risk-prioritizer" element={<RiskPrioritizer />} />
+              <Route path="security-dashboard-agg" element={<SecurityDashboardAggregator />} />
             </Route>
 
             {/* Catch-all */}

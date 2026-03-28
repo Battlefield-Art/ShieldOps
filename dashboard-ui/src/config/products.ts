@@ -334,6 +334,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/compliance-gaps", icon: Scale, label: "Compliance Gaps" },
       { to: "/app/attack-readiness", icon: Crosshair, label: "Attack Readiness" },
       { to: "/app/executive-reports", icon: FileText, label: "Executive Reports" },
+      { to: "/app/security-pipeline", icon: Workflow, label: "Security Pipeline" },
+      { to: "/app/finding-correlator", icon: Layers, label: "Finding Correlator" },
+      { to: "/app/auto-tickets", icon: Plug, label: "Auto Tickets" },
+      { to: "/app/continuous-scanner", icon: RefreshCw, label: "Continuous Scanner" },
+      { to: "/app/risk-prioritizer", icon: Target, label: "Risk Prioritizer" },
+      { to: "/app/security-dashboard-agg", icon: LayoutDashboard, label: "CISO Dashboard" },
     ],
   },
   {
