@@ -202,6 +202,20 @@ const ExecutiveReporter = lazy(() => import("./pages/ExecutiveReporter"));
 const RemediationOrchestrator = lazy(() => import("./pages/RemediationOrchestrator"));
 const PhishingSimulator = lazy(() => import("./pages/PhishingSimulator"));
 
+const IRPlaybook = lazy(() => import("./pages/IRPlaybook"));
+const IncidentCommunicator = lazy(
+  () => import("./pages/IncidentCommunicator"),
+);
+const EvidenceCollector = lazy(
+  () => import("./pages/EvidenceCollector"),
+);
+const PostIncidentAnalyzer = lazy(
+  () => import("./pages/PostIncidentAnalyzer"),
+);
+const IncidentSimulator2 = lazy(
+  () => import("./pages/IncidentSimulator2"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -460,6 +474,11 @@ export default function App() {
               <Route path="fleet-optimizer" element={<AgentFleetOptimizer />} />
               <Route path="security-data-lake" element={<SecurityDataLake />} />
               <Route path="agent-factory" element={<CustomAgentFactory2 />} />
+              <Route path="ir-playbook" element={<IRPlaybook />} />
+              <Route path="incident-communicator" element={<IncidentCommunicator />} />
+              <Route path="evidence-collector" element={<EvidenceCollector />} />
+              <Route path="post-incident-analyzer" element={<PostIncidentAnalyzer />} />
+              <Route path="incident-simulator" element={<IncidentSimulator2 />} />
             </Route>
 
             {/* Catch-all */}

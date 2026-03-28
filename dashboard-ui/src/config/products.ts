@@ -73,7 +73,6 @@ import {
   Grid3X3,
   Play,
   Download,
-  UserMinus,
   CheckCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -347,6 +346,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/fleet-optimizer", icon: Cpu, label: "Fleet Optimizer" },
       { to: "/app/security-data-lake", icon: Database, label: "Data Lake" },
       { to: "/app/agent-factory", icon: Blocks, label: "Agent Factory" },
+      { to: "/app/ir-playbook", icon: BookOpen, label: "IR Playbook" },
+      { to: "/app/incident-communicator", icon: MessageSquare, label: "Incident Comms" },
+      { to: "/app/evidence-collector", icon: FileSearch, label: "Evidence Collector" },
+      { to: "/app/post-incident-analyzer", icon: Search, label: "Post-Incident" },
+      { to: "/app/incident-simulator", icon: Play, label: "Incident Simulator" },
     ],
   },
   {

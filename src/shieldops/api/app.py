@@ -14170,17 +14170,33 @@ def create_app() -> FastAPI:
         "agent_fleet_optimizer",
         "security_data_lake",
         "custom_agent_factory",
+        "ir_playbook_engine",
+        "war_room_coordinator",
+        "incident_communicator",
+        "evidence_collector_agent",
+        "post_incident_analyzer",
+        "incident_simulator",
     ):
         try:
-            _mod = __import__(f"shieldops.api.routes.{_rname}", fromlist=["router"])
+            _mod = __import__(
+                f"shieldops.api.routes.{_rname}",
+                fromlist=["router"],
+            )
             _p142_routes[_rname] = _mod
         except ImportError:
             pass
     for _rname, _rmod in _p142_routes.items():
         _tag = _rname.replace("_", " ").title()
-        app.include_router(_rmod.router, prefix=settings.api_prefix, tags=[_tag])
+        app.include_router(
+            _rmod.router,
+            prefix=settings.api_prefix,
+            tags=[_tag],
+        )
     if _p142_routes:
-        logger.info("phase_142_150_routes_registered", count=len(_p142_routes))
+        logger.info(
+            "phase_142_F_routes_registered",
+            count=len(_p142_routes),
+        )
 
     if audit_reports_routes is not None:
         app.include_router(
