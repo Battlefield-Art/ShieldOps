@@ -83,4 +83,11 @@ class DarkWebMonitorToolkit:
     ) -> list[dict[str, Any]]:
         """Execute alert."""
         logger.info("dark_web_monitor.alert")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "alert", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "alert",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]

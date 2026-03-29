@@ -83,4 +83,11 @@ class ConsentManagerToolkit:
     ) -> list[dict[str, Any]]:
         """Execute audit."""
         logger.info("consent_manager.audit")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "audit", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "audit",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]

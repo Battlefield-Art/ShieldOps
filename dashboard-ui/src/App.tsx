@@ -394,6 +394,26 @@ const ThreatSurfaceMinimizer = lazy(() => import("./pages/ThreatSurfaceMinimizer
 const DefenseInDepthAuditor = lazy(() => import("./pages/DefenseInDepthAuditor"));
 const SecurityControlMapper = lazy(() => import("./pages/SecurityControlMapper"));
 
+// Phase U-W
+const VendorRiskAssessor = lazy(() => import("./pages/VendorRiskAssessor"));
+const SBOMAnalyzer = lazy(() => import("./pages/SBOMAnalyzer"));
+const DependencyGraphAnalyzer = lazy(() => import("./pages/DependencyGraphAnalyzer"));
+const OpenSourceLicenseScanner = lazy(() => import("./pages/OpenSourceLicenseScanner"));
+const ArtifactIntegrityChecker = lazy(() => import("./pages/ArtifactIntegrityChecker"));
+const CICDSecurityAuditor = lazy(() => import("./pages/CICDSecurityAuditor"));
+const MFAComplianceChecker = lazy(() => import("./pages/MFAComplianceChecker"));
+const OrphanAccountDetector = lazy(() => import("./pages/OrphanAccountDetector"));
+const PermissionCreepAnalyzer = lazy(() => import("./pages/PermissionCreepAnalyzer"));
+const JustInTimeAccess = lazy(() => import("./pages/JustInTimeAccess"));
+const CredentialRotationManager = lazy(() => import("./pages/CredentialRotationManager"));
+const PrivilegedSessionRecorder = lazy(() => import("./pages/PrivilegedSessionRecorder"));
+const IncidentPredictionEngine = lazy(() => import("./pages/IncidentPredictionEngine"));
+const IncidentCostCalculator = lazy(() => import("./pages/IncidentCostCalculator"));
+const IncidentSimilarityEngine = lazy(() => import("./pages/IncidentSimilarityEngine"));
+const ThreatBriefGenerator = lazy(() => import("./pages/ThreatBriefGenerator"));
+const SLABreachPredictor = lazy(() => import("./pages/SLABreachPredictor"));
+const RunbookKnowledgeBase = lazy(() => import("./pages/RunbookKnowledgeBase"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -741,6 +761,24 @@ export default function App() {
               <Route path="threat-surface" element={<ThreatSurfaceMinimizer />} />
               <Route path="defense-in-depth" element={<DefenseInDepthAuditor />} />
               <Route path="control-mapper" element={<SecurityControlMapper />} />
+              <Route path="vendor-risk" element={<VendorRiskAssessor />} />
+              <Route path="sbom-analyzer" element={<SBOMAnalyzer />} />
+              <Route path="dependency-graph" element={<DependencyGraphAnalyzer />} />
+              <Route path="license-scanner" element={<OpenSourceLicenseScanner />} />
+              <Route path="artifact-integrity" element={<ArtifactIntegrityChecker />} />
+              <Route path="cicd-security" element={<CICDSecurityAuditor />} />
+              <Route path="mfa-compliance" element={<MFAComplianceChecker />} />
+              <Route path="orphan-accounts" element={<OrphanAccountDetector />} />
+              <Route path="permission-creep" element={<PermissionCreepAnalyzer />} />
+              <Route path="jit-access" element={<JustInTimeAccess />} />
+              <Route path="credential-rotation" element={<CredentialRotationManager />} />
+              <Route path="session-recorder" element={<PrivilegedSessionRecorder />} />
+              <Route path="incident-prediction" element={<IncidentPredictionEngine />} />
+              <Route path="incident-cost" element={<IncidentCostCalculator />} />
+              <Route path="incident-similarity" element={<IncidentSimilarityEngine />} />
+              <Route path="threat-brief" element={<ThreatBriefGenerator />} />
+              <Route path="sla-predictor" element={<SLABreachPredictor />} />
+              <Route path="runbook-kb" element={<RunbookKnowledgeBase />} />
             </Route>
 
             {/* Catch-all */}

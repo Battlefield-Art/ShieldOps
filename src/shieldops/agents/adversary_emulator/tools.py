@@ -83,4 +83,11 @@ class AdversaryEmulatorToolkit:
     ) -> list[dict[str, Any]]:
         """Execute score."""
         logger.info("adversary_emulator.score")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "score", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "score",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]

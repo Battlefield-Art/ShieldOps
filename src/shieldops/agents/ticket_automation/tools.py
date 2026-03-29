@@ -78,4 +78,11 @@ class TicketAutomationToolkit:
     ) -> list[dict[str, Any]]:
         """Execute track."""
         logger.info("ticket_automation.track")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "track", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "track",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]

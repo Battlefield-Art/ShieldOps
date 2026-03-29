@@ -83,4 +83,11 @@ class SecurityControlMapperToolkit:
     ) -> list[dict[str, Any]]:
         """Execute score."""
         logger.info("security_control_mapper.score")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "score", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "score",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]

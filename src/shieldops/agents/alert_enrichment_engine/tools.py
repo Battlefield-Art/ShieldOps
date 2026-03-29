@@ -83,4 +83,11 @@ class AlertEnrichmentEngineToolkit:
     ) -> list[dict[str, Any]]:
         """Execute route."""
         logger.info("alert_enrichment_engine.route")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "route", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "route",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]

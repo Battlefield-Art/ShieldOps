@@ -78,4 +78,11 @@ class WarGamingSimulatorToolkit:
     ) -> list[dict[str, Any]]:
         """Execute score."""
         logger.info("war_gaming_simulator.score")
-        return [{"id": f"{uuid4().hex[:12]}", "step": "score", "ts": time.time(), "status": "done"}]
+        return [
+            {
+                "id": f"{uuid4().hex[:12]}",
+                "step": "score",
+                "ts": time.time(),
+                "status": "done",
+            }
+        ]
