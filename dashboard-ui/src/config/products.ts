@@ -453,6 +453,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/threat-brief", icon: FileText, label: "Threat Brief" },
       { to: "/app/sla-predictor", icon: Gauge, label: "SLA Predictor" },
       { to: "/app/runbook-kb", icon: BookOpen, label: "Runbook KB" },
+      { to: "/app/quantum-risk", icon: Cpu, label: "Quantum Risk" },
+      { to: "/app/crypto-agility", icon: RefreshCw, label: "Crypto Agility" },
+      { to: "/app/key-lifecycle", icon: Key, label: "Key Lifecycle" },
+      { to: "/app/privacy-engineering", icon: Lock, label: "Privacy Engineering" },
+      { to: "/app/data-sovereignty", icon: Globe, label: "Data Sovereignty" },
+      { to: "/app/deepfake-detector", icon: Eye, label: "Deepfake Detector" },
     ],
   },
   {

@@ -414,6 +414,14 @@ const ThreatBriefGenerator = lazy(() => import("./pages/ThreatBriefGenerator"));
 const SLABreachPredictor = lazy(() => import("./pages/SLABreachPredictor"));
 const RunbookKnowledgeBase = lazy(() => import("./pages/RunbookKnowledgeBase"));
 
+// Phase X: Cryptographic Security & Post-Quantum Readiness
+const QuantumRiskAssessor = lazy(() => import("./pages/QuantumRiskAssessor"));
+const CryptoAgilityManager = lazy(() => import("./pages/CryptoAgilityManager"));
+const KeyLifecycleManager = lazy(() => import("./pages/KeyLifecycleManager"));
+const PrivacyEngineering = lazy(() => import("./pages/PrivacyEngineering"));
+const DataSovereigntyEnforcer = lazy(() => import("./pages/DataSovereigntyEnforcer"));
+const DeepfakeDetector = lazy(() => import("./pages/DeepfakeDetector"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -779,6 +787,12 @@ export default function App() {
               <Route path="threat-brief" element={<ThreatBriefGenerator />} />
               <Route path="sla-predictor" element={<SLABreachPredictor />} />
               <Route path="runbook-kb" element={<RunbookKnowledgeBase />} />
+              <Route path="quantum-risk" element={<QuantumRiskAssessor />} />
+              <Route path="crypto-agility" element={<CryptoAgilityManager />} />
+              <Route path="key-lifecycle" element={<KeyLifecycleManager />} />
+              <Route path="privacy-engineering" element={<PrivacyEngineering />} />
+              <Route path="data-sovereignty" element={<DataSovereigntyEnforcer />} />
+              <Route path="deepfake-detector" element={<DeepfakeDetector />} />
             </Route>
 
             {/* Catch-all */}
