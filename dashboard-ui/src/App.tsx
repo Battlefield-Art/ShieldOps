@@ -288,6 +288,25 @@ const SecretsInCodeDetector = lazy(
   () => import("./pages/SecretsInCodeDetector"),
 );
 
+const EndpointBehaviorMonitor = lazy(
+  () => import("./pages/EndpointBehaviorMonitor"),
+);
+const MobileDeviceManager = lazy(
+  () => import("./pages/MobileDeviceManager"),
+);
+const BrowserIsolation = lazy(
+  () => import("./pages/BrowserIsolation"),
+);
+const USBDeviceController = lazy(
+  () => import("./pages/USBDeviceController"),
+);
+const PatchComplianceChecker = lazy(
+  () => import("./pages/PatchComplianceChecker"),
+);
+const EndpointForensics = lazy(
+  () => import("./pages/EndpointForensics"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -575,6 +594,12 @@ export default function App() {
               <Route path="container-image-scanner" element={<ContainerImageScanner />} />
               <Route path="iac-security-scanner" element={<IACSecurityScanner />} />
               <Route path="secrets-in-code" element={<SecretsInCodeDetector />} />
+              <Route path="endpoint-behavior" element={<EndpointBehaviorMonitor />} />
+              <Route path="mobile-device-manager" element={<MobileDeviceManager />} />
+              <Route path="browser-isolation" element={<BrowserIsolation />} />
+              <Route path="usb-device-controller" element={<USBDeviceController />} />
+              <Route path="patch-compliance" element={<PatchComplianceChecker />} />
+              <Route path="endpoint-forensics" element={<EndpointForensics />} />
             </Route>
 
             {/* Catch-all */}

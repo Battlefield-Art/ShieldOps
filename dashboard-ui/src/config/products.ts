@@ -375,6 +375,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/container-image-scanner", icon: Container, label: "Image Scanner" },
       { to: "/app/iac-security-scanner", icon: FileText, label: "IaC Scanner" },
       { to: "/app/secrets-in-code", icon: Key, label: "Secrets Detector" },
+      { to: "/app/endpoint-behavior", icon: Monitor, label: "Endpoint Behavior" },
+      { to: "/app/mobile-device-manager", icon: Cpu, label: "Mobile MDM" },
+      { to: "/app/browser-isolation", icon: Globe, label: "Browser Isolation" },
+      { to: "/app/usb-device-controller", icon: HardDrive, label: "USB Controller" },
+      { to: "/app/patch-compliance", icon: CheckCircle, label: "Patch Compliance" },
+      { to: "/app/endpoint-forensics", icon: Search, label: "Endpoint Forensics" },
     ],
   },
   {

@@ -14200,6 +14200,12 @@ def create_app() -> FastAPI:
         "container_image_scanner",
         "iac_security_scanner",
         "secrets_in_code_detector",
+        "endpoint_behavior_monitor",
+        "mobile_device_manager",
+        "browser_isolation",
+        "usb_device_controller",
+        "patch_compliance_checker",
+        "endpoint_forensics",
     ):
         try:
             _mod = __import__(
