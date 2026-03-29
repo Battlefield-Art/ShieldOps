@@ -14194,6 +14194,12 @@ def create_app() -> FastAPI:
         "packet_inspector",
         "network_forensics",
         "bandwidth_anomaly_detector",
+        "sast_scanner",
+        "dast_runner",
+        "sca_dependency_checker",
+        "container_image_scanner",
+        "iac_security_scanner",
+        "secrets_in_code_detector",
     ):
         try:
             _mod = __import__(

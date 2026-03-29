@@ -273,6 +273,21 @@ const BandwidthAnomalyDetector = lazy(
   () => import("./pages/BandwidthAnomalyDetector"),
 );
 
+const SASTScanner = lazy(() => import("./pages/SASTScanner"));
+const DASTRunner = lazy(() => import("./pages/DASTRunner"));
+const SCADependencyChecker = lazy(
+  () => import("./pages/SCADependencyChecker"),
+);
+const ContainerImageScanner = lazy(
+  () => import("./pages/ContainerImageScanner"),
+);
+const IACSecurityScanner = lazy(
+  () => import("./pages/IACSecurityScanner"),
+);
+const SecretsInCodeDetector = lazy(
+  () => import("./pages/SecretsInCodeDetector"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -554,6 +569,12 @@ export default function App() {
               <Route path="packet-inspector" element={<PacketInspector />} />
               <Route path="network-forensics" element={<NetworkForensics />} />
               <Route path="bandwidth-anomaly" element={<BandwidthAnomalyDetector />} />
+              <Route path="sast-scanner" element={<SASTScanner />} />
+              <Route path="dast-runner" element={<DASTRunner />} />
+              <Route path="sca-dependency" element={<SCADependencyChecker />} />
+              <Route path="container-image-scanner" element={<ContainerImageScanner />} />
+              <Route path="iac-security-scanner" element={<IACSecurityScanner />} />
+              <Route path="secrets-in-code" element={<SecretsInCodeDetector />} />
             </Route>
 
             {/* Catch-all */}

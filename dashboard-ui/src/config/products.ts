@@ -369,6 +369,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/packet-inspector", icon: Search, label: "Packet Inspector" },
       { to: "/app/network-forensics", icon: FileSearch, label: "Network Forensics" },
       { to: "/app/bandwidth-anomaly", icon: TrendingUp, label: "Bandwidth Anomaly" },
+      { to: "/app/sast-scanner", icon: Code, label: "SAST Scanner" },
+      { to: "/app/dast-runner", icon: Zap, label: "DAST Runner" },
+      { to: "/app/sca-dependency", icon: Package, label: "SCA Dependencies" },
+      { to: "/app/container-image-scanner", icon: Container, label: "Image Scanner" },
+      { to: "/app/iac-security-scanner", icon: FileText, label: "IaC Scanner" },
+      { to: "/app/secrets-in-code", icon: Key, label: "Secrets Detector" },
     ],
   },
   {
