@@ -254,6 +254,25 @@ const AssetInventory = lazy(
   () => import("./pages/AssetInventory"),
 );
 
+const NetworkTrafficAnalyzer = lazy(
+  () => import("./pages/NetworkTrafficAnalyzer"),
+);
+const FirewallRuleAuditor = lazy(
+  () => import("./pages/FirewallRuleAuditor"),
+);
+const WAFManager = lazy(
+  () => import("./pages/WAFManager"),
+);
+const PacketInspector = lazy(
+  () => import("./pages/PacketInspector"),
+);
+const NetworkForensics = lazy(
+  () => import("./pages/NetworkForensics"),
+);
+const BandwidthAnomalyDetector = lazy(
+  () => import("./pages/BandwidthAnomalyDetector"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -529,6 +548,12 @@ export default function App() {
               <Route path="api-rate-limiter" element={<APIRateLimiter />} />
               <Route path="vulnerability-lifecycle" element={<VulnerabilityLifecycle />} />
               <Route path="asset-inventory" element={<AssetInventory />} />
+              <Route path="network-traffic-analyzer" element={<NetworkTrafficAnalyzer />} />
+              <Route path="firewall-rule-auditor" element={<FirewallRuleAuditor />} />
+              <Route path="waf-manager" element={<WAFManager />} />
+              <Route path="packet-inspector" element={<PacketInspector />} />
+              <Route path="network-forensics" element={<NetworkForensics />} />
+              <Route path="bandwidth-anomaly" element={<BandwidthAnomalyDetector />} />
             </Route>
 
             {/* Catch-all */}

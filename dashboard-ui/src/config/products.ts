@@ -363,6 +363,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/api-rate-limiter", icon: Gauge, label: "API Rate Limiter" },
       { to: "/app/vulnerability-lifecycle", icon: Bug, label: "Vuln Lifecycle" },
       { to: "/app/asset-inventory", icon: Server, label: "Asset Inventory" },
+      { to: "/app/network-traffic-analyzer", icon: Activity, label: "Traffic Analyzer" },
+      { to: "/app/firewall-rule-auditor", icon: Shield, label: "Firewall Auditor" },
+      { to: "/app/waf-manager", icon: ShieldAlert, label: "WAF Manager" },
+      { to: "/app/packet-inspector", icon: Search, label: "Packet Inspector" },
+      { to: "/app/network-forensics", icon: FileSearch, label: "Network Forensics" },
+      { to: "/app/bandwidth-anomaly", icon: TrendingUp, label: "Bandwidth Anomaly" },
     ],
   },
   {

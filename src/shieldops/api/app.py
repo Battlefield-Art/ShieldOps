@@ -14188,6 +14188,12 @@ def create_app() -> FastAPI:
         "api_rate_limiter",
         "vulnerability_lifecycle",
         "asset_inventory",
+        "network_traffic_analyzer",
+        "firewall_rule_auditor",
+        "waf_manager",
+        "packet_inspector",
+        "network_forensics",
+        "bandwidth_anomaly_detector",
     ):
         try:
             _mod = __import__(
