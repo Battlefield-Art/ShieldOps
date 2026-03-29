@@ -14206,6 +14206,12 @@ def create_app() -> FastAPI:
         "usb_device_controller",
         "patch_compliance_checker",
         "endpoint_forensics",
+        "cloud_audit_logger",
+        "serverless_security",
+        "cloud_workload_protector",
+        "multi_cloud_compliance",
+        "cloud_identity_federation",
+        "cloud_storage_scanner",
     ):
         try:
             _mod = __import__(

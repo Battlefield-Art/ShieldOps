@@ -307,6 +307,21 @@ const EndpointForensics = lazy(
   () => import("./pages/EndpointForensics"),
 );
 
+const CloudAuditLogger = lazy(() => import("./pages/CloudAuditLogger"));
+const ServerlessSecurity = lazy(() => import("./pages/ServerlessSecurity"));
+const CloudWorkloadProtector = lazy(
+  () => import("./pages/CloudWorkloadProtector"),
+);
+const MultiCloudCompliance = lazy(
+  () => import("./pages/MultiCloudCompliance"),
+);
+const CloudIdentityFederation = lazy(
+  () => import("./pages/CloudIdentityFederation"),
+);
+const CloudStorageScanner = lazy(
+  () => import("./pages/CloudStorageScanner"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -600,6 +615,12 @@ export default function App() {
               <Route path="usb-device-controller" element={<USBDeviceController />} />
               <Route path="patch-compliance" element={<PatchComplianceChecker />} />
               <Route path="endpoint-forensics" element={<EndpointForensics />} />
+              <Route path="cloud-audit-logger" element={<CloudAuditLogger />} />
+              <Route path="serverless-security" element={<ServerlessSecurity />} />
+              <Route path="cloud-workload-protector" element={<CloudWorkloadProtector />} />
+              <Route path="multi-cloud-compliance" element={<MultiCloudCompliance />} />
+              <Route path="cloud-identity-federation" element={<CloudIdentityFederation />} />
+              <Route path="cloud-storage-scanner" element={<CloudStorageScanner />} />
             </Route>
 
             {/* Catch-all */}

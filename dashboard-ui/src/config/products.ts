@@ -381,6 +381,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/usb-device-controller", icon: HardDrive, label: "USB Controller" },
       { to: "/app/patch-compliance", icon: CheckCircle, label: "Patch Compliance" },
       { to: "/app/endpoint-forensics", icon: Search, label: "Endpoint Forensics" },
+      { to: "/app/cloud-audit-logger", icon: FileText, label: "Cloud Audit" },
+      { to: "/app/serverless-security", icon: Zap, label: "Serverless Security" },
+      { to: "/app/cloud-workload-protector", icon: Shield, label: "Workload Protection" },
+      { to: "/app/multi-cloud-compliance", icon: Cloud, label: "Multi-Cloud Compliance" },
+      { to: "/app/cloud-identity-federation", icon: Users, label: "Identity Federation" },
+      { to: "/app/cloud-storage-scanner", icon: Database, label: "Storage Scanner" },
     ],
   },
   {
