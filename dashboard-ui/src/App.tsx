@@ -322,6 +322,50 @@ const CloudStorageScanner = lazy(
   () => import("./pages/CloudStorageScanner"),
 );
 
+// Phase M: Email & Communication Security
+const EmailGatewayAnalyzer = lazy(() => import("./pages/EmailGatewayAnalyzer"));
+const PhishingEmailAnalyzer = lazy(() => import("./pages/PhishingEmailAnalyzer"));
+const SpamFilterManager = lazy(() => import("./pages/SpamFilterManager"));
+const EmailDLPMonitor = lazy(() => import("./pages/EmailDLPMonitor"));
+const CommunicationAuditor = lazy(() => import("./pages/CommunicationAuditor"));
+const SocialEngineeringDetector = lazy(
+  () => import("./pages/SocialEngineeringDetector"),
+);
+
+// Phase N: Compliance & Regulatory
+const GDPRProcessor = lazy(() => import("./pages/GDPRProcessor"));
+const HIPAAMonitor = lazy(() => import("./pages/HIPAAMonitor"));
+const PCIScanner = lazy(() => import("./pages/PCIScanner"));
+const SOXAuditor = lazy(() => import("./pages/SOXAuditor"));
+const ISO27001Assessor = lazy(() => import("./pages/ISO27001Assessor"));
+const NISTFrameworkMapper = lazy(() => import("./pages/NISTFrameworkMapper"));
+
+// Phase O: AI/ML Security
+const ModelDriftDetector = lazy(() => import("./pages/ModelDriftDetector"));
+const TrainingDataValidator = lazy(() => import("./pages/TrainingDataValidator"));
+const InferenceAttackDetector = lazy(
+  () => import("./pages/InferenceAttackDetector"),
+);
+const ModelExplainabilityAuditor = lazy(
+  () => import("./pages/ModelExplainabilityAuditor"),
+);
+const AIBiasScanner = lazy(() => import("./pages/AIBiasScanner"));
+const FederatedLearningSecurity = lazy(
+  () => import("./pages/FederatedLearningSecurity"),
+);
+
+// Phase P: Physical & OT Security
+const PhysicalAccessMonitor = lazy(() => import("./pages/PhysicalAccessMonitor"));
+const CCTVAnalytics = lazy(() => import("./pages/CCTVAnalytics"));
+const EnvironmentalMonitor = lazy(() => import("./pages/EnvironmentalMonitor"));
+const SCADASecurityAnalyzer = lazy(() => import("./pages/SCADASecurityAnalyzer"));
+const IndustrialProtocolAnalyzer = lazy(
+  () => import("./pages/IndustrialProtocolAnalyzer"),
+);
+const BuildingManagementSecurity = lazy(
+  () => import("./pages/BuildingManagementSecurity"),
+);
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -621,6 +665,30 @@ export default function App() {
               <Route path="multi-cloud-compliance" element={<MultiCloudCompliance />} />
               <Route path="cloud-identity-federation" element={<CloudIdentityFederation />} />
               <Route path="cloud-storage-scanner" element={<CloudStorageScanner />} />
+              <Route path="email-gateway" element={<EmailGatewayAnalyzer />} />
+              <Route path="phishing-email" element={<PhishingEmailAnalyzer />} />
+              <Route path="spam-filter" element={<SpamFilterManager />} />
+              <Route path="email-dlp" element={<EmailDLPMonitor />} />
+              <Route path="communication-auditor" element={<CommunicationAuditor />} />
+              <Route path="social-engineering" element={<SocialEngineeringDetector />} />
+              <Route path="gdpr-processor" element={<GDPRProcessor />} />
+              <Route path="hipaa-monitor" element={<HIPAAMonitor />} />
+              <Route path="pci-scanner" element={<PCIScanner />} />
+              <Route path="sox-auditor" element={<SOXAuditor />} />
+              <Route path="iso27001-assessor" element={<ISO27001Assessor />} />
+              <Route path="nist-framework" element={<NISTFrameworkMapper />} />
+              <Route path="model-drift" element={<ModelDriftDetector />} />
+              <Route path="training-data" element={<TrainingDataValidator />} />
+              <Route path="inference-attack" element={<InferenceAttackDetector />} />
+              <Route path="model-explainability" element={<ModelExplainabilityAuditor />} />
+              <Route path="ai-bias" element={<AIBiasScanner />} />
+              <Route path="federated-learning" element={<FederatedLearningSecurity />} />
+              <Route path="physical-access" element={<PhysicalAccessMonitor />} />
+              <Route path="cctv-analytics" element={<CCTVAnalytics />} />
+              <Route path="environmental-monitor" element={<EnvironmentalMonitor />} />
+              <Route path="scada-security" element={<SCADASecurityAnalyzer />} />
+              <Route path="industrial-protocol" element={<IndustrialProtocolAnalyzer />} />
+              <Route path="building-management" element={<BuildingManagementSecurity />} />
             </Route>
 
             {/* Catch-all */}

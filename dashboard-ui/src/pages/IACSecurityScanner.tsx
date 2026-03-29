@@ -1,25 +1,40 @@
 import { useState } from "react";
-import { FileText, Shield, BarChart3, CheckCircle } from "lucide-react";
+import { FileCode, Shield, AlertTriangle, Bug, Server, CheckSquare } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
-type TabId = "overview" | "findings" | "details" | "metrics";
-const TABS: { id: TabId; label: string }[] = [{ id: "overview", label: "Overview" }, { id: "findings", label: "Findings" }, { id: "details", label: "Details" }, { id: "metrics", label: "Metrics" }];
+type TabId = "overview" | "misconfigs" | "policies" | "providers";
+const TABS: { id: TabId; label: string }[] = [{ id: "overview", label: "Overview" }, { id: "misconfigs", label: "Misconfigs" }, { id: "policies", label: "Policies" }, { id: "providers", label: "Providers" }];
 export default function IACSecurityScanner() {
   const [tab, setTab] = useState<TabId>("overview");
   return (<div className="space-y-6">
-    <PageHeader title="IaC Scanner" subtitle="Infrastructure-as-Code scanning" icon={<FileText className="h-6 w-6" />} />
+    <PageHeader title="IaC Security Scanner" subtitle="Scan Terraform, CloudFormation, and Kubernetes YAML for security misconfigurations" icon={<FileCode className="h-6 w-6" />} />
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <MetricCard title="Scans Run" value="24" icon={<FileText className="h-5 w-5" />} />
-      <MetricCard title="Issues Found" value="34" icon={<Shield className="h-5 w-5 text-yellow-400" />} />
-      <MetricCard title="Resolved" value="89%" icon={<CheckCircle className="h-5 w-5 text-emerald-400" />} />
-      <MetricCard title="Risk Score" value="Low" icon={<BarChart3 className="h-5 w-5 text-cyan-400" />} />
+      <MetricCard title="Templates" value="156" icon={<FileCode className="h-5 w-5" />} />
+      <MetricCard title="Misconfigs" value="78" icon={<AlertTriangle className="h-5 w-5 text-yellow-400" />} />
+      <MetricCard title="Critical" value="9" icon={<Bug className="h-5 w-5 text-red-400" />} />
+      <MetricCard title="Auto-fixable" value="45%" icon={<CheckSquare className="h-5 w-5 text-emerald-400" />} />
     </div>
     <div className="tab-bar">{TABS.map((t) => (<button key={t.id} onClick={() => setTab(t.id)} className={clsx("tab-item", tab === t.id && "tab-item-active")}>{t.label}</button>))}</div>
-    {tab === "overview" && (<div className="card-surface p-6"><h3 className="section-heading">Summary</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[{ label: "Critical", value: "3", color: "text-red-400" }, { label: "High", value: "12", color: "text-yellow-400" }, { label: "Medium", value: "19", color: "text-white/60" }].map((s) => (<div key={s.label} className="card-interactive p-4 text-center"><p className="text-sm text-white/60">{s.label}</p><p className={clsx("text-2xl font-bold mt-1", s.color)}>{s.value}</p></div>))}</div></div>)}
-    {tab === "findings" && (<div className="space-y-3">{[{ id: "F-001", title: "Critical vulnerability detected", severity: "critical" }, { id: "F-002", title: "High-risk configuration", severity: "high" }, { id: "F-003", title: "Medium-risk finding", severity: "medium" }].map((f) => (<div key={f.id} className="card-interactive p-4"><div className="flex items-start justify-between mb-2"><span className="font-mono text-xs text-cyan-400">{f.id}</span><StatusBadge status={f.severity} /></div><p className="text-white/90">{f.title}</p></div>))}</div>)}
-    {tab === "details" && (<div className="card-surface p-6"><h3 className="section-heading">Scan Details</h3><p className="text-white/60">Last scan completed 2 hours ago. Next scheduled in 4 hours.</p></div>)}
-    {tab === "metrics" && (<div className="card-surface p-6 space-y-3"><h3 className="section-heading">Trend</h3>{[{ metric: "Issues/scan", value: "1.4", trend: "-23% vs last month" }, { metric: "Resolution time", value: "2.3 days", trend: "-45% vs last quarter" }].map((m, i) => (<div key={i} className="card-interactive p-4 flex items-center justify-between"><div><p className="text-white/90 font-medium">{m.metric}</p><p className="text-xs text-white/50">{m.trend}</p></div><span className="text-cyan-400 font-mono">{m.value}</span></div>))}</div>)}
+    {tab === "overview" && (<div className="card-surface p-6"><h3 className="section-heading">Misconfigurations by Category</h3><div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {[{ cat: "IAM/Access", count: 22, color: "text-red-400" }, { cat: "Network", count: 18, color: "text-yellow-400" }, { cat: "Encryption", count: 15, color: "text-yellow-400" }, { cat: "Logging", count: 23, color: "text-white/60" }].map((c) => (
+        <div key={c.cat} className="card-interactive p-4 text-center"><p className="text-sm text-white/60">{c.cat}</p><p className={clsx("text-3xl font-bold mt-1", c.color)}>{c.count}</p></div>))}</div></div>)}
+    {tab === "misconfigs" && (<div className="card-surface overflow-hidden"><table className="w-full text-sm"><thead><tr className="border-b border-white/10 text-left text-white/50"><th className="px-4 py-3">Finding</th><th className="px-4 py-3">File</th><th className="px-4 py-3">CIS</th><th className="px-4 py-3">Severity</th></tr></thead>
+      <tbody>{[
+        { finding: "Wildcard IAM action allowed", file: "infra/iam.tf:12", cis: "CIS 1.16", sev: "critical" },
+        { finding: "Unrestricted ingress 0.0.0.0/0", file: "infra/sg.tf:28", cis: "CIS 4.1", sev: "high" },
+        { finding: "Encryption disabled on S3", file: "infra/s3.tf:5", cis: "CIS 2.6", sev: "high" },
+        { finding: "Logging disabled", file: "infra/rds.tf:18", cis: "CIS 3.1", sev: "medium" },
+      ].map((f, i) => (<tr key={i} className="border-b border-white/5 hover:bg-white/5"><td className="px-4 py-3 text-white/90">{f.finding}</td><td className="px-4 py-3 font-mono text-xs text-white/60">{f.file}</td><td className="px-4 py-3 text-cyan-400">{f.cis}</td><td className="px-4 py-3"><StatusBadge status={f.sev} /></td></tr>))}</tbody></table></div>)}
+    {tab === "policies" && (<div className="space-y-3">
+      {[{ policy: "deny_wildcard_iam", violations: 5, sev: "critical" },
+        { policy: "deny_public_access", violations: 3, sev: "high" },
+        { policy: "require_encryption", violations: 8, sev: "high" },
+        { policy: "require_logging", violations: 12, sev: "medium" },
+      ].map((p, i) => (<div key={i} className="card-interactive p-4 flex items-center justify-between"><div><p className="text-white/90 font-medium font-mono">{p.policy}</p><p className="text-xs text-white/50">{p.violations} violations</p></div><StatusBadge status={p.sev} /></div>))}</div>)}
+    {tab === "providers" && (<div className="card-surface p-6"><h3 className="section-heading">Provider Coverage</h3><div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {[{ provider: "Terraform", templates: 89, misconfigs: 42 }, { provider: "K8s YAML", templates: 34, misconfigs: 18 }, { provider: "CloudFormation", templates: 21, misconfigs: 12 }, { provider: "Helm", templates: 12, misconfigs: 6 }].map((p) => (
+        <div key={p.provider} className="card-interactive p-4 text-center"><p className="text-sm text-white/60">{p.provider}</p><p className="text-3xl font-bold mt-1 text-white/90">{p.templates}</p><p className="text-xs text-yellow-400">{p.misconfigs} issues</p></div>))}</div></div>)}
   </div>);
 }
