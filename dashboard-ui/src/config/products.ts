@@ -74,6 +74,7 @@ import {
   Play,
   Download,
   CheckCircle,
+  Dna,
   type LucideIcon,
 } from "lucide-react";
 
@@ -184,6 +185,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/workflows", icon: Workflow, label: "Workflows" },
       { to: "/app/agent-history", icon: Activity, label: "Agent History" },
       { to: "/app/schedules", icon: CalendarClock, label: "Schedules" },
+      { to: "/app/evolution", icon: Dna, label: "Agent Evolution" },
     ],
   },
   {
@@ -465,6 +467,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/playbook-generator", icon: BookOpen, label: "Playbook Generator" },
       { to: "/app/attack-path", icon: Target, label: "Attack Paths" },
       { to: "/app/security-metrics", icon: BarChart3, label: "Security Metrics" },
+      { to: "/app/threat-feed-aggregator", icon: Globe, label: "Threat Feeds" },
+      { to: "/app/ioc-enrichment", icon: Search, label: "IOC Enrichment" },
+      { to: "/app/response-automation", icon: Zap, label: "Response Automation" },
+      { to: "/app/risk-quantification", icon: Scale, label: "Risk Quantification" },
+      { to: "/app/awareness-trainer", icon: Users, label: "Awareness Training" },
+      { to: "/app/threat-hunt-automation", icon: Crosshair, label: "Hunt Automation" },
     ],
   },
   {

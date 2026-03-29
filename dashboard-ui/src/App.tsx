@@ -160,6 +160,7 @@ const AirGapVault = lazy(() => import("./pages/AirGapVault"));
 
 const AgentMemoryStore = lazy(() => import("./pages/AgentMemoryStore"));
 const ReflectionEngine = lazy(() => import("./pages/ReflectionEngine"));
+const AgentEvolution = lazy(() => import("./pages/AgentEvolution"));
 const SupplyChainScanner = lazy(() => import("./pages/SupplyChainScanner"));
 const CrossVendorCorrelator = lazy(() => import("./pages/CrossVendorCorrelator"));
 const SituationManager = lazy(() => import("./pages/SituationManager"));
@@ -430,6 +431,14 @@ const IncidentPlaybookGenerator = lazy(() => import("./pages/IncidentPlaybookGen
 const AttackPathAnalyzer = lazy(() => import("./pages/AttackPathAnalyzer"));
 const SecurityMetricsCollector = lazy(() => import("./pages/SecurityMetricsCollector"));
 
+// Phase Z: Threat Intelligence Fusion & Response Automation
+const ThreatFeedAggregator = lazy(() => import("./pages/ThreatFeedAggregator"));
+const IOCEnrichmentEngine = lazy(() => import("./pages/IOCEnrichmentEngine"));
+const ResponseAutomationEngine = lazy(() => import("./pages/ResponseAutomationEngine"));
+const RiskQuantificationEngine = lazy(() => import("./pages/RiskQuantificationEngine"));
+const SecurityAwarenessTrainer = lazy(() => import("./pages/SecurityAwarenessTrainer"));
+const ThreatHuntAutomation = lazy(() => import("./pages/ThreatHuntAutomation"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -648,6 +657,7 @@ export default function App() {
               <Route path="air-gap-vault" element={<AirGapVault />} />
               <Route path="agent-memory-store" element={<AgentMemoryStore />} />
               <Route path="reflection-engine" element={<ReflectionEngine />} />
+              <Route path="evolution" element={<AgentEvolution />} />
               <Route path="supply-chain-scanner" element={<SupplyChainScanner />} />
               <Route path="cross-vendor-correlator" element={<CrossVendorCorrelator />} />
               <Route path="situation-manager" element={<SituationManager />} />
@@ -807,6 +817,12 @@ export default function App() {
               <Route path="playbook-generator" element={<IncidentPlaybookGenerator />} />
               <Route path="attack-path" element={<AttackPathAnalyzer />} />
               <Route path="security-metrics" element={<SecurityMetricsCollector />} />
+              <Route path="threat-feed-aggregator" element={<ThreatFeedAggregator />} />
+              <Route path="ioc-enrichment" element={<IOCEnrichmentEngine />} />
+              <Route path="response-automation" element={<ResponseAutomationEngine />} />
+              <Route path="risk-quantification" element={<RiskQuantificationEngine />} />
+              <Route path="awareness-trainer" element={<SecurityAwarenessTrainer />} />
+              <Route path="threat-hunt-automation" element={<ThreatHuntAutomation />} />
             </Route>
 
             {/* Catch-all */}

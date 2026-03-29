@@ -324,6 +324,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "air_gap_vault",
                 "agent_memory_store",
                 "reflection_engine",
+                "evolution",
                 "supply_chain_scanner",
                 "cross_vendor_correlator",
                 "situation_manager",
@@ -14278,6 +14279,7 @@ def create_app() -> FastAPI:
         "threat_brief_generator",
         "sla_breach_predictor",
         "runbook_knowledge_base",
+        "evolution",
     ):
         try:
             _mod = __import__(
@@ -14299,6 +14301,22 @@ def create_app() -> FastAPI:
             "phase_142_F_routes_registered",
             count=len(_p142_routes),
         )
+
+    # ── Evolution Engine (Self-Evolving Agents) ─────────────────────
+    try:
+        from shieldops.agents.evolution.runner import EvolutionRunner
+        from shieldops.api.routes import evolution as evolution_routes
+
+        evolution_runner = EvolutionRunner()
+        evolution_routes.set_runner(evolution_runner)
+        app.include_router(
+            evolution_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Agent Evolution"],
+        )
+        logger.info("evolution_engine_initialized")
+    except Exception as e:
+        logger.warning("evolution_engine_init_failed", error=str(e))
 
     if audit_reports_routes is not None:
         app.include_router(
