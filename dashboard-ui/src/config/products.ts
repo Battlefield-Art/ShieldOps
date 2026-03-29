@@ -459,6 +459,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/privacy-engineering", icon: Lock, label: "Privacy Engineering" },
       { to: "/app/data-sovereignty", icon: Globe, label: "Data Sovereignty" },
       { to: "/app/deepfake-detector", icon: Eye, label: "Deepfake Detector" },
+      { to: "/app/threat-correlation", icon: Layers, label: "Threat Correlation" },
+      { to: "/app/security-copilot", icon: MessageSquare, label: "Security Copilot" },
+      { to: "/app/compliance-automation", icon: FileCheck, label: "Compliance Auto" },
+      { to: "/app/playbook-generator", icon: BookOpen, label: "Playbook Generator" },
+      { to: "/app/attack-path", icon: Target, label: "Attack Paths" },
+      { to: "/app/security-metrics", icon: BarChart3, label: "Security Metrics" },
     ],
   },
   {

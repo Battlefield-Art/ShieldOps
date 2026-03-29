@@ -422,6 +422,14 @@ const PrivacyEngineering = lazy(() => import("./pages/PrivacyEngineering"));
 const DataSovereigntyEnforcer = lazy(() => import("./pages/DataSovereigntyEnforcer"));
 const DeepfakeDetector = lazy(() => import("./pages/DeepfakeDetector"));
 
+// Phase Y: Autonomous Security Operations & Intelligence Automation
+const ThreatCorrelationEngine = lazy(() => import("./pages/ThreatCorrelationEngine"));
+const SecurityCopilot = lazy(() => import("./pages/SecurityCopilot"));
+const ComplianceAutomationEngine = lazy(() => import("./pages/ComplianceAutomationEngine"));
+const IncidentPlaybookGenerator = lazy(() => import("./pages/IncidentPlaybookGenerator"));
+const AttackPathAnalyzer = lazy(() => import("./pages/AttackPathAnalyzer"));
+const SecurityMetricsCollector = lazy(() => import("./pages/SecurityMetricsCollector"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -793,6 +801,12 @@ export default function App() {
               <Route path="privacy-engineering" element={<PrivacyEngineering />} />
               <Route path="data-sovereignty" element={<DataSovereigntyEnforcer />} />
               <Route path="deepfake-detector" element={<DeepfakeDetector />} />
+              <Route path="threat-correlation" element={<ThreatCorrelationEngine />} />
+              <Route path="security-copilot" element={<SecurityCopilot />} />
+              <Route path="compliance-automation" element={<ComplianceAutomationEngine />} />
+              <Route path="playbook-generator" element={<IncidentPlaybookGenerator />} />
+              <Route path="attack-path" element={<AttackPathAnalyzer />} />
+              <Route path="security-metrics" element={<SecurityMetricsCollector />} />
             </Route>
 
             {/* Catch-all */}
