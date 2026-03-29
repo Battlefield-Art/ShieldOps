@@ -366,6 +366,34 @@ const BuildingManagementSecurity = lazy(
   () => import("./pages/BuildingManagementSecurity"),
 );
 
+// Phase Q-T
+const DarkWebMonitor = lazy(() => import("./pages/DarkWebMonitor"));
+const BrandProtectionScanner = lazy(() => import("./pages/BrandProtectionScanner"));
+const ThreatLandscapeMapper = lazy(() => import("./pages/ThreatLandscapeMapper"));
+const KillChainAnalyzer = lazy(() => import("./pages/KillChainAnalyzer"));
+const AdversaryEmulator = lazy(() => import("./pages/AdversaryEmulator"));
+const HuntHypothesisGenerator = lazy(() => import("./pages/HuntHypothesisGenerator"));
+const AlertEnrichmentEngine = lazy(() => import("./pages/AlertEnrichmentEngine"));
+const TicketAutomation = lazy(() => import("./pages/TicketAutomation"));
+const ShiftHandoffManager = lazy(() => import("./pages/ShiftHandoffManager"));
+const SOCMetricsDashboard = lazy(() => import("./pages/SOCMetricsDashboard"));
+const PlaybookOptimizer = lazy(() => import("./pages/PlaybookOptimizer"));
+const WarGamingSimulator = lazy(() => import("./pages/WarGamingSimulator"));
+const DataMaskingEngine = lazy(() => import("./pages/DataMaskingEngine"));
+const TokenizationManager = lazy(() => import("./pages/TokenizationManager"));
+const PrivacyImpactAssessor = lazy(() => import("./pages/PrivacyImpactAssessor"));
+const DataLineageTracker = lazy(() => import("./pages/DataLineageTracker"));
+const ConsentManager = lazy(() => import("./pages/ConsentManager"));
+const DataBreachResponder = lazy(() => import("./pages/DataBreachResponder"));
+const ZeroTrustValidator = lazy(() => import("./pages/ZeroTrustValidator"));
+const MicroSegmentationPlanner = lazy(() => import("./pages/MicroSegmentationPlanner"));
+const SecurityArchitectureReviewer = lazy(
+  () => import("./pages/SecurityArchitectureReviewer"),
+);
+const ThreatSurfaceMinimizer = lazy(() => import("./pages/ThreatSurfaceMinimizer"));
+const DefenseInDepthAuditor = lazy(() => import("./pages/DefenseInDepthAuditor"));
+const SecurityControlMapper = lazy(() => import("./pages/SecurityControlMapper"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -689,6 +717,30 @@ export default function App() {
               <Route path="scada-security" element={<SCADASecurityAnalyzer />} />
               <Route path="industrial-protocol" element={<IndustrialProtocolAnalyzer />} />
               <Route path="building-management" element={<BuildingManagementSecurity />} />
+              <Route path="dark-web-monitor" element={<DarkWebMonitor />} />
+              <Route path="brand-protection" element={<BrandProtectionScanner />} />
+              <Route path="threat-landscape" element={<ThreatLandscapeMapper />} />
+              <Route path="kill-chain" element={<KillChainAnalyzer />} />
+              <Route path="adversary-emulator" element={<AdversaryEmulator />} />
+              <Route path="hunt-hypotheses" element={<HuntHypothesisGenerator />} />
+              <Route path="alert-enrichment" element={<AlertEnrichmentEngine />} />
+              <Route path="ticket-automation" element={<TicketAutomation />} />
+              <Route path="shift-handoff" element={<ShiftHandoffManager />} />
+              <Route path="soc-metrics" element={<SOCMetricsDashboard />} />
+              <Route path="playbook-optimizer" element={<PlaybookOptimizer />} />
+              <Route path="war-gaming" element={<WarGamingSimulator />} />
+              <Route path="data-masking" element={<DataMaskingEngine />} />
+              <Route path="tokenization" element={<TokenizationManager />} />
+              <Route path="privacy-impact" element={<PrivacyImpactAssessor />} />
+              <Route path="data-lineage" element={<DataLineageTracker />} />
+              <Route path="consent-manager" element={<ConsentManager />} />
+              <Route path="breach-response" element={<DataBreachResponder />} />
+              <Route path="zero-trust-validator" element={<ZeroTrustValidator />} />
+              <Route path="micro-segmentation" element={<MicroSegmentationPlanner />} />
+              <Route path="architecture-review" element={<SecurityArchitectureReviewer />} />
+              <Route path="threat-surface" element={<ThreatSurfaceMinimizer />} />
+              <Route path="defense-in-depth" element={<DefenseInDepthAuditor />} />
+              <Route path="control-mapper" element={<SecurityControlMapper />} />
             </Route>
 
             {/* Catch-all */}
