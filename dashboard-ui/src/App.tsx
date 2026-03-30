@@ -524,6 +524,14 @@ const EmailSecurityGateway = lazy(() => import("./pages/EmailSecurityGateway"));
 const FirmwareSecurityScanner = lazy(() => import("./pages/FirmwareSecurityScanner"));
 const ThreatIntelligenceFusion = lazy(() => import("./pages/ThreatIntelligenceFusion"));
 
+// ── Phase AL ──────────────────────────────────────────────────────
+const NetworkTrafficInspector = lazy(() => import("./pages/NetworkTrafficInspector"));
+const SecurityTrainingPlatform = lazy(() => import("./pages/SecurityTrainingPlatform"));
+const ContainerRuntimeProtector = lazy(() => import("./pages/ContainerRuntimeProtector"));
+const DataExfiltrationMonitor = lazy(() => import("./pages/DataExfiltrationMonitor"));
+const BrowserThreatProtector = lazy(() => import("./pages/BrowserThreatProtector"));
+const IdentityThreatDetector = lazy(() => import("./pages/IdentityThreatDetector"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -971,6 +979,12 @@ export default function App() {
               <Route path="email-security-gateway" element={<EmailSecurityGateway />} />
               <Route path="firmware-security-scanner" element={<FirmwareSecurityScanner />} />
               <Route path="threat-intel-fusion" element={<ThreatIntelligenceFusion />} />
+              <Route path="network-traffic-inspector" element={<NetworkTrafficInspector />} />
+              <Route path="security-training-platform" element={<SecurityTrainingPlatform />} />
+              <Route path="container-runtime-protector" element={<ContainerRuntimeProtector />} />
+              <Route path="data-exfiltration-monitor" element={<DataExfiltrationMonitor />} />
+              <Route path="browser-threat-protector" element={<BrowserThreatProtector />} />
+              <Route path="identity-threat-detector" element={<IdentityThreatDetector />} />
             </Route>
 
             {/* Catch-all */}
