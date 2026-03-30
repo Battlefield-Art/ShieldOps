@@ -1,107 +1,169 @@
-"""LLM prompt templates and response schemas for the Network Traffic Analyzer."""
-
-from __future__ import annotations
+"""Network Traffic Analyzer Agent — LLM prompt templates."""
 
 from pydantic import BaseModel, Field
 
 
-class AnomalyOutput(BaseModel):
-    """Structured output for anomaly detection."""
+class PatternAnalysisOutput(BaseModel):
+    """LLM output for traffic pattern analysis."""
 
-    anomaly_type: str = Field(
-        description="Type: lateral_movement/c2_beacon/"
-        "data_exfiltration/dns_tunneling/"
-        "port_scan/protocol_anomaly/"
-        "bandwidth_spike/beaconing"
+    summary: str = Field(
+        description="Brief summary of traffic patterns",
     )
-    severity: str = Field(description="Severity: critical/high/medium/low")
-    confidence: float = Field(description="Confidence score 0.0-1.0")
-    description: str = Field(description="Description of the anomaly")
-    mitre_tactic: str = Field(description="MITRE ATT&CK tactic ID")
+    risk_level: str = Field(
+        description="Risk level: critical, high, medium, low",
+    )
+    suspicious_patterns: list[str] = Field(
+        description="Identified suspicious traffic patterns",
+    )
+    recommendations: list[str] = Field(
+        description="Recommendations for further investigation",
+    )
 
 
-class ThreatOutput(BaseModel):
-    """Structured output for threat classification."""
+class AnomalyDetectionOutput(BaseModel):
+    """LLM output for anomaly detection."""
 
-    threat_name: str = Field(description="Name of the identified threat")
-    severity: str = Field(description="Severity: critical/high/medium/low")
-    confidence: float = Field(description="Confidence score 0.0-1.0")
+    threat_type: str = Field(
+        description=(
+            "Type: lateral_movement, data_exfiltration, "
+            "c2_communication, port_scan, "
+            "dns_tunneling, brute_force"
+        ),
+    )
+    severity: str = Field(
+        description="Severity: critical, high, medium, low",
+    )
+    confidence: float = Field(
+        description="Confidence score 0.0-1.0",
+    )
+    description: str = Field(
+        description="Detailed description of the anomaly",
+    )
+    mitre_tactic: str = Field(
+        description="MITRE ATT&CK tactic ID",
+    )
+
+
+class ThreatClassificationOutput(BaseModel):
+    """LLM output for threat classification."""
+
+    threat_name: str = Field(
+        description="Name of the identified threat",
+    )
+    severity: str = Field(
+        description="Severity: critical, high, medium, low",
+    )
+    confidence: float = Field(
+        description="Confidence score 0.0-1.0",
+    )
     kill_chain_phase: str = Field(
-        description="Kill chain phase: recon/weaponize/deliver/exploit/install/c2/actions"
+        description=("Kill chain phase: recon, weaponize, deliver, exploit, install, c2, actions"),
     )
-    recommended_action: str = Field(description="Recommended response action")
+    recommended_action: str = Field(
+        description="Recommended containment action",
+    )
+    reasoning: str = Field(
+        description="Detailed reasoning for classification",
+    )
 
 
-class ProtocolOutput(BaseModel):
-    """Structured output for protocol analysis."""
+class PolicyEnforcementOutput(BaseModel):
+    """LLM output for policy enforcement decisions."""
 
-    findings: list[str] = Field(description="Key findings for protocol behavior")
-    risk_level: str = Field(description="Risk: critical/high/medium/low/none")
-    recommendation: str = Field(description="Recommendation for the protocol")
+    action: str = Field(
+        description="Enforcement action to take",
+    )
+    priority: str = Field(
+        description="Priority: immediate, high, medium, low",
+    )
+    justification: str = Field(
+        description="Justification for the action",
+    )
+    blast_radius: str = Field(
+        description="Estimated blast radius of enforcement",
+    )
 
 
 class ReportOutput(BaseModel):
-    """Structured output for traffic analysis report."""
+    """LLM output for traffic analysis report."""
 
-    executive_summary: str = Field(description="One-paragraph executive summary")
-    key_findings: list[str] = Field(description="Top findings from the analysis")
-    risk_assessment: str = Field(description="Overall risk assessment")
-    recommendations: list[str] = Field(description="Follow-up recommendations")
-
-
-SYSTEM_DETECT_ANOMALIES = """\
-You are an expert network security analyst \
-detecting anomalous traffic patterns.
-
-Given network flow data, identify:
-1. Anomaly type (lateral_movement, c2_beacon, \
-data_exfiltration, dns_tunneling, port_scan, \
-protocol_anomaly, bandwidth_spike, beaconing)
-2. Severity (critical, high, medium, low)
-3. Confidence score (0.0-1.0)
-4. Relevant MITRE ATT&CK tactic
-
-Consider flow patterns, timing, volume, \
-protocol misuse, and known threat signatures."""
+    executive_summary: str = Field(
+        description="One-paragraph executive summary",
+    )
+    key_findings: list[str] = Field(
+        description="Top findings from the analysis",
+    )
+    risk_assessment: str = Field(
+        description="Overall risk assessment",
+    )
+    recommendations: list[str] = Field(
+        description="Prioritized follow-up recommendations",
+    )
 
 
-SYSTEM_CLASSIFY_THREATS = """\
-You are an expert threat analyst classifying \
-network-based threats from anomaly detections.
+SYSTEM_ANALYZE_PATTERNS = (
+    "You are an expert network security analyst "
+    "analyzing traffic flow patterns.\n"
+    "Given network flow data, identify:\n"
+    "1. Unusual communication patterns between "
+    "hosts\n"
+    "2. Volume anomalies — spikes or sustained "
+    "high-bandwidth transfers\n"
+    "3. Protocol misuse — non-standard port usage "
+    "or protocol violations\n"
+    "4. Timing anomalies — beaconing intervals or "
+    "off-hours activity\n"
+    "5. Provide risk level and recommendations"
+)
 
-Given the detected anomalies, determine:
-1. Threat name and category
-2. Kill chain phase (recon, weaponize, deliver, \
-exploit, install, c2, actions)
-3. Severity and confidence
-4. Recommended containment action
+SYSTEM_DETECT_ANOMALIES = (
+    "You are an expert network threat analyst "
+    "detecting anomalous traffic patterns.\n"
+    "Given traffic patterns, identify:\n"
+    "1. Threat type: lateral_movement, "
+    "data_exfiltration, c2_communication, "
+    "port_scan, dns_tunneling, brute_force\n"
+    "2. Severity: critical, high, medium, low\n"
+    "3. Confidence score 0.0-1.0\n"
+    "4. Relevant MITRE ATT&CK tactic\n"
+    "Consider flow volumes, timing, protocol "
+    "misuse, and known threat signatures."
+)
 
-Correlate across multiple anomalies to identify \
-coordinated attack campaigns."""
+SYSTEM_CLASSIFY_THREATS = (
+    "You are an expert threat analyst classifying "
+    "network-based threats from anomaly data.\n"
+    "Given the detected anomalies, determine:\n"
+    "1. Threat name and category\n"
+    "2. Kill chain phase: recon, weaponize, "
+    "deliver, exploit, install, c2, actions\n"
+    "3. Severity and confidence\n"
+    "4. Recommended containment action\n"
+    "Correlate across multiple anomalies to "
+    "identify coordinated campaigns."
+)
 
+SYSTEM_ENFORCE_POLICIES = (
+    "You are a network security policy analyst "
+    "determining enforcement actions.\n"
+    "Given classified threats, recommend:\n"
+    "1. Specific enforcement action (block, "
+    "isolate, rate-limit, alert)\n"
+    "2. Priority level for the action\n"
+    "3. Justification with evidence\n"
+    "4. Estimated blast radius of enforcement\n"
+    "Minimize false-positive impact while "
+    "containing confirmed threats."
+)
 
-SYSTEM_ANALYZE_PROTOCOLS = """\
-You are an expert network protocol analyst \
-evaluating protocol-level behavior.
-
-Given protocol flow statistics, assess:
-1. Protocol-specific anomalies
-2. Misuse patterns (e.g. DNS tunneling, HTTP C2)
-3. Risk level for each protocol
-4. Recommendations for hardening
-
-Focus on deviations from normal baselines."""
-
-
-SYSTEM_REPORT = """\
-You are an expert network security analyst \
-generating a traffic analysis summary.
-
-Given all detected anomalies, classified threats, \
-and protocol analyses, produce:
-1. Concise executive summary
-2. Key findings with evidence
-3. Overall risk assessment
-4. Prioritized recommendations
-
-Be direct and actionable."""
+SYSTEM_REPORT = (
+    "You are an expert network security analyst "
+    "generating a traffic analysis report.\n"
+    "Given all detected anomalies, classified "
+    "threats, and policy enforcements:\n"
+    "1. Concise executive summary\n"
+    "2. Key findings with evidence\n"
+    "3. Overall risk assessment\n"
+    "4. Prioritized recommendations\n"
+    "Be direct and actionable."
+)

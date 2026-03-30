@@ -2,287 +2,479 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
-from uuid import uuid4
 
 import structlog
 
-from .models import (
-    ComplianceGap,
-    ControlStatus,
-    CoverageAssessment,
-    Framework,
-    FrameworkMapping,
-    RemediationPlan,
-    SecurityControl,
-)
-
 logger = structlog.get_logger()
 
-# Representative framework requirements
-_FRAMEWORK_REQS: dict[Framework, list[dict[str, str]]] = {
-    Framework.SOC2: [
-        {"id": "CC6.1", "name": "Logical Access"},
-        {"id": "CC6.2", "name": "System Access Auth"},
-        {"id": "CC6.3", "name": "Role-Based Access"},
-        {"id": "CC7.1", "name": "Detect Anomalies"},
-        {"id": "CC7.2", "name": "Monitor Components"},
-        {"id": "CC8.1", "name": "Change Management"},
+_DOMAIN_FRAMEWORKS: dict[str, list[str]] = {
+    "financial": ["SOC2", "PCI-DSS", "SOX", "GLBA"],
+    "healthcare": ["HIPAA", "HITRUST", "SOC2"],
+    "government": ["FedRAMP", "NIST-800-53", "FISMA"],
+    "technology": ["SOC2", "ISO-27001", "GDPR"],
+    "retail": ["PCI-DSS", "SOC2", "CCPA"],
+    "energy": ["NERC-CIP", "NIST-CSF", "SOC2"],
+}
+
+_FRAMEWORK_REQUIREMENTS: dict[str, list[dict[str, Any]]] = {
+    "SOC2": [
+        {
+            "requirement_id": "SOC2-CC6.1",
+            "title": "Logical access controls",
+            "description": ("Restrict logical access to systems"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "SOC2-CC6.3",
+            "title": "Role-based access",
+            "description": ("Implement role-based access control"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "SOC2-CC7.2",
+            "title": "Monitoring and detection",
+            "description": ("Monitor system components for anomalies"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "SOC2-CC8.1",
+            "title": "Change management",
+            "description": ("Authorize and test changes before deploy"),
+            "mandatory": True,
+        },
     ],
-    Framework.HIPAA: [
-        {"id": "164.312(a)", "name": "Access Control"},
-        {"id": "164.312(b)", "name": "Audit Controls"},
-        {"id": "164.312(c)", "name": "Integrity"},
-        {"id": "164.312(d)", "name": "Authentication"},
-        {"id": "164.312(e)", "name": "Transmission"},
+    "PCI-DSS": [
+        {
+            "requirement_id": "PCI-1.1",
+            "title": "Network segmentation",
+            "description": ("Install network security controls"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "PCI-3.4",
+            "title": "Encryption at rest",
+            "description": ("Render PAN unreadable when stored"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "PCI-6.2",
+            "title": "Secure development",
+            "description": "Develop software securely",
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "PCI-10.1",
+            "title": "Audit logging",
+            "description": ("Log and monitor all access to systems"),
+            "mandatory": True,
+        },
     ],
-    Framework.PCI_DSS: [
-        {"id": "1.1", "name": "Firewall Config"},
-        {"id": "2.1", "name": "Default Passwords"},
-        {"id": "3.1", "name": "Stored Card Data"},
-        {"id": "6.1", "name": "Vulnerability Mgmt"},
-        {"id": "8.1", "name": "User Identification"},
-        {"id": "10.1", "name": "Audit Trails"},
+    "HIPAA": [
+        {
+            "requirement_id": "HIPAA-164.312a",
+            "title": "Access control",
+            "description": "Unique user identification",
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "HIPAA-164.312b",
+            "title": "Audit controls",
+            "description": ("Record and examine system activity"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "HIPAA-164.312e",
+            "title": "Transmission security",
+            "description": "Encrypt ePHI in transit",
+            "mandatory": True,
+        },
     ],
-    Framework.NIST_CSF: [
-        {"id": "ID.AM-1", "name": "Asset Inventory"},
-        {"id": "PR.AC-1", "name": "Access Mgmt"},
-        {"id": "DE.CM-1", "name": "Network Monitor"},
-        {"id": "RS.RP-1", "name": "Response Plan"},
-        {"id": "RC.RP-1", "name": "Recovery Plan"},
+    "ISO-27001": [
+        {
+            "requirement_id": "ISO-A5.1",
+            "title": "Information security policies",
+            "description": ("Management direction for info security"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "ISO-A9.1",
+            "title": "Access control policy",
+            "description": ("Limit access to information assets"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "ISO-A12.4",
+            "title": "Logging and monitoring",
+            "description": ("Record events and generate evidence"),
+            "mandatory": True,
+        },
+    ],
+    "GDPR": [
+        {
+            "requirement_id": "GDPR-Art25",
+            "title": "Data protection by design",
+            "description": "Privacy by design and default",
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "GDPR-Art32",
+            "title": "Security of processing",
+            "description": ("Appropriate technical measures"),
+            "mandatory": True,
+        },
+        {
+            "requirement_id": "GDPR-Art33",
+            "title": "Breach notification",
+            "description": ("Notify authority within 72 hours"),
+            "mandatory": True,
+        },
     ],
 }
 
-# Representative controls
-_BASELINE_CONTROLS: list[dict[str, Any]] = [
+_POSTURE_CONTROLS: list[dict[str, Any]] = [
     {
-        "name": "MFA Enforcement",
-        "cat": "identity",
+        "control": "mfa_enforcement",
         "status": "implemented",
+        "effectiveness": 0.95,
     },
     {
-        "name": "RBAC Policy",
-        "cat": "access",
+        "control": "encryption_at_rest",
         "status": "implemented",
+        "effectiveness": 0.90,
     },
     {
-        "name": "Encryption at Rest",
-        "cat": "data",
+        "control": "encryption_in_transit",
         "status": "implemented",
+        "effectiveness": 0.92,
     },
     {
-        "name": "SIEM Monitoring",
-        "cat": "detection",
+        "control": "audit_logging",
         "status": "partial",
+        "effectiveness": 0.60,
     },
     {
-        "name": "Incident Response Plan",
-        "cat": "response",
+        "control": "network_segmentation",
         "status": "partial",
+        "effectiveness": 0.55,
     },
     {
-        "name": "Change Management",
-        "cat": "operations",
+        "control": "change_management",
         "status": "implemented",
+        "effectiveness": 0.85,
     },
     {
-        "name": "Vulnerability Scanning",
-        "cat": "security",
-        "status": "partial",
-    },
-    {
-        "name": "Data Classification",
-        "cat": "data",
+        "control": "vulnerability_scanning",
         "status": "missing",
+        "effectiveness": 0.0,
     },
     {
-        "name": "Backup and Recovery",
-        "cat": "operations",
-        "status": "implemented",
-    },
-    {
-        "name": "Security Awareness",
-        "cat": "people",
+        "control": "incident_response",
         "status": "partial",
+        "effectiveness": 0.45,
+    },
+    {
+        "control": "data_classification",
+        "status": "missing",
+        "effectiveness": 0.0,
+    },
+    {
+        "control": "access_reviews",
+        "status": "partial",
+        "effectiveness": 0.50,
     },
 ]
 
 
 class ComplianceGapAnalyzerToolkit:
-    """Toolkit for compliance gap analysis."""
+    """Tools for compliance gap analysis and planning."""
 
     def __init__(
         self,
-        compliance_db: Any | None = None,
-        control_registry: Any | None = None,
-        repository: Any | None = None,
+        posture_backend: Any | None = None,
+        regulatory_backend: Any | None = None,
     ) -> None:
-        self._compliance_db = compliance_db
-        self._control_registry = control_registry
-        self._repository = repository
+        self._posture_backend = posture_backend
+        self._regulatory_backend = regulatory_backend
 
-    async def inventory_controls(
+    async def scan_posture(
         self,
-        tenant_id: str,
-    ) -> list[SecurityControl]:
-        """Collect security controls inventory."""
+        domain: str,
+    ) -> dict[str, Any]:
+        """Scan current security posture for a domain."""
         logger.info(
-            "compliance_gap.inventory_controls",
-            tenant_id=tenant_id,
+            "cga.scan_posture",
+            domain=domain,
         )
-        if self._control_registry is not None:
+        if self._posture_backend is not None:
             try:
-                return await self._control_registry.list(
-                    tenant_id,
-                )
+                return await self._posture_backend.scan(
+                    domain=domain,
+                )  # type: ignore[no-any-return]
             except Exception:
-                logger.warning(
-                    "compliance_gap.registry_fallback",
+                logger.exception(
+                    "cga.scan_posture.error",
                 )
+                return {}
 
-        return [
-            SecurityControl(
-                id=f"ctrl-{uuid4().hex[:8]}",
-                name=c["name"],
-                category=c["cat"],
-                status=ControlStatus(c["status"]),
-                owner="security-team",
+        controls = _POSTURE_CONTROLS
+        implemented = sum(1 for c in controls if c["status"] == "implemented")
+        partial = sum(1 for c in controls if c["status"] == "partial")
+        missing = sum(1 for c in controls if c["status"] == "missing")
+        total = len(controls)
+        score = (
+            round(
+                (implemented + partial * 0.5) / total * 100,
+                2,
             )
-            for c in _BASELINE_CONTROLS
-        ]
-
-    async def map_to_frameworks(
-        self,
-        controls: list[SecurityControl],
-        frameworks: list[Framework],
-    ) -> list[FrameworkMapping]:
-        """Map controls to framework requirements."""
-        logger.info(
-            "compliance_gap.map_to_frameworks",
-            control_count=len(controls),
-            framework_count=len(frameworks),
+            if total > 0
+            else 0.0
         )
-        mappings: list[FrameworkMapping] = []
+
+        return {
+            "scan_id": (f"scan-{domain}-{int(time.time())}"),
+            "domain": domain,
+            "controls_total": total,
+            "controls_implemented": implemented,
+            "controls_partial": partial,
+            "controls_missing": missing,
+            "score": score,
+            "findings": controls,
+        }
+
+    async def fetch_requirements(
+        self,
+        domain: str,
+    ) -> list[dict[str, Any]]:
+        """Fetch regulatory requirements for a domain."""
+        logger.info(
+            "cga.fetch_requirements",
+            domain=domain,
+        )
+        if self._regulatory_backend is not None:
+            try:
+                return await self._regulatory_backend.fetch(
+                    domain=domain,
+                )  # type: ignore[no-any-return]
+            except Exception:
+                logger.exception(
+                    "cga.fetch_requirements.error",
+                )
+                return []
+
+        frameworks = _DOMAIN_FRAMEWORKS.get(
+            domain,
+            [],
+        )
+        results: list[dict[str, Any]] = []
         for fw in frameworks:
-            reqs = _FRAMEWORK_REQS.get(fw, [])
-            for i, req in enumerate(reqs):
-                # Map controls round-robin
-                ctrl = controls[i % len(controls)] if controls else None
-                status = ctrl.status if ctrl else ControlStatus.MISSING
-                mappings.append(
-                    FrameworkMapping(
-                        control_id=(ctrl.id if ctrl else ""),
-                        framework=fw,
-                        requirement_id=req["id"],
-                        requirement_name=req["name"],
-                        status=status,
-                        gap_description=(
-                            "" if status == ControlStatus.IMPLEMENTED else f"Gap in {req['name']}"
-                        ),
-                    )
-                )
-        return mappings
-
-    async def assess_coverage(
-        self,
-        mappings: list[FrameworkMapping],
-    ) -> list[CoverageAssessment]:
-        """Assess coverage per framework."""
-        logger.info(
-            "compliance_gap.assess_coverage",
-            mapping_count=len(mappings),
-        )
-        fw_groups: dict[Framework, list[FrameworkMapping]] = {}
-        for m in mappings:
-            fw_groups.setdefault(
-                m.framework,
+            reqs = _FRAMEWORK_REQUIREMENTS.get(
+                fw,
                 [],
-            ).append(m)
-
-        assessments: list[CoverageAssessment] = []
-        for fw, maps in fw_groups.items():
-            total = len(maps)
-            impl = sum(1 for m in maps if m.status == ControlStatus.IMPLEMENTED)
-            partial = sum(1 for m in maps if m.status == ControlStatus.PARTIAL)
-            missing = sum(1 for m in maps if m.status == ControlStatus.MISSING)
-            na = sum(1 for m in maps if m.status == ControlStatus.NOT_APPLICABLE)
-            applicable = total - na
-            pct = (
-                round(
-                    (impl + partial * 0.5) / applicable * 100,
-                    1,
-                )
-                if applicable
-                else 0.0
             )
-
-            assessments.append(
-                CoverageAssessment(
-                    framework=fw,
-                    total_requirements=total,
-                    implemented=impl,
-                    partial=partial,
-                    missing=missing,
-                    not_applicable=na,
-                    coverage_pct=pct,
+            for req in reqs:
+                results.append(
+                    {
+                        **req,
+                        "framework": fw,
+                        "domain": domain,
+                        "control_mappings": [],
+                    }
                 )
-            )
-        return assessments
+        return results
 
-    async def identify_gaps(
+    def identify_gaps(
         self,
-        mappings: list[FrameworkMapping],
-    ) -> list[ComplianceGap]:
-        """Identify compliance gaps."""
-        logger.info(
-            "compliance_gap.identify_gaps",
-            mapping_count=len(mappings),
-        )
-        gaps: list[ComplianceGap] = []
-        for m in mappings:
-            if m.status in (
-                ControlStatus.MISSING,
-                ControlStatus.PARTIAL,
-            ):
-                risk = "critical" if m.status == ControlStatus.MISSING else "high"
-                gaps.append(
-                    ComplianceGap(
-                        framework=m.framework,
-                        requirement_id=(m.requirement_id),
-                        requirement_name=(m.requirement_name),
-                        current_status=m.status,
-                        risk_level=risk,
-                        remediation_priority=risk,
-                        estimated_effort="medium",
-                    )
-                )
+        posture: dict[str, Any],
+        requirements: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Compare posture against requirements."""
+        findings = posture.get("findings", [])
+        implemented = {f["control"] for f in findings if f.get("status") == "implemented"}
+        partial = {f["control"] for f in findings if f.get("status") == "partial"}
+
+        gaps: list[dict[str, Any]] = []
+        for i, req in enumerate(requirements):
+            req_id = req.get("requirement_id", "")
+            title = req.get("title", "")
+
+            ctrl_key = title.lower().replace(" ", "_")
+            has_full = any(ctrl_key in c for c in implemented)
+            has_partial = any(ctrl_key in c for c in partial)
+
+            if has_full:
+                continue
+
+            if has_partial:
+                severity = "medium"
+                current = "partially implemented"
+            else:
+                severity = "high"
+                current = "not implemented"
+
+            if req.get("mandatory", True) and severity == "high":
+                severity = "critical"
+
+            gaps.append(
+                {
+                    "gap_id": f"GAP-{i + 1:04d}",
+                    "requirement_id": req_id,
+                    "framework": req.get(
+                        "framework",
+                        "",
+                    ),
+                    "severity": severity,
+                    "description": (f"Gap in {title}: {current}"),
+                    "current_state": current,
+                    "required_state": req.get(
+                        "description",
+                        "",
+                    ),
+                    "affected_controls": [],
+                }
+            )
         return gaps
 
-    async def generate_remediation_plans(
+    def prioritize_risks(
         self,
-        gaps: list[ComplianceGap],
-    ) -> list[RemediationPlan]:
-        """Generate remediation plans for gaps."""
-        logger.info(
-            "compliance_gap.remediation_plans",
-            gap_count=len(gaps),
-        )
-        plans: list[RemediationPlan] = []
+        gaps: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Score and prioritize gaps by risk."""
+        severity_scores = {
+            "critical": 90.0,
+            "high": 70.0,
+            "medium": 45.0,
+            "low": 20.0,
+            "informational": 5.0,
+        }
+        penalties = {
+            "critical": ("Regulatory action / fines"),
+            "high": ("Audit finding / remediation order"),
+            "medium": ("Observation / conditional pass"),
+            "low": "Advisory note",
+            "informational": ("Best practice suggestion"),
+        }
+
+        priorities: list[dict[str, Any]] = []
         for gap in gaps:
-            plans.append(
-                RemediationPlan(
-                    gap_id=f"rem-{uuid4().hex[:8]}",
-                    framework=gap.framework,
-                    requirement_id=(gap.requirement_id),
-                    action_items=[
-                        f"Implement {gap.requirement_name}",
-                        "Document evidence",
-                        "Validate with auditor",
-                    ],
-                    owner="security-team",
-                    timeline="30-60 days",
-                    estimated_cost="$10K-$50K",
-                    priority=gap.remediation_priority,
+            sev = gap.get("severity", "medium")
+            base = severity_scores.get(sev, 45.0)
+            fw = gap.get("framework", "")
+            fw_boost = (
+                5.0
+                if fw
+                in (
+                    "PCI-DSS",
+                    "HIPAA",
+                    "FedRAMP",
                 )
+                else 0.0
             )
+            score = min(base + fw_boost, 100.0)
+
+            priorities.append(
+                {
+                    "gap_id": gap.get("gap_id", ""),
+                    "severity": sev,
+                    "risk_score": score,
+                    "business_impact": (f"{sev.title()} impact on compliance posture"),
+                    "regulatory_penalty": (penalties.get(sev, "")),
+                    "likelihood": round(
+                        score / 100.0,
+                        2,
+                    ),
+                }
+            )
+
+        priorities.sort(
+            key=lambda p: p["risk_score"],
+            reverse=True,
+        )
+        return priorities
+
+    def build_remediation_plan(
+        self,
+        gaps: list[dict[str, Any]],
+        priorities: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Generate remediation plans for gaps."""
+        plans: list[dict[str, Any]] = []
+
+        for rank, gap in enumerate(gaps, 1):
+            gap_id = gap.get("gap_id", "")
+            sev = gap.get("severity", "medium")
+
+            effort = {
+                "critical": 14,
+                "high": 10,
+                "medium": 5,
+                "low": 2,
+                "informational": 1,
+            }.get(sev, 5)
+
+            plans.append(
+                {
+                    "gap_id": gap_id,
+                    "title": (f"Remediate {gap.get('description', '')}"),
+                    "steps": [
+                        "Assess current control state",
+                        "Design remediation approach",
+                        "Implement control changes",
+                        "Validate compliance",
+                        "Document evidence",
+                    ],
+                    "estimated_effort_days": effort,
+                    "owner": "security-team",
+                    "priority_rank": rank,
+                    "dependencies": [],
+                }
+            )
+
+        plans.sort(
+            key=lambda p: p["priority_rank"],
+        )
         return plans
+
+    def generate_report(
+        self,
+        posture_scans: list[dict[str, Any]],
+        gaps: list[dict[str, Any]],
+        priorities: list[dict[str, Any]],
+        plans: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Produce final compliance gap report."""
+        total_gaps = len(gaps)
+        critical = sum(1 for g in gaps if g.get("severity") == "critical")
+        high = sum(1 for g in gaps if g.get("severity") == "high")
+        medium = sum(1 for g in gaps if g.get("severity") == "medium")
+
+        avg_score = 0.0
+        if posture_scans:
+            scores = [s.get("score", 0.0) for s in posture_scans]
+            avg_score = round(
+                sum(scores) / len(scores),
+                2,
+            )
+
+        total_effort = sum(p.get("estimated_effort_days", 0) for p in plans)
+
+        frameworks = sorted({g.get("framework", "") for g in gaps})
+
+        low_count = total_gaps - critical - high - medium
+
+        return {
+            "compliance_score": avg_score,
+            "total_gaps": total_gaps,
+            "gaps_by_severity": {
+                "critical": critical,
+                "high": high,
+                "medium": medium,
+                "low": low_count,
+            },
+            "frameworks_assessed": frameworks,
+            "remediation_plans": len(plans),
+            "total_effort_days": total_effort,
+            "top_risks": list(priorities[:5]),
+            "generated_at": time.time(),
+        }

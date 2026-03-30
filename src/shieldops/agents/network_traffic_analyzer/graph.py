@@ -1,152 +1,134 @@
-"""LangGraph workflow definition for the Network Traffic Analyzer Agent."""
+"""Network Traffic Analyzer Agent — LangGraph StateGraph."""
 
 from __future__ import annotations
 
+from typing import Any
+
 from langgraph.graph import END, StateGraph
 
-from shieldops.agents.network_traffic_analyzer.models import (
-    NetworkTrafficAnalyzerState,
-)
-from shieldops.agents.network_traffic_analyzer.nodes import (
-    analyze_protocols,
+from .models import NetworkTrafficAnalyzerState
+from .nodes import (
+    analyze_patterns,
+    capture_flows,
     classify_threats,
-    correlate,
     detect_anomalies,
-    ingest_flows,
-    report,
+    enforce_policies,
+    generate_report,
 )
-from shieldops.agents.tracing import traced_node
-
-_AGENT = "network_traffic_analyzer"
+from .tools import NetworkTrafficAnalyzerToolkit
 
 
-def _route_after_ingest(
-    state: NetworkTrafficAnalyzerState,
-) -> str:
-    if state.error:
-        return "report"
-    return "detect_anomalies"
-
-
-def _route_after_detect(
-    state: NetworkTrafficAnalyzerState,
-) -> str:
-    if state.error:
-        return "report"
-    return "classify_threats"
-
-
-def _route_after_classify(
-    state: NetworkTrafficAnalyzerState,
-) -> str:
-    if state.error:
-        return "report"
-    return "analyze_protocols"
-
-
-def _route_after_protocols(
-    state: NetworkTrafficAnalyzerState,
-) -> str:
-    if state.error:
-        return "report"
-    return "correlate"
-
-
-def _route_after_correlate(
-    state: NetworkTrafficAnalyzerState,
-) -> str:
+def _has_anomalies(state: Any) -> str:
+    """Route: enforce policies only if threats exist."""
+    threats = state.threats if hasattr(state, "threats") else state.get("threats", [])
+    if threats:
+        return "enforce_policies"
     return "report"
 
 
-def create_network_traffic_analyzer_graph() -> StateGraph:
-    """Build the Network Traffic Analyzer LangGraph workflow.
+def build_graph(
+    toolkit: NetworkTrafficAnalyzerToolkit,
+) -> StateGraph:  # type: ignore[type-arg]
+    """Build the Network Traffic Analyzer graph."""
 
-    Workflow:
-        ingest_flows -> detect_anomalies -> classify_threats
-        -> analyze_protocols -> correlate -> report -> END
+    def _to_dict(state: Any) -> dict[str, Any]:
+        if hasattr(state, "model_dump"):
+            return state.model_dump()  # type: ignore[no-any-return]
+        return dict(state) if not isinstance(state, dict) else state
 
-    Error at any stage short-circuits to report.
-    """
+    async def _capture(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await capture_flows(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _patterns(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await analyze_patterns(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _anomalies(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await detect_anomalies(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _classify(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await classify_threats(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _enforce(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await enforce_policies(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _report(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await generate_report(
+            _to_dict(state),
+            toolkit,
+        )
+
     graph = StateGraph(NetworkTrafficAnalyzerState)
+    graph.add_node("capture_flows", _capture)
+    graph.add_node("analyze_patterns", _patterns)
+    graph.add_node("detect_anomalies", _anomalies)
+    graph.add_node("classify_threats", _classify)
+    graph.add_node("enforce_policies", _enforce)
+    graph.add_node("generate_report", _report)
 
-    graph.add_node(
-        "ingest_flows",
-        traced_node(
-            f"{_AGENT}.ingest_flows",
-            _AGENT,
-        )(ingest_flows),
+    graph.set_entry_point("capture_flows")
+    graph.add_edge(
+        "capture_flows",
+        "analyze_patterns",
     )
-    graph.add_node(
+    graph.add_edge(
+        "analyze_patterns",
         "detect_anomalies",
-        traced_node(
-            f"{_AGENT}.detect_anomalies",
-            _AGENT,
-        )(detect_anomalies),
     )
-    graph.add_node(
+    graph.add_edge(
+        "detect_anomalies",
         "classify_threats",
-        traced_node(
-            f"{_AGENT}.classify_threats",
-            _AGENT,
-        )(classify_threats),
-    )
-    graph.add_node(
-        "analyze_protocols",
-        traced_node(
-            f"{_AGENT}.analyze_protocols",
-            _AGENT,
-        )(analyze_protocols),
-    )
-    graph.add_node(
-        "correlate",
-        traced_node(
-            f"{_AGENT}.correlate",
-            _AGENT,
-        )(correlate),
-    )
-    graph.add_node(
-        "report",
-        traced_node(
-            f"{_AGENT}.report",
-            _AGENT,
-        )(report),
-    )
-
-    graph.set_entry_point("ingest_flows")
-
-    graph.add_conditional_edges(
-        "ingest_flows",
-        _route_after_ingest,
-        {
-            "detect_anomalies": "detect_anomalies",
-            "report": "report",
-        },
-    )
-    graph.add_conditional_edges(
-        "detect_anomalies",
-        _route_after_detect,
-        {
-            "classify_threats": "classify_threats",
-            "report": "report",
-        },
     )
     graph.add_conditional_edges(
         "classify_threats",
-        _route_after_classify,
+        _has_anomalies,
         {
-            "analyze_protocols": "analyze_protocols",
-            "report": "report",
+            "enforce_policies": "enforce_policies",
+            "report": "generate_report",
         },
     )
-    graph.add_conditional_edges(
-        "analyze_protocols",
-        _route_after_protocols,
-        {
-            "correlate": "correlate",
-            "report": "report",
-        },
+    graph.add_edge(
+        "enforce_policies",
+        "generate_report",
     )
-    graph.add_edge("correlate", "report")
-    graph.add_edge("report", END)
+    graph.add_edge("generate_report", END)
 
     return graph
+
+
+def create_network_traffic_analyzer_graph(
+    flow_source: Any | None = None,
+    threat_intel: Any | None = None,
+) -> StateGraph:  # type: ignore[type-arg]
+    """Create the Network Traffic Analyzer graph."""
+    toolkit = NetworkTrafficAnalyzerToolkit(
+        flow_source=flow_source,
+        threat_intel=threat_intel,
+    )
+    return build_graph(toolkit)

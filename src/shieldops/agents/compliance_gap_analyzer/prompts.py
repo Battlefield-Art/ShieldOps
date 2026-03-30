@@ -2,92 +2,63 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
-
-
-class FrameworkMappingOutput(BaseModel):
-    """LLM output for control-to-framework mapping."""
-
-    requirement_id: str = Field(
-        description="Framework requirement ID",
-    )
-    requirement_name: str = Field(
-        description="Framework requirement name",
-    )
-    status: str = Field(
-        description="Status: implemented/partial/missing",
-    )
-    gap_description: str = Field(
-        description="Description of any gap",
-    )
-    confidence: float = Field(
-        description="Mapping confidence 0-1",
-    )
-
-
-class RemediationPlanOutput(BaseModel):
-    """LLM output for remediation planning."""
-
-    action_items: list[str] = Field(
-        description="Specific remediation actions",
-    )
-    timeline: str = Field(
-        description="Estimated timeline",
-    )
-    estimated_cost: str = Field(
-        description="Estimated cost range",
-    )
-    priority: str = Field(
-        description="Priority: critical/high/medium/low",
-    )
-    owner_role: str = Field(
-        description="Recommended owner role",
-    )
-
-
-class ComplianceReportOutput(BaseModel):
-    """LLM output for the compliance report."""
-
-    executive_summary: str = Field(
-        description="Executive summary of compliance",
-    )
-    framework_summaries: list[str] = Field(
-        description="Per-framework status summaries",
-    )
-    critical_gaps: list[str] = Field(
-        description="Most critical compliance gaps",
-    )
-    recommendations: list[str] = Field(
-        description="Prioritized recommendations",
-    )
-
-
-SYSTEM_MAP_FRAMEWORKS = (
-    "You are a compliance analyst mapping security "
-    "controls to regulatory framework requirements.\n"
-    "For each control:\n"
-    "1. Identify the matching framework requirement\n"
-    "2. Assess implementation status\n"
-    "3. Describe any gaps\n"
-    "4. Rate mapping confidence"
+SYSTEM_SCAN_POSTURE = (
+    "You are a security posture analyst assessing an "
+    "organization's current security controls.\n"
+    "For each regulatory domain:\n"
+    "1. Enumerate implemented security controls\n"
+    "2. Assess control effectiveness (full/partial/missing)\n"
+    "3. Score overall posture on a 0-100 scale\n"
+    "4. Flag controls with degraded or unknown status"
 )
 
-SYSTEM_REMEDIATION = (
-    "You are a compliance remediation planner creating "
-    "action plans for compliance gaps.\n"
+SYSTEM_MAP_REQUIREMENTS = (
+    "You are a regulatory compliance expert mapping "
+    "requirements to security controls.\n"
+    "For each applicable framework:\n"
+    "1. Identify all mandatory requirements\n"
+    "2. Map each requirement to specific controls\n"
+    "3. Note requirements with no control mapping\n"
+    "4. Flag cross-framework overlapping requirements"
+)
+
+SYSTEM_IDENTIFY_GAPS = (
+    "You are a compliance gap analyst comparing current "
+    "security posture against regulatory requirements.\n"
+    "For each requirement:\n"
+    "1. Compare current control state to required state\n"
+    "2. Classify gap severity (critical/high/medium/low)\n"
+    "3. Document the specific deficiency\n"
+    "4. Identify compensating controls if any exist"
+)
+
+SYSTEM_PRIORITIZE_RISKS = (
+    "You are a risk analyst prioritizing compliance gaps "
+    "by business impact and regulatory exposure.\n"
     "For each gap:\n"
-    "1. Define specific remediation actions\n"
-    "2. Estimate timeline and cost\n"
-    "3. Assign priority\n"
-    "4. Recommend an owner role"
+    "1. Assess potential regulatory penalty\n"
+    "2. Evaluate business impact of non-compliance\n"
+    "3. Estimate likelihood of audit finding\n"
+    "4. Calculate composite risk score (0-100)"
+)
+
+SYSTEM_GENERATE_PLAN = (
+    "You are a remediation planner creating actionable "
+    "plans to close compliance gaps.\n"
+    "For each prioritized gap:\n"
+    "1. Define concrete remediation steps\n"
+    "2. Estimate effort in engineering days\n"
+    "3. Identify dependencies and prerequisites\n"
+    "4. Assign priority rank based on risk score"
 )
 
 SYSTEM_REPORT = (
-    "You are a compliance officer writing an executive "
-    "compliance status report.\n"
-    "Produce a summary covering:\n"
-    "1. Overall compliance posture\n"
-    "2. Per-framework coverage percentages\n"
-    "3. Critical gaps requiring immediate action\n"
-    "4. Remediation roadmap with milestones"
+    "You are generating an executive compliance gap "
+    "analysis report.\n"
+    "The report must include:\n"
+    "1. Executive summary with compliance score\n"
+    "2. Gap inventory by severity and framework\n"
+    "3. Risk-prioritized remediation roadmap\n"
+    "4. Estimated timeline and resource requirements\n"
+    "5. Regulatory exposure summary"
 )

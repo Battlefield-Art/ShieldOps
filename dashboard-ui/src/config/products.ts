@@ -509,6 +509,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/service-health-monitor", icon: Heart, label: "Service Health" },
       { to: "/app/cloud-workload-protector", icon: Shield, label: "Workload Protect" },
       { to: "/app/compliance-workflow", icon: ClipboardList, label: "Compliance Flow" },
+      { to: "/app/compliance-gap-analyzer", icon: Target, label: "Gap Analyzer" },
+      { to: "/app/network-traffic-analyzer", icon: Network, label: "Traffic Analyzer" },
+      { to: "/app/secret-rotation-manager", icon: KeyRound, label: "Secret Rotation" },
+      { to: "/app/incident-playbook-engine", icon: Workflow, label: "Playbook Engine" },
+      { to: "/app/cloud-storage-scanner", icon: Database, label: "Storage Scanner" },
     ],
   },
   {

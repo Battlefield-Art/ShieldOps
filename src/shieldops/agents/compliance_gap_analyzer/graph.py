@@ -1,4 +1,4 @@
-"""Compliance Gap Analyzer Agent — LangGraph StateGraph definition."""
+"""Compliance Gap Analyzer Agent — LangGraph StateGraph."""
 
 from __future__ import annotations
 
@@ -8,38 +8,14 @@ from langgraph.graph import END, StateGraph
 
 from .models import ComplianceGapAnalyzerState
 from .nodes import (
-    assess_coverage,
-    generate_remediation_plan,
-    generate_report,
+    build_report,
+    generate_plan,
     identify_gaps,
-    inventory_controls,
-    map_to_frameworks,
+    map_requirements,
+    prioritize_risks,
+    scan_posture,
 )
 from .tools import ComplianceGapAnalyzerToolkit
-
-
-def _to_dict(state: Any) -> dict[str, Any]:
-    if hasattr(state, "model_dump"):
-        return state.model_dump()
-    return dict(state) if not isinstance(state, dict) else state
-
-
-def _has_controls(state: Any) -> str:
-    """Route based on control inventory."""
-    if isinstance(state, dict):
-        ctrls = state.get(
-            "controls_inventoried",
-            [],
-        )
-    else:
-        ctrls = getattr(
-            state,
-            "controls_inventoried",
-            [],
-        )
-    if ctrls:
-        return "map_to_frameworks"
-    return "generate_report"
 
 
 def build_graph(
@@ -47,31 +23,30 @@ def build_graph(
 ) -> StateGraph:  # type: ignore[type-arg]
     """Build the Compliance Gap Analyzer graph."""
 
-    async def _inventory(
+    def _to_dict(
         state: Any,
     ) -> dict[str, Any]:
-        return await inventory_controls(
+        if hasattr(state, "model_dump"):
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
+
+    async def _scan_posture(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await scan_posture(
             _to_dict(state),
             toolkit,
         )
 
-    async def _map(
+    async def _map_requirements(
         state: Any,
     ) -> dict[str, Any]:
-        return await map_to_frameworks(
+        return await map_requirements(
             _to_dict(state),
             toolkit,
         )
 
-    async def _assess(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await assess_coverage(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _gaps(
+    async def _identify_gaps(
         state: Any,
     ) -> dict[str, Any]:
         return await identify_gaps(
@@ -79,73 +54,83 @@ def build_graph(
             toolkit,
         )
 
-    async def _remediate(
+    async def _prioritize_risks(
         state: Any,
     ) -> dict[str, Any]:
-        return await generate_remediation_plan(
+        return await prioritize_risks(
             _to_dict(state),
             toolkit,
         )
 
-    async def _report(
+    async def _generate_plan(
         state: Any,
     ) -> dict[str, Any]:
-        return await generate_report(
+        return await generate_plan(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _build_report(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await build_report(
             _to_dict(state),
             toolkit,
         )
 
     graph = StateGraph(ComplianceGapAnalyzerState)
+    graph.add_node("scan_posture", _scan_posture)
     graph.add_node(
-        "inventory_controls",
-        _inventory,
+        "map_requirements",
+        _map_requirements,
     )
-    graph.add_node("map_to_frameworks", _map)
-    graph.add_node("assess_coverage", _assess)
-    graph.add_node("identify_gaps", _gaps)
     graph.add_node(
-        "generate_remediation_plan",
-        _remediate,
+        "identify_gaps",
+        _identify_gaps,
     )
-    graph.add_node("generate_report", _report)
+    graph.add_node(
+        "prioritize_risks",
+        _prioritize_risks,
+    )
+    graph.add_node(
+        "generate_plan",
+        _generate_plan,
+    )
+    graph.add_node(
+        "build_report",
+        _build_report,
+    )
 
-    graph.set_entry_point("inventory_controls")
-    graph.add_conditional_edges(
-        "inventory_controls",
-        _has_controls,
-        {
-            "map_to_frameworks": "map_to_frameworks",
-            "generate_report": "generate_report",
-        },
+    graph.set_entry_point("scan_posture")
+    graph.add_edge(
+        "scan_posture",
+        "map_requirements",
     )
     graph.add_edge(
-        "map_to_frameworks",
-        "assess_coverage",
-    )
-    graph.add_edge(
-        "assess_coverage",
+        "map_requirements",
         "identify_gaps",
     )
     graph.add_edge(
         "identify_gaps",
-        "generate_remediation_plan",
+        "prioritize_risks",
     )
     graph.add_edge(
-        "generate_remediation_plan",
-        "generate_report",
+        "prioritize_risks",
+        "generate_plan",
     )
-    graph.add_edge("generate_report", END)
+    graph.add_edge(
+        "generate_plan",
+        "build_report",
+    )
+    graph.add_edge("build_report", END)
 
     return graph
 
 
 def create_compliance_gap_analyzer_graph(
-    compliance_db: Any | None = None,
-    control_registry: Any | None = None,
+    toolkit: ComplianceGapAnalyzerToolkit | None = None,
 ) -> StateGraph:  # type: ignore[type-arg]
-    """Factory: create the Compliance Gap Analyzer."""
-    toolkit = ComplianceGapAnalyzerToolkit(
-        compliance_db=compliance_db,
-        control_registry=control_registry,
-    )
+    """Factory for the Compliance Gap Analyzer."""
+    if toolkit is None:
+        toolkit = ComplianceGapAnalyzerToolkit()
     return build_graph(toolkit)

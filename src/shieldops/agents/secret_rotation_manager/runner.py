@@ -1,4 +1,4 @@
-"""Cloud Storage Scanner Agent — Entry point and lifecycle."""
+"""Secret Rotation Manager Agent — Entry point and lifecycle."""
 
 from __future__ import annotations
 
@@ -7,49 +7,46 @@ from typing import Any
 import structlog
 
 from .graph import build_graph
-from .tools import CloudStorageScannerToolkit
+from .tools import SecretRotationManagerToolkit
 
 logger = structlog.get_logger()
 
 
-class CloudStorageScannerRunner:
-    """Runs the Cloud Storage Scanner workflow."""
+class SecretRotationManagerRunner:
+    """Runs the Secret Rotation Manager workflow."""
 
     def __init__(
         self,
-        cloud_api: Any | None = None,
-        scanner_api: Any | None = None,
+        vault_client: Any | None = None,
+        cloud_provider: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = CloudStorageScannerToolkit(
-            cloud_api=cloud_api,
-            scanner_api=scanner_api,
+        self._toolkit = SecretRotationManagerToolkit(
+            vault_client=vault_client,
+            cloud_provider=cloud_provider,
         )
         self._repository = repository
         self._graph = build_graph(self._toolkit)
         self._app = self._graph.compile()
         self._results: dict[str, dict[str, Any]] = {}
-        logger.info("css_runner.init")
+        logger.info("srm_runner.init")
 
     async def execute(
         self,
         tenant_id: str = "default",
         request_id: str = "",
-        providers: list[str] | None = None,
     ) -> dict[str, Any]:
-        """Execute storage scanning workflow."""
+        """Execute secret rotation workflow."""
         initial_state: dict[str, Any] = {
             "request_id": request_id,
             "tenant_id": tenant_id,
-            "target_providers": providers or [],
             "reasoning_chain": [],
         }
 
         logger.info(
-            "css_runner.execute",
+            "srm_runner.execute",
             request_id=request_id,
             tenant_id=tenant_id,
-            providers=providers,
         )
         try:
             result = await self._app.ainvoke(
@@ -60,9 +57,7 @@ class CloudStorageScannerRunner:
                 await self._persist(result)
             return result
         except Exception:
-            logger.exception(
-                "css_runner.execute.error",
-            )
+            logger.exception("srm_runner.execute.error")
             raise
 
     def get_result(
@@ -77,22 +72,13 @@ class CloudStorageScannerRunner:
         return [
             {
                 "request_id": rid,
-                "tenant_id": r.get(
-                    "tenant_id",
-                    "",
-                ),
-                "total_buckets": r.get(
-                    "total_buckets",
+                "tenant_id": r.get("tenant_id", ""),
+                "total_secrets": r.get(
+                    "total_secrets",
                     0,
                 ),
-                "total_findings": r.get(
-                    "total_findings",
-                    0,
-                ),
-                "critical_findings": r.get(
-                    "critical_findings",
-                    0,
-                ),
+                "rotated": r.get("secrets_rotated", 0),
+                "failed": r.get("secrets_failed", 0),
                 "error": r.get("error", ""),
             }
             for rid, r in self._results.items()

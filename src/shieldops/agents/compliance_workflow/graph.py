@@ -1,128 +1,117 @@
-"""LangGraph workflow definition for the Compliance Workflow Agent."""
+"""Compliance Workflow Agent — LangGraph StateGraph."""
 
 from __future__ import annotations
 
+from typing import Any
+
 from langgraph.graph import END, StateGraph
 
-from shieldops.agents.compliance_workflow.models import (
-    ComplianceWorkflowState,
-)
-from shieldops.agents.compliance_workflow.nodes import (
+from .models import ComplianceWorkflowState
+from .nodes import (
+    assess_gaps,
     collect_evidence,
-    identify_controls,
-    identify_gaps,
-    remediate,
-    report,
-    test_controls,
+    generate_remediation,
+    generate_report,
+    identify_frameworks,
+    map_controls,
 )
-from shieldops.agents.tracing import traced_node
-
-_AGENT = "compliance_workflow"
+from .tools import ComplianceWorkflowToolkit
 
 
-def create_compliance_workflow_graph() -> StateGraph:
-    """Build the Compliance Workflow Agent LangGraph workflow.
+def build_graph(
+    toolkit: ComplianceWorkflowToolkit,
+) -> StateGraph:  # type: ignore[type-arg]
+    """Build the Compliance Workflow agent graph."""
 
-    Workflow:
-        identify_controls -> collect_evidence -> test_controls
-        -> identify_gaps -> remediate -> report -> END
+    def _to_dict(state: Any) -> dict[str, Any]:
+        if hasattr(state, "model_dump"):
+            return state.model_dump()  # type: ignore[no-any-return]
+        return state  # type: ignore[no-any-return]
 
-    Error edges route directly to report for graceful
-    degradation.
-    """
+    async def _identify(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await identify_frameworks(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _map(state: Any) -> dict[str, Any]:
+        return await map_controls(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _collect(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await collect_evidence(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _assess(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await assess_gaps(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _remediate(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await generate_remediation(
+            _to_dict(state),
+            toolkit,
+        )
+
+    async def _report(
+        state: Any,
+    ) -> dict[str, Any]:
+        return await generate_report(
+            _to_dict(state),
+            toolkit,
+        )
+
     graph = StateGraph(ComplianceWorkflowState)
+    graph.add_node("identify_frameworks", _identify)
+    graph.add_node("map_controls", _map)
+    graph.add_node("collect_evidence", _collect)
+    graph.add_node("assess_gaps", _assess)
+    graph.add_node("generate_remediation", _remediate)
+    graph.add_node("report", _report)
 
-    graph.add_node(
-        "identify_controls",
-        traced_node(
-            "compliance_workflow.identify_controls",
-            _AGENT,
-        )(identify_controls),
+    graph.set_entry_point("identify_frameworks")
+    graph.add_edge(
+        "identify_frameworks",
+        "map_controls",
     )
-    graph.add_node(
+    graph.add_edge(
+        "map_controls",
         "collect_evidence",
-        traced_node(
-            "compliance_workflow.collect_evidence",
-            _AGENT,
-        )(collect_evidence),
     )
-    graph.add_node(
-        "test_controls",
-        traced_node(
-            "compliance_workflow.test_controls",
-            _AGENT,
-        )(test_controls),
-    )
-    graph.add_node(
-        "identify_gaps",
-        traced_node(
-            "compliance_workflow.identify_gaps",
-            _AGENT,
-        )(identify_gaps),
-    )
-    graph.add_node(
-        "remediate",
-        traced_node(
-            "compliance_workflow.remediate",
-            _AGENT,
-        )(remediate),
-    )
-    graph.add_node(
-        "report",
-        traced_node(
-            "compliance_workflow.report",
-            _AGENT,
-        )(report),
-    )
-
-    # Linear pipeline with error edges to report
-    graph.set_entry_point("identify_controls")
-
-    def _route_or_report(
-        field: str,
-        next_node: str,
-    ):  # noqa: ANN202
-        """Return a router that checks for errors."""
-
-        def _router(
-            state: ComplianceWorkflowState,
-        ) -> str:
-            if state.error:
-                return "report"
-            return next_node
-
-        return _router
-
-    graph.add_conditional_edges(
-        "identify_controls",
-        _route_or_report("error", "collect_evidence"),
-        {
-            "collect_evidence": "collect_evidence",
-            "report": "report",
-        },
-    )
-    graph.add_conditional_edges(
+    graph.add_edge(
         "collect_evidence",
-        _route_or_report("error", "test_controls"),
-        {
-            "test_controls": "test_controls",
-            "report": "report",
-        },
+        "assess_gaps",
     )
-    graph.add_conditional_edges(
-        "test_controls",
-        _route_or_report("error", "identify_gaps"),
-        {
-            "identify_gaps": "identify_gaps",
-            "report": "report",
-        },
+    graph.add_edge(
+        "assess_gaps",
+        "generate_remediation",
     )
-    graph.add_conditional_edges(
-        "identify_gaps",
-        _route_or_report("error", "remediate"),
-        {"remediate": "remediate", "report": "report"},
-    )
-    graph.add_edge("remediate", "report")
+    graph.add_edge("generate_remediation", "report")
     graph.add_edge("report", END)
 
     return graph
+
+
+def create_compliance_workflow_graph(
+    compliance_backend: Any | None = None,
+    evidence_store: Any | None = None,
+) -> StateGraph:  # type: ignore[type-arg]
+    """Factory: create a Compliance Workflow graph."""
+    toolkit = ComplianceWorkflowToolkit(
+        compliance_backend=compliance_backend,
+        evidence_store=evidence_store,
+    )
+    return build_graph(toolkit)

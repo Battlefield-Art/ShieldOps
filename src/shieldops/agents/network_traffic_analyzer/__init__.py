@@ -1,4 +1,4 @@
-"""Network Traffic Analyzer Agent — real-time network flow analysis."""
+"""Network Traffic Analyzer Agent — network flow analysis."""
 
 from shieldops.agents.network_traffic_analyzer.graph import (
     create_network_traffic_analyzer_graph,

@@ -1,401 +1,338 @@
-"""Node implementations for the Compliance Workflow Agent."""
+"""Compliance Workflow Agent — Node function implementations."""
 
 from __future__ import annotations
 
-import json as _json
-import time
 from typing import Any
-from uuid import uuid4
 
 import structlog
+from pydantic import BaseModel
 
-from shieldops.agents.compliance_workflow.models import (
-    ComplianceControl,
-    ComplianceStage,
-    ComplianceWorkflowState,
-    ControlStatus,
-    EvidenceItem,
-    GapFinding,
-)
-from shieldops.agents.compliance_workflow.prompts import (
-    SYSTEM_COLLECT_EVIDENCE,
-    SYSTEM_IDENTIFY_CONTROLS,
-    SYSTEM_IDENTIFY_GAPS,
-    SYSTEM_REPORT,
-    SYSTEM_TEST_CONTROLS,
-    ControlIdentificationOutput,
-    ControlTestOutput,
-    GapAnalysisOutput,
-    ReportOutput,
-)
-from shieldops.agents.compliance_workflow.tools import (
-    ComplianceWorkflowToolkit,
-)
 from shieldops.utils.llm import llm_structured
+
+from .models import (
+    ComplianceControl,
+    ComplianceGap,
+    ControlStatus,
+    CWStage,
+    EvidenceItem,
+    FrameworkMapping,
+)
+from .prompts import (
+    SYSTEM_ASSESS_GAPS,
+    SYSTEM_COLLECT_EVIDENCE,
+    SYSTEM_GENERATE_REMEDIATION,
+    SYSTEM_IDENTIFY_FRAMEWORKS,
+    SYSTEM_MAP_CONTROLS,
+    SYSTEM_REPORT,
+    LLMComplianceReport,
+    LLMControlMapping,
+    LLMFrameworkAnalysis,
+    LLMGapAssessment,
+    LLMRemediationPlan,
+)
+from .tools import ComplianceWorkflowToolkit
 
 logger = structlog.get_logger()
 
-_toolkit: ComplianceWorkflowToolkit | None = None
+
+# ── Node 1: Identify Frameworks ───────────────────
 
 
-def set_toolkit(toolkit: ComplianceWorkflowToolkit) -> None:
-    """Set the shared toolkit instance for all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
-def _get_toolkit() -> ComplianceWorkflowToolkit:
-    if _toolkit is None:
-        return ComplianceWorkflowToolkit()
-    return _toolkit
-
-
-# ------------------------------------------------------------------
-# Node: identify_controls
-# ------------------------------------------------------------------
-
-
-async def identify_controls(
-    state: ComplianceWorkflowState,
+async def identify_frameworks(
+    state: dict[str, Any],
+    toolkit: ComplianceWorkflowToolkit,
 ) -> dict[str, Any]:
-    """Identify applicable controls for the target framework."""
-    start = time.time()
-    toolkit = _get_toolkit()
-
-    controls = await toolkit.identify_controls(
-        framework=state.framework.value,
-        tenant_id=state.tenant_id,
+    """Identify applicable compliance frameworks."""
+    logger.info(
+        "compliance_workflow.node.identify_frameworks",
     )
+    tenant_id = state.get("tenant_id", "default")
 
-    # LLM enhancement
+    mappings = await toolkit.identify_frameworks(
+        tenant_id,
+    )
+    mapping_dicts = [m.model_dump() for m in mappings]
+
+    # LLM enrichment
     try:
-        context = _json.dumps(
-            {
-                "framework": state.framework.value,
-                "tenant_id": state.tenant_id,
-                "heuristic_controls": [c.model_dump() for c in controls],
-            },
-            default=str,
+        analysis: LLMFrameworkAnalysis = await llm_structured(
+            system_prompt=SYSTEM_IDENTIFY_FRAMEWORKS,
+            user_prompt=(
+                f"Tenant: {tenant_id}. "
+                f"Identified frameworks: "
+                f"{[m.framework.value for m in mappings]}"
+                f". Validate applicability."
+            ),
+            response_model=LLMFrameworkAnalysis,
         )
-        llm_result = await llm_structured(
-            system_prompt=SYSTEM_IDENTIFY_CONTROLS,
-            user_prompt=(f"Identify controls for:\n{context}"),
-            schema=ControlIdentificationOutput,
-        )
-        if hasattr(llm_result, "controls") and llm_result.controls:
-            controls = [
-                ComplianceControl(
-                    id=c.get("id", f"ctrl-{uuid4().hex[:8]}"),
-                    name=c.get("name", ""),
-                    category=c.get("category", ""),
-                    description=c.get("description", ""),
-                    framework=state.framework,
-                )
-                for c in llm_result.controls
-            ]
-        reasoning = getattr(llm_result, "reasoning", "")
-        logger.info("llm_enhanced", node="identify_controls")
+        reasoning = f"Frameworks identified: {analysis.applicable_frameworks}. {analysis.rationale}"
     except Exception:
-        reasoning = f"Identified {len(controls)} control(s) via heuristic"
-        logger.debug(
-            "llm_enhancement_skipped",
-            node="identify_controls",
+        logger.warning(
+            "compliance_workflow.identify.llm_fallback",
         )
+        reasoning = f"Identified {len(mappings)} frameworks for tenant {tenant_id}"
 
-    elapsed = int((time.time() - start) * 1000)
     return {
-        "controls": controls,
-        "stage": ComplianceStage.COLLECT_EVIDENCE,
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            (f"identify_controls: {reasoning} ({elapsed}ms)"),
-        ],
-        "session_start": (start if state.session_start == 0.0 else state.session_start),
+        "stage": CWStage.MAP_CONTROLS.value,
+        "framework_mappings": mapping_dicts,
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }
 
 
-# ------------------------------------------------------------------
-# Node: collect_evidence
-# ------------------------------------------------------------------
+# ── Node 2: Map Controls ──────────────────────────
+
+
+async def map_controls(
+    state: dict[str, Any],
+    toolkit: ComplianceWorkflowToolkit,
+) -> dict[str, Any]:
+    """Map controls for each identified framework."""
+    logger.info("compliance_workflow.node.map_controls")
+    raw_mappings = state.get("framework_mappings", [])
+    mappings = [FrameworkMapping(**m) for m in raw_mappings]
+
+    controls = await toolkit.map_controls(mappings)
+    control_dicts = [c.model_dump() for c in controls]
+
+    # LLM enrichment
+    try:
+        analysis: LLMControlMapping = await llm_structured(
+            system_prompt=SYSTEM_MAP_CONTROLS,
+            user_prompt=(
+                f"Mapped {len(controls)} controls"
+                f" across {len(mappings)} frameworks."
+                f" Analyze coverage and overlaps."
+            ),
+            response_model=LLMControlMapping,
+        )
+        reasoning = (
+            f"Mapped {len(controls)} controls. "
+            f"Confidence: "
+            f"{analysis.mapping_confidence:.0%}. "
+            f"Overlaps: "
+            f"{len(analysis.cross_framework_overlaps)}"
+        )
+    except Exception:
+        logger.warning(
+            "compliance_workflow.map.llm_fallback",
+        )
+        reasoning = f"Mapped {len(controls)} controls"
+
+    return {
+        "stage": CWStage.COLLECT_EVIDENCE.value,
+        "controls": control_dicts,
+        "total_controls": len(controls),
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
+    }
+
+
+# ── Node 3: Collect Evidence ──────────────────────
 
 
 async def collect_evidence(
-    state: ComplianceWorkflowState,
+    state: dict[str, Any],
+    toolkit: ComplianceWorkflowToolkit,
 ) -> dict[str, Any]:
-    """Collect evidence for all identified controls."""
-    start = time.time()
-    toolkit = _get_toolkit()
-    all_evidence: list[EvidenceItem] = []
+    """Collect evidence for each mapped control."""
+    logger.info(
+        "compliance_workflow.node.collect_evidence",
+    )
+    raw_controls = state.get("controls", [])
+    controls = [ComplianceControl(**c) for c in raw_controls]
 
-    for ctrl in state.controls:
-        items = await toolkit.collect_evidence(ctrl)
-        all_evidence.extend(items)
+    evidence = await toolkit.collect_evidence(controls)
+    evidence_dicts = [e.model_dump() for e in evidence]
+    valid_count = sum(1 for e in evidence if e.valid)
 
-    # LLM enhancement
+    # LLM enrichment
     try:
-        context = _json.dumps(
-            {
-                "framework": state.framework.value,
-                "controls": [c.model_dump() for c in state.controls],
-                "evidence_count": len(all_evidence),
-            },
-            default=str,
-        )
-        llm_result = await llm_structured(
+
+        class _LLMEvidenceSummary(BaseModel):
+            coverage_assessment: str = ""
+            stale_evidence_risk: str = ""
+
+        summary = await llm_structured(
             system_prompt=SYSTEM_COLLECT_EVIDENCE,
-            user_prompt=(f"Plan evidence collection:\n{context}"),
-            schema=ControlIdentificationOutput,
+            user_prompt=(
+                f"Collected {len(evidence)} evidence"
+                f" items for {len(controls)} controls."
+                f" Valid: {valid_count}."
+                f" Assess evidence coverage."
+            ),
+            response_model=_LLMEvidenceSummary,
         )
-        reasoning = getattr(
-            llm_result,
-            "coverage_notes",
-            f"Collected {len(all_evidence)} evidence items",
+        reasoning = (
+            f"Collected {len(evidence)} evidence "
+            f"items ({valid_count} valid). "
+            f"{summary.coverage_assessment}"
         )
-        logger.info("llm_enhanced", node="collect_evidence")
     except Exception:
-        reasoning = f"Collected {len(all_evidence)} evidence item(s)"
-        logger.debug(
-            "llm_enhancement_skipped",
-            node="collect_evidence",
+        logger.warning(
+            "compliance_workflow.evidence.llm_fallback",
         )
+        reasoning = f"Collected {len(evidence)} evidence items ({valid_count} valid)"
 
-    elapsed = int((time.time() - start) * 1000)
     return {
-        "evidence_items": all_evidence,
-        "stage": ComplianceStage.TEST_CONTROLS,
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            (f"collect_evidence: {reasoning} ({elapsed}ms)"),
-        ],
+        "stage": CWStage.ASSESS_GAPS.value,
+        "evidence": evidence_dicts,
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }
 
 
-# ------------------------------------------------------------------
-# Node: test_controls
-# ------------------------------------------------------------------
+# ── Node 4: Assess Gaps ───────────────────────────
 
 
-async def test_controls(
-    state: ComplianceWorkflowState,
+async def assess_gaps(
+    state: dict[str, Any],
+    toolkit: ComplianceWorkflowToolkit,
 ) -> dict[str, Any]:
-    """Test each control against collected evidence."""
-    start = time.time()
-    toolkit = _get_toolkit()
-    updated_controls: list[ComplianceControl] = []
+    """Assess compliance gaps."""
+    logger.info("compliance_workflow.node.assess_gaps")
+    raw_controls = state.get("controls", [])
+    raw_evidence = state.get("evidence", [])
+    controls = [ComplianceControl(**c) for c in raw_controls]
+    evidence = [EvidenceItem(**e) for e in raw_evidence]
 
-    # Build evidence lookup by control_id
-    evidence_map: dict[str, list[EvidenceItem]] = {}
-    for ev in state.evidence_items:
-        evidence_map.setdefault(ev.control_id, []).append(ev)
+    gaps = await toolkit.assess_gaps(controls, evidence)
+    gap_dicts = [g.model_dump() for g in gaps]
 
-    for ctrl in state.controls:
-        ctrl_evidence = evidence_map.get(ctrl.id, [])
-        status = await toolkit.test_control(
-            ctrl,
-            ctrl_evidence,
-        )
-        updated_controls.append(
-            ctrl.model_copy(update={"status": status}),
-        )
+    # Compute compliance score
+    total = len(controls)
+    compliant = sum(1 for c in controls if c.status == ControlStatus.COMPLIANT)
+    score = (compliant / total * 100.0) if total > 0 else 0.0
 
-    # LLM enhancement
+    # LLM enrichment
     try:
-        context = _json.dumps(
-            {
-                "controls": [c.model_dump() for c in updated_controls],
-                "evidence_count": len(state.evidence_items),
-            },
-            default=str,
+        analysis: LLMGapAssessment = await llm_structured(
+            system_prompt=SYSTEM_ASSESS_GAPS,
+            user_prompt=(
+                f"Found {len(gaps)} gaps across "
+                f"{total} controls. "
+                f"Score: {score:.1f}%. "
+                f"Analyze risk exposure."
+            ),
+            response_model=LLMGapAssessment,
         )
-        llm_result = await llm_structured(
-            system_prompt=SYSTEM_TEST_CONTROLS,
-            user_prompt=f"Assess control tests:\n{context}",
-            schema=ControlTestOutput,
-        )
-        reasoning = getattr(
-            llm_result,
-            "overall_assessment",
-            "",
-        )
-        logger.info("llm_enhanced", node="test_controls")
+        reasoning = f"Score: {score:.1f}%. Gaps: {len(gaps)}. Risk: {analysis.risk_summary}"
     except Exception:
-        passing = sum(1 for c in updated_controls if c.status == ControlStatus.PASSING)
-        reasoning = f"{passing}/{len(updated_controls)} controls passing"
-        logger.debug(
-            "llm_enhancement_skipped",
-            node="test_controls",
+        logger.warning(
+            "compliance_workflow.gaps.llm_fallback",
         )
+        reasoning = f"Score: {score:.1f}%. Gaps: {len(gaps)}"
 
-    elapsed = int((time.time() - start) * 1000)
     return {
-        "controls": updated_controls,
-        "stage": ComplianceStage.IDENTIFY_GAPS,
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"test_controls: {reasoning} ({elapsed}ms)",
-        ],
+        "stage": CWStage.GENERATE_REMEDIATION.value,
+        "gaps": gap_dicts,
+        "gaps_found": len(gaps),
+        "compliance_score": round(score, 2),
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }
 
 
-# ------------------------------------------------------------------
-# Node: identify_gaps
-# ------------------------------------------------------------------
+# ── Node 5: Generate Remediation ──────────────────
 
 
-async def identify_gaps(
-    state: ComplianceWorkflowState,
+async def generate_remediation(
+    state: dict[str, Any],
+    toolkit: ComplianceWorkflowToolkit,
 ) -> dict[str, Any]:
-    """Identify compliance gaps from test results."""
-    start = time.time()
-    toolkit = _get_toolkit()
-
-    gaps = await toolkit.identify_gaps(state.controls)
-
-    # LLM enhancement
-    try:
-        context = _json.dumps(
-            {
-                "controls": [c.model_dump() for c in state.controls],
-                "heuristic_gaps": [g.model_dump() for g in gaps],
-            },
-            default=str,
-        )
-        llm_result = await llm_structured(
-            system_prompt=SYSTEM_IDENTIFY_GAPS,
-            user_prompt=f"Analyze gaps:\n{context}",
-            schema=GapAnalysisOutput,
-        )
-        if hasattr(llm_result, "gaps") and llm_result.gaps:
-            gaps = [
-                GapFinding(
-                    id=g.get(
-                        "id",
-                        f"gap-{uuid4().hex[:8]}",
-                    ),
-                    control_id=g.get("control_id", ""),
-                    severity=g.get("severity", "medium"),
-                    description=g.get("description", ""),
-                )
-                for g in llm_result.gaps
-            ]
-        reasoning = getattr(
-            llm_result,
-            "risk_summary",
-            f"Found {len(gaps)} gap(s)",
-        )
-        logger.info("llm_enhanced", node="identify_gaps")
-    except Exception:
-        reasoning = f"Found {len(gaps)} gap(s) via heuristic"
-        logger.debug(
-            "llm_enhancement_skipped",
-            node="identify_gaps",
-        )
-
-    elapsed = int((time.time() - start) * 1000)
-    return {
-        "gaps": gaps,
-        "stage": ComplianceStage.REMEDIATE,
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"identify_gaps: {reasoning} ({elapsed}ms)",
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node: remediate
-# ------------------------------------------------------------------
-
-
-async def remediate(
-    state: ComplianceWorkflowState,
-) -> dict[str, Any]:
-    """Generate remediation plans for identified gaps."""
-    start = time.time()
-    toolkit = _get_toolkit()
-    remediation_items: list[dict[str, str]] = []
-
-    for gap in state.gaps:
-        plan = await toolkit.generate_remediation(gap)
-        remediation_items.append(plan)
-
-    elapsed = int((time.time() - start) * 1000)
-    return {
-        "remediation_items": remediation_items,
-        "stage": ComplianceStage.REPORT,
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            (f"remediate: generated {len(remediation_items)} plan(s) ({elapsed}ms)"),
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node: report
-# ------------------------------------------------------------------
-
-
-async def report(
-    state: ComplianceWorkflowState,
-) -> dict[str, Any]:
-    """Generate the final compliance audit report."""
-    start = time.time()
-    total_elapsed = int(
-        (time.time() - state.session_start) * 1000,
+    """Generate remediation actions for gaps."""
+    logger.info(
+        "compliance_workflow.node.generate_remediation",
     )
+    raw_gaps = state.get("gaps", [])
+    gaps = [ComplianceGap(**g) for g in raw_gaps]
 
-    total = len(state.controls)
-    passing = sum(1 for c in state.controls if c.status == ControlStatus.PASSING)
-    score = (passing / total * 100.0) if total else 0.0
+    actions = await toolkit.generate_remediation(gaps)
+    action_dicts = [a.model_dump() for a in actions]
 
-    summary = (
-        f"Framework {state.framework.value}: "
-        f"{total} control(s), {passing} passing "
-        f"({score:.0f}%), {len(state.gaps)} gap(s)"
-    )
-
-    # LLM enhancement
+    # LLM enrichment
     try:
-        context = _json.dumps(
-            {
-                "framework": state.framework.value,
-                "total_controls": total,
-                "passing": passing,
-                "score": score,
-                "gaps": [g.model_dump() for g in state.gaps],
-                "remediation_items": state.remediation_items,
-            },
-            default=str,
+        plan: LLMRemediationPlan = await llm_structured(
+            system_prompt=SYSTEM_GENERATE_REMEDIATION,
+            user_prompt=(
+                f"Generated {len(actions)}"
+                f" remediation actions for"
+                f" {len(gaps)} gaps."
+                f" Identify quick wins."
+            ),
+            response_model=LLMRemediationPlan,
         )
-        llm_result = await llm_structured(
+        reasoning = (
+            f"Remediation: {len(actions)} actions. "
+            f"Quick wins: {len(plan.quick_wins)}. "
+            f"Risk reduction: "
+            f"{plan.risk_reduction_estimate:.0%}"
+        )
+    except Exception:
+        logger.warning(
+            "compliance_workflow.remediation.llm_fallback",
+        )
+        reasoning = f"Generated {len(actions)} remediation actions"
+
+    return {
+        "stage": CWStage.REPORT.value,
+        "remediation_actions": action_dicts,
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
+    }
+
+
+# ── Node 6: Report ────────────────────────────────
+
+
+async def generate_report(
+    state: dict[str, Any],
+    toolkit: ComplianceWorkflowToolkit,
+) -> dict[str, Any]:
+    """Generate the final compliance report."""
+    logger.info("compliance_workflow.node.report")
+    score = state.get("compliance_score", 0.0)
+    gaps_found = state.get("gaps_found", 0)
+    total = state.get("total_controls", 0)
+    frameworks = state.get("framework_mappings", [])
+    remediation = state.get("remediation_actions", [])
+
+    # LLM enrichment
+    executive_summary = ""
+    top_risks: list[str] = []
+    try:
+        report_llm: LLMComplianceReport = await llm_structured(
             system_prompt=SYSTEM_REPORT,
-            user_prompt=(f"Generate compliance report:\n{context}"),
-            schema=ReportOutput,
+            user_prompt=(
+                f"Score: {score:.1f}%. "
+                f"Controls: {total}. "
+                f"Gaps: {gaps_found}. "
+                f"Frameworks: {len(frameworks)}. "
+                f"Actions: {len(remediation)}. "
+                f"Generate executive report."
+            ),
+            response_model=LLMComplianceReport,
         )
-        llm_summary = getattr(
-            llm_result,
-            "executive_summary",
-            "",
-        )
-        if llm_summary:
-            summary = llm_summary
-        llm_score = getattr(
-            llm_result,
-            "overall_score",
-            None,
-        )
-        if llm_score is not None:
-            score = float(llm_score)
-        logger.info("llm_enhanced", node="report")
+        executive_summary = report_llm.executive_summary
+        top_risks = report_llm.top_risks
     except Exception:
-        logger.debug("llm_enhancement_skipped", node="report")
+        logger.warning(
+            "compliance_workflow.report.llm_fallback",
+        )
+        executive_summary = (
+            f"Compliance assessment complete. Score: {score:.1f}% across {total} controls."
+        )
 
-    elapsed = int((time.time() - start) * 1000)
+    report = {
+        "executive_summary": executive_summary,
+        "compliance_score": score,
+        "total_controls": total,
+        "gaps_found": gaps_found,
+        "frameworks_assessed": len(frameworks),
+        "remediation_actions": len(remediation),
+        "top_risks": top_risks,
+        "status": ("passing" if score >= 80.0 else "needs_attention"),
+    }
+
+    reasoning = f"Report generated. Status: {report['status']}. Score: {score:.1f}%"
+
     return {
-        "overall_score": score,
-        "stage": ComplianceStage.REPORT,
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            (f"report: {summary} ({elapsed}ms, total {total_elapsed}ms)"),
-        ],
+        "stage": CWStage.REPORT.value,
+        "report": report,
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }

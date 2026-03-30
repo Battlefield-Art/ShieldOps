@@ -1,415 +1,413 @@
-"""Node implementations for the Network Traffic Analyzer Agent."""
+"""Network Traffic Analyzer Agent — Node function implementations."""
 
 from __future__ import annotations
 
-import json as _json
+import json
 import time
-from typing import Any
-from uuid import uuid4
+from typing import Any, cast
 
 import structlog
+from pydantic import BaseModel
 
-from shieldops.agents.network_traffic_analyzer.models import (
-    AnalysisStage,
-    NetworkTrafficAnalyzerState,
-)
-from shieldops.agents.network_traffic_analyzer.prompts import (
-    SYSTEM_ANALYZE_PROTOCOLS,
-    SYSTEM_CLASSIFY_THREATS,
-    SYSTEM_DETECT_ANOMALIES,
-    SYSTEM_REPORT,
-    AnomalyOutput,
-    ProtocolOutput,
-    ReportOutput,
-    ThreatOutput,
-)
-from shieldops.agents.network_traffic_analyzer.tools import (
-    NetworkTrafficAnalyzerToolkit,
-)
 from shieldops.utils.llm import llm_structured
+
+from .models import (
+    NetworkFlow,
+    NTAStage,
+    ThreatClassification,
+    TrafficAnomaly,
+)
+from .tools import NetworkTrafficAnalyzerToolkit
 
 logger = structlog.get_logger()
 
-_toolkit: NetworkTrafficAnalyzerToolkit | None = None
+
+def _to_dict(state: Any) -> dict[str, Any]:
+    """Convert state to dict."""
+    if isinstance(state, BaseModel):
+        return state.model_dump()
+    return state  # type: ignore[no-any-return]
 
 
-def set_toolkit(toolkit: NetworkTrafficAnalyzerToolkit) -> None:
-    """Set the shared toolkit instance for all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
-def _get_toolkit() -> NetworkTrafficAnalyzerToolkit:
-    if _toolkit is None:
-        return NetworkTrafficAnalyzerToolkit()
-    return _toolkit
-
-
-async def ingest_flows(
-    state: NetworkTrafficAnalyzerState,
+async def capture_flows(
+    state: dict[str, Any],
+    toolkit: NetworkTrafficAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Ingest and normalize raw network flow records."""
-    start = time.time()
-    toolkit = _get_toolkit()
+    """Capture and normalize raw network flows."""
+    logger.info("nta.node.capture_flows")
+    state = _to_dict(state)
+    tenant_id = state.get("tenant_id", "")
+    raw_flows = state.get("raw_flows", [])
+    session_start = time.time()
 
-    flows = await toolkit.ingest_flows(state.raw_flows)
-
-    elapsed = int((time.time() - start) * 1000)
-
-    logger.info(
-        "network_traffic.ingest_done",
-        request_id=state.request_id,
-        flows=len(flows),
+    flows = await toolkit.capture_flows(
+        tenant_id=tenant_id,
+        raw_flows=raw_flows,
     )
+    flow_dicts = [f.model_dump() for f in flows]
 
     return {
-        "flows": flows,
-        "stage": AnalysisStage.DETECT_ANOMALIES,
-        "current_step": "ingest_flows",
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"Ingested {len(flows)} network flows",
-        ],
-        "session_start": (start if state.session_start == 0.0 else state.session_start),
-        "stats": {**state.stats, "ingest_ms": elapsed},
+        "flows": flow_dicts,
+        "stage": NTAStage.ANALYZE_PATTERNS.value,
+        "session_start": session_start,
+        "current_step": "capture_flows",
+        "reasoning_chain": (
+            state.get("reasoning_chain", []) + [f"Captured {len(flows)} network flows"]
+        ),
+    }
+
+
+async def analyze_patterns(
+    state: dict[str, Any],
+    toolkit: NetworkTrafficAnalyzerToolkit,
+) -> dict[str, Any]:
+    """Analyze traffic patterns from captured flows."""
+    logger.info("nta.node.analyze_patterns")
+    state = _to_dict(state)
+    raw_flows = state.get("flows", [])
+
+    flows = [NetworkFlow(**f) if isinstance(f, dict) else f for f in raw_flows]
+    patterns = await toolkit.analyze_patterns(flows)
+    pattern_dicts = [p.model_dump() for p in patterns]
+
+    reasoning = f"Analyzed {len(patterns)} traffic patterns"
+
+    # LLM enhancement
+    try:
+        from .prompts import (
+            SYSTEM_ANALYZE_PATTERNS,
+            PatternAnalysisOutput,
+        )
+
+        context = json.dumps(
+            {
+                "flow_count": len(flows),
+                "patterns": pattern_dicts[:10],
+                "total_bytes": sum(f.bytes_sent + f.bytes_received for f in flows),
+                "unique_src": len(
+                    {f.src_ip for f in flows},
+                ),
+                "unique_dst": len(
+                    {f.dst_ip for f in flows},
+                ),
+            },
+            default=str,
+        )
+        llm_result = cast(
+            PatternAnalysisOutput,
+            await llm_structured(
+                system_prompt=(SYSTEM_ANALYZE_PATTERNS),
+                user_prompt=(f"Traffic patterns:\n{context}"),
+                schema=PatternAnalysisOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            agent="nta",
+            node="analyze_patterns",
+        )
+        reasoning = f"{llm_result.summary} [risk={llm_result.risk_level}]"
+    except Exception:
+        logger.debug(
+            "llm_fallback",
+            agent="nta",
+            node="analyze_patterns",
+        )
+
+    return {
+        "patterns": pattern_dicts,
+        "stage": NTAStage.DETECT_ANOMALIES.value,
+        "current_step": "analyze_patterns",
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }
 
 
 async def detect_anomalies(
-    state: NetworkTrafficAnalyzerState,
+    state: dict[str, Any],
+    toolkit: NetworkTrafficAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Detect anomalous patterns in network flows."""
-    start = time.time()
-    toolkit = _get_toolkit()
+    """Detect anomalies in network traffic."""
+    logger.info("nta.node.detect_anomalies")
+    state = _to_dict(state)
+    raw_flows = state.get("flows", [])
+    raw_patterns = state.get("patterns", [])
 
-    anomalies = await toolkit.detect_anomalies(state.flows)
+    flows = [NetworkFlow(**f) if isinstance(f, dict) else f for f in raw_flows]
+    from .models import TrafficPattern
+
+    patterns = [TrafficPattern(**p) if isinstance(p, dict) else p for p in raw_patterns]
+
+    anomalies = await toolkit.detect_anomalies(
+        flows,
+        patterns,
+    )
+    anomaly_dicts = [a.model_dump() for a in anomalies]
+
+    reasoning = f"Detected {len(anomalies)} anomalies"
 
     # LLM enhancement
     try:
-        flow_summary = {
-            "total_flows": len(state.flows),
-            "protocols": list({f.protocol.value for f in state.flows}),
-            "unique_src_ips": len({f.src_ip for f in state.flows}),
-            "unique_dst_ips": len({f.dst_ip for f in state.flows}),
-            "total_bytes": sum(f.bytes_sent + f.bytes_received for f in state.flows),
-            "detected_anomalies": [a.model_dump() for a in anomalies],
-        }
-        context = _json.dumps(flow_summary, default=str)
-        llm_result = await llm_structured(
-            system_prompt=SYSTEM_DETECT_ANOMALIES,
-            user_prompt=(f"Analyze these network flows:\n{context}"),
-            schema=AnomalyOutput,
+        from .prompts import (
+            SYSTEM_DETECT_ANOMALIES,
+            AnomalyDetectionOutput,
         )
-        if hasattr(llm_result, "description"):
-            llm_desc = getattr(llm_result, "description", "")
-            if llm_desc and anomalies:
-                anomalies[0].description = f"{anomalies[0].description} | LLM: {llm_desc}"
-        logger.info("llm_enhanced", node="detect_anomalies")
+
+        context = json.dumps(
+            {
+                "flow_count": len(flows),
+                "anomalies": anomaly_dicts[:10],
+                "unique_src": len(
+                    {f.src_ip for f in flows},
+                ),
+                "total_bytes": sum(f.bytes_sent for f in flows),
+            },
+            default=str,
+        )
+        llm_result = cast(
+            AnomalyDetectionOutput,
+            await llm_structured(
+                system_prompt=(SYSTEM_DETECT_ANOMALIES),
+                user_prompt=(f"Network anomalies:\n{context}"),
+                schema=AnomalyDetectionOutput,
+            ),
+        )
+        logger.info(
+            "llm_enhanced",
+            agent="nta",
+            node="detect_anomalies",
+        )
+        reasoning = f"{llm_result.description} [severity={llm_result.severity}]"
     except Exception:
         logger.debug(
-            "llm_enhancement_skipped",
+            "llm_fallback",
+            agent="nta",
             node="detect_anomalies",
         )
 
-    elapsed = int((time.time() - start) * 1000)
-
-    logger.info(
-        "network_traffic.anomalies_done",
-        request_id=state.request_id,
-        anomalies=len(anomalies),
-    )
-
     return {
-        "anomalies": anomalies,
-        "stage": AnalysisStage.CLASSIFY_THREATS,
+        "anomalies": anomaly_dicts,
+        "stage": NTAStage.CLASSIFY_THREATS.value,
         "current_step": "detect_anomalies",
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"Detected {len(anomalies)} anomalies across {len(state.flows)} flows",
-        ],
-        "stats": {
-            **state.stats,
-            "detect_ms": elapsed,
-            "anomaly_count": len(anomalies),
-        },
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }
 
 
 async def classify_threats(
-    state: NetworkTrafficAnalyzerState,
+    state: dict[str, Any],
+    toolkit: NetworkTrafficAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Classify anomalies into actionable threats."""
-    start = time.time()
-    toolkit = _get_toolkit()
+    """Classify anomalies into threat categories."""
+    logger.info("nta.node.classify_threats")
+    state = _to_dict(state)
+    raw_anomalies = state.get("anomalies", [])
 
-    threats = await toolkit.classify_threats(state.anomalies)
+    anomalies = [TrafficAnomaly(**a) if isinstance(a, dict) else a for a in raw_anomalies]
 
-    # LLM enhancement
-    for threat in threats:
-        try:
-            context = _json.dumps(
+    threats = await toolkit.classify_threats(
+        anomalies,
+    )
+    threat_dicts = [t.model_dump() for t in threats]
+
+    reasoning = f"Classified {len(threats)} threats from {len(anomalies)} anomalies"
+
+    # LLM enhancement per threat
+    try:
+        from .prompts import (
+            SYSTEM_CLASSIFY_THREATS,
+            ThreatClassificationOutput,
+        )
+
+        for i, threat in enumerate(threats):
+            context = json.dumps(
                 threat.model_dump(),
                 default=str,
             )
-            llm_result = await llm_structured(
-                system_prompt=SYSTEM_CLASSIFY_THREATS,
-                user_prompt=(f"Classify this threat:\n{context}"),
-                schema=ThreatOutput,
+            llm_result = cast(
+                ThreatClassificationOutput,
+                await llm_structured(
+                    system_prompt=(SYSTEM_CLASSIFY_THREATS),
+                    user_prompt=(f"Classify threat:\n{context}"),
+                    schema=(ThreatClassificationOutput),
+                ),
             )
-            llm_action = getattr(
-                llm_result,
-                "recommended_action",
-                "",
-            )
-            if llm_action:
-                threat.recommended_action = f"{threat.recommended_action} | LLM: {llm_action}"
-            logger.info(
-                "llm_enhanced",
-                node="classify_threats",
-                threat=threat.id,
-            )
-        except Exception:
-            logger.debug(
-                "llm_enhancement_skipped",
-                node="classify_threats",
-                threat=threat.id,
-            )
+            threat_dicts[i]["llm_reasoning"] = llm_result.reasoning
+            if llm_result.confidence > 0.5:
+                threat_dicts[i]["confidence"] = llm_result.confidence
+                threat_dicts[i]["recommended_action"] = llm_result.recommended_action
 
-    elapsed = int((time.time() - start) * 1000)
-
-    logger.info(
-        "network_traffic.threats_done",
-        request_id=state.request_id,
-        threats=len(threats),
-    )
+        logger.info(
+            "llm_enhanced",
+            agent="nta",
+            node="classify_threats",
+        )
+        severities = [t.get("severity", "") for t in threat_dicts]
+        reasoning = f"LLM classified {len(threat_dicts)} threats: {', '.join(severities)}"
+    except Exception:
+        logger.debug(
+            "llm_fallback",
+            agent="nta",
+            node="classify_threats",
+        )
 
     return {
-        "threats": threats,
-        "stage": AnalysisStage.ANALYZE_PROTOCOLS,
+        "threats": threat_dicts,
+        "stage": NTAStage.ENFORCE_POLICIES.value,
         "current_step": "classify_threats",
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"Classified {len(threats)} threats from {len(state.anomalies)} anomalies",
-        ],
-        "stats": {
-            **state.stats,
-            "classify_ms": elapsed,
-            "threat_count": len(threats),
-        },
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
     }
 
 
-async def analyze_protocols(
-    state: NetworkTrafficAnalyzerState,
+async def enforce_policies(
+    state: dict[str, Any],
+    toolkit: NetworkTrafficAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Analyze protocol-level traffic behavior."""
-    start = time.time()
-    toolkit = _get_toolkit()
+    """Enforce policies based on classified threats."""
+    logger.info("nta.node.enforce_policies")
+    state = _to_dict(state)
+    raw_threats = state.get("threats", [])
 
-    analyses = await toolkit.analyze_protocols(state.flows)
+    threats = [ThreatClassification(**t) if isinstance(t, dict) else t for t in raw_threats]
+
+    enforcements = await toolkit.enforce_policies(
+        threats,
+    )
+    enforcement_dicts = [e.model_dump() for e in enforcements]
+
+    reasoning = f"Generated {len(enforcements)} policy enforcements"
 
     # LLM enhancement
-    for analysis in analyses:
-        try:
-            context = _json.dumps(
-                analysis.model_dump(),
-                default=str,
-            )
-            llm_result = await llm_structured(
-                system_prompt=SYSTEM_ANALYZE_PROTOCOLS,
-                user_prompt=(f"Analyze this protocol:\n{context}"),
-                schema=ProtocolOutput,
-            )
-            llm_findings = getattr(
-                llm_result,
-                "findings",
-                [],
-            )
-            if llm_findings:
-                analysis.findings.extend(llm_findings)
-            logger.info(
-                "llm_enhanced",
-                node="analyze_protocols",
-                protocol=analysis.protocol.value,
-            )
-        except Exception:
-            logger.debug(
-                "llm_enhancement_skipped",
-                node="analyze_protocols",
-                protocol=analysis.protocol.value,
-            )
-
-    elapsed = int((time.time() - start) * 1000)
-
-    logger.info(
-        "network_traffic.protocols_done",
-        request_id=state.request_id,
-        protocols=len(analyses),
-    )
-
-    return {
-        "protocol_analyses": analyses,
-        "stage": AnalysisStage.CORRELATE,
-        "current_step": "analyze_protocols",
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"Analyzed {len(analyses)} protocol types",
-        ],
-        "stats": {
-            **state.stats,
-            "protocol_ms": elapsed,
-            "protocol_count": len(analyses),
-        },
-    }
-
-
-async def correlate(
-    state: NetworkTrafficAnalyzerState,
-) -> dict[str, Any]:
-    """Correlate anomalies, threats, and protocol findings."""
-    start = time.time()
-
-    correlations: list[dict[str, Any]] = []
-
-    # Group threats by kill chain phase
-    phase_map: dict[str, list[str]] = {}
-    for t in state.threats:
-        phase = t.kill_chain_phase
-        if phase not in phase_map:
-            phase_map[phase] = []
-        phase_map[phase].append(t.threat_name)
-
-    if len(phase_map) > 1:
-        correlations.append(
-            {
-                "id": f"corr-{uuid4().hex[:12]}",
-                "type": "kill_chain_progression",
-                "phases": phase_map,
-                "description": (
-                    f"Multi-phase attack detected across {len(phase_map)} kill chain phases"
-                ),
-            }
-        )
-
-    # Cross-reference source IPs across anomalies
-    ip_anomalies: dict[str, list[str]] = {}
-    for a in state.anomalies:
-        for ip in a.source_ips:
-            if ip not in ip_anomalies:
-                ip_anomalies[ip] = []
-            ip_anomalies[ip].append(a.anomaly_type.value)
-
-    multi_anomaly_ips = {ip: types for ip, types in ip_anomalies.items() if len(types) > 1}
-    if multi_anomaly_ips:
-        correlations.append(
-            {
-                "id": f"corr-{uuid4().hex[:12]}",
-                "type": "multi_anomaly_source",
-                "sources": multi_anomaly_ips,
-                "description": (f"{len(multi_anomaly_ips)} IPs involved in multiple anomaly types"),
-            }
-        )
-
-    elapsed = int((time.time() - start) * 1000)
-
-    logger.info(
-        "network_traffic.correlate_done",
-        request_id=state.request_id,
-        correlations=len(correlations),
-    )
-
-    return {
-        "correlations": correlations,
-        "stage": AnalysisStage.REPORT,
-        "current_step": "correlate",
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"Produced {len(correlations)} correlations",
-        ],
-        "stats": {
-            **state.stats,
-            "correlate_ms": elapsed,
-            "correlation_count": len(correlations),
-        },
-    }
-
-
-async def report(
-    state: NetworkTrafficAnalyzerState,
-) -> dict[str, Any]:
-    """Generate final network traffic analysis report."""
-    start = time.time()
-    total_elapsed = int((time.time() - state.session_start) * 1000)
-
-    critical = sum(1 for t in state.threats if t.severity == "critical")
-    high = sum(1 for t in state.threats if t.severity == "high")
-
-    report_stats: dict[str, Any] = {
-        "total_flows": len(state.flows),
-        "anomalies_detected": len(state.anomalies),
-        "threats_classified": len(state.threats),
-        "protocols_analyzed": len(state.protocol_analyses),
-        "correlations": len(state.correlations),
-        "critical_threats": critical,
-        "high_threats": high,
-    }
-
-    # LLM-generated executive summary
     try:
-        context = _json.dumps(
+        from .prompts import (
+            SYSTEM_ENFORCE_POLICIES,
+            PolicyEnforcementOutput,
+        )
+
+        context = json.dumps(
             {
-                **report_stats,
-                "threats": [t.model_dump() for t in state.threats],
-                "anomalies": [a.model_dump() for a in state.anomalies],
-                "correlations": state.correlations,
+                "threats": [t.model_dump() for t in threats],
+                "enforcements": enforcement_dicts,
             },
             default=str,
         )
-        llm_result = await llm_structured(
-            system_prompt=SYSTEM_REPORT,
-            user_prompt=(f"Generate traffic analysis report:\n{context}"),
-            schema=ReportOutput,
+        llm_result = cast(
+            PolicyEnforcementOutput,
+            await llm_structured(
+                system_prompt=(SYSTEM_ENFORCE_POLICIES),
+                user_prompt=(f"Policy enforcement:\n{context}"),
+                schema=PolicyEnforcementOutput,
+            ),
         )
-        if hasattr(llm_result, "executive_summary"):
-            report_stats["executive_summary"] = getattr(
-                llm_result,
-                "executive_summary",
-                "",
-            )
-            report_stats["key_findings"] = getattr(
-                llm_result,
-                "key_findings",
-                [],
-            )
-            report_stats["risk_assessment"] = getattr(
-                llm_result,
-                "risk_assessment",
-                "",
-            )
-            report_stats["recommendations"] = getattr(
-                llm_result,
-                "recommendations",
-                [],
-            )
-        logger.info("llm_enhanced", node="report")
+        logger.info(
+            "llm_enhanced",
+            agent="nta",
+            node="enforce_policies",
+        )
+        reasoning = f"{llm_result.justification} [priority={llm_result.priority}]"
     except Exception:
-        logger.debug("llm_enhancement_skipped", node="report")
-
-    elapsed = int((time.time() - start) * 1000)
+        logger.debug(
+            "llm_fallback",
+            agent="nta",
+            node="enforce_policies",
+        )
 
     return {
-        "stage": AnalysisStage.REPORT,
-        "current_step": "report",
-        "stats": {
-            **state.stats,
-            **report_stats,
-            "report_ms": elapsed,
-        },
-        "reasoning_chain": [
-            *state.reasoning_chain,
-            f"Report: {len(state.threats)} threats "
-            f"({critical} critical, {high} high), "
-            f"{len(state.correlations)} correlations",
-        ],
-        "session_duration_ms": total_elapsed,
+        "enforcements": enforcement_dicts,
+        "stage": NTAStage.REPORT.value,
+        "current_step": "enforce_policies",
+        "reasoning_chain": (state.get("reasoning_chain", []) + [reasoning]),
+    }
+
+
+async def generate_report(
+    state: dict[str, Any],
+    toolkit: NetworkTrafficAnalyzerToolkit,
+) -> dict[str, Any]:
+    """Generate final network traffic analysis report."""
+    logger.info("nta.node.generate_report")
+    state = _to_dict(state)
+
+    flows = state.get("flows", [])
+    patterns = state.get("patterns", [])
+    anomalies = state.get("anomalies", [])
+    threats = state.get("threats", [])
+    enforcements = state.get("enforcements", [])
+    session_start = state.get(
+        "session_start",
+        time.time(),
+    )
+
+    duration_ms = (time.time() - session_start) * 1000
+
+    critical = sum(1 for t in threats if t.get("severity") == "critical")
+    high = sum(1 for t in threats if t.get("severity") == "high")
+
+    stats: dict[str, Any] = {
+        "total_flows": len(flows),
+        "patterns_found": len(patterns),
+        "anomalies_detected": len(anomalies),
+        "threats_classified": len(threats),
+        "policies_enforced": len(enforcements),
+        "critical_threats": critical,
+        "high_threats": high,
+        "analysis_duration_ms": round(
+            duration_ms,
+            2,
+        ),
+    }
+
+    # LLM report generation
+    try:
+        from .prompts import (
+            SYSTEM_REPORT,
+            ReportOutput,
+        )
+
+        context = json.dumps(
+            {
+                **stats,
+                "threats": threats[:10],
+                "anomalies": anomalies[:10],
+                "enforcements": enforcements[:10],
+            },
+            default=str,
+        )
+        llm_result = cast(
+            ReportOutput,
+            await llm_structured(
+                system_prompt=SYSTEM_REPORT,
+                user_prompt=(f"Generate report:\n{context}"),
+                schema=ReportOutput,
+            ),
+        )
+        stats["executive_summary"] = llm_result.executive_summary
+        stats["key_findings"] = llm_result.key_findings
+        stats["risk_assessment"] = llm_result.risk_assessment
+        stats["recommendations"] = llm_result.recommendations
+        logger.info(
+            "llm_enhanced",
+            agent="nta",
+            node="generate_report",
+        )
+    except Exception:
+        logger.debug(
+            "llm_fallback",
+            agent="nta",
+            node="generate_report",
+        )
+
+    return {
+        "stats": stats,
+        "stage": NTAStage.REPORT.value,
+        "current_step": "generate_report",
+        "session_duration_ms": duration_ms,
+        "reasoning_chain": (
+            state.get("reasoning_chain", [])
+            + [
+                f"Report: {len(flows)} flows, "
+                f"{len(threats)} threats "
+                f"({critical} critical, "
+                f"{high} high), "
+                f"{len(enforcements)} enforcements"
+            ]
+        ),
     }

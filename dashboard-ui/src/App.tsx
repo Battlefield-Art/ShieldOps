@@ -485,6 +485,13 @@ const ComplianceWorkflow = lazy(() => import("./pages/ComplianceWorkflow"));
 const ServiceHealthMonitor = lazy(() => import("./pages/ServiceHealthMonitor"));
 const CloudWorkloadProtector = lazy(() => import("./pages/CloudWorkloadProtector"));
 
+// ── Phase AG ──────────────────────────────────────────────────────
+const ComplianceGapAnalyzer = lazy(() => import("./pages/ComplianceGapAnalyzer"));
+const NetworkTrafficAnalyzer = lazy(() => import("./pages/NetworkTrafficAnalyzer"));
+const SecretRotationManager = lazy(() => import("./pages/SecretRotationManager"));
+const IncidentPlaybookEngine = lazy(() => import("./pages/IncidentPlaybookEngine"));
+const CloudStorageScanner = lazy(() => import("./pages/CloudStorageScanner"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -903,6 +910,11 @@ export default function App() {
               <Route path="compliance-workflow" element={<ComplianceWorkflow />} />
               <Route path="service-health-monitor" element={<ServiceHealthMonitor />} />
               <Route path="cloud-workload-protector" element={<CloudWorkloadProtector />} />
+              <Route path="compliance-gap-analyzer" element={<ComplianceGapAnalyzer />} />
+              <Route path="network-traffic-analyzer" element={<NetworkTrafficAnalyzer />} />
+              <Route path="secret-rotation-manager" element={<SecretRotationManager />} />
+              <Route path="incident-playbook-engine" element={<IncidentPlaybookEngine />} />
+              <Route path="cloud-storage-scanner" element={<CloudStorageScanner />} />
             </Route>
 
             {/* Catch-all */}

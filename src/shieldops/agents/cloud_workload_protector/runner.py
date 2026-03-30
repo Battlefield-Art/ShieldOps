@@ -19,46 +19,66 @@ class CloudWorkloadProtectorRunner:
 
     def __init__(
         self,
-        cloud_clients: Any | None = None,
+        runtime_client: Any | None = None,
+        vuln_db: Any | None = None,
         repository: Any | None = None,
     ) -> None:
         self._toolkit = CloudWorkloadProtectorToolkit(
-            cloud_clients=cloud_clients,
+            runtime_client=runtime_client,
+            vuln_db=vuln_db,
         )
         self._repository = repository
         self._graph = build_graph(self._toolkit)
         self._app = self._graph.compile()
-        logger.info("cloud_workload_protector_runner.init")
+        logger.info("cwp_runner.init")
 
     async def protect(
         self,
         tenant_id: str,
-        platforms: list[str] | None = None,
     ) -> dict[str, Any]:
-        """Execute the full workload protection workflow."""
-        if platforms is None:
-            platforms = ["ec2", "gce", "azure_vm"]
+        """Execute the full workload protection workflow.
 
+        Args:
+            tenant_id: Tenant identifier for isolation.
+
+        Returns:
+            Final agent state with protection score,
+            anomalies, drift findings, vulnerabilities,
+            containment actions, and summary stats.
+        """
         request_id = str(uuid.uuid4())[:8]
         initial_state: dict[str, Any] = {
             "request_id": request_id,
             "tenant_id": tenant_id,
-            "platforms": platforms,
             "reasoning_chain": [],
             "session_start": time.time(),
         }
 
         logger.info(
-            "cloud_workload_protector_runner.protect",
+            "cwp_runner.protect",
             request_id=request_id,
             tenant_id=tenant_id,
         )
 
         try:
-            result = await self._app.ainvoke(initial_state)  # type: ignore[arg-type]
+            result = await self._app.ainvoke(
+                initial_state,
+            )  # type: ignore[arg-type]
             if self._repository:
-                await self._repository.save(result)
+                await self._persist(result)
             return result
         except Exception:
-            logger.exception("cloud_workload_protector_runner.error")
+            logger.exception(
+                "cwp_runner.protect.error",
+            )
             raise
+
+    async def _persist(
+        self,
+        result: dict[str, Any],
+    ) -> None:
+        """Persist workload protection results."""
+        if self._repository:
+            await self._repository.save_cwp_result(
+                result,
+            )

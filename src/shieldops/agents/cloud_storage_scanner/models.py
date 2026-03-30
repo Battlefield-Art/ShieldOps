@@ -2,27 +2,19 @@
 
 from __future__ import annotations
 
-import time
 from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class StorageStage(StrEnum):
+class CSSStage(StrEnum):
     DISCOVER_BUCKETS = "discover_buckets"
-    SCAN_ACCESS = "scan_access"
-    CHECK_ENCRYPTION = "check_encryption"
+    SCAN_PERMISSIONS = "scan_permissions"
     DETECT_SENSITIVE_DATA = "detect_sensitive_data"
-    ASSESS_RISK = "assess_risk"
+    ASSESS_ENCRYPTION = "assess_encryption"
+    REMEDIATE_ISSUES = "remediate_issues"
     REPORT = "report"
-
-
-class StorageProvider(StrEnum):
-    S3 = "s3"
-    GCS = "gcs"
-    AZURE_BLOB = "azure_blob"
-    MINIO = "minio"
 
 
 class StorageSeverity(StrEnum):
@@ -33,61 +25,82 @@ class StorageSeverity(StrEnum):
     INFO = "info"
 
 
+class StorageProvider(StrEnum):
+    AWS_S3 = "aws_s3"
+    GCP_GCS = "gcp_gcs"
+    AZURE_BLOB = "azure_blob"
+    MINIO = "minio"
+    BACKBLAZE = "backblaze"
+
+
 class StorageBucket(BaseModel):
-    """A cloud storage bucket or container."""
+    """A discovered cloud storage bucket."""
 
     id: str = ""
-    provider: StorageProvider = StorageProvider.S3
-    bucket_name: str = ""
+    name: str = ""
+    provider: StorageProvider = StorageProvider.AWS_S3
     region: str = ""
-    creation_date: float = Field(default_factory=time.time)
+    creation_date: str = ""
+    public_access: bool = False
     versioning_enabled: bool = False
     logging_enabled: bool = False
-    encryption_type: str = "none"
-    public_access_blocked: bool = True
     object_count: int = 0
     size_gb: float = 0.0
     tags: dict[str, str] = Field(default_factory=dict)
 
 
-class AccessFinding(BaseModel):
-    """An access control finding for a storage bucket."""
+class PermissionFinding(BaseModel):
+    """A permission misconfiguration finding."""
 
     id: str = ""
-    bucket_id: str = ""
-    finding_type: str = ""
+    bucket_name: str = ""
     severity: StorageSeverity = StorageSeverity.MEDIUM
-    description: str = ""
-    public_readable: bool = False
-    public_writable: bool = False
-    overly_permissive_acl: bool = False
-    risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
-
-
-class EncryptionFinding(BaseModel):
-    """An encryption-related finding for a bucket."""
-
-    id: str = ""
-    bucket_id: str = ""
     finding_type: str = ""
-    severity: StorageSeverity = StorageSeverity.MEDIUM
-    encryption_type: str = "none"
-    kms_key_id: str = ""
     description: str = ""
-    compliant: bool = False
+    principal: str = ""
+    permission: str = ""
+    is_public: bool = False
+    recommendation: str = ""
 
 
 class SensitiveDataFinding(BaseModel):
-    """Sensitive data detected in a storage bucket."""
+    """A sensitive data exposure finding."""
 
     id: str = ""
-    bucket_id: str = ""
-    data_type: str = ""
+    bucket_name: str = ""
     severity: StorageSeverity = StorageSeverity.HIGH
-    file_pattern: str = ""
-    estimated_count: int = 0
+    data_type: str = ""
+    object_key: str = ""
+    pattern_matched: str = ""
+    sample_count: int = 0
+    recommendation: str = ""
+
+
+class EncryptionAssessment(BaseModel):
+    """Encryption assessment for a bucket."""
+
+    id: str = ""
+    bucket_name: str = ""
+    severity: StorageSeverity = StorageSeverity.MEDIUM
+    encryption_enabled: bool = False
+    encryption_type: str = ""
+    kms_key_id: str = ""
+    in_transit_enforced: bool = False
+    recommendation: str = ""
+
+
+class RemediationAction(BaseModel):
+    """A remediation action taken or proposed."""
+
+    id: str = ""
+    finding_id: str = ""
+    bucket_name: str = ""
+    action_type: str = ""
     description: str = ""
-    risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    status: str = "proposed"
+    auto_executable: bool = False
+    rollback_available: bool = True
+    risk: str = "low"
 
 
 class ReasoningStep(BaseModel):
@@ -100,30 +113,37 @@ class ReasoningStep(BaseModel):
 
 
 class CloudStorageScannerState(BaseModel):
-    """Main state for the Cloud Storage Scanner agent graph."""
+    """Main state for the Cloud Storage Scanner agent."""
 
     request_id: str = ""
-    stage: StorageStage = StorageStage.DISCOVER_BUCKETS
     tenant_id: str = ""
-    providers: list[str] = Field(default_factory=list)
+    stage: CSSStage = CSSStage.DISCOVER_BUCKETS
 
-    # Pipeline data
-    buckets: list[dict[str, Any]] = Field(default_factory=list)
-    access_findings: list[dict[str, Any]] = Field(default_factory=list)
-    encryption_findings: list[dict[str, Any]] = Field(default_factory=list)
-    sensitive_data_findings: list[dict[str, Any]] = Field(default_factory=list)
+    target_providers: list[str] = Field(
+        default_factory=list,
+    )
+    buckets: list[StorageBucket] = Field(
+        default_factory=list,
+    )
+    permission_findings: list[PermissionFinding] = Field(
+        default_factory=list,
+    )
+    sensitive_data_findings: list[SensitiveDataFinding] = Field(
+        default_factory=list,
+    )
+    encryption_assessments: list[EncryptionAssessment] = Field(
+        default_factory=list,
+    )
+    remediation_actions: list[RemediationAction] = Field(
+        default_factory=list,
+    )
 
-    # Risk assessment
-    risk_score: float = 0.0
-    stats: dict[str, Any] = Field(default_factory=dict)
+    report: str = ""
+    total_buckets: int = 0
+    total_findings: int = 0
+    critical_findings: int = 0
 
-    # Reasoning
-    reasoning_chain: list[str] = Field(default_factory=list)
-    current_step: str = ""
-
-    # Timing
-    session_start: float = Field(default_factory=time.time)
-    session_duration_ms: float = 0.0
-
-    # Error
+    reasoning_chain: list[ReasoningStep] = Field(
+        default_factory=list,
+    )
     error: str = ""

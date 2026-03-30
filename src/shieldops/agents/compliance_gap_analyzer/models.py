@@ -8,124 +8,129 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
-class ComplianceStage(StrEnum):
-    """Stages of the compliance gap analysis pipeline."""
-
-    INVENTORY_CONTROLS = "inventory_controls"
-    MAP_TO_FRAMEWORKS = "map_to_frameworks"
-    ASSESS_COVERAGE = "assess_coverage"
+class CGAStage(StrEnum):
+    SCAN_POSTURE = "scan_posture"
+    MAP_REQUIREMENTS = "map_requirements"
     IDENTIFY_GAPS = "identify_gaps"
-    GENERATE_REMEDIATION_PLAN = "generate_remediation_plan"
+    PRIORITIZE_RISKS = "prioritize_risks"
+    GENERATE_PLAN = "generate_plan"
     REPORT = "report"
 
 
-class Framework(StrEnum):
-    """Compliance frameworks."""
-
-    SOC2 = "soc2"
-    HIPAA = "hipaa"
-    PCI_DSS = "pci_dss"
-    GDPR = "gdpr"
-    NIST_CSF = "nist_csf"
-    ISO27001 = "iso27001"
-    CIS_BENCHMARK = "cis_benchmark"
-    FEDRAMP = "fedramp"
+class RegulatoryDomain(StrEnum):
+    FINANCIAL = "financial"
+    HEALTHCARE = "healthcare"
+    GOVERNMENT = "government"
+    TECHNOLOGY = "technology"
+    RETAIL = "retail"
+    ENERGY = "energy"
 
 
-class ControlStatus(StrEnum):
-    """Implementation status of a control."""
+class GapSeverity(StrEnum):
+    CRITICAL = "critical"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    INFORMATIONAL = "informational"
 
-    IMPLEMENTED = "implemented"
-    PARTIAL = "partial"
-    MISSING = "missing"
-    NOT_APPLICABLE = "not_applicable"
 
+class PostureScan(BaseModel):
+    """Current security posture snapshot."""
 
-class SecurityControl(BaseModel):
-    """A security control in the organization."""
-
-    id: str = ""
-    name: str = ""
-    description: str = ""
-    category: str = ""
-    status: ControlStatus = ControlStatus.MISSING
-    owner: str = ""
-    evidence: list[str] = Field(
+    scan_id: str = ""
+    domain: str = ""
+    controls_total: int = 0
+    controls_implemented: int = 0
+    controls_partial: int = 0
+    controls_missing: int = 0
+    score: float = 0.0
+    findings: list[dict[str, Any]] = Field(
         default_factory=list,
     )
 
 
-class FrameworkMapping(BaseModel):
-    """Mapping between a control and a framework req."""
+class RegulatoryRequirement(BaseModel):
+    """A regulatory requirement to assess against."""
 
-    control_id: str = ""
-    framework: Framework = Framework.SOC2
     requirement_id: str = ""
-    requirement_name: str = ""
-    status: ControlStatus = ControlStatus.MISSING
-    gap_description: str = ""
+    framework: str = ""
+    domain: RegulatoryDomain = RegulatoryDomain.TECHNOLOGY
+    title: str = ""
+    description: str = ""
+    control_mappings: list[str] = Field(
+        default_factory=list,
+    )
+    mandatory: bool = True
 
 
-class CoverageAssessment(BaseModel):
-    """Coverage assessment for a framework."""
+class SecurityGap(BaseModel):
+    """An identified gap between posture and requirements."""
 
-    framework: Framework = Framework.SOC2
-    total_requirements: int = 0
-    implemented: int = 0
-    partial: int = 0
-    missing: int = 0
-    not_applicable: int = 0
-    coverage_pct: float = 0.0
-
-
-class ComplianceGap(BaseModel):
-    """An identified compliance gap."""
-
-    framework: Framework = Framework.SOC2
+    gap_id: str = ""
     requirement_id: str = ""
-    requirement_name: str = ""
-    current_status: ControlStatus = ControlStatus.MISSING
-    risk_level: str = ""
-    remediation_priority: str = ""
-    estimated_effort: str = ""
+    framework: str = ""
+    severity: GapSeverity = GapSeverity.MEDIUM
+    description: str = ""
+    current_state: str = ""
+    required_state: str = ""
+    affected_controls: list[str] = Field(
+        default_factory=list,
+    )
+
+
+class RiskPriority(BaseModel):
+    """Risk-prioritized gap with business impact."""
+
+    gap_id: str = ""
+    severity: GapSeverity = GapSeverity.MEDIUM
+    risk_score: float = 0.0
+    business_impact: str = ""
+    regulatory_penalty: str = ""
+    likelihood: float = 0.0
 
 
 class RemediationPlan(BaseModel):
-    """Remediation plan for a compliance gap."""
+    """Actionable remediation plan for a gap."""
 
     gap_id: str = ""
-    framework: Framework = Framework.SOC2
-    requirement_id: str = ""
-    action_items: list[str] = Field(
+    title: str = ""
+    steps: list[str] = Field(default_factory=list)
+    estimated_effort_days: int = 0
+    owner: str = ""
+    priority_rank: int = 0
+    dependencies: list[str] = Field(
         default_factory=list,
     )
-    owner: str = ""
-    timeline: str = ""
-    estimated_cost: str = ""
-    priority: str = ""
+
+
+class ReasoningStep(BaseModel):
+    """A single reasoning step in the agent chain."""
+
+    step: str = ""
+    detail: str = ""
 
 
 class ComplianceGapAnalyzerState(BaseModel):
-    """Full state for a compliance gap analysis run."""
+    """Main state for the Compliance Gap Analyzer graph."""
 
-    # Input
-    tenant_id: str = ""
     request_id: str = ""
-    frameworks: list[str] = Field(
+    tenant_id: str = ""
+    stage: CGAStage = CGAStage.SCAN_POSTURE
+    domains: list[RegulatoryDomain] = Field(
         default_factory=list,
     )
 
-    # Pipeline data
-    controls_inventoried: list[dict[str, Any]] = Field(
+    # Pipeline fields
+    posture_scans: list[dict[str, Any]] = Field(
         default_factory=list,
     )
-    mappings: list[dict[str, Any]] = Field(
-        default_factory=list,
-    )
-    coverage_assessments: list[dict[str, Any]] = Field(
+    requirements: list[dict[str, Any]] = Field(
         default_factory=list,
     )
     gaps: list[dict[str, Any]] = Field(
+        default_factory=list,
+    )
+    risk_priorities: list[dict[str, Any]] = Field(
         default_factory=list,
     )
     remediation_plans: list[dict[str, Any]] = Field(
@@ -133,13 +138,12 @@ class ComplianceGapAnalyzerState(BaseModel):
     )
 
     # Metrics
-    overall_compliance_pct: float = 0.0
-    framework_scores: dict[str, float] = Field(
-        default_factory=dict,
-    )
+    total_gaps: int = 0
+    critical_gaps: int = 0
+    compliance_score: float = 0.0
 
-    # Workflow tracking
-    current_stage: str = ComplianceStage.INVENTORY_CONTROLS
+    # Output
+    report: dict[str, Any] = Field(default_factory=dict)
     reasoning_chain: list[str] = Field(
         default_factory=list,
     )

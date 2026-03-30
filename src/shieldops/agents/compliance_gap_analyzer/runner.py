@@ -1,4 +1,4 @@
-"""Compliance Gap Analyzer Agent — Entry point and lifecycle."""
+"""Compliance Gap Analyzer Agent — Entry point."""
 
 from __future__ import annotations
 
@@ -6,57 +6,50 @@ from typing import Any
 
 import structlog
 
-from .graph import build_graph
+from .graph import create_compliance_gap_analyzer_graph
 from .tools import ComplianceGapAnalyzerToolkit
 
 logger = structlog.get_logger()
 
 
 class ComplianceGapAnalyzerRunner:
-    """Runs the Compliance Gap Analyzer agent workflow."""
+    """Runs the Compliance Gap Analyzer workflow."""
 
     def __init__(
         self,
-        compliance_db: Any | None = None,
-        control_registry: Any | None = None,
+        posture_backend: Any | None = None,
+        regulatory_backend: Any | None = None,
         repository: Any | None = None,
     ) -> None:
         self._toolkit = ComplianceGapAnalyzerToolkit(
-            compliance_db=compliance_db,
-            control_registry=control_registry,
-            repository=repository,
+            posture_backend=posture_backend,
+            regulatory_backend=regulatory_backend,
         )
         self._repository = repository
-        self._graph = build_graph(self._toolkit)
-        self._app = self._graph.compile()
-        logger.info(
-            "compliance_gap_analyzer_runner.init",
+        self._graph = create_compliance_gap_analyzer_graph(
+            self._toolkit,
         )
+        self._app = self._graph.compile()
+        logger.info("cga_runner.init")
 
-    async def analyze(
+    async def run(
         self,
-        tenant_id: str,
-        frameworks: list[str] | None = None,
-        request_id: str = "",
+        domains: list[str] | None = None,
     ) -> dict[str, Any]:
-        """Run compliance gap analysis."""
+        """Execute the full gap analysis workflow."""
+        if domains is None:
+            domains = ["technology"]
+
         initial_state: dict[str, Any] = {
-            "request_id": request_id,
-            "tenant_id": tenant_id,
-            "frameworks": frameworks
-            or [
-                "soc2",
-                "hipaa",
-                "nist_csf",
-            ],
+            "request_id": "",
+            "tenant_id": "",
+            "domains": domains,
             "reasoning_chain": [],
         }
 
         logger.info(
-            "compliance_gap_analyzer_runner.analyze",
-            request_id=request_id,
-            tenant_id=tenant_id,
-            frameworks=frameworks,
+            "cga_runner.run",
+            domains=domains,
         )
         try:
             result = await self._app.ainvoke(
@@ -67,7 +60,7 @@ class ComplianceGapAnalyzerRunner:
             return result
         except Exception:
             logger.exception(
-                "compliance_gap_analyzer_runner.error",
+                "cga_runner.run.error",
             )
             raise
 
@@ -75,6 +68,8 @@ class ComplianceGapAnalyzerRunner:
         self,
         result: dict[str, Any],
     ) -> None:
-        """Persist analysis results."""
+        """Persist gap analysis results."""
         if self._repository:
-            await self._repository.save(result)
+            await self._repository.save_gap_analysis(
+                result,
+            )

@@ -1,149 +1,103 @@
-"""Compliance Gap Analyzer Agent — Node function implementations."""
+"""Compliance Gap Analyzer Agent — Node implementations."""
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 import structlog
+from pydantic import BaseModel, Field
 
 from shieldops.utils.llm import llm_structured
 
 from .models import (
-    ComplianceGap,
-    ComplianceStage,
-    Framework,
-    FrameworkMapping,
-    SecurityControl,
-)
-from .prompts import (
-    SYSTEM_MAP_FRAMEWORKS,
-    SYSTEM_REMEDIATION,
-    SYSTEM_REPORT,
-    ComplianceReportOutput,
-    FrameworkMappingOutput,
-    RemediationPlanOutput,
+    CGAStage,
+    RegulatoryDomain,
 )
 from .tools import ComplianceGapAnalyzerToolkit
 
 logger = structlog.get_logger()
 
 
-async def inventory_controls(
+class _LLMGapInsight(BaseModel):
+    """LLM-generated gap analysis insight."""
+
+    critical_gaps: list[str] = Field(
+        description="Most critical compliance gaps",
+    )
+    root_causes: list[str] = Field(
+        description="Root causes of gaps",
+    )
+    risk_summary: str = Field(
+        description="Overall risk summary",
+    )
+
+
+class _LLMRemediationInsight(BaseModel):
+    """LLM-generated remediation guidance."""
+
+    quick_wins: list[str] = Field(
+        description="Gaps fixable quickly",
+    )
+    strategic_items: list[str] = Field(
+        description="Long-term remediation items",
+    )
+    estimated_timeline: str = Field(
+        description="Overall remediation timeline",
+    )
+    resource_requirements: str = Field(
+        description="Estimated resources needed",
+    )
+
+
+async def scan_posture(
     state: dict[str, Any],
     toolkit: ComplianceGapAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Collect security controls inventory."""
-    logger.info(
-        "compliance_gap.node.inventory_controls",
-    )
+    """Scan security posture for each domain."""
+    logger.info("cga.node.scan_posture")
+    domains = state.get("domains", [])
 
-    tenant_id = state.get("tenant_id", "")
-    controls = await toolkit.inventory_controls(
-        tenant_id,
-    )
-    data = [c.model_dump() for c in controls]
+    scans: list[dict[str, Any]] = []
+    for domain in domains:
+        domain_val = domain.value if isinstance(domain, RegulatoryDomain) else domain
+        scan = await toolkit.scan_posture(domain_val)
+        scans.append(scan)
 
     return {
-        "current_stage": (ComplianceStage.INVENTORY_CONTROLS.value),
-        "controls_inventoried": data,
-        "reasoning_chain": (
-            state.get("reasoning_chain", []) + [f"Inventoried {len(controls)} security controls"]
-        ),
+        "stage": CGAStage.MAP_REQUIREMENTS.value,
+        "posture_scans": scans,
+        "reasoning_chain": state.get(
+            "reasoning_chain",
+            [],
+        )
+        + [f"Scanned posture for {len(domains)} domains"],
     }
 
 
-async def map_to_frameworks(
+async def map_requirements(
     state: dict[str, Any],
     toolkit: ComplianceGapAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Map controls to compliance frameworks."""
-    logger.info(
-        "compliance_gap.node.map_to_frameworks",
-    )
+    """Fetch and map regulatory requirements."""
+    logger.info("cga.node.map_requirements")
+    domains = state.get("domains", [])
 
-    raw_controls = state.get(
-        "controls_inventoried",
-        [],
-    )
-    controls = [SecurityControl(**c) for c in raw_controls]
-
-    raw_fws = state.get(
-        "frameworks",
-        ["soc2", "hipaa", "nist_csf"],
-    )
-    frameworks = [Framework(f) for f in raw_fws]
-
-    mappings = await toolkit.map_to_frameworks(
-        controls,
-        frameworks,
-    )
-
-    # LLM enhancement for mapping quality
-    for mapping in mappings[:5]:
-        if mapping.gap_description:
-            try:
-                ctrl = next(
-                    (c for c in controls if c.id == mapping.control_id),
-                    None,
-                )
-                result = await llm_structured(
-                    system_prompt=(SYSTEM_MAP_FRAMEWORKS),
-                    user_prompt=(
-                        f"Control: "
-                        f"{ctrl.name if ctrl else 'N/A'}\n"
-                        f"Framework: {mapping.framework}\n"
-                        f"Requirement: "
-                        f"{mapping.requirement_name}"
-                    ),
-                    output_schema=(FrameworkMappingOutput),
-                )
-                mapping.gap_description = result.gap_description
-            except Exception:
-                logger.debug(
-                    "compliance_gap.llm_map_fallback",
-                )
-
-    data = [m.model_dump() for m in mappings]
+    all_reqs: list[dict[str, Any]] = []
+    for domain in domains:
+        domain_val = domain.value if isinstance(domain, RegulatoryDomain) else domain
+        reqs = await toolkit.fetch_requirements(
+            domain_val,
+        )
+        all_reqs.extend(reqs)
 
     return {
-        "current_stage": (ComplianceStage.MAP_TO_FRAMEWORKS.value),
-        "mappings": data,
-        "reasoning_chain": (
-            state.get("reasoning_chain", [])
-            + [f"Mapped controls to {len(frameworks)} frameworks ({len(mappings)} mappings)"]
-        ),
-    }
-
-
-async def assess_coverage(
-    state: dict[str, Any],
-    toolkit: ComplianceGapAnalyzerToolkit,
-) -> dict[str, Any]:
-    """Assess coverage per framework."""
-    logger.info(
-        "compliance_gap.node.assess_coverage",
-    )
-
-    raw = state.get("mappings", [])
-    mappings = [FrameworkMapping(**m) for m in raw]
-    assessments = await toolkit.assess_coverage(
-        mappings,
-    )
-    data = [a.model_dump() for a in assessments]
-
-    # Calculate overall compliance
-    total_pct = sum(a.coverage_pct for a in assessments) / len(assessments) if assessments else 0.0
-    fw_scores = {a.framework.value: a.coverage_pct for a in assessments}
-
-    return {
-        "current_stage": (ComplianceStage.ASSESS_COVERAGE.value),
-        "coverage_assessments": data,
-        "overall_compliance_pct": round(total_pct, 1),
-        "framework_scores": fw_scores,
-        "reasoning_chain": (
-            state.get("reasoning_chain", []) + [f"Overall compliance: {round(total_pct, 1)}%"]
-        ),
+        "stage": CGAStage.IDENTIFY_GAPS.value,
+        "requirements": all_reqs,
+        "reasoning_chain": state.get(
+            "reasoning_chain",
+            [],
+        )
+        + [f"Mapped {len(all_reqs)} requirements across {len(domains)} domains"],
     }
 
 
@@ -151,119 +105,207 @@ async def identify_gaps(
     state: dict[str, Any],
     toolkit: ComplianceGapAnalyzerToolkit,
 ) -> dict[str, Any]:
-    """Identify compliance gaps."""
-    logger.info("compliance_gap.node.identify_gaps")
+    """Compare posture against requirements."""
+    logger.info("cga.node.identify_gaps")
+    posture_scans = state.get("posture_scans", [])
+    requirements = state.get("requirements", [])
 
-    raw = state.get("mappings", [])
-    mappings = [FrameworkMapping(**m) for m in raw]
-    gaps = await toolkit.identify_gaps(mappings)
-    data = [g.model_dump() for g in gaps]
+    all_gaps: list[dict[str, Any]] = []
+    for scan in posture_scans:
+        gaps = toolkit.identify_gaps(
+            scan,
+            requirements,
+        )
+        all_gaps.extend(gaps)
 
-    return {
-        "current_stage": (ComplianceStage.IDENTIFY_GAPS.value),
-        "gaps": data,
-        "reasoning_chain": (
-            state.get("reasoning_chain", []) + [f"Identified {len(gaps)} compliance gaps"]
-        ),
-    }
+    # De-duplicate by requirement_id
+    seen: set[str] = set()
+    unique_gaps: list[dict[str, Any]] = []
+    for gap in all_gaps:
+        req_id = gap.get("requirement_id", "")
+        if req_id not in seen:
+            seen.add(req_id)
+            unique_gaps.append(gap)
 
+    critical = sum(1 for g in unique_gaps if g.get("severity") == "critical")
 
-async def generate_remediation_plan(
-    state: dict[str, Any],
-    toolkit: ComplianceGapAnalyzerToolkit,
-) -> dict[str, Any]:
-    """Generate remediation plans for gaps."""
-    logger.info(
-        "compliance_gap.node.remediation_plan",
-    )
-
-    raw = state.get("gaps", [])
-    gaps = [ComplianceGap(**g) for g in raw]
-    plans = await toolkit.generate_remediation_plans(
-        gaps,
-    )
-
-    # LLM enhancement for plan quality
-    for plan in plans[:5]:
-        try:
-            gap = next(
-                (g for g in gaps if g.requirement_id == plan.requirement_id),
-                None,
-            )
-            result = await llm_structured(
-                system_prompt=SYSTEM_REMEDIATION,
-                user_prompt=(
-                    f"Gap: {gap.requirement_name if gap else 'N/A'}\n"
-                    f"Framework: {plan.framework}\n"
-                    f"Status: {gap.current_status if gap else 'missing'}"
-                ),
-                output_schema=RemediationPlanOutput,
-            )
-            plan.action_items = result.action_items
-            plan.timeline = result.timeline
-            plan.estimated_cost = result.estimated_cost
-            plan.priority = result.priority
-        except Exception:
-            logger.debug(
-                "compliance_gap.llm_remediation_fb",
-            )
-
-    data = [p.model_dump() for p in plans]
-
-    return {
-        "current_stage": (ComplianceStage.GENERATE_REMEDIATION_PLAN.value),
-        "remediation_plans": data,
-        "reasoning_chain": (
-            state.get("reasoning_chain", []) + [f"Generated {len(plans)} remediation plans"]
-        ),
-    }
-
-
-async def generate_report(
-    state: dict[str, Any],
-    toolkit: ComplianceGapAnalyzerToolkit,
-) -> dict[str, Any]:
-    """Generate final compliance report."""
-    logger.info("compliance_gap.node.generate_report")
-
+    # --- LLM enhancement ---
+    llm_text = ""
     try:
-        context = json.dumps(
-            {
-                "overall_compliance_pct": state.get(
-                    "overall_compliance_pct",
-                    0,
-                ),
-                "framework_scores": state.get(
-                    "framework_scores",
-                    {},
-                ),
-                "gap_count": len(
-                    state.get("gaps", []),
-                ),
-                "plan_count": len(
-                    state.get(
-                        "remediation_plans",
-                        [],
-                    ),
-                ),
-            },
-            default=str,
+        gap_summary = "\n".join(
+            f"- {g.get('gap_id')} "
+            f"[{g.get('framework')}]: "
+            f"{g.get('severity')} - "
+            f"{g.get('description')}"
+            for g in unique_gaps[:20]
         )
-        result = await llm_structured(
-            system_prompt=SYSTEM_REPORT,
-            user_prompt=(f"Compliance analysis:\n{context}"),
-            output_schema=ComplianceReportOutput,
+        insight = await llm_structured(
+            system_prompt=(
+                "You are a compliance gap analyst. "
+                "Analyze these gaps and identify "
+                "root causes and critical risks."
+            ),
+            user_prompt=(
+                f"Total gaps: {len(unique_gaps)}\n"
+                f"Critical: {critical}\n\n"
+                f"Gap details:\n{gap_summary}"
+            ),
+            schema=_LLMGapInsight,
         )
-        summary = result.executive_summary
+        if isinstance(insight, _LLMGapInsight):
+            llm_text = f"LLM: {insight.risk_summary}. Root causes: {len(insight.root_causes)}."
+            logger.info(
+                "llm_enhanced",
+                agent="cga",
+                node="identify_gaps",
+                critical=len(
+                    insight.critical_gaps,
+                ),
+            )
     except Exception:
         logger.debug(
-            "compliance_gap.llm_report_fallback",
+            "llm_fallback",
+            agent="cga",
+            node="identify_gaps",
         )
-        pct = state.get("overall_compliance_pct", 0)
-        gaps = len(state.get("gaps", []))
-        summary = f"Compliance at {pct}%. {gaps} gaps identified."
+
+    msg = f"Identified {len(unique_gaps)} gaps, {critical} critical"
+    if llm_text:
+        msg += f" | {llm_text}"
 
     return {
-        "current_stage": (ComplianceStage.REPORT.value),
-        "reasoning_chain": (state.get("reasoning_chain", []) + [f"Report: {summary[:120]}"]),
+        "stage": CGAStage.PRIORITIZE_RISKS.value,
+        "gaps": unique_gaps,
+        "total_gaps": len(unique_gaps),
+        "critical_gaps": critical,
+        "reasoning_chain": state.get(
+            "reasoning_chain",
+            [],
+        )
+        + [msg],
+    }
+
+
+async def prioritize_risks(
+    state: dict[str, Any],
+    toolkit: ComplianceGapAnalyzerToolkit,
+) -> dict[str, Any]:
+    """Prioritize gaps by risk score."""
+    logger.info("cga.node.prioritize_risks")
+    gaps = state.get("gaps", [])
+
+    priorities = toolkit.prioritize_risks(gaps)
+
+    top_score = priorities[0]["risk_score"] if priorities else 0
+
+    return {
+        "stage": CGAStage.GENERATE_PLAN.value,
+        "risk_priorities": priorities,
+        "reasoning_chain": state.get(
+            "reasoning_chain",
+            [],
+        )
+        + [f"Prioritized {len(priorities)} risks, top score: {top_score}"],
+    }
+
+
+async def generate_plan(
+    state: dict[str, Any],
+    toolkit: ComplianceGapAnalyzerToolkit,
+) -> dict[str, Any]:
+    """Generate remediation plans for all gaps."""
+    logger.info("cga.node.generate_plan")
+    gaps = state.get("gaps", [])
+    priorities = state.get("risk_priorities", [])
+
+    plans = toolkit.build_remediation_plan(
+        gaps,
+        priorities,
+    )
+
+    # --- LLM enhancement ---
+    llm_text = ""
+    try:
+        plan_summary = "\n".join(
+            f"- Rank {p.get('priority_rank')}: {p.get('title')} ({p.get('estimated_effort_days')}d)"
+            for p in plans[:10]
+        )
+        insight = await llm_structured(
+            system_prompt=(
+                "You are a remediation planner. "
+                "Analyze plans and identify quick "
+                "wins vs strategic items."
+            ),
+            user_prompt=(f"Total plans: {len(plans)}\n\nPlan details:\n{plan_summary}"),
+            schema=_LLMRemediationInsight,
+        )
+        if isinstance(
+            insight,
+            _LLMRemediationInsight,
+        ):
+            llm_text = f"LLM: {insight.estimated_timeline}. Quick wins: {len(insight.quick_wins)}."
+            logger.info(
+                "llm_enhanced",
+                agent="cga",
+                node="generate_plan",
+                quick_wins=len(
+                    insight.quick_wins,
+                ),
+            )
+    except Exception:
+        logger.debug(
+            "llm_fallback",
+            agent="cga",
+            node="generate_plan",
+        )
+
+    total_effort = sum(p.get("estimated_effort_days", 0) for p in plans)
+    msg = f"Generated {len(plans)} remediation plans, total effort: {total_effort}d"
+    if llm_text:
+        msg += f" | {llm_text}"
+
+    return {
+        "stage": CGAStage.REPORT.value,
+        "remediation_plans": plans,
+        "reasoning_chain": state.get(
+            "reasoning_chain",
+            [],
+        )
+        + [msg],
+    }
+
+
+async def build_report(
+    state: dict[str, Any],
+    toolkit: ComplianceGapAnalyzerToolkit,
+) -> dict[str, Any]:
+    """Produce final compliance gap analysis report."""
+    logger.info("cga.node.build_report")
+    posture_scans = state.get("posture_scans", [])
+    gaps = state.get("gaps", [])
+    priorities = state.get("risk_priorities", [])
+    plans = state.get("remediation_plans", [])
+
+    report = toolkit.generate_report(
+        posture_scans,
+        gaps,
+        priorities,
+        plans,
+    )
+    score = report.get("compliance_score", 0.0)
+
+    return {
+        "stage": CGAStage.REPORT.value,
+        "report": report,
+        "compliance_score": score,
+        "reasoning_chain": state.get(
+            "reasoning_chain",
+            [],
+        )
+        + [
+            f"Report: score={score}, "
+            f"{report.get('total_gaps', 0)} gaps, "
+            f"{report.get('remediation_plans', 0)} "
+            f"plans"
+        ],
     }

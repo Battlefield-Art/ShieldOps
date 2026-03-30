@@ -4,315 +4,510 @@ from __future__ import annotations
 
 import hashlib
 import random
-import time
 import uuid
 from typing import Any
 
 import structlog
 
 from .models import (
-    CloudWorkload,
+    ContainmentAction,
     DriftFinding,
     RuntimeAnomaly,
     VulnerabilityFinding,
-    WorkloadPlatform,
+    WorkloadInventory,
     WorkloadSeverity,
+    WorkloadType,
 )
 
 logger = structlog.get_logger()
 
-_INSTANCE_TYPES: dict[str, list[str]] = {
-    "ec2": ["t3.micro", "t3.medium", "m5.large", "c5.xlarge"],
-    "gce": [
-        "e2-micro",
-        "e2-medium",
-        "n2-standard-2",
-        "c2-standard-4",
-    ],
-    "azure_vm": [
-        "Standard_B1s",
-        "Standard_D2s_v3",
-        "Standard_E2s_v3",
-    ],
-    "kubernetes": ["pod-small", "pod-medium", "pod-large"],
-    "ecs": ["fargate-256", "fargate-512", "fargate-1024"],
-}
-
-_OS_TYPES = [
-    "Ubuntu 22.04",
-    "Amazon Linux 2023",
-    "RHEL 9",
-    "Debian 12",
-    "Windows Server 2022",
-]
-
-_REGIONS: dict[str, list[str]] = {
-    "ec2": ["us-east-1", "us-west-2", "eu-west-1"],
-    "gce": ["us-central1", "europe-west1"],
-    "azure_vm": ["eastus", "westeurope"],
-    "kubernetes": ["default-cluster"],
-    "ecs": ["us-east-1", "eu-west-1"],
-}
-
-_RUNTIME_ANOMALIES = [
+# ---------------------------------------------------------------
+# Mock workload definitions
+# ---------------------------------------------------------------
+_MOCK_WORKLOADS: list[dict[str, Any]] = [
     {
-        "type": "reverse_shell",
-        "process": "/bin/bash",
-        "severity": WorkloadSeverity.CRITICAL,
-        "mitre": "T1059.004",
+        "workload_type": WorkloadType.CONTAINER,
+        "name": "api-gateway",
+        "namespace": "production",
+        "image": "registry.example.com/api-gw:3.2.1",
+        "host": "node-prod-01",
+        "region": "us-east-1",
+        "cloud_provider": "aws",
+        "ports": [8080, 8443],
+        "labels": {
+            "app": "api-gateway",
+            "tier": "edge",
+        },
     },
     {
-        "type": "crypto_miner",
+        "workload_type": WorkloadType.KUBERNETES_POD,
+        "name": "payment-service",
+        "namespace": "production",
+        "image": "registry.example.com/payment:2.1.0",
+        "host": "node-prod-02",
+        "region": "us-east-1",
+        "cloud_provider": "aws",
+        "ports": [9090],
+        "labels": {
+            "app": "payment",
+            "tier": "backend",
+        },
+    },
+    {
+        "workload_type": WorkloadType.CONTAINER,
+        "name": "ml-inference",
+        "namespace": "ml-workloads",
+        "image": "registry.example.com/ml-serve:1.4.0",
+        "host": "gpu-node-01",
+        "region": "us-west-2",
+        "cloud_provider": "aws",
+        "ports": [8501],
+        "privileged": True,
+        "labels": {
+            "app": "ml-inference",
+            "tier": "compute",
+        },
+    },
+    {
+        "workload_type": WorkloadType.VM,
+        "name": "db-primary",
+        "namespace": "databases",
+        "image": "ubuntu-22.04-lts",
+        "host": "vm-db-prod-01",
+        "region": "eu-west-1",
+        "cloud_provider": "aws",
+        "ports": [5432, 22],
+        "labels": {
+            "app": "postgres",
+            "tier": "data",
+        },
+    },
+    {
+        "workload_type": WorkloadType.SERVERLESS,
+        "name": "event-processor",
+        "namespace": "event-bus",
+        "image": "lambda:event-proc-v4",
+        "host": "lambda-us-east-1",
+        "region": "us-east-1",
+        "cloud_provider": "aws",
+        "ports": [],
+        "labels": {
+            "app": "event-proc",
+            "tier": "async",
+        },
+    },
+    {
+        "workload_type": WorkloadType.KUBERNETES_POD,
+        "name": "redis-cache",
+        "namespace": "production",
+        "image": "redis:7.2-alpine",
+        "host": "node-prod-03",
+        "region": "us-east-1",
+        "cloud_provider": "aws",
+        "ports": [6379],
+        "labels": {
+            "app": "redis",
+            "tier": "cache",
+        },
+    },
+    {
+        "workload_type": WorkloadType.CONTAINER,
+        "name": "log-collector",
+        "namespace": "observability",
+        "image": "fluent/fluentd:v1.16",
+        "host": "node-prod-01",
+        "region": "us-east-1",
+        "cloud_provider": "aws",
+        "privileged": True,
+        "ports": [24224],
+        "labels": {
+            "app": "fluentd",
+            "tier": "infra",
+        },
+    },
+    {
+        "workload_type": WorkloadType.BARE_METAL,
+        "name": "etcd-cluster-0",
+        "namespace": "kube-system",
+        "image": "etcd:3.5.12",
+        "host": "bm-ctrl-01",
+        "region": "us-east-1",
+        "cloud_provider": "on-prem",
+        "ports": [2379, 2380],
+        "labels": {
+            "app": "etcd",
+            "tier": "control-plane",
+        },
+    },
+]
+
+# ---------------------------------------------------------------
+# Mock anomaly patterns
+# ---------------------------------------------------------------
+_ANOMALY_PATTERNS: list[dict[str, Any]] = [
+    {
+        "anomaly_type": "container_escape_attempt",
+        "severity": WorkloadSeverity.CRITICAL,
+        "process": "nsenter",
+        "syscall": "setns",
+        "container_escape": True,
+        "description": (
+            "Process nsenter invoked setns syscall to enter host namespace from container"
+        ),
+    },
+    {
+        "anomaly_type": "crypto_miner",
+        "severity": WorkloadSeverity.HIGH,
         "process": "xmrig",
-        "severity": WorkloadSeverity.HIGH,
-        "mitre": "T1496",
+        "syscall": "connect",
+        "container_escape": False,
+        "description": (
+            "Crypto-mining process xmrig detected connecting to mining pool stratum+tcp"
+        ),
     },
     {
-        "type": "unauthorized_ssh",
-        "process": "sshd",
-        "severity": WorkloadSeverity.HIGH,
-        "mitre": "T1021.004",
-    },
-    {
-        "type": "privilege_escalation",
-        "process": "sudo",
+        "anomaly_type": "reverse_shell",
         "severity": WorkloadSeverity.CRITICAL,
-        "mitre": "T1548.003",
+        "process": "/bin/bash",
+        "syscall": "connect",
+        "container_escape": False,
+        "description": ("Reverse shell detected: bash process opening outbound TCP to external IP"),
     },
     {
-        "type": "data_exfil",
+        "anomaly_type": "privilege_escalation",
+        "severity": WorkloadSeverity.HIGH,
+        "process": "sudo",
+        "syscall": "setuid",
+        "container_escape": False,
+        "description": ("Unexpected privilege escalation via setuid in non-privileged container"),
+    },
+    {
+        "anomaly_type": "suspicious_network",
+        "severity": WorkloadSeverity.MEDIUM,
         "process": "curl",
+        "syscall": "connect",
+        "container_escape": False,
+        "description": ("Outbound HTTP request to known C2 domain from production workload"),
+    },
+    {
+        "anomaly_type": "cgroup_breakout",
+        "severity": WorkloadSeverity.CRITICAL,
+        "process": "release_agent",
+        "syscall": "write",
+        "container_escape": True,
+        "description": (
+            "Cgroup release_agent exploit detected attempting host-level code execution"
+        ),
+    },
+]
+
+# ---------------------------------------------------------------
+# Mock drift patterns
+# ---------------------------------------------------------------
+_DRIFT_PATTERNS: list[dict[str, Any]] = [
+    {
+        "file_path": "/usr/bin/sshd",
+        "change_type": "binary_modified",
+        "severity": WorkloadSeverity.CRITICAL,
+        "description": ("SSH daemon binary modified — possible backdoor implant"),
+    },
+    {
+        "file_path": "/etc/passwd",
+        "change_type": "content_modified",
         "severity": WorkloadSeverity.HIGH,
-        "mitre": "T1048",
+        "description": ("Password file modified: new user account added with UID 0"),
     },
-]
-
-_DRIFT_TYPES = [
     {
-        "type": "firewall_rule_added",
+        "file_path": "/etc/ld.so.preload",
+        "change_type": "file_created",
+        "severity": WorkloadSeverity.CRITICAL,
+        "description": ("ld.so.preload created — library preloading rootkit indicator"),
+    },
+    {
+        "file_path": "/usr/lib/libcrypto.so.1.1",
+        "change_type": "binary_modified",
         "severity": WorkloadSeverity.HIGH,
-        "auto": True,
+        "description": ("OpenSSL library modified — possible supply chain compromise"),
     },
     {
-        "type": "user_created",
+        "file_path": "/etc/crontab",
+        "change_type": "content_modified",
         "severity": WorkloadSeverity.MEDIUM,
-        "auto": False,
-    },
-    {
-        "type": "package_installed",
-        "severity": WorkloadSeverity.LOW,
-        "auto": True,
-    },
-    {
-        "type": "config_file_changed",
-        "severity": WorkloadSeverity.MEDIUM,
-        "auto": True,
-    },
-    {
-        "type": "service_enabled",
-        "severity": WorkloadSeverity.MEDIUM,
-        "auto": True,
+        "description": ("Crontab modified: new persistence mechanism scheduled"),
     },
 ]
 
-_CVE_LIST = [
+# ---------------------------------------------------------------
+# Mock vulnerability data
+# ---------------------------------------------------------------
+_VULN_DATA: list[dict[str, Any]] = [
     {
-        "cve": "CVE-2024-21626",
-        "pkg": "runc",
-        "cvss": 8.6,
-        "sev": WorkloadSeverity.CRITICAL,
-        "fix": "1.1.12",
+        "cve_id": "CVE-2024-21626",
+        "package_name": "runc",
+        "installed_version": "1.1.9",
+        "fixed_version": "1.1.12",
+        "severity": WorkloadSeverity.CRITICAL,
+        "cvss_score": 8.6,
+        "exploitable": True,
+        "description": ("runc container breakout via leaked file descriptor (Leaky Vessels)"),
     },
     {
-        "cve": "CVE-2024-3094",
-        "pkg": "xz-utils",
-        "cvss": 10.0,
-        "sev": WorkloadSeverity.CRITICAL,
-        "fix": "5.6.1",
+        "cve_id": "CVE-2024-3094",
+        "package_name": "xz-utils",
+        "installed_version": "5.6.0",
+        "fixed_version": "5.6.2",
+        "severity": WorkloadSeverity.CRITICAL,
+        "cvss_score": 10.0,
+        "exploitable": True,
+        "description": ("XZ Utils backdoor — supply chain compromise in liblzma"),
     },
     {
-        "cve": "CVE-2023-44487",
-        "pkg": "nginx",
-        "cvss": 7.5,
-        "sev": WorkloadSeverity.HIGH,
-        "fix": "1.25.3",
+        "cve_id": "CVE-2023-44487",
+        "package_name": "golang",
+        "installed_version": "1.20.8",
+        "fixed_version": "1.21.3",
+        "severity": WorkloadSeverity.HIGH,
+        "cvss_score": 7.5,
+        "exploitable": True,
+        "description": ("HTTP/2 Rapid Reset DDoS attack vulnerability"),
     },
     {
-        "cve": "CVE-2023-38545",
-        "pkg": "curl",
-        "cvss": 9.8,
-        "sev": WorkloadSeverity.CRITICAL,
-        "fix": "8.4.0",
+        "cve_id": "CVE-2023-38545",
+        "package_name": "curl",
+        "installed_version": "8.3.0",
+        "fixed_version": "8.4.0",
+        "severity": WorkloadSeverity.HIGH,
+        "cvss_score": 7.5,
+        "exploitable": False,
+        "description": ("SOCKS5 heap-based buffer overflow in curl"),
     },
     {
-        "cve": "CVE-2023-4911",
-        "pkg": "glibc",
-        "cvss": 7.8,
-        "sev": WorkloadSeverity.HIGH,
-        "fix": "2.38-4",
+        "cve_id": "CVE-2023-4911",
+        "package_name": "glibc",
+        "installed_version": "2.37",
+        "fixed_version": "2.38",
+        "severity": WorkloadSeverity.HIGH,
+        "cvss_score": 7.8,
+        "exploitable": True,
+        "description": ("Looney Tunables — glibc buffer overflow in ld.so"),
+    },
+    {
+        "cve_id": "CVE-2023-32233",
+        "package_name": "linux-kernel",
+        "installed_version": "6.2.0",
+        "fixed_version": "6.3.2",
+        "severity": WorkloadSeverity.MEDIUM,
+        "cvss_score": 6.7,
+        "exploitable": False,
+        "description": ("Netfilter nf_tables use-after-free privilege escalation"),
     },
 ]
-
-
-def _wl_hash(platform: str, idx: int) -> str:
-    raw = f"{platform}-workload-{idx}"
-    return hashlib.sha256(raw.encode()).hexdigest()[:12]
 
 
 class CloudWorkloadProtectorToolkit:
-    """Tools for cloud workload protection."""
+    """Toolkit for cloud workload protection operations."""
 
     def __init__(
         self,
-        cloud_clients: Any | None = None,
+        runtime_client: Any | None = None,
+        vuln_db: Any | None = None,
     ) -> None:
-        self._cloud_clients = cloud_clients
+        self._runtime_client = runtime_client
+        self._vuln_db = vuln_db
+        logger.info("cwp_toolkit.init")
 
-    async def inventory_workloads(
+    async def scan_workloads(
         self,
         tenant_id: str,
-        platforms: list[str],
-    ) -> list[CloudWorkload]:
-        """Inventory cloud workload instances."""
+    ) -> list[WorkloadInventory]:
+        """Scan and inventory running workloads."""
         logger.info(
-            "cwp.inventory",
+            "cwp_toolkit.scan_workloads",
             tenant_id=tenant_id,
-            platforms=platforms,
         )
 
-        if self._cloud_clients is not None:
-            try:
-                raw = await self._cloud_clients.list_instances(
-                    tenant_id=tenant_id, platforms=platforms
-                )
-                return [CloudWorkload(**r) for r in raw]
-            except Exception:
-                logger.exception("cwp.inventory.error")
-
-        workloads: list[CloudWorkload] = []
-        for platform_key in platforms:
-            types = _INSTANCE_TYPES.get(platform_key, ["t3.micro"])
-            regions = _REGIONS.get(platform_key, ["us-east-1"])
-
-            for idx in range(random.randint(4, 10)):  # noqa: S311
-                wid = _wl_hash(platform_key, idx)
-                workloads.append(
-                    CloudWorkload(
-                        id=wid,
-                        platform=WorkloadPlatform(platform_key),
-                        instance_id=f"i-{wid}",
-                        instance_type=random.choice(types),  # noqa: S311
-                        region=random.choice(regions),  # noqa: S311
-                        os_type=random.choice(_OS_TYPES),  # noqa: S311
-                        state="running",
-                        tags={
-                            "env": random.choice(  # noqa: S311
-                                ["prod", "staging", "dev"]
-                            ),
-                        },
-                        agent_installed=random.random() > 0.3,  # noqa: S311
-                        last_scanned=time.time() - random.uniform(0, 86400),  # noqa: S311
-                    )
-                )
-
-        logger.info("cwp.inventory.done", count=len(workloads))
+        workloads: list[WorkloadInventory] = []
+        for w in _MOCK_WORKLOADS:
+            wl = WorkloadInventory(
+                id=str(uuid.uuid4())[:8],
+                tenant_id=tenant_id,
+                workload_type=w["workload_type"],
+                name=w["name"],
+                namespace=w["namespace"],
+                image=w["image"],
+                host=w["host"],
+                region=w["region"],
+                cloud_provider=w["cloud_provider"],
+                privileged=w.get("privileged", False),
+                ports=w.get("ports", []),
+                labels=w.get("labels", {}),
+            )
+            workloads.append(wl)
         return workloads
 
-    async def monitor_runtime(
+    async def detect_anomalies(
         self,
-        workloads: list[CloudWorkload],
+        workloads: list[WorkloadInventory],
     ) -> list[RuntimeAnomaly]:
-        """Monitor runtime behavior for anomalies."""
-        logger.info("cwp.runtime", count=len(workloads))
+        """Detect runtime anomalies across workloads."""
+        logger.info(
+            "cwp_toolkit.detect_anomalies",
+            workload_count=len(workloads),
+        )
 
         anomalies: list[RuntimeAnomaly] = []
         for wl in workloads:
-            if random.random() > 0.6:  # noqa: S311
-                tpl = random.choice(  # noqa: S311
-                    _RUNTIME_ANOMALIES
+            n = random.randint(0, 2)  # noqa: S311
+            chosen = random.sample(  # noqa: S311
+                _ANOMALY_PATTERNS,
+                min(n, len(_ANOMALY_PATTERNS)),
+            )
+            for pattern in chosen:
+                anomaly = RuntimeAnomaly(
+                    id=str(uuid.uuid4())[:8],
+                    workload_id=wl.id,
+                    anomaly_type=pattern["anomaly_type"],
+                    severity=pattern["severity"],
+                    description=pattern["description"],
+                    process=pattern["process"],
+                    syscall=pattern["syscall"],
+                    container_escape=pattern["container_escape"],
                 )
-                base_risk = {
-                    WorkloadSeverity.CRITICAL: 90.0,
-                    WorkloadSeverity.HIGH: 70.0,
-                    WorkloadSeverity.MEDIUM: 50.0,
-                }.get(tpl["severity"], 50.0)
-
-                anomalies.append(
-                    RuntimeAnomaly(
-                        id=str(uuid.uuid4())[:8],
-                        workload_id=wl.id,
-                        anomaly_type=tpl["type"],
-                        severity=tpl["severity"],
-                        process_name=tpl["process"],
-                        description=(f"{tpl['type']} detected on {wl.instance_id}"),
-                        risk_score=round(
-                            base_risk + random.uniform(-5, 5),  # noqa: S311
-                            1,
-                        ),
-                        mitre_technique=tpl["mitre"],
-                    )
-                )
-
-        logger.info(
-            "cwp.runtime.done",
-            anomalies=len(anomalies),
-        )
+                anomalies.append(anomaly)
         return anomalies
 
-    async def detect_drift(
+    async def analyze_drift(
         self,
-        workloads: list[CloudWorkload],
+        workloads: list[WorkloadInventory],
     ) -> list[DriftFinding]:
-        """Detect configuration drift from baselines."""
-        logger.info("cwp.drift", count=len(workloads))
+        """Analyze file integrity drift on workloads."""
+        logger.info(
+            "cwp_toolkit.analyze_drift",
+            workload_count=len(workloads),
+        )
 
         findings: list[DriftFinding] = []
         for wl in workloads:
-            if random.random() > 0.5:  # noqa: S311
-                tpl = random.choice(_DRIFT_TYPES)  # noqa: S311
-                findings.append(
-                    DriftFinding(
-                        id=str(uuid.uuid4())[:8],
-                        workload_id=wl.id,
-                        drift_type=tpl["type"],
-                        severity=tpl["severity"],
-                        expected_value="baseline",
-                        actual_value="modified",
-                        description=(f"{tpl['type']} on {wl.instance_id}"),
-                        auto_remediable=tpl["auto"],
-                    )
+            if wl.workload_type == WorkloadType.SERVERLESS:
+                continue
+            n = random.randint(0, 2)  # noqa: S311
+            chosen = random.sample(  # noqa: S311
+                _DRIFT_PATTERNS,
+                min(n, len(_DRIFT_PATTERNS)),
+            )
+            for pattern in chosen:
+                expected = hashlib.sha256(pattern["file_path"].encode()).hexdigest()[:16]
+                actual = hashlib.sha256(f"{pattern['file_path']}-mod".encode()).hexdigest()[:16]
+                finding = DriftFinding(
+                    id=str(uuid.uuid4())[:8],
+                    workload_id=wl.id,
+                    file_path=pattern["file_path"],
+                    change_type=pattern["change_type"],
+                    severity=pattern["severity"],
+                    expected_hash=expected,
+                    actual_hash=actual,
+                    description=pattern["description"],
                 )
-
-        logger.info("cwp.drift.done", findings=len(findings))
+                findings.append(finding)
         return findings
 
-    async def scan_vulnerabilities(
+    async def assess_vulnerabilities(
         self,
-        workloads: list[CloudWorkload],
+        workloads: list[WorkloadInventory],
     ) -> list[VulnerabilityFinding]:
-        """Scan workloads for known vulnerabilities."""
-        logger.info("cwp.vulns", count=len(workloads))
+        """Assess vulnerabilities in workload images."""
+        logger.info(
+            "cwp_toolkit.assess_vulnerabilities",
+            workload_count=len(workloads),
+        )
 
         findings: list[VulnerabilityFinding] = []
         for wl in workloads:
-            num = random.randint(0, 3)  # noqa: S311
-            selected = random.sample(  # noqa: S311
-                _CVE_LIST, min(num, len(_CVE_LIST))
+            n = random.randint(1, 3)  # noqa: S311
+            chosen = random.sample(  # noqa: S311
+                _VULN_DATA,
+                min(n, len(_VULN_DATA)),
             )
-            for cve in selected:
-                findings.append(
-                    VulnerabilityFinding(
-                        id=str(uuid.uuid4())[:8],
-                        workload_id=wl.id,
-                        cve_id=cve["cve"],
-                        package_name=cve["pkg"],
-                        severity=cve["sev"],
-                        cvss_score=cve["cvss"],
-                        description=(f"{cve['cve']} in {cve['pkg']} on {wl.instance_id}"),
-                        fix_available=True,
-                        fixed_version=cve["fix"],
-                    )
+            for vuln in chosen:
+                finding = VulnerabilityFinding(
+                    id=str(uuid.uuid4())[:8],
+                    workload_id=wl.id,
+                    cve_id=vuln["cve_id"],
+                    package_name=vuln["package_name"],
+                    installed_version=vuln["installed_version"],
+                    fixed_version=vuln["fixed_version"],
+                    severity=vuln["severity"],
+                    cvss_score=vuln["cvss_score"],
+                    exploitable=vuln["exploitable"],
+                    description=vuln["description"],
                 )
-
-        logger.info("cwp.vulns.done", findings=len(findings))
+                findings.append(finding)
         return findings
+
+    async def contain_threats(
+        self,
+        anomalies: list[RuntimeAnomaly],
+        vulns: list[VulnerabilityFinding],
+    ) -> list[ContainmentAction]:
+        """Contain threats from anomalies and vulns."""
+        logger.info(
+            "cwp_toolkit.contain_threats",
+            anomaly_count=len(anomalies),
+            vuln_count=len(vulns),
+        )
+
+        actions: list[ContainmentAction] = []
+
+        # Contain critical/high anomalies
+        for anomaly in anomalies:
+            if anomaly.severity not in (
+                WorkloadSeverity.CRITICAL,
+                WorkloadSeverity.HIGH,
+            ):
+                continue
+            if anomaly.container_escape:
+                action = ContainmentAction(
+                    id=str(uuid.uuid4())[:8],
+                    workload_id=anomaly.workload_id,
+                    action_type="isolate_workload",
+                    target=anomaly.workload_id,
+                    description=(f"Isolate workload due to {anomaly.anomaly_type}"),
+                    applied=True,
+                    success=random.random() > 0.1,  # noqa: S311
+                    rollback_available=True,
+                )
+            else:
+                action = ContainmentAction(
+                    id=str(uuid.uuid4())[:8],
+                    workload_id=anomaly.workload_id,
+                    action_type="kill_process",
+                    target=anomaly.process,
+                    description=(f"Kill malicious process {anomaly.process}"),
+                    applied=True,
+                    success=random.random() > 0.05,  # noqa: S311
+                    rollback_available=False,
+                )
+            actions.append(action)
+
+        # Quarantine images with critical vulns
+        seen: set[str] = set()
+        for vuln in vulns:
+            if (
+                vuln.severity == WorkloadSeverity.CRITICAL
+                and vuln.exploitable
+                and vuln.workload_id not in seen
+            ):
+                seen.add(vuln.workload_id)
+                action = ContainmentAction(
+                    id=str(uuid.uuid4())[:8],
+                    workload_id=vuln.workload_id,
+                    action_type="quarantine_image",
+                    target=vuln.cve_id,
+                    description=(f"Quarantine image for exploitable {vuln.cve_id}"),
+                    applied=True,
+                    success=True,
+                    rollback_available=True,
+                )
+                actions.append(action)
+
+        return actions
