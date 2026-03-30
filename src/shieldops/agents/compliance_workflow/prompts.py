@@ -1,125 +1,145 @@
-"""LLM prompt templates and response schemas for Compliance Workflow."""
+"""Compliance Workflow Agent — LLM prompt templates."""
 
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+# ── Structured output schemas for LLM calls ──────────
 
-class ControlIdentificationOutput(BaseModel):
-    """Structured output for control identification."""
 
-    controls: list[dict[str, str]] = Field(
-        description="Controls with id, name, category, description",
+class LLMFrameworkAnalysis(BaseModel):
+    """LLM output: framework applicability analysis."""
+
+    applicable_frameworks: list[str] = Field(
+        description=("Frameworks applicable to this tenant"),
     )
-    reasoning: str = Field(
-        description="Reasoning for control selection",
-    )
-
-
-class EvidenceCollectionOutput(BaseModel):
-    """Structured output for evidence collection planning."""
-
-    evidence_plan: list[dict[str, str]] = Field(
-        description="Evidence items with source and description",
-    )
-    coverage_notes: str = Field(
-        description="Notes on evidence coverage gaps",
+    rationale: str = Field(
+        description="Why these frameworks apply",
     )
 
 
-class ControlTestOutput(BaseModel):
-    """Structured output for control testing results."""
+class LLMControlMapping(BaseModel):
+    """LLM output: control mapping enrichment."""
 
-    results: list[dict[str, str]] = Field(
-        description="Test results with control_id, status, notes",
+    unmapped_risks: list[str] = Field(
+        description=("Risks not covered by mapped controls"),
     )
-    overall_assessment: str = Field(
-        description="Overall control effectiveness assessment",
+    cross_framework_overlaps: list[str] = Field(
+        description=("Controls shared across frameworks"),
+    )
+    mapping_confidence: float = Field(
+        description=("Confidence in mapping completeness 0-1"),
     )
 
 
-class GapAnalysisOutput(BaseModel):
-    """Structured output for gap analysis."""
+class LLMGapAssessment(BaseModel):
+    """LLM output: compliance gap analysis."""
 
-    gaps: list[dict[str, str]] = Field(
-        description="Gaps with control_id, severity, description",
+    critical_gaps: list[str] = Field(
+        description=("Critical gaps needing immediate action"),
     )
     risk_summary: str = Field(
-        description="Overall risk summary from identified gaps",
+        description="Overall compliance risk summary",
+    )
+    estimated_effort: str = Field(
+        description=("Remediation effort: low/medium/high"),
     )
 
 
-class ReportOutput(BaseModel):
-    """Structured output for compliance report."""
+class LLMRemediationPlan(BaseModel):
+    """LLM output: remediation planning."""
+
+    quick_wins: list[str] = Field(
+        description=("Actions achievable within 1 week"),
+    )
+    strategic_actions: list[str] = Field(
+        description=("Long-term remediation initiatives"),
+    )
+    risk_reduction_estimate: float = Field(
+        description=("Expected risk reduction percentage"),
+    )
+
+
+class LLMComplianceReport(BaseModel):
+    """LLM output: executive compliance report."""
 
     executive_summary: str = Field(
-        description="Executive summary of compliance posture",
+        description="2-3 sentence executive summary",
     )
-    overall_score: float = Field(
-        description="Compliance score 0-100",
+    top_risks: list[str] = Field(
+        description="Top 3 compliance risks",
     )
-    recommendations: list[str] = Field(
-        description="Prioritized remediation recommendations",
+    recommended_timeline: str = Field(
+        description=("Recommended remediation timeline"),
     )
 
 
-SYSTEM_IDENTIFY_CONTROLS = """\
-You are an expert compliance auditor identifying \
-applicable controls for a framework.
+# ── System prompts ────────────────────────────────────
 
-Given the compliance framework and tenant context:
-1. List all applicable controls with IDs and names
-2. Categorize controls by domain
-3. Assign control owners where possible
+SYSTEM_IDENTIFY_FRAMEWORKS = (
+    "You are a compliance analyst identifying"
+    " applicable regulatory frameworks for an"
+    " organization.\n"
+    "Consider industry, data types, geography,"
+    " and customer requirements.\n"
+    "Frameworks: SOC2, HIPAA, PCI-DSS, GDPR,"
+    " ISO 27001, NIST CSF, FedRAMP.\n"
+    "Return only frameworks with clear"
+    " applicability."
+)
 
-Focus on completeness — missing controls create \
-audit risk."""
+SYSTEM_MAP_CONTROLS = (
+    "You are mapping compliance controls across"
+    " multiple regulatory frameworks.\n"
+    "For each framework:\n"
+    "1. Identify required controls and categories\n"
+    "2. Find cross-framework overlaps to reduce"
+    " duplicate effort\n"
+    "3. Flag controls needing manual verification\n"
+    "4. Prioritize controls protecting sensitive"
+    " data"
+)
 
+SYSTEM_COLLECT_EVIDENCE = (
+    "You are collecting evidence artifacts to"
+    " support compliance control assessments.\n"
+    "For each control:\n"
+    "1. Gather config snapshots, logs, policies\n"
+    "2. Verify freshness — reject artifacts"
+    " older than 90 days\n"
+    "3. Cross-reference across multiple sources\n"
+    "4. Document chain of custody for each item"
+)
 
-SYSTEM_COLLECT_EVIDENCE = """\
-You are an expert compliance evidence collector \
-planning evidence gathering.
+SYSTEM_ASSESS_GAPS = (
+    "You are performing gap analysis on"
+    " compliance control assessments.\n"
+    "For each non-compliant or partial control:\n"
+    "1. Identify the unmet requirement\n"
+    "2. Assess risk severity:"
+    " critical/high/medium/low\n"
+    "3. Determine root cause:"
+    " policy, config, or process\n"
+    "4. Estimate remediation effort and timeline"
+)
 
-Given the controls and available data sources:
-1. Map each control to required evidence
-2. Identify evidence sources (logs, configs, policies)
-3. Flag controls lacking evidence
+SYSTEM_GENERATE_REMEDIATION = (
+    "You are generating remediation actions for"
+    " compliance gaps.\n"
+    "For each gap:\n"
+    "1. Define concrete remediation steps\n"
+    "2. Estimate effort in days, assign priority\n"
+    "3. Identify quick wins vs strategic items\n"
+    "4. Consider cross-framework synergies"
+)
 
-Automated evidence is preferred over manual."""
-
-
-SYSTEM_TEST_CONTROLS = """\
-You are an expert compliance tester evaluating \
-control effectiveness.
-
-Given the controls and collected evidence:
-1. Assess each control against its evidence
-2. Determine pass/fail/partial status
-3. Document testing methodology and findings
-
-Apply conservative judgment — partial evidence \
-means partial pass."""
-
-
-SYSTEM_IDENTIFY_GAPS = """\
-You are an expert compliance analyst identifying \
-gaps and risks.
-
-Given the control test results:
-1. Identify all failing or partially passing controls
-2. Assess severity of each gap
-3. Propose remediation plans with timelines
-
-Prioritize gaps by regulatory impact."""
-
-
-SYSTEM_REPORT = """\
-You are an expert compliance reporter generating \
-an audit summary.
-
-Given all controls, evidence, gaps, and remediation:
-1. Calculate an overall compliance score
-2. Write an executive summary
-3. Provide prioritized recommendations
-
-Be direct about risks while acknowledging strengths."""
+SYSTEM_REPORT = (
+    "You are generating an audit-ready compliance"
+    " report.\n"
+    "The report must include:\n"
+    "1. Executive summary with compliance score\n"
+    "2. Per-framework control status breakdown\n"
+    "3. Gap analysis with prioritized remediation\n"
+    "4. Risk exposure and timeline estimates\n"
+    "5. Evidence coverage and freshness summary"
+)

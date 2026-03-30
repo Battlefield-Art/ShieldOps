@@ -479,6 +479,12 @@ const MultiCloudOrchestrator = lazy(() => import("./pages/MultiCloudOrchestrator
 const CloudMigrationPlanner = lazy(() => import("./pages/CloudMigrationPlanner"));
 const FinopsForecaster = lazy(() => import("./pages/FinopsForecaster"));
 
+// ── Phase AF ──────────────────────────────────────────────────────
+const PredictiveScaler = lazy(() => import("./pages/PredictiveScaler"));
+const ComplianceWorkflow = lazy(() => import("./pages/ComplianceWorkflow"));
+const ServiceHealthMonitor = lazy(() => import("./pages/ServiceHealthMonitor"));
+const CloudWorkloadProtector = lazy(() => import("./pages/CloudWorkloadProtector"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -893,6 +899,10 @@ export default function App() {
               <Route path="multi-cloud-orchestrator" element={<MultiCloudOrchestrator />} />
               <Route path="cloud-migration-planner" element={<CloudMigrationPlanner />} />
               <Route path="finops-forecaster" element={<FinopsForecaster />} />
+              <Route path="predictive-scaler" element={<PredictiveScaler />} />
+              <Route path="compliance-workflow" element={<ComplianceWorkflow />} />
+              <Route path="service-health-monitor" element={<ServiceHealthMonitor />} />
+              <Route path="cloud-workload-protector" element={<CloudWorkloadProtector />} />
             </Route>
 
             {/* Catch-all */}

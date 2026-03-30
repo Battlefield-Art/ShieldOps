@@ -75,6 +75,8 @@ import {
   Download,
   CheckCircle,
   Dna,
+  Heart,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react";
 
@@ -503,6 +505,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/multi-cloud-orchestrator", icon: Cloud, label: "Multi-Cloud Orch" },
       { to: "/app/cloud-migration-planner", icon: Rocket, label: "Migration Planner" },
       { to: "/app/finops-forecaster", icon: TrendingUp, label: "FinOps Forecast" },
+      { to: "/app/predictive-scaler", icon: Activity, label: "Predictive Scaler" },
+      { to: "/app/service-health-monitor", icon: Heart, label: "Service Health" },
+      { to: "/app/cloud-workload-protector", icon: Shield, label: "Workload Protect" },
+      { to: "/app/compliance-workflow", icon: ClipboardList, label: "Compliance Flow" },
     ],
   },
   {
