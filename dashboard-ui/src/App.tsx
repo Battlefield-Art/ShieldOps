@@ -492,6 +492,14 @@ const SecretRotationManager = lazy(() => import("./pages/SecretRotationManager")
 const IncidentPlaybookEngine = lazy(() => import("./pages/IncidentPlaybookEngine"));
 const CloudStorageScanner = lazy(() => import("./pages/CloudStorageScanner"));
 
+// ── Phase AH ──────────────────────────────────────────────────────
+const ThreatFeedAggregator = lazy(() => import("./pages/ThreatFeedAggregator"));
+const IAMPolicyAnalyzer = lazy(() => import("./pages/IAMPolicyAnalyzer"));
+const ObservabilityPipelineOptimizer = lazy(() => import("./pages/ObservabilityPipelineOptimizer"));
+const DatabaseSecurityScanner = lazy(() => import("./pages/DatabaseSecurityScanner"));
+const EndpointProtectionManager = lazy(() => import("./pages/EndpointProtectionManager"));
+const SecurityAwarenessEngine = lazy(() => import("./pages/SecurityAwarenessEngine"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -915,6 +923,12 @@ export default function App() {
               <Route path="secret-rotation-manager" element={<SecretRotationManager />} />
               <Route path="incident-playbook-engine" element={<IncidentPlaybookEngine />} />
               <Route path="cloud-storage-scanner" element={<CloudStorageScanner />} />
+              <Route path="threat-feed-aggregator" element={<ThreatFeedAggregator />} />
+              <Route path="iam-policy-analyzer" element={<IAMPolicyAnalyzer />} />
+              <Route path="observability-pipeline-optimizer" element={<ObservabilityPipelineOptimizer />} />
+              <Route path="database-security-scanner" element={<DatabaseSecurityScanner />} />
+              <Route path="endpoint-protection-manager" element={<EndpointProtectionManager />} />
+              <Route path="security-awareness-engine" element={<SecurityAwarenessEngine />} />
             </Route>
 
             {/* Catch-all */}

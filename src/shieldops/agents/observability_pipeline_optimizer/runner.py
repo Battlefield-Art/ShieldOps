@@ -1,4 +1,4 @@
-"""Threat Feed Aggregator Agent — Entry point and lifecycle."""
+"""Observability Pipeline Optimizer Agent — Entry point and lifecycle."""
 
 from __future__ import annotations
 
@@ -7,40 +7,36 @@ from typing import Any
 import structlog
 
 from .graph import build_graph
-from .tools import ThreatFeedAggregatorToolkit
+from .tools import ObservabilityPipelineOptimizerToolkit
 
 logger = structlog.get_logger()
 
 
-class ThreatFeedAggregatorRunner:
-    """Runs the Threat Feed Aggregator workflow."""
+class ObservabilityPipelineOptimizerRunner:
+    """Runs the Observability Pipeline Optimizer workflow."""
 
     def __init__(
         self,
-        misp_client: Any | None = None,
-        taxii_client: Any | None = None,
-        otx_client: Any | None = None,
-        vt_client: Any | None = None,
+        otel_api: Any | None = None,
+        vendor_api: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = ThreatFeedAggregatorToolkit(
-            misp_client=misp_client,
-            taxii_client=taxii_client,
-            otx_client=otx_client,
-            vt_client=vt_client,
+        self._toolkit = ObservabilityPipelineOptimizerToolkit(
+            otel_api=otel_api,
+            vendor_api=vendor_api,
         )
         self._repository = repository
         self._graph = build_graph(self._toolkit)
         self._app = self._graph.compile()
         self._results: dict[str, dict[str, Any]] = {}
-        logger.info("tfa_runner.init")
+        logger.info("opo_runner.init")
 
     async def execute(
         self,
         tenant_id: str = "default",
         request_id: str = "",
     ) -> dict[str, Any]:
-        """Execute threat feed aggregation."""
+        """Execute pipeline optimization workflow."""
         initial_state: dict[str, Any] = {
             "request_id": request_id,
             "tenant_id": tenant_id,
@@ -48,7 +44,7 @@ class ThreatFeedAggregatorRunner:
         }
 
         logger.info(
-            "tfa_runner.execute",
+            "opo_runner.execute",
             request_id=request_id,
             tenant_id=tenant_id,
         )
@@ -62,7 +58,7 @@ class ThreatFeedAggregatorRunner:
             return result
         except Exception:
             logger.exception(
-                "tfa_runner.execute.error",
+                "opo_runner.execute.error",
             )
             raise
 
@@ -70,27 +66,22 @@ class ThreatFeedAggregatorRunner:
         self,
         request_id: str,
     ) -> dict[str, Any] | None:
-        """Retrieve a cached result."""
+        """Retrieve a cached result by request ID."""
         return self._results.get(request_id)
 
-    def list_results(
-        self,
-    ) -> list[dict[str, Any]]:
+    def list_results(self) -> list[dict[str, Any]]:
         """List all cached results."""
         return [
             {
                 "request_id": rid,
-                "tenant_id": r.get(
-                    "tenant_id",
-                    "",
+                "tenant_id": r.get("tenant_id", ""),
+                "total_cost": r.get(
+                    "total_monthly_cost",
+                    0.0,
                 ),
-                "total_iocs": r.get(
-                    "total_iocs",
-                    0,
-                ),
-                "high_severity": r.get(
-                    "high_severity_count",
-                    0,
+                "total_savings": r.get(
+                    "total_monthly_savings",
+                    0.0,
                 ),
                 "error": r.get("error", ""),
             }

@@ -1,56 +1,113 @@
-"""API Gateway Security Agent runner."""
+"""API Gateway Security Agent — Entry point and lifecycle."""
 
 from __future__ import annotations
 
+import time
+import uuid
 from typing import Any
-from uuid import uuid4
 
 import structlog
 
-from shieldops.agents.api_gateway_security.graph import (
-    create_api_gateway_security_graph,
-)
-from shieldops.agents.api_gateway_security.models import (
-    APIGatewaySecurityState,
-)
-from shieldops.agents.api_gateway_security.nodes import (
-    set_toolkit,
-)
-from shieldops.agents.api_gateway_security.tools import (
-    APIGatewaySecurityToolkit,
-)
+from .graph import build_graph
+from .tools import APIGatewaySecurityToolkit
 
 logger = structlog.get_logger()
 
 
 class APIGatewaySecurityRunner:
-    """Runner for api_gateway_security."""
+    """Runs the API Gateway Security scanning workflow."""
 
-    def __init__(self) -> None:
-        self._toolkit = APIGatewaySecurityToolkit()
-        set_toolkit(self._toolkit)
-        graph = create_api_gateway_security_graph()
-        self._app = graph.compile()
-        self._results: dict[str, APIGatewaySecurityState] = {}
+    def __init__(
+        self,
+        gateway_client: Any | None = None,
+        waf_client: Any | None = None,
+        traffic_store: Any | None = None,
+        repository: Any | None = None,
+    ) -> None:
+        self._toolkit = APIGatewaySecurityToolkit(
+            gateway_client=gateway_client,
+            waf_client=waf_client,
+            traffic_store=traffic_store,
+        )
+        self._repository = repository
+        self._graph = build_graph(self._toolkit)
+        self._app = self._graph.compile()
+        logger.info("api_gateway_security_runner.init")
 
-    async def execute(self, tenant_id: str = "default") -> APIGatewaySecurityState:
-        rid = f"ags-{uuid4().hex[:12]}"
-        initial = APIGatewaySecurityState(request_id=rid, tenant_id=tenant_id)
+    async def scan(
+        self,
+        tenant_id: str,
+        gateway_ids: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Execute a full API gateway security scan.
+
+        Args:
+            tenant_id: The tenant to scan.
+            gateway_ids: Optional list of gateway IDs to
+                scope the scan. Defaults to all gateways.
+
+        Returns:
+            Dict with discovered endpoints, auth analyses,
+            endpoint scans, abuse detections, policy
+            enforcements, stats, and reasoning chain.
+        """
+        request_id = uuid.uuid4().hex[:16]
+        initial_state: dict[str, Any] = {
+            "request_id": request_id,
+            "tenant_id": tenant_id,
+            "gateway_ids": gateway_ids or [],
+            "reasoning_chain": [],
+        }
+
+        logger.info(
+            "api_gateway_security_runner.scan",
+            tenant_id=tenant_id,
+            gateway_ids=gateway_ids,
+            request_id=request_id,
+        )
+        start = time.time()
+
         try:
             result = await self._app.ainvoke(
-                initial.model_dump(),
-                config={"metadata": {"agent": "api_gateway_security"}},
+                initial_state,
+            )  # type: ignore[arg-type]
+            duration_ms = (time.time() - start) * 1000
+            result["session_duration_ms"] = round(
+                duration_ms,
+                1,
             )
-            final = APIGatewaySecurityState.model_validate(result)
-            self._results[rid] = final
-            return final
-        except Exception as e:
-            err = APIGatewaySecurityState(request_id=rid, error=str(e))
-            self._results[rid] = err
-            return err
 
-    def get_result(self, rid: str) -> APIGatewaySecurityState | None:
-        return self._results.get(rid)
+            if self._repository:
+                await self._persist(result)
 
-    def list_results(self) -> list[dict[str, Any]]:
-        return [{"request_id": r, "error": s.error} for r, s in self._results.items()]
+            logger.info(
+                "api_gateway_security_runner.scan.done",
+                request_id=request_id,
+                duration_ms=round(duration_ms, 1),
+                endpoints=len(
+                    result.get("discovered_endpoints", []),
+                ),
+                abuse=len(
+                    result.get("abuse_detections", []),
+                ),
+                enforcements=len(
+                    result.get("policy_enforcements", []),
+                ),
+            )
+            return result
+        except Exception:
+            logger.exception(
+                "api_gateway_security_runner.scan.error",
+                request_id=request_id,
+            )
+            raise
+
+    async def _persist(
+        self,
+        result: dict[str, Any],
+    ) -> None:
+        """Persist scan results to the repository."""
+        if self._repository:
+            await self._repository.save_gateway_security_scan(
+                result,
+            )

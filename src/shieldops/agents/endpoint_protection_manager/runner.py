@@ -1,4 +1,4 @@
-"""Threat Feed Aggregator Agent — Entry point and lifecycle."""
+"""Endpoint Protection Manager Agent — Entry point and lifecycle."""
 
 from __future__ import annotations
 
@@ -7,40 +7,36 @@ from typing import Any
 import structlog
 
 from .graph import build_graph
-from .tools import ThreatFeedAggregatorToolkit
+from .tools import EndpointProtectionManagerToolkit
 
 logger = structlog.get_logger()
 
 
-class ThreatFeedAggregatorRunner:
-    """Runs the Threat Feed Aggregator workflow."""
+class EndpointProtectionManagerRunner:
+    """Runs the Endpoint Protection Manager workflow."""
 
     def __init__(
         self,
-        misp_client: Any | None = None,
-        taxii_client: Any | None = None,
-        otx_client: Any | None = None,
-        vt_client: Any | None = None,
+        edr_api: Any | None = None,
+        cmdb_api: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = ThreatFeedAggregatorToolkit(
-            misp_client=misp_client,
-            taxii_client=taxii_client,
-            otx_client=otx_client,
-            vt_client=vt_client,
+        self._toolkit = EndpointProtectionManagerToolkit(
+            edr_api=edr_api,
+            cmdb_api=cmdb_api,
         )
         self._repository = repository
         self._graph = build_graph(self._toolkit)
         self._app = self._graph.compile()
         self._results: dict[str, dict[str, Any]] = {}
-        logger.info("tfa_runner.init")
+        logger.info("epm_runner.init")
 
     async def execute(
         self,
         tenant_id: str = "default",
         request_id: str = "",
     ) -> dict[str, Any]:
-        """Execute threat feed aggregation."""
+        """Execute endpoint protection workflow."""
         initial_state: dict[str, Any] = {
             "request_id": request_id,
             "tenant_id": tenant_id,
@@ -48,7 +44,7 @@ class ThreatFeedAggregatorRunner:
         }
 
         logger.info(
-            "tfa_runner.execute",
+            "epm_runner.execute",
             request_id=request_id,
             tenant_id=tenant_id,
         )
@@ -61,35 +57,32 @@ class ThreatFeedAggregatorRunner:
                 await self._persist(result)
             return result
         except Exception:
-            logger.exception(
-                "tfa_runner.execute.error",
-            )
+            logger.exception("epm_runner.execute.error")
             raise
 
     def get_result(
         self,
         request_id: str,
     ) -> dict[str, Any] | None:
-        """Retrieve a cached result."""
+        """Retrieve a cached result by request ID."""
         return self._results.get(request_id)
 
-    def list_results(
-        self,
-    ) -> list[dict[str, Any]]:
+    def list_results(self) -> list[dict[str, Any]]:
         """List all cached results."""
         return [
             {
                 "request_id": rid,
-                "tenant_id": r.get(
-                    "tenant_id",
-                    "",
-                ),
-                "total_iocs": r.get(
-                    "total_iocs",
+                "tenant_id": r.get("tenant_id", ""),
+                "total_endpoints": r.get(
+                    "total_endpoints",
                     0,
                 ),
-                "high_severity": r.get(
-                    "high_severity_count",
+                "protected": r.get(
+                    "protected_count",
+                    0,
+                ),
+                "at_risk": r.get(
+                    "at_risk_count",
                     0,
                 ),
                 "error": r.get("error", ""),

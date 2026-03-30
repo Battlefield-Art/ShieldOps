@@ -514,6 +514,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/secret-rotation-manager", icon: KeyRound, label: "Secret Rotation" },
       { to: "/app/incident-playbook-engine", icon: Workflow, label: "Playbook Engine" },
       { to: "/app/cloud-storage-scanner", icon: Database, label: "Storage Scanner" },
+      { to: "/app/threat-feed-aggregator", icon: Radar, label: "Threat Feeds" },
+      { to: "/app/iam-policy-analyzer", icon: UserCheck, label: "IAM Analyzer" },
+      { to: "/app/observability-pipeline-optimizer", icon: Filter, label: "OTel Optimizer" },
+      { to: "/app/database-security-scanner", icon: Database, label: "DB Scanner" },
+      { to: "/app/endpoint-protection-manager", icon: Monitor, label: "Endpoint Protect" },
+      { to: "/app/security-awareness-engine", icon: BookOpen, label: "Awareness" },
     ],
   },
   {

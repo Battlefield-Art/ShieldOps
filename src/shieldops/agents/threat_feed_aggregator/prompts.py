@@ -1,27 +1,78 @@
-"""LLM prompt templates for the Threat Feed Aggregator."""
+"""Threat Feed Aggregator Agent — LLM prompt templates."""
 
-from __future__ import annotations
+from pydantic import BaseModel, Field
 
-SYSTEM_ANALYZE = """\
-You are a threat intelligence analyst specializing in \
-feed aggregation and indicator management.
 
-Analyze the ingested threat indicators from multiple \
-feeds (STIX/TAXII, MISP, OSINT, commercial, government, \
-ISAC). Identify duplicates, normalize formats, and score \
-relevance based on organizational context.
+class CorrelationInsight(BaseModel):
+    """Structured output from threat correlation."""
 
-Focus on:
-1. Feed reliability and freshness
-2. Indicator deduplication accuracy
-3. Relevance scoring against active threats
-4. Coverage gaps across feed sources"""
+    summary: str = Field(
+        description="Brief correlation overview",
+    )
+    campaigns: list[str] = Field(
+        description="Identified threat campaigns",
+    )
+    attack_patterns: list[str] = Field(
+        description="Detected attack patterns",
+    )
 
-SYSTEM_REPORT = """\
-You are a threat intelligence analyst generating a \
-feed aggregation report.
 
-Summarize the feed discovery, ingestion volume, \
-normalization results, deduplication stats, and \
-relevance scores. Highlight high-priority indicators \
-and recommend feed configuration changes."""
+class EnrichmentInsight(BaseModel):
+    """Structured output from IOC enrichment."""
+
+    summary: str = Field(
+        description="Enrichment summary",
+    )
+    high_risk_iocs: list[str] = Field(
+        description="Highest-risk IOCs identified",
+    )
+    threat_actors: list[str] = Field(
+        description="Associated threat actors",
+    )
+
+
+class DistributionInsight(BaseModel):
+    """Structured output for intel distribution."""
+
+    summary: str = Field(
+        description="Distribution summary",
+    )
+    priority_targets: list[str] = Field(
+        description="Priority distribution targets",
+    )
+    recommendations: list[str] = Field(
+        description="Distribution recommendations",
+    )
+
+
+class ReportInsight(BaseModel):
+    """Structured output for final report."""
+
+    summary: str = Field(
+        description="Executive threat intel summary",
+    )
+    key_findings: list[str] = Field(
+        description="Key findings for leadership",
+    )
+    next_steps: list[str] = Field(
+        description="Recommended next steps",
+    )
+
+
+SYSTEM_CORRELATE = (
+    "You are a threat intelligence analyst "
+    "correlating indicators of compromise.\n"
+    "1. Identify IOCs appearing across feeds\n"
+    "2. Map IOCs to known threat campaigns\n"
+    "3. Detect MITRE ATT&CK technique patterns\n"
+    "4. Assess threat actor attribution"
+)
+
+SYSTEM_REPORT = (
+    "You are a CTI analyst generating an "
+    "executive threat intelligence report.\n"
+    "1. Summarize total IOCs and severity\n"
+    "2. Highlight active threat campaigns\n"
+    "3. Quantify risk exposure from findings\n"
+    "4. Recommend defensive mitigations"
+)
