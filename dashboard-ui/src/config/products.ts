@@ -520,6 +520,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/database-security-scanner", icon: Database, label: "DB Scanner" },
       { to: "/app/endpoint-protection-manager", icon: Monitor, label: "Endpoint Protect" },
       { to: "/app/security-awareness-engine", icon: BookOpen, label: "Awareness" },
+      { to: "/app/vulnerability-prioritizer", icon: Target, label: "Vuln Prioritizer" },
+      { to: "/app/data-pipeline-protector", icon: Database, label: "Pipeline Protect" },
+      { to: "/app/cloud-permission-auditor", icon: Lock, label: "Perm Auditor" },
+      { to: "/app/incident-timeline-builder", icon: Activity, label: "Timeline Builder" },
+      { to: "/app/soc-metrics-analyzer", icon: BarChart3, label: "SOC Metrics" },
+      { to: "/app/automated-pentest", icon: Crosshair, label: "Auto Pentest" },
     ],
   },
   {

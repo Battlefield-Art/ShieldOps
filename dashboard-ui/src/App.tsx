@@ -500,6 +500,14 @@ const DatabaseSecurityScanner = lazy(() => import("./pages/DatabaseSecurityScann
 const EndpointProtectionManager = lazy(() => import("./pages/EndpointProtectionManager"));
 const SecurityAwarenessEngine = lazy(() => import("./pages/SecurityAwarenessEngine"));
 
+// ── Phase AI ──────────────────────────────────────────────────────
+const VulnerabilityPrioritizer = lazy(() => import("./pages/VulnerabilityPrioritizer"));
+const DataPipelineProtector = lazy(() => import("./pages/DataPipelineProtector"));
+const CloudPermissionAuditor = lazy(() => import("./pages/CloudPermissionAuditor"));
+const IncidentTimelineBuilder = lazy(() => import("./pages/IncidentTimelineBuilder"));
+const SOCMetricsAnalyzer = lazy(() => import("./pages/SOCMetricsAnalyzer"));
+const AutomatedPentest = lazy(() => import("./pages/AutomatedPentest"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -929,6 +937,12 @@ export default function App() {
               <Route path="database-security-scanner" element={<DatabaseSecurityScanner />} />
               <Route path="endpoint-protection-manager" element={<EndpointProtectionManager />} />
               <Route path="security-awareness-engine" element={<SecurityAwarenessEngine />} />
+              <Route path="vulnerability-prioritizer" element={<VulnerabilityPrioritizer />} />
+              <Route path="data-pipeline-protector" element={<DataPipelineProtector />} />
+              <Route path="cloud-permission-auditor" element={<CloudPermissionAuditor />} />
+              <Route path="incident-timeline-builder" element={<IncidentTimelineBuilder />} />
+              <Route path="soc-metrics-analyzer" element={<SOCMetricsAnalyzer />} />
+              <Route path="automated-pentest" element={<AutomatedPentest />} />
             </Route>
 
             {/* Catch-all */}
