@@ -455,6 +455,14 @@ const CapacityIntelligence = lazy(() => import("./pages/CapacityIntelligence"));
 const ServiceDependencyMapper = lazy(() => import("./pages/ServiceDependencyMapper"));
 const PerformanceBaselineEngine = lazy(() => import("./pages/PerformanceBaselineEngine"));
 
+// Phase AC: Compliance Deepening & Regulatory Automation
+const RegulatoryChangeTracker = lazy(() => import("./pages/RegulatoryChangeTracker"));
+const EvidenceAutomationEngine = lazy(() => import("./pages/EvidenceAutomationEngine"));
+const VendorComplianceAssessor = lazy(() => import("./pages/VendorComplianceAssessor"));
+const DataRetentionEnforcer = lazy(() => import("./pages/DataRetentionEnforcer"));
+const PrivacyConsentManager = lazy(() => import("./pages/PrivacyConsentManager"));
+const AuditTrailAnalyzer = lazy(() => import("./pages/AuditTrailAnalyzer"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -851,6 +859,12 @@ export default function App() {
               <Route path="capacity-intelligence" element={<CapacityIntelligence />} />
               <Route path="service-dependencies" element={<ServiceDependencyMapper />} />
               <Route path="performance-baselines" element={<PerformanceBaselineEngine />} />
+              <Route path="regulatory-changes" element={<RegulatoryChangeTracker />} />
+              <Route path="evidence-automation" element={<EvidenceAutomationEngine />} />
+              <Route path="vendor-compliance" element={<VendorComplianceAssessor />} />
+              <Route path="data-retention" element={<DataRetentionEnforcer />} />
+              <Route path="privacy-consent" element={<PrivacyConsentManager />} />
+              <Route path="audit-trail-analyzer" element={<AuditTrailAnalyzer />} />
             </Route>
 
             {/* Catch-all */}

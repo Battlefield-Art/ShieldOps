@@ -485,6 +485,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/capacity-intelligence", icon: Server, label: "Capacity Intel" },
       { to: "/app/service-dependencies", icon: Network, label: "Service Deps" },
       { to: "/app/performance-baselines", icon: BarChart3, label: "Perf Baselines" },
+      { to: "/app/regulatory-changes", icon: FileText, label: "Regulatory Changes" },
+      { to: "/app/evidence-automation", icon: FileCheck, label: "Evidence Auto" },
+      { to: "/app/vendor-compliance", icon: Shield, label: "Vendor Compliance" },
+      { to: "/app/data-retention", icon: Database, label: "Data Retention" },
+      { to: "/app/privacy-consent", icon: CheckCircle, label: "Privacy Consent" },
+      { to: "/app/audit-trail-analyzer", icon: FileSearch, label: "Audit Trail" },
     ],
   },
   {
