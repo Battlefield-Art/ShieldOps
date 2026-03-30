@@ -463,6 +463,14 @@ const DataRetentionEnforcer = lazy(() => import("./pages/DataRetentionEnforcer")
 const PrivacyConsentManager = lazy(() => import("./pages/PrivacyConsentManager"));
 const AuditTrailAnalyzer = lazy(() => import("./pages/AuditTrailAnalyzer"));
 
+// Phase AD: Incident Lifecycle & War Room Automation
+const IncidentEscalationEngine = lazy(() => import("./pages/IncidentEscalationEngine"));
+const WarRoomAutomator = lazy(() => import("./pages/WarRoomAutomator"));
+const StakeholderNotifier = lazy(() => import("./pages/StakeholderNotifier"));
+const PostmortemGenerator = lazy(() => import("./pages/PostmortemGenerator"));
+const SLAViolationDetector = lazy(() => import("./pages/SLAViolationDetector"));
+const OnCallOptimizer = lazy(() => import("./pages/OnCallOptimizer"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -865,6 +873,12 @@ export default function App() {
               <Route path="data-retention" element={<DataRetentionEnforcer />} />
               <Route path="privacy-consent" element={<PrivacyConsentManager />} />
               <Route path="audit-trail-analyzer" element={<AuditTrailAnalyzer />} />
+              <Route path="incident-escalation" element={<IncidentEscalationEngine />} />
+              <Route path="war-room-automator" element={<WarRoomAutomator />} />
+              <Route path="stakeholder-notifier" element={<StakeholderNotifier />} />
+              <Route path="postmortem-generator" element={<PostmortemGenerator />} />
+              <Route path="sla-violations" element={<SLAViolationDetector />} />
+              <Route path="oncall-optimizer" element={<OnCallOptimizer />} />
             </Route>
 
             {/* Catch-all */}

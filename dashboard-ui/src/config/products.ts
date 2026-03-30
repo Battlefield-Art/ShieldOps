@@ -491,6 +491,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/data-retention", icon: Database, label: "Data Retention" },
       { to: "/app/privacy-consent", icon: CheckCircle, label: "Privacy Consent" },
       { to: "/app/audit-trail-analyzer", icon: FileSearch, label: "Audit Trail" },
+      { to: "/app/incident-escalation", icon: Siren, label: "Escalation Engine" },
+      { to: "/app/war-room-automator", icon: Users, label: "War Room Auto" },
+      { to: "/app/stakeholder-notifier", icon: MessageSquare, label: "Stakeholder Notify" },
+      { to: "/app/postmortem-generator", icon: FileText, label: "Postmortem Gen" },
+      { to: "/app/sla-violations", icon: Gauge, label: "SLA Violations" },
+      { to: "/app/oncall-optimizer", icon: CalendarClock, label: "On-Call Optimizer" },
     ],
   },
   {
