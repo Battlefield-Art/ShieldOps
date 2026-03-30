@@ -526,6 +526,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/incident-timeline-builder", icon: Activity, label: "Timeline Builder" },
       { to: "/app/soc-metrics-analyzer", icon: BarChart3, label: "SOC Metrics" },
       { to: "/app/automated-pentest", icon: Crosshair, label: "Auto Pentest" },
+      { to: "/app/attack-surface-mapper", icon: Globe, label: "Attack Surface" },
+      { to: "/app/dns-threat-analyzer", icon: Globe, label: "DNS Threats" },
+      { to: "/app/certificate-lifecycle", icon: Lock, label: "Cert Lifecycle" },
+      { to: "/app/security-config-assessor", icon: Settings, label: "Config Assessor" },
+      { to: "/app/cloud-network-firewall", icon: Network, label: "Cloud Firewall" },
+      { to: "/app/threat-hunt-orchestrator", icon: Crosshair, label: "Threat Hunt" },
     ],
   },
   {

@@ -88,9 +88,9 @@ async def check_due_scans(
                     f"{', '.join(scan.target_assets)}\n"
                     f"Overdue: {scan.overdue_minutes}m"
                 ),
-                output_schema=(ScheduleOptimizationOutput),
+                schema=(ScheduleOptimizationOutput),
             )
-            scan.priority = result.priority
+            scan.priority = result.priority  # type: ignore[union-attr]
         except Exception:
             logger.warning("continuous_scanner.schedule_fallback")
 
@@ -171,9 +171,9 @@ async def collect_results(
         result_analysis = await llm_structured(
             system_prompt=SYSTEM_ANALYZE,
             user_prompt=("Scan results:\n" + "\n".join(summaries)),
-            output_schema=ScanResultAnalysisOutput,
+            schema=ScanResultAnalysisOutput,
         )
-        _ = result_analysis.risk_trend
+        _ = result_analysis.risk_trend  # type: ignore[union-attr]
     except Exception:
         logger.warning("continuous_scanner.analysis_fallback")
 
@@ -209,9 +209,9 @@ async def generate_report(
                 f"Completed: {len(state.completed)}\n"
                 f"Schedules: {len(state.schedules)}"
             ),
-            output_schema=ScannerReportOutput,
+            schema=ScannerReportOutput,
         )
-        summary = result.executive_summary
+        summary = result.executive_summary  # type: ignore[union-attr]
     except Exception:
         logger.warning("continuous_scanner.report_fallback")
         summary = f"Ran {state.scans_run_today} scans, coverage {state.coverage_pct}%"

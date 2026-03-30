@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import time
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -109,7 +109,7 @@ def _generate_id(prefix: str, content: str) -> str:
 
 def _now_iso() -> str:
     """Return current UTC time in ISO format."""
-    return datetime.now(datetime.UTC).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class CredentialLifecycleToolkit:
@@ -160,14 +160,14 @@ class CredentialLifecycleToolkit:
                     credential_type=cred_type,
                     owner=cred_def["owner"],
                     created_at=datetime.fromtimestamp(
-                        now - created_days * 86400, tz=datetime.UTC
+                        now - created_days * 86400, tz=UTC
                     ).isoformat(),
                     last_used=datetime.fromtimestamp(
-                        now - last_used_days * 86400, tz=datetime.UTC
+                        now - last_used_days * 86400, tz=UTC
                     ).isoformat(),
                     expires_at=datetime.fromtimestamp(
                         now + (rotation_max - created_days) * 86400,
-                        tz=datetime.UTC,
+                        tz=UTC,
                     ).isoformat(),
                     scope=cred_def["scope"],
                     risk_score=cred_def["risk_score"],
@@ -197,7 +197,7 @@ class CredentialLifecycleToolkit:
             # Calculate days since creation
             try:
                 created_dt = datetime.fromisoformat(cred.created_at)
-                age_days = (datetime.now(datetime.UTC) - created_dt).days
+                age_days = (datetime.now(UTC) - created_dt).days
             except (ValueError, TypeError):
                 age_days = 0
 
@@ -278,9 +278,9 @@ class CredentialLifecycleToolkit:
             except Exception:
                 logger.exception("credential_lifecycle.issue_jit_credential.error")
 
-        now = datetime.now(datetime.UTC)
+        now = datetime.now(UTC)
         jit_id = f"JIT-{uuid.uuid4().hex[:8].upper()}"
-        expires = datetime.fromtimestamp(now.timestamp() + ttl_seconds, tz=datetime.UTC)
+        expires = datetime.fromtimestamp(now.timestamp() + ttl_seconds, tz=UTC)
 
         return JITCredential(
             id=jit_id,

@@ -6,12 +6,12 @@ This is the main Python package for ShieldOps. All business logic lives here.
 
 ```
 shieldops/
-├── agents/          # 150 LangGraph agents (see agents/CLAUDE.md)
-├── api/             # FastAPI 749 routes + middleware (see api/CLAUDE.md)
-├── security/        # 518 security engines (see security/CLAUDE.md)
+├── agents/          # 359 LangGraph agents (see agents/CLAUDE.md)
+├── api/             # FastAPI 888 routes + middleware (see api/CLAUDE.md)
+├── security/        # 551 security engines (see security/CLAUDE.md)
 ├── observability/   # 232 OTel/telemetry engines (see observability/CLAUDE.md)
-├── analytics/       # 255 analytics engines (see analytics/CLAUDE.md)
-├── operations/      # 160 ops engines (see operations/CLAUDE.md)
+├── analytics/       # 276 analytics engines (see analytics/CLAUDE.md)
+├── operations/      # 177 ops engines (see operations/CLAUDE.md)
 ├── compliance/      # 116 compliance engines (see compliance/CLAUDE.md)
 ├── connectors/      # 18 vendor connectors (see connectors/CLAUDE.md)
 ├── sdk/             # Agent Firewall SDK (see sdk/CLAUDE.md)

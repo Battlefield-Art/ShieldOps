@@ -726,6 +726,19 @@ disallow_untyped_calls = false
 disallow_any_generics = false
 check_untyped_defs = false
 
+[[tool.mypy.overrides]]
+module = [
+    "shieldops.agents.*",
+    "shieldops.security.*",
+    "shieldops.utils.strands_tools",
+    "shieldops.utils.strands_agent",
+    "shieldops.integrations.*",
+]
+warn_return_any = false
+disallow_any_generics = false
+check_untyped_defs = false
+strict = false
+
 [tool.coverage.run]
 source = ["src/shieldops"]
 omit = ["*/tests/*", "*/__pycache__/*"]

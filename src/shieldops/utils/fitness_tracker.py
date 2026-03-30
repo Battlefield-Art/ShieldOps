@@ -342,7 +342,7 @@ class FitnessTracker:
         total_obs = sum(len(v) for v in agent_obs.values())
         profile.total_observations = total_obs
 
-        dims: dict[FitnessDimension | str, DimensionScore] = {}
+        dims: dict[str, DimensionScore] = {}
         for dim in FitnessDimension:
             obs_list = agent_obs.get(dim, [])
             if not obs_list:
@@ -381,8 +381,8 @@ class FitnessTracker:
         if dims:
             weighted_sum = 0.0
             weight_total = 0.0
-            for dim, ds in dims.items():
-                w = self._weights.get(FitnessDimension(dim), 0.1)
+            for dim_key, ds in dims.items():
+                w = self._weights.get(FitnessDimension(dim_key), 0.1)
                 # Apply decay for stale dimensions
                 age_hours = (time.time() - ds.last_updated) / 3600
                 decay = max(0.0, 1.0 - min(age_hours, 24) * DECAY_RATE_PER_HOUR)

@@ -1,12 +1,14 @@
 """LLM prompt templates and response schemas for the Data Threat Hunting Agent."""
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class HypothesisGenerationOutput(BaseModel):
     """Structured output for hypothesis generation."""
 
-    hypotheses: list[dict] = Field(
+    hypotheses: list[dict[str, Any]] = Field(
         description=(
             "List of hunt hypotheses with description, mitre_techniques, target_sources, confidence"
         ),
@@ -36,7 +38,7 @@ class IndicatorAnalysisOutput(BaseModel):
 class CorrelationOutput(BaseModel):
     """Structured output for cross-source correlation."""
 
-    findings: list[dict] = Field(
+    findings: list[dict[str, Any]] = Field(
         description=(
             "Correlated findings with verdict, severity, confidence, sources, description"
         ),

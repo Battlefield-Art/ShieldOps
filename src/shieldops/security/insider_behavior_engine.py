@@ -176,8 +176,8 @@ class InsiderBehaviorEngine:
                 user_devs[r.user_id] = user_devs.get(r.user_id, 0) + 1
         high_risk = sorted(
             user_devs,
-            key=user_devs.get,
-            reverse=True,  # type: ignore[arg-type]
+            key=lambda k: user_devs.get(k, 0),
+            reverse=True,
         )[:10]
         recs: list[str] = []
         crit = by_s.get(DeviationSeverity.CRITICAL.value, 0)

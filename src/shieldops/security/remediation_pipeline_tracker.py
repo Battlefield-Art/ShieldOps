@@ -131,7 +131,7 @@ class RemediationPipelineTracker:
         if breaches > 0:
             recs.append(f"{breaches} SLA breach(es)")
         if by_bn:
-            top = max(by_bn, key=by_bn.get)
+            top = max(by_bn, key=lambda k: by_bn.get(k, 0))
             recs.append(f"Top bottleneck: {top}")
         if not recs:
             recs.append("Pipeline flowing smoothly")

@@ -1,6 +1,6 @@
 # dashboard-ui/ — React Dashboard
 
-React + TypeScript + Tailwind CSS dashboard with 158 pages.
+React + TypeScript + Tailwind CSS dashboard with 365 pages.
 
 ## Tech Stack
 - React 18 + TypeScript
@@ -22,7 +22,7 @@ dashboard-ui/
 │   ├── App.tsx            # Routes + lazy loading
 │   ├── config/
 │   │   └── products.ts    # Sidebar nav configuration
-│   ├── pages/             # 120+ page components
+│   ├── pages/             # 365 page components
 │   │   ├── AgenticMDR.tsx
 │   │   ├── SituationManager.tsx
 │   │   └── ...

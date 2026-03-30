@@ -266,7 +266,8 @@ class CostAnomalyToolkit:
 
         if self._llm_cost_tracker is not None:
             try:
-                return await self._llm_cost_tracker.get_breakdown(tenant_id)
+                result: dict[str, Any] = await self._llm_cost_tracker.get_breakdown(tenant_id)
+                return result
             except Exception:
                 logger.warning(
                     "cost_anomaly.llm_tracker_error",

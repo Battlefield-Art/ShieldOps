@@ -560,46 +560,46 @@ class CodeSecurityScannerToolkit:
                 )
             )
 
-        for f in deps:
-            score = min(f.cvss_score / 10.0, 1.0)
+        for dep in deps:
+            score = min(dep.cvss_score / 10.0, 1.0)
             results.append(
                 PrioritizedFinding(
                     id=str(uuid.uuid4())[:8],
-                    source_finding_id=f.id,
+                    source_finding_id=dep.id,
                     finding_type="dependency",
-                    severity=f.severity,
+                    severity=dep.severity,
                     priority_score=score,
-                    title=f"{f.package_name} {f.cve_id}",
-                    description=f.description,
+                    title=f"{dep.package_name} {dep.cve_id}",
+                    description=dep.description,
                     file_path="",
-                    remediation=(f"Upgrade {f.package_name} to {f.fixed_version}"),
-                    is_exploitable=f.cvss_score >= 7.0,
-                    tags=[f.ecosystem, f.cve_id],
+                    remediation=(f"Upgrade {dep.package_name} to {dep.fixed_version}"),
+                    is_exploitable=dep.cvss_score >= 7.0,
+                    tags=[dep.ecosystem, dep.cve_id],
                 )
             )
 
-        for f in code:
-            score = sev_scores.get(f.severity, 0.5)
-            if f.is_ai_specific:
+        for cf in code:
+            score = sev_scores.get(cf.severity, 0.5)
+            if cf.is_ai_specific:
                 score = min(score + 0.15, 1.0)
             results.append(
                 PrioritizedFinding(
                     id=str(uuid.uuid4())[:8],
-                    source_finding_id=f.id,
+                    source_finding_id=cf.id,
                     finding_type="code",
-                    severity=f.severity,
+                    severity=cf.severity,
                     priority_score=score,
-                    title=f.title,
-                    description=f.description,
-                    file_path=f.file_path,
+                    title=cf.title,
+                    description=cf.description,
+                    file_path=cf.file_path,
                     remediation="",
-                    is_exploitable=f.severity
+                    is_exploitable=cf.severity
                     in (
                         FindingSeverity.CRITICAL,
                         FindingSeverity.HIGH,
                     ),
-                    is_ai_specific=f.is_ai_specific,
-                    tags=[f.cwe_id, f.category],
+                    is_ai_specific=cf.is_ai_specific,
+                    tags=[cf.cwe_id, cf.category],
                 )
             )
 

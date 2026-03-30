@@ -188,18 +188,19 @@ class CloudIdentityFederationToolkit:
                 tpl = random.choice(  # noqa: S311
                     _SSO_MISCONFIG_TYPES
                 )
+                severity = FederationRisk(tpl["severity"])
                 base_risk = {
                     FederationRisk.CRITICAL: 90.0,
                     FederationRisk.HIGH: 70.0,
                     FederationRisk.MEDIUM: 50.0,
-                }.get(tpl["severity"], 50.0)
+                }.get(severity, 50.0)
 
                 misconfigs.append(
                     SsoMisconfiguration(
                         id=str(uuid.uuid4())[:8],
                         federation_id=mapping.id,
                         misconfig_type=tpl["type"],
-                        severity=tpl["severity"],
+                        severity=severity,
                         description=tpl["desc"],
                         affected_users=random.randint(  # noqa: S311
                             5, 50

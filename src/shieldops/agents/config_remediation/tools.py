@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -84,8 +84,8 @@ class ConfigRemediationToolkit:
         for scan in scans:
             cfg = scan.config_snapshot
             if scan.resource_type == "security_group":
-                ingress = cfg.get("ingress", [])
-                for rule in ingress:  # type: ignore[union-attr]
+                ingress = cast(list[Any], cfg.get("ingress", []))
+                for rule in ingress:
                     if isinstance(rule, dict):
                         cidr = rule.get("cidr", "")
                         if cidr == "0.0.0.0/0":

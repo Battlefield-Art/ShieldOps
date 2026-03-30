@@ -33,7 +33,7 @@ def _has_due_scans(
 
 def build_graph(
     toolkit: object | None = None,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Build the Continuous Scanner StateGraph.
 
     Workflow:
@@ -90,6 +90,6 @@ def build_graph(
 
 def create_continuous_scanner_graph(
     **clients: object,
-) -> StateGraph:
+) -> StateGraph:  # type: ignore[type-arg]
     """Factory to create the Continuous Scanner graph."""
     return build_graph()

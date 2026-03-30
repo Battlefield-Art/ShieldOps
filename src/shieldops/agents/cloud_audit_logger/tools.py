@@ -20,7 +20,7 @@ from .models import (
 
 logger = structlog.get_logger()
 
-_SUSPICIOUS_EVENTS: dict[str, dict[str, Any]] = {
+_SUSPICIOUS_EVENTS: dict[str, list[dict[str, Any]]] = {
     "cloudtrail": [
         {
             "event_name": "DeleteTrail",

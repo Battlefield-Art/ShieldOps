@@ -241,7 +241,7 @@ class RansomwareFingerprintEngine:
                 svc_counts[r.service] = svc_counts.get(r.service, 0) + 1
         results = [{"service": svc, "early_stage_count": cnt} for svc, cnt in svc_counts.items()]
         results.sort(
-            key=lambda x: x["early_stage_count"],
+            key=lambda x: int(str(x["early_stage_count"])),
             reverse=True,
         )
         return results

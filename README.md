@@ -25,12 +25,12 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 
 | Metric | Count |
 |--------|-------|
-| Autonomous LangGraph agents | **150** |
-| Security & analytics engines | **1,709** |
-| Dashboard pages | **158** |
-| API endpoints | **749** |
+| Autonomous LangGraph agents | **359** |
+| Security & analytics engines | **1,780** |
+| Dashboard pages | **365** |
+| API route files | **888** |
 | Cloud/vendor connectors | **18** |
-| Test files | **1,961** |
+| Test files | **2,214** |
 | OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
 
 ## Product Modules
@@ -47,6 +47,9 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 | **Cross-Vendor Correlator** | Unified signal correlation across vendors | Multi-vendor normalization to OCSF, kill chain mapping |
 | **Agent Memory Store** | Persistent episodic memory for agents | Cross-agent learning, FP pattern recall |
 | **Reflection Engine** | Agent self-evaluation & improvement | "Did my action work?" threshold auto-tuning |
+| **Agent Evolution** | Self-evolving agent fleet | Fitness tracking, prompt A/B testing, cross-agent learning |
+| **Cloud Cost Optimizer** | Multi-cloud billing analysis | Savings identification, rightsizing, waste detection |
+| **Infrastructure Drift Detector** | IaC baseline drift detection | Compare actual vs. declared state, auto-remediate |
 
 ## Capabilities
 
@@ -142,10 +145,10 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   Dashboard (React · 158 pages)              │
+│                   Dashboard (React · 365 pages)              │
 │    Situations Queue · Agent Monitor · SOC Assistant · DLP     │
 ├──────────────────────────────────────────────────────────────┤
-│                   API Gateway (FastAPI · 749 endpoints)       │
+│                   API Gateway (FastAPI · 888 routes)          │
 │         JWT Auth · Rate Limiting · Tenant Isolation           │
 ├─────────────┬──────────────┬──────────────┬──────────────────┤
 │ Agent       │  SOC Brain   │ MCP Security │ AI Runtime       │
@@ -156,7 +159,7 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 │                   Policy Engine (OPA · Rego)                  │
 │        HIPAA · SOC 2 · PCI-DSS · GDPR · FedRAMP             │
 ├──────────────────────────────────────────────────────────────┤
-│              Agent Orchestration (LangGraph · 150 agents)     │
+│              Agent Orchestration (LangGraph · 359 agents)     │
 │   Supervisor · Memory · Reflection · Cross-Vendor Correlation │
 ├──────────────────────────────────────────────────────────────┤
 │            Observability Ingestion (OpenTelemetry)            │
@@ -221,20 +224,20 @@ cd dashboard-ui && npm run dev            # Dashboard
 ShieldOps/
 ├── CLAUDE.md                    # Root project instructions
 ├── src/shieldops/
-│   ├── agents/                  # 150 LangGraph agents
-│   ├── api/                     # FastAPI (749 endpoints)
-│   ├── security/                # 518 security engines
-│   ├── analytics/               # 255 analytics engines
+│   ├── agents/                  # 359 LangGraph agents
+│   ├── api/                     # FastAPI (888 routes)
+│   ├── security/                # 551 security engines
+│   ├── analytics/               # 276 analytics engines
 │   ├── observability/           # 232 telemetry engines
-│   ├── operations/              # 160 operations engines
+│   ├── operations/              # 177 operations engines
 │   ├── compliance/              # 116 compliance engines
 │   ├── connectors/              # 18 vendor connectors
 │   ├── sdk/                     # Agent Firewall SDK
 │   ├── db/                      # Database (SQLAlchemy + Alembic)
 │   ├── policy/                  # OPA policy engine
-│   └── utils/                   # LLM integration, routing
-├── dashboard-ui/                # React dashboard (158 pages)
-├── tests/                       # 1,961 test files
+│   └── utils/                   # LLM, routing, self-evolution
+├── dashboard-ui/                # React dashboard (365 pages)
+├── tests/                       # 2,214 test files
 ├── infrastructure/              # Docker, K8s, Terraform, CDK, Helm
 └── docs/                        # Documentation
 ```
@@ -243,7 +246,7 @@ ShieldOps/
 
 | Document | Description |
 |----------|-------------|
-| [CLAUDE.md](CLAUDE.md) | Root project instructions (+ 28 modular CLAUDE.md files) |
+| [CLAUDE.md](CLAUDE.md) | Root project instructions (+ 29 modular CLAUDE.md files) |
 | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) | AWS, GCP, Azure, On-Prem deployment |
 | [Production Runbook](docs/PRODUCTION_LAUNCH_RUNBOOK.md) | 8-phase launch guide |
 | [Task Tracker](docs/tasks.md) | Development phase history |

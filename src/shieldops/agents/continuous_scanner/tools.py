@@ -46,7 +46,8 @@ class ContinuousScannerToolkit:
         )
         if self._schedule_store is not None:
             try:
-                return await self._schedule_store.list(tenant_id)
+                schedules: list[ScanSchedule] = await self._schedule_store.list(tenant_id)
+                return schedules
             except Exception:
                 logger.warning("continuous_scanner.load_fallback")
         return []

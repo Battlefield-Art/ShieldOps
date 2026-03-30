@@ -277,7 +277,7 @@ class ResponseApprovalWorkflow:
             if r.status == ApprovalStatus.REJECTED and r.rejection_reason:
                 reasons[r.rejection_reason] = reasons.get(r.rejection_reason, 0) + 1
         results = [{"reason": k, "count": v} for k, v in reasons.items()]
-        results.sort(key=lambda x: x["count"], reverse=True)
+        results.sort(key=lambda x: int(str(x["count"])), reverse=True)
         return results
 
     def get_tier_distribution(self) -> dict[str, int]:

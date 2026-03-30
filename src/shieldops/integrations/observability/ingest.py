@@ -364,7 +364,7 @@ class ObservabilityIngestClient:
                 resp = await client.post(url, json=payload, headers=headers)
                 if resp.status_code == 200:
                     data = resp.json()
-                    return data.get("hits", [])
+                    return data.get("hits", [])  # type: ignore[no-any-return]
                 logger.warning("openobserve_query_error", status=resp.status_code)
         except ImportError:
             logger.error("httpx_not_installed")
@@ -396,10 +396,10 @@ class ObservabilityIngestClient:
             import httpx
 
             async with httpx.AsyncClient(timeout=30.0) as client:
-                resp = await client.get(url, params=params, headers=headers)
+                resp = await client.get(url, params=params, headers=headers)  # type: ignore[arg-type]
                 if resp.status_code == 200:
                     data = resp.json()
-                    return data.get("data", {}).get("result", [])
+                    return data.get("data", {}).get("result", [])  # type: ignore[no-any-return]
         except ImportError:
             logger.error("httpx_not_installed")
         except Exception as exc:

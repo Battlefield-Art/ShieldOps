@@ -209,9 +209,10 @@ class ComplianceGapAnalyzerToolkit:
         )
         if self._posture_backend is not None:
             try:
-                return await self._posture_backend.scan(
+                posture_result: dict[str, Any] = await self._posture_backend.scan(
                     domain=domain,
-                )  # type: ignore[no-any-return]
+                )
+                return posture_result
             except Exception:
                 logger.exception(
                     "cga.scan_posture.error",
@@ -254,9 +255,10 @@ class ComplianceGapAnalyzerToolkit:
         )
         if self._regulatory_backend is not None:
             try:
-                return await self._regulatory_backend.fetch(
+                requirements: list[dict[str, Any]] = await self._regulatory_backend.fetch(
                     domain=domain,
-                )  # type: ignore[no-any-return]
+                )
+                return requirements
             except Exception:
                 logger.exception(
                     "cga.fetch_requirements.error",

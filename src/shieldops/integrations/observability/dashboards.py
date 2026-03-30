@@ -33,7 +33,7 @@ def _panel(
             ],
             "show_legends": True,
         },
-        "layout": position or {"x": 0, "y": 0, "w": 6, "h": 4, "i": "0"},
+        "layout": position or {"x": 0, "y": 0, "w": 6, "h": 4, "i": 0},
     }
 
 
@@ -56,7 +56,7 @@ def agent_overview_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="bar",
                 stream="agent_logs",
-                position={"x": 0, "y": 0, "w": 6, "h": 4, "i": "1"},
+                position={"x": 0, "y": 0, "w": 6, "h": 4, "i": 1},
             ),
             _panel(
                 title="Agent Success Rate (%)",
@@ -69,7 +69,7 @@ def agent_overview_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="table",
                 stream="agent_logs",
-                position={"x": 6, "y": 0, "w": 6, "h": 4, "i": "2"},
+                position={"x": 6, "y": 0, "w": 6, "h": 4, "i": 2},
             ),
             _panel(
                 title="Agent P50 / P95 Latency (ms)",
@@ -82,7 +82,7 @@ def agent_overview_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="bar",
                 stream="agent_logs",
-                position={"x": 0, "y": 4, "w": 6, "h": 4, "i": "3"},
+                position={"x": 0, "y": 4, "w": 6, "h": 4, "i": 3},
             ),
             _panel(
                 title="Active Agent Traces",
@@ -94,7 +94,7 @@ def agent_overview_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="table",
                 stream="agent_traces",
-                position={"x": 6, "y": 4, "w": 6, "h": 4, "i": "4"},
+                position={"x": 6, "y": 4, "w": 6, "h": 4, "i": 4},
             ),
             _panel(
                 title="Node Execution Heatmap",
@@ -106,7 +106,7 @@ def agent_overview_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="heatmap",
                 stream="agent_logs",
-                position={"x": 0, "y": 8, "w": 12, "h": 4, "i": "5"},
+                position={"x": 0, "y": 8, "w": 12, "h": 4, "i": 5},
             ),
             _panel(
                 title="Agent Confidence Distribution",
@@ -118,7 +118,7 @@ def agent_overview_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="bar",
                 stream="agent_logs",
-                position={"x": 0, "y": 12, "w": 12, "h": 4, "i": "6"},
+                position={"x": 0, "y": 12, "w": 12, "h": 4, "i": 6},
             ),
         ],
         "variables": [],
@@ -145,7 +145,7 @@ def llm_cost_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="bar",
                 stream="llm_logs",
-                position={"x": 0, "y": 0, "w": 6, "h": 4, "i": "1"},
+                position={"x": 0, "y": 0, "w": 6, "h": 4, "i": 1},
             ),
             _panel(
                 title="Token Usage by Agent",
@@ -157,7 +157,7 @@ def llm_cost_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="bar",
                 stream="llm_logs",
-                position={"x": 6, "y": 0, "w": 6, "h": 4, "i": "2"},
+                position={"x": 6, "y": 0, "w": 6, "h": 4, "i": 2},
             ),
             _panel(
                 title="LLM Latency P50/P95 by Model",
@@ -169,7 +169,7 @@ def llm_cost_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="line",
                 stream="llm_logs",
-                position={"x": 0, "y": 4, "w": 6, "h": 4, "i": "3"},
+                position={"x": 0, "y": 4, "w": 6, "h": 4, "i": 3},
             ),
             _panel(
                 title="LLM Calls Over Time",
@@ -180,7 +180,7 @@ def llm_cost_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="line",
                 stream="llm_logs",
-                position={"x": 6, "y": 4, "w": 6, "h": 4, "i": "4"},
+                position={"x": 6, "y": 4, "w": 6, "h": 4, "i": 4},
             ),
             _panel(
                 title="Estimated Cost by Agent (USD)",
@@ -193,7 +193,7 @@ def llm_cost_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="table",
                 stream="llm_logs",
-                position={"x": 0, "y": 8, "w": 12, "h": 4, "i": "5"},
+                position={"x": 0, "y": 8, "w": 12, "h": 4, "i": 5},
             ),
         ],
         "variables": [],
@@ -223,7 +223,7 @@ def incident_timeline_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="pie",
                 stream="agent_logs",
-                position={"x": 0, "y": 0, "w": 4, "h": 4, "i": "1"},
+                position={"x": 0, "y": 0, "w": 4, "h": 4, "i": 1},
             ),
             _panel(
                 title="Mean Time to Detect (MTTD)",
@@ -234,7 +234,7 @@ def incident_timeline_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="metric",
                 stream="agent_logs",
-                position={"x": 4, "y": 0, "w": 4, "h": 4, "i": "2"},
+                position={"x": 4, "y": 0, "w": 4, "h": 4, "i": 2},
             ),
             _panel(
                 title="Mean Time to Remediate (MTTR)",
@@ -246,7 +246,7 @@ def incident_timeline_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="metric",
                 stream="agent_logs",
-                position={"x": 8, "y": 0, "w": 4, "h": 4, "i": "3"},
+                position={"x": 8, "y": 0, "w": 4, "h": 4, "i": 3},
             ),
             _panel(
                 title="Incident Timeline (Recent 24h)",
@@ -259,7 +259,7 @@ def incident_timeline_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="table",
                 stream="agent_logs",
-                position={"x": 0, "y": 4, "w": 12, "h": 6, "i": "4"},
+                position={"x": 0, "y": 4, "w": 12, "h": 6, "i": 4},
             ),
             _panel(
                 title="Remediation Confidence Distribution",
@@ -272,7 +272,7 @@ def incident_timeline_dashboard() -> dict[str, Any]:
                 ),
                 panel_type="histogram",
                 stream="agent_logs",
-                position={"x": 0, "y": 10, "w": 12, "h": 4, "i": "5"},
+                position={"x": 0, "y": 10, "w": 12, "h": 4, "i": 5},
             ),
         ],
         "variables": [],

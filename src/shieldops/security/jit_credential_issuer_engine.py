@@ -286,8 +286,8 @@ class JITCredentialIssuerEngine:
             requester_counts[r.requester] = requester_counts.get(r.requester, 0) + 1
         top_requesters = sorted(
             requester_counts,
-            key=requester_counts.get,
-            reverse=True,  # type: ignore[arg-type]
+            key=lambda k: requester_counts.get(k, 0),
+            reverse=True,
         )[:5]
         recs: list[str] = []
         long_lived = self.identify_long_lived_credentials()

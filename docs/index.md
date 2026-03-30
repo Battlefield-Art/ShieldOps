@@ -1,12 +1,13 @@
 # ShieldOps
 
-**AI-Powered Autonomous SRE Platform**
+**The Security Control Plane for AI Agents**
 
-> Your infrastructure never sleeps. Neither should its intelligence.
+> AI agents are bypassing traditional security. ShieldOps intercepts, governs, and defends.
 
-ShieldOps deploys autonomous AI agents that investigate incidents, execute remediations,
-enforce security policies, and learn from outcomes -- across multi-cloud (AWS/GCP/Azure)
-and on-premise Linux environments.
+ShieldOps is an AI Security Control Plane that governs, monitors, and responds to AI agent
+activity across enterprise infrastructure. The platform deploys 359 autonomous LangGraph agents
+for runtime interception, non-human identity governance, MCP ecosystem security, SOC automation,
+and self-evolving defense -- across multi-cloud (AWS/GCP/Azure) and on-premise environments.
 
 Unlike existing tools that only *analyze*, ShieldOps agents *act* -- with policy-gated
 safety, full audit trails, and one-click rollback.
@@ -15,12 +16,14 @@ safety, full audit trails, and one-click rollback.
 
 ## Key Features
 
-- **Autonomous Investigation** -- Root cause analysis in minutes, not hours
+- **AI Agent Firewall** -- Runtime interception of every AI agent tool call
+- **Non-Human Identity Governance** -- Discover and govern NHIs, shadow AI, service accounts
+- **MCP Ecosystem Security** -- God Key detection, supply chain scanning, zero-trust
+- **Autonomous SOC** -- Cross-vendor AI-driven detection, triage, and response
+- **Self-Evolving Agents** -- Fitness tracking, prompt A/B testing, cross-agent learning
 - **Policy-Gated Remediation** -- Every action evaluated by OPA before execution
-- **Multi-Cloud Support** -- AWS, GCP, Azure, Kubernetes, and bare-metal Linux
+- **Multi-Cloud Support** -- AWS, GCP, Azure, Kubernetes, 17 vendor connectors
 - **Defense in Depth** -- Five-layer safety model with snapshot and rollback
-- **Continuous Security** -- CVE patching, credential rotation, compliance monitoring
-- **Self-Improving** -- Learning agent refines playbooks from historical outcomes
 
 ## How It Works
 

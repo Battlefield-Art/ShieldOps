@@ -1,5 +1,5 @@
 site_name: ShieldOps Documentation
-site_description: AI-Powered Autonomous SRE Platform
+site_description: The Security Control Plane for AI Agents
 site_url: https://docs.shieldops.io
 
 theme:
@@ -43,27 +43,10 @@ nav:
       - Investigation Agent: agents/investigation.md
       - Remediation Agent: agents/remediation.md
       - Incident Commander: agents/incident-commander.md
-      - Auto Remediation Agent: agents/auto-remediation.md
-      - Prediction Agent: agents/prediction.md
-      - Cost Agent: agents/cost.md
     - Security:
       - Security Agent: agents/security.md
       - Threat Intel Agent: agents/threat-intel.md
       - Risk Scoring Agent: agents/risk-scoring.md
-      - SOC Analyst Agent: agents/soc-analyst.md
-      - Threat Hunter Agent: agents/threat-hunter.md
-      - Forensics Agent: agents/forensics.md
-      - Deception Agent: agents/deception.md
-      - Incident Response Agent: agents/incident-response.md
-      - Attack Surface Agent: agents/attack-surface.md
-      - Zero Trust Agent: agents/zero-trust.md
-      - ITDR Agent: agents/itdr.md
-      - XDR Agent: agents/xdr.md
-      - Autonomous Defense Agent: agents/autonomous-defense.md
-      - Security Automation Agent: agents/security-automation.md
-      - SOAR Orchestration Agent: agents/soar-orchestration.md
-      - Threat Automation Agent: agents/threat-automation.md
-      - Security Convergence Agent: agents/security-convergence.md
       - Compliance Auditor: agents/compliance-auditor.md
     - AI Security:
       - Agent Firewall: agents/agent-firewall.md
@@ -73,34 +56,33 @@ nav:
     - Observability:
       - OTel Pipeline Agent: agents/otel-pipeline.md
       - Telemetry Optimizer Agent: agents/telemetry-optimizer.md
-      - Observability Intelligence Agent: agents/observability-intelligence.md
     - Automation:
       - Learning Agent: agents/learning.md
-      - Auto Learning Agent: agents/auto-learning.md
       - Supervisor Agent: agents/supervisor.md
       - ChatOps Agent: agents/chatops.md
       - Automation Orchestrator Agent: agents/automation-orchestrator.md
-      - Intelligent Automation Agent: agents/intelligent-automation.md
-      - GitOps Agent: agents/gitops.md
     - Intelligence:
-      - ML Governance Agent: agents/ml-governance.md
-      - FinOps Intelligence Agent: agents/finops-intelligence.md
-      - Platform Intelligence Agent: agents/platform-intelligence.md
       - Enterprise Integration Agent: agents/enterprise-integration.md
+    - Detection & Response:
+      - Agentic MDR: agents/agentic-mdr.md
+      - Autonomous XDR: agents/autonomous-xdr.md
+      - Autonomous SOC: agents/autonomous-soc.md
+      - Breakout Defender: agents/breakout-defender.md
+    - Data Protection:
+      - Data Loss Prevention: agents/data-loss-prevention.md
+      - Cyber Recovery: agents/cyber-recovery.md
+      - Ransomware Forensics: agents/ransomware-forensics.md
+    - Self-Evolution:
+      - Agent Evolution: agents/evolution.md
+      - Reflection Engine: agents/reflection-engine.md
+      - Agent Memory Store: agents/agent-memory-store.md
   - Observability:
     - OTel Pipeline Management: agents/otel-pipeline.md
     - Telemetry Optimization: agents/telemetry-optimizer.md
-    - Collector Autoscaling: observability/collector-autoscaling.md
-    - Trace Sampling: observability/trace-sampling.md
-    - Pipeline Health: observability/pipeline-health.md
-    - Cost Attribution: observability/cost-attribution.md
   - Security Intelligence:
     - Threat Intelligence: agents/threat-intel.md
     - Risk-Based Alerting: agents/risk-scoring.md
-    - MITRE ATT&CK Mapping: security/mitre-mapping.md
     - Compliance Automation: agents/compliance-auditor.md
-    - IOC Lifecycle: security/ioc-lifecycle.md
-    - Threat Hunting: security/threat-hunting.md
   - API Reference:
     - Authentication: api/authentication.md
     - Investigations: api/investigations.md

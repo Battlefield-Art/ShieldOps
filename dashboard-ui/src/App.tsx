@@ -508,6 +508,14 @@ const IncidentTimelineBuilder = lazy(() => import("./pages/IncidentTimelineBuild
 const SOCMetricsAnalyzer = lazy(() => import("./pages/SOCMetricsAnalyzer"));
 const AutomatedPentest = lazy(() => import("./pages/AutomatedPentest"));
 
+// ── Phase AJ ──────────────────────────────────────────────────────
+const AttackSurfaceMapper = lazy(() => import("./pages/AttackSurfaceMapper"));
+const DNSThreatAnalyzer = lazy(() => import("./pages/DNSThreatAnalyzer"));
+const CertificateLifecycleManager = lazy(() => import("./pages/CertificateLifecycleManager"));
+const SecurityConfigAssessor = lazy(() => import("./pages/SecurityConfigAssessor"));
+const CloudNetworkFirewall = lazy(() => import("./pages/CloudNetworkFirewall"));
+const ThreatHuntOrchestrator = lazy(() => import("./pages/ThreatHuntOrchestrator"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -943,6 +951,12 @@ export default function App() {
               <Route path="incident-timeline-builder" element={<IncidentTimelineBuilder />} />
               <Route path="soc-metrics-analyzer" element={<SOCMetricsAnalyzer />} />
               <Route path="automated-pentest" element={<AutomatedPentest />} />
+              <Route path="attack-surface-mapper" element={<AttackSurfaceMapper />} />
+              <Route path="dns-threat-analyzer" element={<DNSThreatAnalyzer />} />
+              <Route path="certificate-lifecycle" element={<CertificateLifecycleManager />} />
+              <Route path="security-config-assessor" element={<SecurityConfigAssessor />} />
+              <Route path="cloud-network-firewall" element={<CloudNetworkFirewall />} />
+              <Route path="threat-hunt-orchestrator" element={<ThreatHuntOrchestrator />} />
             </Route>
 
             {/* Catch-all */}

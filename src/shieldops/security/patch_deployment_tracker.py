@@ -117,7 +117,7 @@ class PatchDeploymentTracker:
         for r in rollbacks:
             if r.rollback_reason:
                 reasons[r.rollback_reason] = reasons.get(r.rollback_reason, 0) + 1
-        common = max(reasons, key=reasons.get) if reasons else ""
+        common = max(reasons, key=lambda k: reasons.get(k, 0)) if reasons else ""
         rate = round(len(successes) / len(recs) * 100, 2)
         return PatchDeploymentAnalysis(
             patch_id=patch_id,
