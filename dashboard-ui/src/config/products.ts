@@ -78,6 +78,7 @@ import {
   Heart,
   ClipboardList,
   Radio,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 
@@ -545,6 +546,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/data-exfiltration-monitor", icon: Eye, label: "Exfil Monitor" },
       { to: "/app/browser-threat-protector", icon: Globe, label: "Browser Protect" },
       { to: "/app/identity-threat-detector", icon: Fingerprint, label: "Identity ITDR" },
+      { to: "/app/security-orchestration-hub", icon: Workflow, label: "Security Orch Hub" },
+      { to: "/app/privilege-access-monitor", icon: KeyRound, label: "PAM Monitor" },
+      { to: "/app/vulnerability-correlation-engine", icon: Layers, label: "Vuln Correlation" },
+      { to: "/app/cloud-workload-inspector", icon: Cloud, label: "Workload Inspector" },
+      { to: "/app/log-anomaly-detector", icon: Search, label: "Log Anomalies" },
+      { to: "/app/mobile-threat-defender", icon: Smartphone, label: "Mobile Defense" },
     ],
   },
   {

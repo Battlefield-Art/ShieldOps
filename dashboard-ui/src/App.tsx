@@ -532,6 +532,14 @@ const DataExfiltrationMonitor = lazy(() => import("./pages/DataExfiltrationMonit
 const BrowserThreatProtector = lazy(() => import("./pages/BrowserThreatProtector"));
 const IdentityThreatDetector = lazy(() => import("./pages/IdentityThreatDetector"));
 
+// ── Phase AM ──────────────────────────────────────────────────────
+const SecurityOrchestrationHub = lazy(() => import("./pages/SecurityOrchestrationHub"));
+const PrivilegeAccessMonitor = lazy(() => import("./pages/PrivilegeAccessMonitor"));
+const VulnerabilityCorrelationEngine = lazy(() => import("./pages/VulnerabilityCorrelationEngine"));
+const CloudWorkloadInspector = lazy(() => import("./pages/CloudWorkloadInspector"));
+const LogAnomalyDetector = lazy(() => import("./pages/LogAnomalyDetector"));
+const MobileThreatDefender = lazy(() => import("./pages/MobileThreatDefender"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -985,6 +993,12 @@ export default function App() {
               <Route path="data-exfiltration-monitor" element={<DataExfiltrationMonitor />} />
               <Route path="browser-threat-protector" element={<BrowserThreatProtector />} />
               <Route path="identity-threat-detector" element={<IdentityThreatDetector />} />
+              <Route path="security-orchestration-hub" element={<SecurityOrchestrationHub />} />
+              <Route path="privilege-access-monitor" element={<PrivilegeAccessMonitor />} />
+              <Route path="vulnerability-correlation-engine" element={<VulnerabilityCorrelationEngine />} />
+              <Route path="cloud-workload-inspector" element={<CloudWorkloadInspector />} />
+              <Route path="log-anomaly-detector" element={<LogAnomalyDetector />} />
+              <Route path="mobile-threat-defender" element={<MobileThreatDefender />} />
             </Route>
 
             {/* Catch-all */}
