@@ -77,6 +77,7 @@ import {
   Dna,
   Heart,
   ClipboardList,
+  Radio,
   type LucideIcon,
 } from "lucide-react";
 
@@ -532,6 +533,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/security-config-assessor", icon: Settings, label: "Config Assessor" },
       { to: "/app/cloud-network-firewall", icon: Network, label: "Cloud Firewall" },
       { to: "/app/threat-hunt-orchestrator", icon: Crosshair, label: "Threat Hunt" },
+      { to: "/app/email-security-gateway", icon: Mail, label: "Email Security" },
+      { to: "/app/firmware-security-scanner", icon: Cpu, label: "Firmware Scanner" },
+      { to: "/app/threat-intel-fusion", icon: Radio, label: "Threat Intel Fusion" },
+      { to: "/app/api-abuse-detector", icon: ShieldAlert, label: "API Abuse" },
+      { to: "/app/cloud-secret-vault", icon: KeyRound, label: "Secret Vault" },
+      { to: "/app/compliance-evidence-collector", icon: ClipboardCheck, label: "Evidence Collector" },
     ],
   },
   {

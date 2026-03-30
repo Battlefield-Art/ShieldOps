@@ -515,6 +515,14 @@ const CertificateLifecycleManager = lazy(() => import("./pages/CertificateLifecy
 const SecurityConfigAssessor = lazy(() => import("./pages/SecurityConfigAssessor"));
 const CloudNetworkFirewall = lazy(() => import("./pages/CloudNetworkFirewall"));
 const ThreatHuntOrchestrator = lazy(() => import("./pages/ThreatHuntOrchestrator"));
+const ApiAbuseDetector = lazy(() => import("./pages/ApiAbuseDetector"));
+const CloudSecretVault = lazy(() => import("./pages/CloudSecretVault"));
+const ComplianceEvidenceCollector = lazy(() => import("./pages/ComplianceEvidenceCollector"));
+
+// ── Phase AK ──────────────────────────────────────────────────────
+const EmailSecurityGateway = lazy(() => import("./pages/EmailSecurityGateway"));
+const FirmwareSecurityScanner = lazy(() => import("./pages/FirmwareSecurityScanner"));
+const ThreatIntelligenceFusion = lazy(() => import("./pages/ThreatIntelligenceFusion"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -957,6 +965,12 @@ export default function App() {
               <Route path="security-config-assessor" element={<SecurityConfigAssessor />} />
               <Route path="cloud-network-firewall" element={<CloudNetworkFirewall />} />
               <Route path="threat-hunt-orchestrator" element={<ThreatHuntOrchestrator />} />
+              <Route path="api-abuse-detector" element={<ApiAbuseDetector />} />
+              <Route path="cloud-secret-vault" element={<CloudSecretVault />} />
+              <Route path="compliance-evidence-collector" element={<ComplianceEvidenceCollector />} />
+              <Route path="email-security-gateway" element={<EmailSecurityGateway />} />
+              <Route path="firmware-security-scanner" element={<FirmwareSecurityScanner />} />
+              <Route path="threat-intel-fusion" element={<ThreatIntelligenceFusion />} />
             </Route>
 
             {/* Catch-all */}
