@@ -473,6 +473,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/risk-quantification", icon: Scale, label: "Risk Quantification" },
       { to: "/app/awareness-trainer", icon: Users, label: "Awareness Training" },
       { to: "/app/threat-hunt-automation", icon: Crosshair, label: "Hunt Automation" },
+      { to: "/app/api-gateway-security", icon: Globe, label: "API Gateway" },
+      { to: "/app/session-manager", icon: Key, label: "Session Manager" },
+      { to: "/app/rate-limit-enforcer", icon: Gauge, label: "Rate Limiter" },
+      { to: "/app/health-orchestrator", icon: HeartPulse, label: "Health Orchestrator" },
+      { to: "/app/config-auditor", icon: Settings, label: "Config Auditor" },
+      { to: "/app/deployment-guardian", icon: Rocket, label: "Deploy Guardian" },
     ],
   },
   {

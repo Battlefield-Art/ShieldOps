@@ -439,6 +439,14 @@ const RiskQuantificationEngine = lazy(() => import("./pages/RiskQuantificationEn
 const SecurityAwarenessTrainer = lazy(() => import("./pages/SecurityAwarenessTrainer"));
 const ThreatHuntAutomation = lazy(() => import("./pages/ThreatHuntAutomation"));
 
+// Phase AA: Platform Hardening & Operational Maturity
+const APIGatewaySecurity = lazy(() => import("./pages/APIGatewaySecurity"));
+const SessionManager = lazy(() => import("./pages/SessionManager"));
+const RateLimitEnforcer = lazy(() => import("./pages/RateLimitEnforcer"));
+const HealthCheckOrchestrator = lazy(() => import("./pages/HealthCheckOrchestrator"));
+const ConfigurationAuditor = lazy(() => import("./pages/ConfigurationAuditor"));
+const DeploymentGuardian = lazy(() => import("./pages/DeploymentGuardian"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -823,6 +831,12 @@ export default function App() {
               <Route path="risk-quantification" element={<RiskQuantificationEngine />} />
               <Route path="awareness-trainer" element={<SecurityAwarenessTrainer />} />
               <Route path="threat-hunt-automation" element={<ThreatHuntAutomation />} />
+              <Route path="api-gateway-security" element={<APIGatewaySecurity />} />
+              <Route path="session-manager" element={<SessionManager />} />
+              <Route path="rate-limit-enforcer" element={<RateLimitEnforcer />} />
+              <Route path="health-orchestrator" element={<HealthCheckOrchestrator />} />
+              <Route path="config-auditor" element={<ConfigurationAuditor />} />
+              <Route path="deployment-guardian" element={<DeploymentGuardian />} />
             </Route>
 
             {/* Catch-all */}
