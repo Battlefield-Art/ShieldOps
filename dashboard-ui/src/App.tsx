@@ -447,6 +447,14 @@ const HealthCheckOrchestrator = lazy(() => import("./pages/HealthCheckOrchestrat
 const ConfigurationAuditor = lazy(() => import("./pages/ConfigurationAuditor"));
 const DeploymentGuardian = lazy(() => import("./pages/DeploymentGuardian"));
 
+// Phase AB: Advanced Analytics & Intelligence
+const BehavioralAnalyticsEngine = lazy(() => import("./pages/BehavioralAnalyticsEngine"));
+const AnomalyPredictionEngine = lazy(() => import("./pages/AnomalyPredictionEngine"));
+const RootCauseAnalyzer = lazy(() => import("./pages/RootCauseAnalyzer"));
+const CapacityIntelligence = lazy(() => import("./pages/CapacityIntelligence"));
+const ServiceDependencyMapper = lazy(() => import("./pages/ServiceDependencyMapper"));
+const PerformanceBaselineEngine = lazy(() => import("./pages/PerformanceBaselineEngine"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -837,6 +845,12 @@ export default function App() {
               <Route path="health-orchestrator" element={<HealthCheckOrchestrator />} />
               <Route path="config-auditor" element={<ConfigurationAuditor />} />
               <Route path="deployment-guardian" element={<DeploymentGuardian />} />
+              <Route path="behavioral-analytics" element={<BehavioralAnalyticsEngine />} />
+              <Route path="anomaly-prediction" element={<AnomalyPredictionEngine />} />
+              <Route path="root-cause" element={<RootCauseAnalyzer />} />
+              <Route path="capacity-intelligence" element={<CapacityIntelligence />} />
+              <Route path="service-dependencies" element={<ServiceDependencyMapper />} />
+              <Route path="performance-baselines" element={<PerformanceBaselineEngine />} />
             </Route>
 
             {/* Catch-all */}

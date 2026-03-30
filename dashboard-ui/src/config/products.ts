@@ -479,6 +479,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/health-orchestrator", icon: HeartPulse, label: "Health Orchestrator" },
       { to: "/app/config-auditor", icon: Settings, label: "Config Auditor" },
       { to: "/app/deployment-guardian", icon: Rocket, label: "Deploy Guardian" },
+      { to: "/app/behavioral-analytics", icon: Activity, label: "Behavioral UEBA" },
+      { to: "/app/anomaly-prediction", icon: TrendingUp, label: "Anomaly Prediction" },
+      { to: "/app/root-cause", icon: Search, label: "Root Cause" },
+      { to: "/app/capacity-intelligence", icon: Server, label: "Capacity Intel" },
+      { to: "/app/service-dependencies", icon: Network, label: "Service Deps" },
+      { to: "/app/performance-baselines", icon: BarChart3, label: "Perf Baselines" },
     ],
   },
   {
