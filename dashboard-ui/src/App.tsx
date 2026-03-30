@@ -471,6 +471,14 @@ const PostmortemGenerator = lazy(() => import("./pages/PostmortemGenerator"));
 const SLAViolationDetector = lazy(() => import("./pages/SLAViolationDetector"));
 const OnCallOptimizer = lazy(() => import("./pages/OnCallOptimizer"));
 
+// Phase AE: Cloud Infrastructure & Cost Intelligence
+const CloudCostOptimizer = lazy(() => import("./pages/CloudCostOptimizer"));
+const InfrastructureDriftDetector = lazy(() => import("./pages/InfrastructureDriftDetector"));
+const ResourceRightsizer = lazy(() => import("./pages/ResourceRightsizer"));
+const MultiCloudOrchestrator = lazy(() => import("./pages/MultiCloudOrchestrator"));
+const CloudMigrationPlanner = lazy(() => import("./pages/CloudMigrationPlanner"));
+const FinopsForecaster = lazy(() => import("./pages/FinopsForecaster"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -879,6 +887,12 @@ export default function App() {
               <Route path="postmortem-generator" element={<PostmortemGenerator />} />
               <Route path="sla-violations" element={<SLAViolationDetector />} />
               <Route path="oncall-optimizer" element={<OnCallOptimizer />} />
+              <Route path="cloud-cost-optimizer" element={<CloudCostOptimizer />} />
+              <Route path="infra-drift" element={<InfrastructureDriftDetector />} />
+              <Route path="resource-rightsizer" element={<ResourceRightsizer />} />
+              <Route path="multi-cloud-orchestrator" element={<MultiCloudOrchestrator />} />
+              <Route path="cloud-migration-planner" element={<CloudMigrationPlanner />} />
+              <Route path="finops-forecaster" element={<FinopsForecaster />} />
             </Route>
 
             {/* Catch-all */}

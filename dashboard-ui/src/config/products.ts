@@ -497,6 +497,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/postmortem-generator", icon: FileText, label: "Postmortem Gen" },
       { to: "/app/sla-violations", icon: Gauge, label: "SLA Violations" },
       { to: "/app/oncall-optimizer", icon: CalendarClock, label: "On-Call Optimizer" },
+      { to: "/app/cloud-cost-optimizer", icon: DollarSign, label: "Cloud Cost Opt" },
+      { to: "/app/infra-drift", icon: GitBranch, label: "Infra Drift" },
+      { to: "/app/resource-rightsizer", icon: Server, label: "Rightsizer" },
+      { to: "/app/multi-cloud-orchestrator", icon: Cloud, label: "Multi-Cloud Orch" },
+      { to: "/app/cloud-migration-planner", icon: Rocket, label: "Migration Planner" },
+      { to: "/app/finops-forecaster", icon: TrendingUp, label: "FinOps Forecast" },
     ],
   },
   {
