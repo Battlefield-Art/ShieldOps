@@ -1,12 +1,12 @@
 # ShieldOps — Master Task Tracker
 
-## Platform Summary (as of Phase AN)
+## Platform Summary (as of Phase AP)
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 383 |
+| **LangGraph Agents** | 395 |
 | **Engine Modules** | 1,780 |
-| **Dashboard Pages** | 389 |
+| **Dashboard Pages** | 401 |
 | **API Route Files** | 888 |
 | **Connectors** | 18 |
 | **Test Files** | 2,214 |
@@ -16,7 +16,7 @@
 
 ## Phases A–AI — Agent Expansion (Done)
 
-Phases A through AN added 233 agents (from 150 to 383) across security, operations, compliance, intelligence, and self-evolution domains.
+Phases A through AP added 245 agents (from 150 to 395) across security, operations, compliance, intelligence, and self-evolution domains.
 
 | Phase | Theme | New Agents | Total |
 |-------|-------|------------|-------|
@@ -52,6 +52,8 @@ Phases A through AN added 233 agents (from 150 to 383) across security, operatio
 | AL | DLP, browser, identity & container | 6 | 377 |
 | AM | Cloud, log, mobile & orchestration | 6 | 383 |
 | AN | DNS, SaaS, stream & deception | 6 | 389 |
+| AO | Simulation, compliance & wireless | 6 | 395 |
+| AP | ML, regulatory, K8s & SIEM | 6 | 401 |
 
 ---
 
