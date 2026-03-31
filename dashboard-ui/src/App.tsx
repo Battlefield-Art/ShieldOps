@@ -515,6 +515,15 @@ const CertificateLifecycleManager = lazy(() => import("./pages/CertificateLifecy
 const SecurityConfigAssessor = lazy(() => import("./pages/SecurityConfigAssessor"));
 const CloudNetworkFirewall = lazy(() => import("./pages/CloudNetworkFirewall"));
 const ThreatHuntOrchestrator = lazy(() => import("./pages/ThreatHuntOrchestrator"));
+
+// ── Phase BD ──────────────────────────────────────────────────────
+const CloudPermissionOptimizer = lazy(() => import("./pages/CloudPermissionOptimizer"));
+const SecurityEventEnricher = lazy(() => import("./pages/SecurityEventEnricher"));
+const VulnerabilityScannerOrchestrator = lazy(() => import("./pages/VulnerabilityScannerOrchestrator"));
+const SecurityAlertRouter = lazy(() => import("./pages/SecurityAlertRouter"));
+const CloudDatabaseProtector = lazy(() => import("./pages/CloudDatabaseProtector"));
+const SecurityTrainingTracker = lazy(() => import("./pages/SecurityTrainingTracker"));
+
 const SecurityChangeManager = lazy(() => import("./pages/SecurityChangeManager"));
 const CredentialExposureScanner = lazy(() => import("./pages/CredentialExposureScanner"));
 const SecurityOpsDashboard2 = lazy(() => import("./pages/SecurityOpsDashboard"));
@@ -1115,6 +1124,12 @@ export default function App() {
               <Route path="security-config-assessor" element={<SecurityConfigAssessor />} />
               <Route path="cloud-network-firewall" element={<CloudNetworkFirewall />} />
               <Route path="threat-hunt-orchestrator" element={<ThreatHuntOrchestrator />} />
+              <Route path="cloud-permission-optimizer" element={<CloudPermissionOptimizer />} />
+              <Route path="security-event-enricher" element={<SecurityEventEnricher />} />
+              <Route path="vulnerability-scanner-orchestrator" element={<VulnerabilityScannerOrchestrator />} />
+              <Route path="security-alert-router" element={<SecurityAlertRouter />} />
+              <Route path="cloud-database-protector" element={<CloudDatabaseProtector />} />
+              <Route path="security-training-tracker" element={<SecurityTrainingTracker />} />
               <Route path="network-microsegmentation" element={<NetworkMicrosegmentation />} />
               <Route path="supply-chain-risk-monitor" element={<SupplyChainRiskMonitor />} />
               <Route path="digital-forensics-lab" element={<DigitalForensicsLab />} />
