@@ -581,6 +581,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/runtime-application-protector", icon: Shield, label: "RASP" },
       { to: "/app/certificate-transparency-monitor", icon: Lock, label: "CT Monitor" },
       { to: "/app/access-certification-engine", icon: UserCheck, label: "Access Cert" },
+      { to: "/app/data-catalog-protector", icon: Database, label: "Data Catalog" },
+      { to: "/app/llm-prompt-firewall", icon: Shield, label: "Prompt Firewall" },
+      { to: "/app/security-telemetry-optimizer", icon: Activity, label: "Telemetry Opt" },
+      { to: "/app/ot-protocol-monitor", icon: Cpu, label: "OT Protocol" },
+      { to: "/app/mfa-bypass-detector", icon: Key, label: "MFA Bypass" },
+      { to: "/app/cloud-governance-enforcer", icon: Cloud, label: "Cloud Governance" },
     ],
   },
   {

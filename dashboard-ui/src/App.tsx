@@ -622,6 +622,14 @@ const SecurityCopilotAgent = lazy(() => import("./pages/SecurityCopilotAgent"));
 const CloudNetworkAnalyzer = lazy(() => import("./pages/CloudNetworkAnalyzer"));
 const ThreatFeedOrchestrator = lazy(() => import("./pages/ThreatFeedOrchestrator"));
 
+// ── Phase AY (new agents) ───────────────────────────────────────
+const DataCatalogProtector = lazy(() => import("./pages/DataCatalogProtector"));
+const LlmPromptFirewall = lazy(() => import("./pages/LlmPromptFirewall"));
+const SecurityTelemetryOptimizer = lazy(() => import("./pages/SecurityTelemetryOptimizer"));
+const OtProtocolMonitor = lazy(() => import("./pages/OtProtocolMonitor"));
+const MfaBypassDetector = lazy(() => import("./pages/MfaBypassDetector"));
+const CloudGovernanceEnforcer = lazy(() => import("./pages/CloudGovernanceEnforcer"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1135,6 +1143,12 @@ export default function App() {
               <Route path="security-copilot-agent" element={<SecurityCopilotAgent />} />
               <Route path="cloud-network-analyzer" element={<CloudNetworkAnalyzer />} />
               <Route path="threat-feed-orchestrator" element={<ThreatFeedOrchestrator />} />
+              <Route path="data-catalog-protector" element={<DataCatalogProtector />} />
+              <Route path="llm-prompt-firewall" element={<LlmPromptFirewall />} />
+              <Route path="security-telemetry-optimizer" element={<SecurityTelemetryOptimizer />} />
+              <Route path="ot-protocol-monitor" element={<OtProtocolMonitor />} />
+              <Route path="mfa-bypass-detector" element={<MfaBypassDetector />} />
+              <Route path="cloud-governance-enforcer" element={<CloudGovernanceEnforcer />} />
             </Route>
 
             {/* Catch-all */}
