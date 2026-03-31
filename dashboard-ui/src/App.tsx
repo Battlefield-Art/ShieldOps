@@ -548,6 +548,16 @@ const DeceptionNetworkManager = lazy(() => import("./pages/DeceptionNetworkManag
 const BackupIntegrityVerifier = lazy(() => import("./pages/BackupIntegrityVerifier"));
 const IncidentCostTracker = lazy(() => import("./pages/IncidentCostTracker"));
 
+// ── Phase AO ──────────────────────────────────────────────────────
+const ThreatSimulationEngine = lazy(() => import("./pages/ThreatSimulationEngine"));
+const PolicyComplianceEnforcer = lazy(() => import("./pages/PolicyComplianceEnforcer"));
+const SecretSprawlDetector = lazy(() => import("./pages/SecretSprawlDetector"));
+
+// ── Phase AO (cont.) ─────────────────────────────────────────────
+const CloudEntitlementManager = lazy(() => import("./pages/CloudEntitlementManager"));
+const SecurityChaosTester = lazy(() => import("./pages/SecurityChaosTester"));
+const WirelessSecurityAuditor = lazy(() => import("./pages/WirelessSecurityAuditor"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1013,6 +1023,12 @@ export default function App() {
               <Route path="deception-network-manager" element={<DeceptionNetworkManager />} />
               <Route path="backup-integrity-verifier" element={<BackupIntegrityVerifier />} />
               <Route path="incident-cost-tracker" element={<IncidentCostTracker />} />
+              <Route path="threat-simulation-engine" element={<ThreatSimulationEngine />} />
+              <Route path="policy-compliance-enforcer" element={<PolicyComplianceEnforcer />} />
+              <Route path="secret-sprawl-detector" element={<SecretSprawlDetector />} />
+              <Route path="cloud-entitlement-manager" element={<CloudEntitlementManager />} />
+              <Route path="security-chaos-tester" element={<SecurityChaosTester />} />
+              <Route path="wireless-security-auditor" element={<WirelessSecurityAuditor />} />
             </Route>
 
             {/* Catch-all */}

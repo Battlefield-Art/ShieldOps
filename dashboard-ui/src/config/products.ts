@@ -552,6 +552,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cloud-workload-inspector", icon: Cloud, label: "Workload Inspector" },
       { to: "/app/log-anomaly-detector", icon: Search, label: "Log Anomalies" },
       { to: "/app/mobile-threat-defender", icon: Smartphone, label: "Mobile Defense" },
+      { to: "/app/cloud-entitlement-manager", icon: Key, label: "Cloud Entitlement" },
+      { to: "/app/security-chaos-tester", icon: Zap, label: "Security Chaos" },
+      { to: "/app/wireless-security-auditor", icon: Wifi, label: "Wireless Audit" },
     ],
   },
   {
@@ -604,6 +607,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/deception-network-manager", icon: Target, label: "Deception Network" },
       { to: "/app/backup-integrity-verifier", icon: HardDrive, label: "Backup Integrity" },
       { to: "/app/incident-cost-tracker", icon: DollarSign, label: "Incident Costs" },
+      { to: "/app/threat-simulation-engine", icon: Target, label: "Threat Simulation" },
+      { to: "/app/policy-compliance-enforcer", icon: Scale, label: "Policy Enforcer" },
+      { to: "/app/secret-sprawl-detector", icon: KeyRound, label: "Secret Sprawl" },
     ],
   },
   {
