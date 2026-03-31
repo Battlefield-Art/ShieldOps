@@ -250,7 +250,7 @@ ShieldOps/
 | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) | AWS, GCP, Azure, On-Prem deployment |
 | [Production Runbook](docs/PRODUCTION_LAUNCH_RUNBOOK.md) | 8-phase launch guide |
 | [Task Tracker](docs/tasks.md) | Development phase history |
-| [API Docs](http://localhost:8000/api/v1/docs) | Interactive OpenAPI (when running) |
+| [API Reference](docs/api/authentication.md) | REST API endpoints, authentication, and usage |
 
 ## Contributing
 
