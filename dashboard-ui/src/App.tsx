@@ -594,6 +594,16 @@ const AIModelGovernance = lazy(() => import("./pages/AIModelGovernance"));
 const QuantumSafeAuditor = lazy(() => import("./pages/QuantumSafeAuditor"));
 const MultiCloudPosture = lazy(() => import("./pages/MultiCloudPosture"));
 
+// ── Phase AT (new agents) ───────────────────────────────────────
+const APISchemaValidator = lazy(() => import("./pages/APISchemaValidator"));
+const SecurityAutomationPipeline = lazy(() => import("./pages/SecurityAutomationPipeline"));
+const UnifiedThreatModel2 = lazy(() => import("./pages/UnifiedThreatModel"));
+
+// ── Phase AU ─────────────────────────────────────────────────────
+const InsiderRiskScorer = lazy(() => import("./pages/InsiderRiskScorer"));
+const SecurityMetricDashboard = lazy(() => import("./pages/SecurityMetricDashboard"));
+const ZeroDayHunter = lazy(() => import("./pages/ZeroDayHunter"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1089,6 +1099,12 @@ export default function App() {
               <Route path="ai-model-governance" element={<AIModelGovernance />} />
               <Route path="quantum-safe-auditor" element={<QuantumSafeAuditor />} />
               <Route path="multi-cloud-posture" element={<MultiCloudPosture />} />
+              <Route path="insider-risk-scorer" element={<InsiderRiskScorer />} />
+              <Route path="security-metric-dashboard" element={<SecurityMetricDashboard />} />
+              <Route path="zero-day-hunter" element={<ZeroDayHunter />} />
+              <Route path="api-schema-validator" element={<APISchemaValidator />} />
+              <Route path="security-automation-pipeline" element={<SecurityAutomationPipeline />} />
+              <Route path="unified-threat-model" element={<UnifiedThreatModel2 />} />
             </Route>
 
             {/* Catch-all */}

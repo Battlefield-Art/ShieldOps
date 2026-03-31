@@ -575,6 +575,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/security-knowledge-graph", icon: GitBranch, label: "Knowledge Graph" },
       { to: "/app/compliance-drift-monitor", icon: ShieldCheck, label: "Compliance Drift" },
       { to: "/app/incident-prediction-model", icon: Brain, label: "Incident Prediction" },
+      { to: "/app/insider-risk-scorer", icon: UserX, label: "Insider Risk Scorer" },
+      { to: "/app/security-metric-dashboard", icon: BarChart3, label: "Security Metrics" },
+      { to: "/app/zero-day-hunter", icon: Bug, label: "Zero-Day Hunter" },
     ],
   },
   {
@@ -634,6 +637,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/ai-model-governance", icon: Brain, label: "Model Governance" },
       { to: "/app/quantum-safe-auditor", icon: Dna, label: "Quantum Audit" },
       { to: "/app/multi-cloud-posture", icon: Cloud, label: "Multi-Cloud Posture" },
+      { to: "/app/api-schema-validator", icon: FileCode, label: "API Schema Validator" },
+      { to: "/app/security-automation-pipeline", icon: GitBranch, label: "Security Pipeline" },
+      { to: "/app/unified-threat-model", icon: Target, label: "Threat Model" },
     ],
   },
   {
