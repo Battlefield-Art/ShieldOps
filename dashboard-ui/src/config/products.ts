@@ -670,6 +670,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/security-mesh-orchestrator", icon: Network, label: "Mesh Orchestrator" },
       { to: "/app/autonomous-patch-manager", icon: Download, label: "Patch Manager" },
       { to: "/app/cloud-forensics-collector", icon: FileSearch, label: "Cloud Forensics" },
+      { to: "/app/risk-quantification-platform", icon: Scale, label: "FAIR Risk Platform" },
+      { to: "/app/security-lake-manager", icon: Database, label: "Security Lake" },
+      { to: "/app/attack-emulation-framework", icon: Crosshair, label: "Attack Emulation" },
+      { to: "/app/cloud-resource-tagger", icon: Tag, label: "Resource Tagger" },
+      { to: "/app/dark-web-intelligence", icon: Eye, label: "Dark Web Intel" },
+      { to: "/app/email-authentication-auditor", icon: Mail, label: "Email Auth Audit" },
     ],
   },
   {

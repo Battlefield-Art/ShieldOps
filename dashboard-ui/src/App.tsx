@@ -634,6 +634,12 @@ const CloudGovernanceEnforcer = lazy(() => import("./pages/CloudGovernanceEnforc
 const SecurityTicketAutomator = lazy(() => import("./pages/SecurityTicketAutomator"));
 const CloudSnapshotAnalyzer = lazy(() => import("./pages/CloudSnapshotAnalyzer"));
 const SecurityOnboardingEngine = lazy(() => import("./pages/SecurityOnboardingEngine"));
+const RiskQuantificationPlatform = lazy(() => import("./pages/RiskQuantificationPlatform"));
+const SecurityLakeManager = lazy(() => import("./pages/SecurityLakeManager"));
+const AttackEmulationFramework = lazy(() => import("./pages/AttackEmulationFramework"));
+const CloudResourceTagger = lazy(() => import("./pages/CloudResourceTagger"));
+const DarkWebIntelligence2 = lazy(() => import("./pages/DarkWebIntelligence"));
+const EmailAuthenticationAuditor = lazy(() => import("./pages/EmailAuthenticationAuditor"));
 
 // ── Phase BA (new agents) ───────────────────────────────────────
 const VulnerabilityExploitPredictor = lazy(() => import("./pages/VulnerabilityExploitPredictor"));
@@ -1181,6 +1187,12 @@ export default function App() {
               <Route path="security-mesh-orchestrator" element={<SecurityMeshOrchestrator />} />
               <Route path="autonomous-patch-manager" element={<AutonomousPatchManager />} />
               <Route path="cloud-forensics-collector" element={<CloudForensicsCollector />} />
+              <Route path="risk-quantification-platform" element={<RiskQuantificationPlatform />} />
+              <Route path="security-lake-manager" element={<SecurityLakeManager />} />
+              <Route path="attack-emulation-framework" element={<AttackEmulationFramework />} />
+              <Route path="cloud-resource-tagger" element={<CloudResourceTagger />} />
+              <Route path="dark-web-intelligence" element={<DarkWebIntelligence2 />} />
+              <Route path="email-authentication-auditor" element={<EmailAuthenticationAuditor />} />
             </Route>
 
             {/* Catch-all */}
