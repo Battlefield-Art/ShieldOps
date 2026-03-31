@@ -576,6 +576,16 @@ const AgentlessScanner = lazy(() => import("./pages/AgentlessScanner"));
 const ToxicCombinationDetector = lazy(() => import("./pages/ToxicCombinationDetector"));
 const AutonomousResponseEngine = lazy(() => import("./pages/AutonomousResponseEngine"));
 
+// ── Phase AR ─────────────────────────────────────────────────────
+const CloudKeyManager = lazy(() => import("./pages/CloudKeyManager"));
+const SecurityPostureScorer = lazy(() => import("./pages/SecurityPostureScorer"));
+const AlertFatigueReducer = lazy(() => import("./pages/AlertFatigueReducer"));
+
+// ── Phase AK (cont.) ────────────────────────────────
+const DependencyVulnerabilityTracker = lazy(() => import("./pages/DependencyVulnerabilityTracker"));
+const SecurityBudgetOptimizer = lazy(() => import("./pages/SecurityBudgetOptimizer"));
+const CloudDriftRemediator = lazy(() => import("./pages/CloudDriftRemediator"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1059,6 +1069,12 @@ export default function App() {
               <Route path="agentless-scanner" element={<AgentlessScanner />} />
               <Route path="toxic-combination-detector" element={<ToxicCombinationDetector />} />
               <Route path="autonomous-response-engine" element={<AutonomousResponseEngine />} />
+              <Route path="dependency-vulnerability-tracker" element={<DependencyVulnerabilityTracker />} />
+              <Route path="security-budget-optimizer" element={<SecurityBudgetOptimizer />} />
+              <Route path="cloud-drift-remediator" element={<CloudDriftRemediator />} />
+              <Route path="cloud-key-manager" element={<CloudKeyManager />} />
+              <Route path="security-posture-scorer" element={<SecurityPostureScorer />} />
+              <Route path="alert-fatigue-reducer" element={<AlertFatigueReducer />} />
             </Route>
 
             {/* Catch-all */}

@@ -566,6 +566,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/agentless-scanner", icon: Cloud, label: "Agentless Scanner" },
       { to: "/app/toxic-combination-detector", icon: ShieldAlert, label: "Toxic Combos" },
       { to: "/app/autonomous-response-engine", icon: Bot, label: "Auto Response" },
+      { to: "/app/dependency-vulnerability-tracker", icon: Package, label: "Dep Vuln Tracker" },
+      { to: "/app/security-budget-optimizer", icon: DollarSign, label: "Budget Optimizer" },
+      { to: "/app/cloud-drift-remediator", icon: GitBranch, label: "Drift Remediator" },
+      { to: "/app/cloud-key-manager", icon: Key, label: "Key Manager" },
+      { to: "/app/security-posture-scorer", icon: Gauge, label: "Posture Scorer" },
+      { to: "/app/alert-fatigue-reducer", icon: Filter, label: "Alert Fatigue" },
     ],
   },
   {
