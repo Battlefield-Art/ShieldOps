@@ -1,6 +1,6 @@
 # agents/ — LangGraph Agent Orchestration
 
-150 autonomous security agents built on LangGraph StateGraph. 100% test coverage (1,639 tests passing).
+383 autonomous security agents built on LangGraph StateGraph.
 
 ## Agent Architecture
 
