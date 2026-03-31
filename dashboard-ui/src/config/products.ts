@@ -560,6 +560,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/kubernetes-policy-engine", icon: Server, label: "K8s Policy Engine" },
       { to: "/app/siem-rule-optimizer", icon: Filter, label: "SIEM Optimizer" },
       { to: "/app/third-party-risk-monitor", icon: Globe, label: "Vendor Risk Monitor" },
+      { to: "/app/shadow-api-detector", icon: Eye, label: "Shadow API Detector" },
+      { to: "/app/security-data-mesh", icon: Database, label: "Security Data Mesh" },
+      { to: "/app/attack-narrative-builder", icon: BookOpen, label: "Attack Narrative" },
+      { to: "/app/agentless-scanner", icon: Cloud, label: "Agentless Scanner" },
+      { to: "/app/toxic-combination-detector", icon: ShieldAlert, label: "Toxic Combos" },
+      { to: "/app/autonomous-response-engine", icon: Bot, label: "Auto Response" },
     ],
   },
   {

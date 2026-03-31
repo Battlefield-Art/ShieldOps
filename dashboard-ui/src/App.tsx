@@ -566,6 +566,16 @@ const KubernetesPolicyEngine = lazy(() => import("./pages/KubernetesPolicyEngine
 const SIEMRuleOptimizer = lazy(() => import("./pages/SIEMRuleOptimizer"));
 const ThirdPartyRiskMonitor = lazy(() => import("./pages/ThirdPartyRiskMonitor"));
 
+// ── Phase AQ ──────────────────────────────────────────────────────
+const ShadowAPIDetector = lazy(() => import("./pages/ShadowAPIDetector"));
+const SecurityDataMesh = lazy(() => import("./pages/SecurityDataMesh"));
+const AttackNarrativeBuilder = lazy(() => import("./pages/AttackNarrativeBuilder"));
+
+// ── Phase AJ ─────────────────────────────────────────────────────
+const AgentlessScanner = lazy(() => import("./pages/AgentlessScanner"));
+const ToxicCombinationDetector = lazy(() => import("./pages/ToxicCombinationDetector"));
+const AutonomousResponseEngine = lazy(() => import("./pages/AutonomousResponseEngine"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1043,6 +1053,12 @@ export default function App() {
               <Route path="kubernetes-policy-engine" element={<KubernetesPolicyEngine />} />
               <Route path="siem-rule-optimizer" element={<SIEMRuleOptimizer />} />
               <Route path="third-party-risk-monitor" element={<ThirdPartyRiskMonitor />} />
+              <Route path="shadow-api-detector" element={<ShadowAPIDetector />} />
+              <Route path="security-data-mesh" element={<SecurityDataMesh />} />
+              <Route path="attack-narrative-builder" element={<AttackNarrativeBuilder />} />
+              <Route path="agentless-scanner" element={<AgentlessScanner />} />
+              <Route path="toxic-combination-detector" element={<ToxicCombinationDetector />} />
+              <Route path="autonomous-response-engine" element={<AutonomousResponseEngine />} />
             </Route>
 
             {/* Catch-all */}
