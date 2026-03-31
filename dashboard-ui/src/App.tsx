@@ -586,6 +586,14 @@ const DependencyVulnerabilityTracker = lazy(() => import("./pages/DependencyVuln
 const SecurityBudgetOptimizer = lazy(() => import("./pages/SecurityBudgetOptimizer"));
 const CloudDriftRemediator = lazy(() => import("./pages/CloudDriftRemediator"));
 
+// ── Phase AS ─────────────────────────────────────────────────────
+const SecurityKnowledgeGraph = lazy(() => import("./pages/SecurityKnowledgeGraph"));
+const ComplianceDriftMonitor = lazy(() => import("./pages/ComplianceDriftMonitor"));
+const IncidentPredictionModel = lazy(() => import("./pages/IncidentPredictionModel"));
+const AIModelGovernance = lazy(() => import("./pages/AIModelGovernance"));
+const QuantumSafeAuditor = lazy(() => import("./pages/QuantumSafeAuditor"));
+const MultiCloudPosture = lazy(() => import("./pages/MultiCloudPosture"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1075,6 +1083,12 @@ export default function App() {
               <Route path="cloud-key-manager" element={<CloudKeyManager />} />
               <Route path="security-posture-scorer" element={<SecurityPostureScorer />} />
               <Route path="alert-fatigue-reducer" element={<AlertFatigueReducer />} />
+              <Route path="security-knowledge-graph" element={<SecurityKnowledgeGraph />} />
+              <Route path="compliance-drift-monitor" element={<ComplianceDriftMonitor />} />
+              <Route path="incident-prediction-model" element={<IncidentPredictionModel />} />
+              <Route path="ai-model-governance" element={<AIModelGovernance />} />
+              <Route path="quantum-safe-auditor" element={<QuantumSafeAuditor />} />
+              <Route path="multi-cloud-posture" element={<MultiCloudPosture />} />
             </Route>
 
             {/* Catch-all */}
