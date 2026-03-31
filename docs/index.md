@@ -5,7 +5,7 @@
 > AI agents are bypassing traditional security. ShieldOps intercepts, governs, and defends.
 
 ShieldOps is an AI Security Control Plane that governs, monitors, and responds to AI agent
-activity across enterprise infrastructure. The platform deploys 395 autonomous LangGraph agents
+activity across enterprise infrastructure. The platform deploys 419 autonomous LangGraph agents
 for runtime interception, non-human identity governance, MCP ecosystem security, SOC automation,
 and self-evolving defense -- across multi-cloud (AWS/GCP/Azure) and on-premise environments.
 
