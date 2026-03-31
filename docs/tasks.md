@@ -4,19 +4,19 @@
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 449 |
+| **LangGraph Agents** | 448 |
 | **Engine Modules** | 1,780 |
 | **Dashboard Pages** | 455 |
 | **API Route Files** | 888 |
-| **Connectors** | 18 |
+| **Connectors** | 17 |
 | **Test Files** | 2,214 |
 | **CLAUDE.md Files** | 29 (hierarchical) |
 
 ---
 
-## Phases A–AI — Agent Expansion (Done)
+## Phases A–AY — Agent Expansion (Done)
 
-Phases A through AY added 299 agents (from 150 to 449) across security, operations, compliance, intelligence, and self-evolution domains.
+Phases A through AY added 298 agents (from 150 to 448) across security, operations, compliance, intelligence, and self-evolution domains.
 
 | Phase | Theme | New Agents | Total |
 |-------|-------|------------|-------|
@@ -61,8 +61,8 @@ Phases A through AY added 299 agents (from 150 to 449) across security, operatio
 | AU | RASP, CT, access & cost anomaly | 6 | 431 |
 | AV | Microsegmentation, forensics & copilot | 6 | 437 |
 | AW | Data catalog, LLM firewall & OT | 6 | 443 |
-| AX | Ticket, snapshot, exploit & IAM | 6 | 449 |
-| AY | Data pipeline, mesh, patch & forensics | 6 | 455 |
+| AX | Ticket, snapshot, exploit & IAM | 6 | 442 |
+| AY | Data pipeline, mesh, patch & forensics | 6 | 448 |
 
 ---
 

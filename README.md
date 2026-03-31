@@ -25,11 +25,11 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 
 | Metric | Count |
 |--------|-------|
-| Autonomous LangGraph agents | **449** |
+| Autonomous LangGraph agents | **448** |
 | Security & analytics engines | **1,780** |
 | Dashboard pages | **455** |
 | API route files | **888** |
-| Cloud/vendor connectors | **18** |
+| Cloud/vendor connectors | **17** |
 | Test files | **2,214** |
 | OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
 
@@ -145,7 +145,7 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   Dashboard (React · 365 pages)              │
+│                   Dashboard (React · 455 pages)              │
 │    Situations Queue · Agent Monitor · SOC Assistant · DLP     │
 ├──────────────────────────────────────────────────────────────┤
 │                   API Gateway (FastAPI · 888 routes)          │
@@ -159,13 +159,13 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 │                   Policy Engine (OPA · Rego)                  │
 │        HIPAA · SOC 2 · PCI-DSS · GDPR · FedRAMP             │
 ├──────────────────────────────────────────────────────────────┤
-│              Agent Orchestration (LangGraph · 359 agents)     │
+│              Agent Orchestration (LangGraph · 448 agents)     │
 │   Supervisor · Memory · Reflection · Cross-Vendor Correlation │
 ├──────────────────────────────────────────────────────────────┤
 │            Observability Ingestion (OpenTelemetry)            │
 │          Multi-vendor telemetry normalization (OCSF)          │
 ├──────────────────────────────────────────────────────────────┤
-│            Multi-Cloud & Vendor Connectors (18)               │
+│            Multi-Cloud & Vendor Connectors (17)               │
 │     AWS · GCP · Azure · K8s · EDR · SIEM · IdP · ITSM       │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -224,19 +224,19 @@ cd dashboard-ui && npm run dev            # Dashboard
 ShieldOps/
 ├── CLAUDE.md                    # Root project instructions
 ├── src/shieldops/
-│   ├── agents/                  # 359 LangGraph agents
+│   ├── agents/                  # 448 LangGraph agents
 │   ├── api/                     # FastAPI (888 routes)
 │   ├── security/                # 551 security engines
 │   ├── analytics/               # 276 analytics engines
 │   ├── observability/           # 232 telemetry engines
 │   ├── operations/              # 177 operations engines
 │   ├── compliance/              # 116 compliance engines
-│   ├── connectors/              # 18 vendor connectors
+│   ├── connectors/              # 17 vendor connectors
 │   ├── sdk/                     # Agent Firewall SDK
 │   ├── db/                      # Database (SQLAlchemy + Alembic)
 │   ├── policy/                  # OPA policy engine
 │   └── utils/                   # LLM, routing, self-evolution
-├── dashboard-ui/                # React dashboard (365 pages)
+├── dashboard-ui/                # React dashboard (455 pages)
 ├── tests/                       # 2,214 test files
 ├── infrastructure/              # Docker, K8s, Terraform, CDK, Helm
 └── docs/                        # Documentation
