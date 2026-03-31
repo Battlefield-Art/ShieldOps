@@ -4,7 +4,7 @@
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 473 |
+| **LangGraph Agents** | 472 |
 | **Engine Modules** | 1,780 |
 | **Dashboard Pages** | 479 |
 | **API Route Files** | 888 |
@@ -14,9 +14,9 @@
 
 ---
 
-## Phases A–AZ — Agent Expansion (Done)
+## Phases A–BC — Agent Expansion (Done)
 
-Phases A through BC added 323 agents (from 150 to 473) across security, operations, compliance, intelligence, and self-evolution domains.
+Phases A through BC added 322 agents (from 150 to 472) across security, operations, compliance, intelligence, and self-evolution domains.
 
 | Phase | Theme | New Agents | Total |
 |-------|-------|------------|-------|
@@ -66,7 +66,7 @@ Phases A through BC added 323 agents (from 150 to 473) across security, operatio
 | AZ | Risk quantification, dark web & email auth | 6 | 455 |
 | BA | Token rotation, signal correlation & sandbox | 6 | 461 |
 | BB | Privacy, asset graph & credential exposure | 6 | 467 |
-| BC | Permission, enrichment & scanner orchestrator | 6 | 473 |
+| BC | Permission, enrichment & scanner orchestrator | 6 | 472 |
 
 ---
 

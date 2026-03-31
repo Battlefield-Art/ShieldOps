@@ -25,7 +25,7 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 
 | Metric | Count |
 |--------|-------|
-| Autonomous LangGraph agents | **473** |
+| Autonomous LangGraph agents | **472** |
 | Security & analytics engines | **1,780** |
 | Dashboard pages | **479** |
 | API route files | **888** |
@@ -159,7 +159,7 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 │                   Policy Engine (OPA · Rego)                  │
 │        HIPAA · SOC 2 · PCI-DSS · GDPR · FedRAMP             │
 ├──────────────────────────────────────────────────────────────┤
-│              Agent Orchestration (LangGraph · 473 agents)     │
+│              Agent Orchestration (LangGraph · 472 agents)     │
 │   Supervisor · Memory · Reflection · Cross-Vendor Correlation │
 ├──────────────────────────────────────────────────────────────┤
 │            Observability Ingestion (OpenTelemetry)            │
@@ -224,7 +224,7 @@ cd dashboard-ui && npm run dev            # Dashboard
 ShieldOps/
 ├── CLAUDE.md                    # Root project instructions
 ├── src/shieldops/
-│   ├── agents/                  # 473 LangGraph agents
+│   ├── agents/                  # 472 LangGraph agents
 │   ├── api/                     # FastAPI (888 routes)
 │   ├── security/                # 551 security engines
 │   ├── analytics/               # 276 analytics engines
