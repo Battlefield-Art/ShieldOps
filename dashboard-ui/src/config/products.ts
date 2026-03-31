@@ -555,6 +555,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cloud-entitlement-manager", icon: Key, label: "Cloud Entitlement" },
       { to: "/app/security-chaos-tester", icon: Zap, label: "Security Chaos" },
       { to: "/app/wireless-security-auditor", icon: Wifi, label: "Wireless Audit" },
+      { to: "/app/ml-model-scanner", icon: Cpu, label: "ML Model Scanner" },
+      { to: "/app/data-privacy-scanner", icon: Database, label: "Privacy Scanner" },
+      { to: "/app/kubernetes-policy-engine", icon: Server, label: "K8s Policy Engine" },
+      { to: "/app/siem-rule-optimizer", icon: Filter, label: "SIEM Optimizer" },
+      { to: "/app/third-party-risk-monitor", icon: Globe, label: "Vendor Risk Monitor" },
     ],
   },
   {
@@ -576,6 +581,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/compliance", icon: ShieldCheck, label: "Compliance" },
       { to: "/app/audit-log", icon: FileText, label: "Audit Log" },
       { to: "/app/ai-compliance", icon: Scale, label: "AI Compliance" },
+      { to: "/app/regulatory-change-monitor", icon: FileText, label: "Regulatory Monitor" },
     ],
   },
   {

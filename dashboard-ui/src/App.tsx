@@ -558,6 +558,14 @@ const CloudEntitlementManager = lazy(() => import("./pages/CloudEntitlementManag
 const SecurityChaosTester = lazy(() => import("./pages/SecurityChaosTester"));
 const WirelessSecurityAuditor = lazy(() => import("./pages/WirelessSecurityAuditor"));
 
+// ── Phase AP ──────────────────────────────────────────────────────
+const MLModelScanner = lazy(() => import("./pages/MLModelScanner"));
+const RegulatoryChangeMonitor = lazy(() => import("./pages/RegulatoryChangeMonitor"));
+const DataPrivacyScanner = lazy(() => import("./pages/DataPrivacyScanner"));
+const KubernetesPolicyEngine = lazy(() => import("./pages/KubernetesPolicyEngine"));
+const SIEMRuleOptimizer = lazy(() => import("./pages/SIEMRuleOptimizer"));
+const ThirdPartyRiskMonitor = lazy(() => import("./pages/ThirdPartyRiskMonitor"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1029,6 +1037,12 @@ export default function App() {
               <Route path="cloud-entitlement-manager" element={<CloudEntitlementManager />} />
               <Route path="security-chaos-tester" element={<SecurityChaosTester />} />
               <Route path="wireless-security-auditor" element={<WirelessSecurityAuditor />} />
+              <Route path="ml-model-scanner" element={<MLModelScanner />} />
+              <Route path="regulatory-change-monitor" element={<RegulatoryChangeMonitor />} />
+              <Route path="data-privacy-scanner" element={<DataPrivacyScanner />} />
+              <Route path="kubernetes-policy-engine" element={<KubernetesPolicyEngine />} />
+              <Route path="siem-rule-optimizer" element={<SIEMRuleOptimizer />} />
+              <Route path="third-party-risk-monitor" element={<ThirdPartyRiskMonitor />} />
             </Route>
 
             {/* Catch-all */}
