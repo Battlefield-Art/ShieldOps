@@ -640,6 +640,16 @@ const VulnerabilityExploitPredictor = lazy(() => import("./pages/VulnerabilityEx
 const SecurityGamificationEngine = lazy(() => import("./pages/SecurityGamificationEngine"));
 const CloudIAMAnalyzer = lazy(() => import("./pages/CloudIAMAnalyzer"));
 
+// ── Phase BB (new agents) ───────────────────────────────────────
+const SecurityDataPipeline = lazy(() => import("./pages/SecurityDataPipeline"));
+const EndpointHardeningAgent = lazy(() => import("./pages/EndpointHardeningAgent"));
+const SecurityROICalculator = lazy(() => import("./pages/SecurityROICalculator"));
+
+// ── Phase BC (new agents) ───────────────────────────────────────
+const SecurityMeshOrchestrator = lazy(() => import("./pages/SecurityMeshOrchestrator"));
+const AutonomousPatchManager = lazy(() => import("./pages/AutonomousPatchManager"));
+const CloudForensicsCollector = lazy(() => import("./pages/CloudForensicsCollector"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1165,6 +1175,12 @@ export default function App() {
               <Route path="vulnerability-exploit-predictor" element={<VulnerabilityExploitPredictor />} />
               <Route path="security-gamification-engine" element={<SecurityGamificationEngine />} />
               <Route path="cloud-iam-analyzer" element={<CloudIAMAnalyzer />} />
+              <Route path="security-data-pipeline" element={<SecurityDataPipeline />} />
+              <Route path="endpoint-hardening" element={<EndpointHardeningAgent />} />
+              <Route path="security-roi-calculator" element={<SecurityROICalculator />} />
+              <Route path="security-mesh-orchestrator" element={<SecurityMeshOrchestrator />} />
+              <Route path="autonomous-patch-manager" element={<AutonomousPatchManager />} />
+              <Route path="cloud-forensics-collector" element={<CloudForensicsCollector />} />
             </Route>
 
             {/* Catch-all */}

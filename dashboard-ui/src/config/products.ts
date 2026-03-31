@@ -664,6 +664,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/network-microsegmentation", icon: Network, label: "Microsegmentation" },
       { to: "/app/supply-chain-risk-monitor", icon: Package, label: "Supply Chain Risk" },
       { to: "/app/digital-forensics-lab", icon: FileSearch, label: "Forensics Lab" },
+      { to: "/app/security-data-pipeline", icon: Database, label: "Data Pipeline" },
+      { to: "/app/endpoint-hardening", icon: Monitor, label: "Endpoint Hardening" },
+      { to: "/app/security-roi-calculator", icon: DollarSign, label: "Security ROI" },
+      { to: "/app/security-mesh-orchestrator", icon: Network, label: "Mesh Orchestrator" },
+      { to: "/app/autonomous-patch-manager", icon: Download, label: "Patch Manager" },
+      { to: "/app/cloud-forensics-collector", icon: FileSearch, label: "Cloud Forensics" },
     ],
   },
   {
