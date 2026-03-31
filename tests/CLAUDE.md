@@ -7,7 +7,7 @@
 tests/
 ├── conftest.py          # Root fixtures (auth mock, middleware reset)
 ├── unit/                # Unit tests (mirror source structure)
-│   ├── agents/          # Agent-specific tests (448+ files)
+│   ├── agents/          # Agent-specific tests (451+ files)
 │   ├── api/             # API route tests
 │   ├── middleware/       # Middleware tests
 │   └── test_*.py        # Engine/module tests
