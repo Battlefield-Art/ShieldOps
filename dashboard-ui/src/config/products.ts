@@ -598,6 +598,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/chatops", icon: MessageSquare, label: "ChatOps" },
       { to: "/app/integrations", icon: Plug, label: "Integrations" },
       { to: "/app/automation", icon: Zap, label: "Automation Rules" },
+      { to: "/app/dns-firewall-controller", icon: Shield, label: "DNS Firewall" },
+      { to: "/app/saas-security-posture", icon: Cloud, label: "SaaS Security" },
+      { to: "/app/event-stream-processor", icon: Zap, label: "Event Streams" },
+      { to: "/app/deception-network-manager", icon: Target, label: "Deception Network" },
+      { to: "/app/backup-integrity-verifier", icon: HardDrive, label: "Backup Integrity" },
+      { to: "/app/incident-cost-tracker", icon: DollarSign, label: "Incident Costs" },
     ],
   },
   {

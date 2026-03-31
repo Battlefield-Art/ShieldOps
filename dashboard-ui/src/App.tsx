@@ -540,6 +540,14 @@ const CloudWorkloadInspector = lazy(() => import("./pages/CloudWorkloadInspector
 const LogAnomalyDetector = lazy(() => import("./pages/LogAnomalyDetector"));
 const MobileThreatDefender = lazy(() => import("./pages/MobileThreatDefender"));
 
+// ── Phase AN ──────────────────────────────────────────────────────
+const DnsFirewallController = lazy(() => import("./pages/DnsFirewallController"));
+const SaasSecurityPosture = lazy(() => import("./pages/SaasSecurityPosture"));
+const EventStreamProcessor = lazy(() => import("./pages/EventStreamProcessor"));
+const DeceptionNetworkManager = lazy(() => import("./pages/DeceptionNetworkManager"));
+const BackupIntegrityVerifier = lazy(() => import("./pages/BackupIntegrityVerifier"));
+const IncidentCostTracker = lazy(() => import("./pages/IncidentCostTracker"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -999,6 +1007,12 @@ export default function App() {
               <Route path="cloud-workload-inspector" element={<CloudWorkloadInspector />} />
               <Route path="log-anomaly-detector" element={<LogAnomalyDetector />} />
               <Route path="mobile-threat-defender" element={<MobileThreatDefender />} />
+              <Route path="dns-firewall-controller" element={<DnsFirewallController />} />
+              <Route path="saas-security-posture" element={<SaasSecurityPosture />} />
+              <Route path="event-stream-processor" element={<EventStreamProcessor />} />
+              <Route path="deception-network-manager" element={<DeceptionNetworkManager />} />
+              <Route path="backup-integrity-verifier" element={<BackupIntegrityVerifier />} />
+              <Route path="incident-cost-tracker" element={<IncidentCostTracker />} />
             </Route>
 
             {/* Catch-all */}
