@@ -656,6 +656,16 @@ const SecurityMeshOrchestrator = lazy(() => import("./pages/SecurityMeshOrchestr
 const AutonomousPatchManager = lazy(() => import("./pages/AutonomousPatchManager"));
 const CloudForensicsCollector = lazy(() => import("./pages/CloudForensicsCollector"));
 
+// ── Phase BD (new agents) ───────────────────────────────────────
+const APITokenRotator = lazy(() => import("./pages/APITokenRotator"));
+const SecuritySignalCorrelator = lazy(() => import("./pages/SecuritySignalCorrelator"));
+const CloudBillingProtector = lazy(() => import("./pages/CloudBillingProtector"));
+
+// ── Phase BE (new agents) ───────────────────────────────────────
+const SecuritySimulationSandbox = lazy(() => import("./pages/SecuritySimulationSandbox"));
+const ComplianceQuestionnaireEngine = lazy(() => import("./pages/ComplianceQuestionnaireEngine"));
+const ServiceAccountGuardian = lazy(() => import("./pages/ServiceAccountGuardian"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1193,6 +1203,12 @@ export default function App() {
               <Route path="cloud-resource-tagger" element={<CloudResourceTagger />} />
               <Route path="dark-web-intelligence" element={<DarkWebIntelligence2 />} />
               <Route path="email-authentication-auditor" element={<EmailAuthenticationAuditor />} />
+              <Route path="api-token-rotator" element={<APITokenRotator />} />
+              <Route path="security-signal-correlator" element={<SecuritySignalCorrelator />} />
+              <Route path="cloud-billing-protector" element={<CloudBillingProtector />} />
+              <Route path="security-simulation-sandbox" element={<SecuritySimulationSandbox />} />
+              <Route path="compliance-questionnaire-engine" element={<ComplianceQuestionnaireEngine />} />
+              <Route path="service-account-guardian" element={<ServiceAccountGuardian />} />
             </Route>
 
             {/* Catch-all */}

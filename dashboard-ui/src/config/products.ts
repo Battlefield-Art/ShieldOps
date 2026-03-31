@@ -676,6 +676,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cloud-resource-tagger", icon: Tag, label: "Resource Tagger" },
       { to: "/app/dark-web-intelligence", icon: Eye, label: "Dark Web Intel" },
       { to: "/app/email-authentication-auditor", icon: Mail, label: "Email Auth Audit" },
+      { to: "/app/api-token-rotator", icon: Key, label: "Token Rotator" },
+      { to: "/app/security-signal-correlator", icon: Radio, label: "Signal Correlator" },
+      { to: "/app/cloud-billing-protector", icon: DollarSign, label: "Billing Protector" },
+      { to: "/app/security-simulation-sandbox", icon: TestTube2, label: "Simulation Sandbox" },
+      { to: "/app/compliance-questionnaire-engine", icon: ClipboardList, label: "Questionnaire Engine" },
+      { to: "/app/service-account-guardian", icon: UserCheck, label: "Account Guardian" },
     ],
   },
   {
