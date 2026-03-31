@@ -1,6 +1,6 @@
 # agents/ — LangGraph Agent Orchestration
 
-449 autonomous security agents built on LangGraph StateGraph.
+473 autonomous security agents built on LangGraph StateGraph.
 
 ## Agent Architecture
 
