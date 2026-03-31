@@ -630,6 +630,16 @@ const OtProtocolMonitor = lazy(() => import("./pages/OtProtocolMonitor"));
 const MfaBypassDetector = lazy(() => import("./pages/MfaBypassDetector"));
 const CloudGovernanceEnforcer = lazy(() => import("./pages/CloudGovernanceEnforcer"));
 
+// ── Phase AZ (new agents) ───────────────────────────────────────
+const SecurityTicketAutomator = lazy(() => import("./pages/SecurityTicketAutomator"));
+const CloudSnapshotAnalyzer = lazy(() => import("./pages/CloudSnapshotAnalyzer"));
+const SecurityOnboardingEngine = lazy(() => import("./pages/SecurityOnboardingEngine"));
+
+// ── Phase BA (new agents) ───────────────────────────────────────
+const VulnerabilityExploitPredictor = lazy(() => import("./pages/VulnerabilityExploitPredictor"));
+const SecurityGamificationEngine = lazy(() => import("./pages/SecurityGamificationEngine"));
+const CloudIAMAnalyzer = lazy(() => import("./pages/CloudIAMAnalyzer"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1149,6 +1159,12 @@ export default function App() {
               <Route path="ot-protocol-monitor" element={<OtProtocolMonitor />} />
               <Route path="mfa-bypass-detector" element={<MfaBypassDetector />} />
               <Route path="cloud-governance-enforcer" element={<CloudGovernanceEnforcer />} />
+              <Route path="security-ticket-automator" element={<SecurityTicketAutomator />} />
+              <Route path="cloud-snapshot-analyzer" element={<CloudSnapshotAnalyzer />} />
+              <Route path="security-onboarding-engine" element={<SecurityOnboardingEngine />} />
+              <Route path="vulnerability-exploit-predictor" element={<VulnerabilityExploitPredictor />} />
+              <Route path="security-gamification-engine" element={<SecurityGamificationEngine />} />
+              <Route path="cloud-iam-analyzer" element={<CloudIAMAnalyzer />} />
             </Route>
 
             {/* Catch-all */}

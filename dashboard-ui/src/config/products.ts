@@ -587,6 +587,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/ot-protocol-monitor", icon: Cpu, label: "OT Protocol" },
       { to: "/app/mfa-bypass-detector", icon: Key, label: "MFA Bypass" },
       { to: "/app/cloud-governance-enforcer", icon: Cloud, label: "Cloud Governance" },
+      { to: "/app/security-ticket-automator", icon: Layers, label: "Ticket Automator" },
+      { to: "/app/cloud-snapshot-analyzer", icon: HardDrive, label: "Snapshot Analyzer" },
+      { to: "/app/security-onboarding-engine", icon: Rocket, label: "Security Onboarding" },
+      { to: "/app/vulnerability-exploit-predictor", icon: Bug, label: "Exploit Predictor" },
+      { to: "/app/security-gamification-engine", icon: Target, label: "Security Gamification" },
+      { to: "/app/cloud-iam-analyzer", icon: Key, label: "Cloud IAM Analyzer" },
     ],
   },
   {
