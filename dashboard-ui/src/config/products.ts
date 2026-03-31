@@ -618,6 +618,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/metrics-pipeline", icon: BarChart3, label: "Metrics Pipeline" },
       { to: "/app/logs-pipeline", icon: ScrollText, label: "Logs Pipeline" },
       { to: "/app/soc-transformation", icon: Workflow, label: "SOC Transformation" },
+      { to: "/app/security-copilot-agent", icon: Bot, label: "Security Copilot" },
+      { to: "/app/cloud-network-analyzer", icon: Network, label: "Cloud Network Analyzer" },
+      { to: "/app/threat-feed-orchestrator", icon: Radio, label: "Threat Feed Orchestrator" },
     ],
   },
   {
@@ -646,6 +649,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cloud-cost-anomaly-detector", icon: DollarSign, label: "Cost Anomaly Detector" },
       { to: "/app/security-workflow-builder", icon: Workflow, label: "Workflow Builder" },
       { to: "/app/asset-exposure-scorer", icon: Globe, label: "Exposure Scorer" },
+      { to: "/app/network-microsegmentation", icon: Network, label: "Microsegmentation" },
+      { to: "/app/supply-chain-risk-monitor", icon: Package, label: "Supply Chain Risk" },
+      { to: "/app/digital-forensics-lab", icon: FileSearch, label: "Forensics Lab" },
     ],
   },
   {

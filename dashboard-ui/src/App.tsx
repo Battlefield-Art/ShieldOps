@@ -515,6 +515,9 @@ const CertificateLifecycleManager = lazy(() => import("./pages/CertificateLifecy
 const SecurityConfigAssessor = lazy(() => import("./pages/SecurityConfigAssessor"));
 const CloudNetworkFirewall = lazy(() => import("./pages/CloudNetworkFirewall"));
 const ThreatHuntOrchestrator = lazy(() => import("./pages/ThreatHuntOrchestrator"));
+const NetworkMicrosegmentation = lazy(() => import("./pages/NetworkMicrosegmentation"));
+const SupplyChainRiskMonitor = lazy(() => import("./pages/SupplyChainRiskMonitor"));
+const DigitalForensicsLab = lazy(() => import("./pages/DigitalForensicsLab"));
 const ApiAbuseDetector = lazy(() => import("./pages/ApiAbuseDetector"));
 const CloudSecretVault = lazy(() => import("./pages/CloudSecretVault"));
 const ComplianceEvidenceCollector = lazy(() => import("./pages/ComplianceEvidenceCollector"));
@@ -613,6 +616,11 @@ const AccessCertificationEngine = lazy(() => import("./pages/AccessCertification
 const CloudCostAnomalyDetector = lazy(() => import("./pages/CloudCostAnomalyDetector"));
 const SecurityWorkflowBuilder = lazy(() => import("./pages/SecurityWorkflowBuilder"));
 const AssetExposureScorer = lazy(() => import("./pages/AssetExposureScorer"));
+
+// ── Phase AX (new agents) ───────────────────────────────────────
+const SecurityCopilotAgent = lazy(() => import("./pages/SecurityCopilotAgent"));
+const CloudNetworkAnalyzer = lazy(() => import("./pages/CloudNetworkAnalyzer"));
+const ThreatFeedOrchestrator = lazy(() => import("./pages/ThreatFeedOrchestrator"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -1055,6 +1063,9 @@ export default function App() {
               <Route path="security-config-assessor" element={<SecurityConfigAssessor />} />
               <Route path="cloud-network-firewall" element={<CloudNetworkFirewall />} />
               <Route path="threat-hunt-orchestrator" element={<ThreatHuntOrchestrator />} />
+              <Route path="network-microsegmentation" element={<NetworkMicrosegmentation />} />
+              <Route path="supply-chain-risk-monitor" element={<SupplyChainRiskMonitor />} />
+              <Route path="digital-forensics-lab" element={<DigitalForensicsLab />} />
               <Route path="api-abuse-detector" element={<ApiAbuseDetector />} />
               <Route path="cloud-secret-vault" element={<CloudSecretVault />} />
               <Route path="compliance-evidence-collector" element={<ComplianceEvidenceCollector />} />
@@ -1121,6 +1132,9 @@ export default function App() {
               <Route path="cloud-cost-anomaly-detector" element={<CloudCostAnomalyDetector />} />
               <Route path="security-workflow-builder" element={<SecurityWorkflowBuilder />} />
               <Route path="asset-exposure-scorer" element={<AssetExposureScorer />} />
+              <Route path="security-copilot-agent" element={<SecurityCopilotAgent />} />
+              <Route path="cloud-network-analyzer" element={<CloudNetworkAnalyzer />} />
+              <Route path="threat-feed-orchestrator" element={<ThreatFeedOrchestrator />} />
             </Route>
 
             {/* Catch-all */}
