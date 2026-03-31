@@ -604,6 +604,16 @@ const InsiderRiskScorer = lazy(() => import("./pages/InsiderRiskScorer"));
 const SecurityMetricDashboard = lazy(() => import("./pages/SecurityMetricDashboard"));
 const ZeroDayHunter = lazy(() => import("./pages/ZeroDayHunter"));
 
+// ── Phase AV ─────────────────────────────────────────────────────
+const RuntimeApplicationProtector = lazy(() => import("./pages/RuntimeApplicationProtector"));
+const CertificateTransparencyMonitor = lazy(() => import("./pages/CertificateTransparencyMonitor"));
+const AccessCertificationEngine = lazy(() => import("./pages/AccessCertificationEngine"));
+
+// ── Phase AW (new agents) ───────────────────────────────────────
+const CloudCostAnomalyDetector = lazy(() => import("./pages/CloudCostAnomalyDetector"));
+const SecurityWorkflowBuilder = lazy(() => import("./pages/SecurityWorkflowBuilder"));
+const AssetExposureScorer = lazy(() => import("./pages/AssetExposureScorer"));
+
 // ── Suspense fallback ──────────────────────────────────────────────
 
 function PageLoader() {
@@ -1105,6 +1115,12 @@ export default function App() {
               <Route path="api-schema-validator" element={<APISchemaValidator />} />
               <Route path="security-automation-pipeline" element={<SecurityAutomationPipeline />} />
               <Route path="unified-threat-model" element={<UnifiedThreatModel2 />} />
+              <Route path="runtime-application-protector" element={<RuntimeApplicationProtector />} />
+              <Route path="certificate-transparency-monitor" element={<CertificateTransparencyMonitor />} />
+              <Route path="access-certification-engine" element={<AccessCertificationEngine />} />
+              <Route path="cloud-cost-anomaly-detector" element={<CloudCostAnomalyDetector />} />
+              <Route path="security-workflow-builder" element={<SecurityWorkflowBuilder />} />
+              <Route path="asset-exposure-scorer" element={<AssetExposureScorer />} />
             </Route>
 
             {/* Catch-all */}

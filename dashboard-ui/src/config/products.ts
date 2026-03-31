@@ -578,6 +578,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/insider-risk-scorer", icon: UserX, label: "Insider Risk Scorer" },
       { to: "/app/security-metric-dashboard", icon: BarChart3, label: "Security Metrics" },
       { to: "/app/zero-day-hunter", icon: Bug, label: "Zero-Day Hunter" },
+      { to: "/app/runtime-application-protector", icon: Shield, label: "RASP" },
+      { to: "/app/certificate-transparency-monitor", icon: Lock, label: "CT Monitor" },
+      { to: "/app/access-certification-engine", icon: UserCheck, label: "Access Cert" },
     ],
   },
   {
@@ -640,6 +643,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/api-schema-validator", icon: FileCode, label: "API Schema Validator" },
       { to: "/app/security-automation-pipeline", icon: GitBranch, label: "Security Pipeline" },
       { to: "/app/unified-threat-model", icon: Target, label: "Threat Model" },
+      { to: "/app/cloud-cost-anomaly-detector", icon: DollarSign, label: "Cost Anomaly Detector" },
+      { to: "/app/security-workflow-builder", icon: Workflow, label: "Workflow Builder" },
+      { to: "/app/asset-exposure-scorer", icon: Globe, label: "Exposure Scorer" },
     ],
   },
   {
