@@ -515,6 +515,9 @@ const CertificateLifecycleManager = lazy(() => import("./pages/CertificateLifecy
 const SecurityConfigAssessor = lazy(() => import("./pages/SecurityConfigAssessor"));
 const CloudNetworkFirewall = lazy(() => import("./pages/CloudNetworkFirewall"));
 const ThreatHuntOrchestrator = lazy(() => import("./pages/ThreatHuntOrchestrator"));
+const SecurityChangeManager = lazy(() => import("./pages/SecurityChangeManager"));
+const CredentialExposureScanner = lazy(() => import("./pages/CredentialExposureScanner"));
+const SecurityOpsDashboard2 = lazy(() => import("./pages/SecurityOpsDashboard"));
 const NetworkMicrosegmentation = lazy(() => import("./pages/NetworkMicrosegmentation"));
 const SupplyChainRiskMonitor = lazy(() => import("./pages/SupplyChainRiskMonitor"));
 const DigitalForensicsLab = lazy(() => import("./pages/DigitalForensicsLab"));
@@ -665,6 +668,11 @@ const CloudBillingProtector = lazy(() => import("./pages/CloudBillingProtector")
 const SecuritySimulationSandbox = lazy(() => import("./pages/SecuritySimulationSandbox"));
 const ComplianceQuestionnaireEngine = lazy(() => import("./pages/ComplianceQuestionnaireEngine"));
 const ServiceAccountGuardian = lazy(() => import("./pages/ServiceAccountGuardian"));
+
+// ── Phase BF (new agents) ───────────────────────────────────────
+const PrivacyRightsAutomator = lazy(() => import("./pages/PrivacyRightsAutomator"));
+const SecurityAssetGraph = lazy(() => import("./pages/SecurityAssetGraph"));
+const ThreatLandscapeAnalyzer = lazy(() => import("./pages/ThreatLandscapeAnalyzer"));
 
 // ── Suspense fallback ──────────────────────────────────────────────
 
@@ -1209,6 +1217,12 @@ export default function App() {
               <Route path="security-simulation-sandbox" element={<SecuritySimulationSandbox />} />
               <Route path="compliance-questionnaire-engine" element={<ComplianceQuestionnaireEngine />} />
               <Route path="service-account-guardian" element={<ServiceAccountGuardian />} />
+              <Route path="privacy-rights-automator" element={<PrivacyRightsAutomator />} />
+              <Route path="security-asset-graph" element={<SecurityAssetGraph />} />
+              <Route path="threat-landscape-analyzer" element={<ThreatLandscapeAnalyzer />} />
+              <Route path="security-change-manager" element={<SecurityChangeManager />} />
+              <Route path="credential-exposure-scanner" element={<CredentialExposureScanner />} />
+              <Route path="security-ops-dashboard" element={<SecurityOpsDashboard2 />} />
             </Route>
 
             {/* Catch-all */}

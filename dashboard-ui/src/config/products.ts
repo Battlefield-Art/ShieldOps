@@ -682,6 +682,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/security-simulation-sandbox", icon: TestTube2, label: "Simulation Sandbox" },
       { to: "/app/compliance-questionnaire-engine", icon: ClipboardList, label: "Questionnaire Engine" },
       { to: "/app/service-account-guardian", icon: UserCheck, label: "Account Guardian" },
+      { to: "/app/privacy-rights-automator", icon: FileText, label: "Privacy Automator" },
+      { to: "/app/security-asset-graph", icon: Network, label: "Asset Graph" },
+      { to: "/app/threat-landscape-analyzer", icon: Globe, label: "Threat Landscape" },
+      { to: "/app/security-change-manager", icon: GitBranch, label: "Change Manager" },
+      { to: "/app/credential-exposure-scanner", icon: Key, label: "Credential Scanner" },
+      { to: "/app/security-ops-dashboard", icon: BarChart3, label: "Ops Dashboard" },
     ],
   },
   {
