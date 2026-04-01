@@ -1,128 +1,100 @@
-"""Incident Prediction Model Agent — LangGraph StateGraph."""
+"""LangGraph workflow for the Incident Prediction Model Agent."""
 
 from __future__ import annotations
 
-from typing import Any
-
 from langgraph.graph import END, StateGraph
 
-from .models import IncidentPredictionModelState
-from .nodes import (
-    assess_confidence,
-    collect_indicators,
-    extract_features,
-    generate_report,
-    generate_warnings,
-    run_model,
+from shieldops.agents.incident_prediction_model.models import (
+    IncidentPredictionModelState,
 )
-from .tools import IncidentPredictionModelToolkit
+from shieldops.agents.incident_prediction_model.nodes import (
+    analyze_patterns,
+    assess_confidence,
+    build_predictions,
+    collect_signals,
+    generate_report,
+    recommend_preventions,
+)
+from shieldops.agents.tracing import traced_node
+
+_AGENT = "incident_prediction_model"
 
 
-def build_graph(
-    toolkit: IncidentPredictionModelToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Incident Prediction Model graph.
+def _should_predict(
+    state: IncidentPredictionModelState,
+) -> str:
+    """Route after pattern analysis."""
+    if state.error:
+        return "generate_report"
+    if state.patterns:
+        return "build_predictions"
+    return "generate_report"
 
-    Flow:
-        collect_indicators -> extract_features
-        -> run_model -> assess_confidence
-        -> generate_warnings -> report
+
+def _should_prevent(
+    state: IncidentPredictionModelState,
+) -> str:
+    """Route after confidence assessment."""
+    if state.confidence_scores:
+        return "recommend_preventions"
+    return "generate_report"
+
+
+def create_incident_prediction_model_graph() -> StateGraph:  # type: ignore[type-arg]
+    """Build the Incident Prediction Model LangGraph.
+
+    Workflow:
+        collect_signals -> analyze_patterns
+          -> [has_patterns?] -> build_predictions -> assess_confidence
+          -> [has_scores?] -> recommend_preventions -> generate_report
     """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _collect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await collect_indicators(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _extract(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await extract_features(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _run(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await run_model(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _assess(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await assess_confidence(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _warn(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_warnings(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
     graph = StateGraph(IncidentPredictionModelState)
-    graph.add_node("collect_indicators", _collect)
-    graph.add_node("extract_features", _extract)
-    graph.add_node("run_model", _run)
-    graph.add_node("assess_confidence", _assess)
-    graph.add_node("generate_warnings", _warn)
-    graph.add_node("report", _report)
 
-    graph.set_entry_point("collect_indicators")
-    graph.add_edge(
-        "collect_indicators",
-        "extract_features",
+    graph.add_node(
+        "collect_signals",
+        traced_node(f"{_AGENT}.collect_signals", _AGENT)(collect_signals),
     )
-    graph.add_edge(
-        "extract_features",
-        "run_model",
+    graph.add_node(
+        "analyze_patterns",
+        traced_node(f"{_AGENT}.analyze_patterns", _AGENT)(analyze_patterns),
     )
-    graph.add_edge(
-        "run_model",
+    graph.add_node(
+        "build_predictions",
+        traced_node(f"{_AGENT}.build_predictions", _AGENT)(build_predictions),
+    )
+    graph.add_node(
         "assess_confidence",
+        traced_node(f"{_AGENT}.assess_confidence", _AGENT)(assess_confidence),
     )
-    graph.add_edge(
+    graph.add_node(
+        "recommend_preventions",
+        traced_node(f"{_AGENT}.recommend_preventions", _AGENT)(recommend_preventions),
+    )
+    graph.add_node(
+        "generate_report",
+        traced_node(f"{_AGENT}.generate_report", _AGENT)(generate_report),
+    )
+
+    graph.set_entry_point("collect_signals")
+    graph.add_edge("collect_signals", "analyze_patterns")
+    graph.add_conditional_edges(
+        "analyze_patterns",
+        _should_predict,
+        {
+            "build_predictions": "build_predictions",
+            "generate_report": "generate_report",
+        },
+    )
+    graph.add_edge("build_predictions", "assess_confidence")
+    graph.add_conditional_edges(
         "assess_confidence",
-        "generate_warnings",
+        _should_prevent,
+        {
+            "recommend_preventions": "recommend_preventions",
+            "generate_report": "generate_report",
+        },
     )
-    graph.add_edge(
-        "generate_warnings",
-        "report",
-    )
-    graph.add_edge("report", END)
+    graph.add_edge("recommend_preventions", "generate_report")
+    graph.add_edge("generate_report", END)
 
     return graph
-
-
-def create_incident_prediction_model_graph(
-    telemetry_source: Any | None = None,
-    model_service: Any | None = None,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Create the Incident Prediction Model graph."""
-    toolkit = IncidentPredictionModelToolkit(
-        telemetry_source=telemetry_source,
-        model_service=model_service,
-    )
-    return build_graph(toolkit)

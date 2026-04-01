@@ -1,4 +1,6 @@
-"""Incident Prediction Model Agent — ML-based security incident prediction."""
+"""Incident Prediction Model — predicts future incidents from signals and patterns."""
+
+from __future__ import annotations
 
 from shieldops.agents.incident_prediction_model.graph import (
     create_incident_prediction_model_graph,

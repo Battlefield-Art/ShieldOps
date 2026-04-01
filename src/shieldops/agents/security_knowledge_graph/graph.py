@@ -1,128 +1,100 @@
-"""Security Knowledge Graph Agent — LangGraph StateGraph."""
+"""LangGraph workflow for the Security Knowledge Graph Agent."""
 
 from __future__ import annotations
 
-from typing import Any
-
 from langgraph.graph import END, StateGraph
 
-from .models import SecurityKnowledgeGraphState
-from .nodes import (
-    analyze_paths,
-    build_relationships,
-    detect_patterns,
+from shieldops.agents.security_knowledge_graph.models import (
+    SecurityKnowledgeGraphState,
+)
+from shieldops.agents.security_knowledge_graph.nodes import (
+    build_graph,
+    detect_anomalies,
+    extract_relationships,
     generate_report,
     ingest_entities,
-    query_insights,
+    query_patterns,
 )
-from .tools import SecurityKnowledgeGraphToolkit
+from shieldops.agents.tracing import traced_node
+
+_AGENT = "security_knowledge_graph"
 
 
-def build_graph(
-    toolkit: SecurityKnowledgeGraphToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Security Knowledge Graph graph.
+def _should_query(
+    state: SecurityKnowledgeGraphState,
+) -> str:
+    """Route after graph building."""
+    if state.error:
+        return "generate_report"
+    if state.patterns:
+        return "query_patterns"
+    return "generate_report"
 
-    Flow:
-        ingest_entities -> build_relationships
-        -> analyze_paths -> detect_patterns
-        -> query_insights -> report
+
+def _should_detect(
+    state: SecurityKnowledgeGraphState,
+) -> str:
+    """Route after pattern querying."""
+    if state.patterns:
+        return "detect_anomalies"
+    return "generate_report"
+
+
+def create_security_knowledge_graph_graph() -> StateGraph:  # type: ignore[type-arg]
+    """Build the Security Knowledge Graph LangGraph.
+
+    Workflow:
+        ingest_entities -> extract_relationships -> build_graph
+          -> [has_patterns?] -> query_patterns
+          -> [has_patterns?] -> detect_anomalies -> generate_report
     """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _ingest(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await ingest_entities(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _build(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await build_relationships(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _analyze(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await analyze_paths(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _detect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await detect_patterns(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _query(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await query_insights(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
     graph = StateGraph(SecurityKnowledgeGraphState)
-    graph.add_node("ingest_entities", _ingest)
-    graph.add_node("build_relationships", _build)
-    graph.add_node("analyze_paths", _analyze)
-    graph.add_node("detect_patterns", _detect)
-    graph.add_node("query_insights", _query)
-    graph.add_node("report", _report)
+
+    graph.add_node(
+        "ingest_entities",
+        traced_node(f"{_AGENT}.ingest_entities", _AGENT)(ingest_entities),
+    )
+    graph.add_node(
+        "extract_relationships",
+        traced_node(f"{_AGENT}.extract_relationships", _AGENT)(extract_relationships),
+    )
+    graph.add_node(
+        "build_graph",
+        traced_node(f"{_AGENT}.build_graph", _AGENT)(build_graph),
+    )
+    graph.add_node(
+        "query_patterns",
+        traced_node(f"{_AGENT}.query_patterns", _AGENT)(query_patterns),
+    )
+    graph.add_node(
+        "detect_anomalies",
+        traced_node(f"{_AGENT}.detect_anomalies", _AGENT)(detect_anomalies),
+    )
+    graph.add_node(
+        "generate_report",
+        traced_node(f"{_AGENT}.generate_report", _AGENT)(generate_report),
+    )
 
     graph.set_entry_point("ingest_entities")
-    graph.add_edge(
-        "ingest_entities",
-        "build_relationships",
+    graph.add_edge("ingest_entities", "extract_relationships")
+    graph.add_edge("extract_relationships", "build_graph")
+    graph.add_conditional_edges(
+        "build_graph",
+        _should_query,
+        {
+            "query_patterns": "query_patterns",
+            "generate_report": "generate_report",
+        },
     )
-    graph.add_edge(
-        "build_relationships",
-        "analyze_paths",
+    graph.add_conditional_edges(
+        "query_patterns",
+        _should_detect,
+        {
+            "detect_anomalies": "detect_anomalies",
+            "generate_report": "generate_report",
+        },
     )
-    graph.add_edge(
-        "analyze_paths",
-        "detect_patterns",
-    )
-    graph.add_edge(
-        "detect_patterns",
-        "query_insights",
-    )
-    graph.add_edge(
-        "query_insights",
-        "report",
-    )
-    graph.add_edge("report", END)
+    graph.add_edge("detect_anomalies", "generate_report")
+    graph.add_edge("generate_report", END)
 
     return graph
-
-
-def create_security_knowledge_graph_graph(
-    graph_store: Any | None = None,
-    threat_intel_api: Any | None = None,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Create the Security Knowledge Graph graph."""
-    toolkit = SecurityKnowledgeGraphToolkit(
-        graph_store=graph_store,
-        threat_intel_api=threat_intel_api,
-    )
-    return build_graph(toolkit)

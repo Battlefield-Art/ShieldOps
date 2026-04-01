@@ -1,4 +1,4 @@
-"""Incident Prediction Model runner — entry point for execution."""
+"""Cross-Cloud Posture Manager runner — entry point for execution."""
 
 from __future__ import annotations
 
@@ -7,60 +7,60 @@ from uuid import uuid4
 
 import structlog
 
-from shieldops.agents.incident_prediction_model.graph import (
-    create_incident_prediction_model_graph,
+from shieldops.agents.cross_cloud_posture_manager.graph import (
+    create_cross_cloud_posture_manager_graph,
 )
-from shieldops.agents.incident_prediction_model.models import (
-    IncidentPredictionModelState,
+from shieldops.agents.cross_cloud_posture_manager.models import (
+    CrossCloudPostureManagerState,
 )
-from shieldops.agents.incident_prediction_model.nodes import (
+from shieldops.agents.cross_cloud_posture_manager.nodes import (
     set_toolkit,
 )
-from shieldops.agents.incident_prediction_model.tools import (
-    IncidentPredictionModelToolkit,
+from shieldops.agents.cross_cloud_posture_manager.tools import (
+    CrossCloudPostureManagerToolkit,
 )
 
 logger = structlog.get_logger()
 
 
-class IncidentPredictionModelRunner:
-    """Runner for the Incident Prediction Model Agent."""
+class CrossCloudPostureManagerRunner:
+    """Runner for the Cross-Cloud Posture Manager Agent."""
 
     def __init__(
         self,
-        siem_client: Any | None = None,
-        threat_intel_client: Any | None = None,
-        incident_db: Any | None = None,
+        aws_client: Any | None = None,
+        gcp_client: Any | None = None,
+        azure_client: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = IncidentPredictionModelToolkit(
-            siem_client=siem_client,
-            threat_intel_client=threat_intel_client,
-            incident_db=incident_db,
+        self._toolkit = CrossCloudPostureManagerToolkit(
+            aws_client=aws_client,
+            gcp_client=gcp_client,
+            azure_client=azure_client,
             repository=repository,
         )
         set_toolkit(self._toolkit)
-        graph = create_incident_prediction_model_graph()
+        graph = create_cross_cloud_posture_manager_graph()
         self._app = graph.compile()
-        self._results: dict[str, IncidentPredictionModelState] = {}
-        logger.info("ipm_runner.initialized")
+        self._results: dict[str, CrossCloudPostureManagerState] = {}
+        logger.info("ccpm_runner.initialized")
 
     async def run(
         self,
         request_id: str,
         tenant_id: str = "",
         config: dict[str, Any] | None = None,
-    ) -> IncidentPredictionModelState:
-        """Run incident prediction workflow."""
-        sid = f"ipm-{uuid4().hex[:12]}"
-        initial = IncidentPredictionModelState(
+    ) -> CrossCloudPostureManagerState:
+        """Run cross-cloud posture management workflow."""
+        sid = f"ccpm-{uuid4().hex[:12]}"
+        initial = CrossCloudPostureManagerState(
             request_id=request_id,
             tenant_id=tenant_id,
             config=config or {},
         )
 
         logger.info(
-            "ipm_runner.starting",
+            "ccpm_runner.starting",
             session_id=sid,
             request_id=request_id,
         )
@@ -71,25 +71,25 @@ class IncidentPredictionModelRunner:
                 config={
                     "metadata": {
                         "session_id": sid,
-                        "agent": "incident_prediction_model",
+                        "agent": "cross_cloud_posture_manager",
                     },
                 },
             )
-            final = IncidentPredictionModelState.model_validate(result)
+            final = CrossCloudPostureManagerState.model_validate(result)
             self._results[sid] = final
 
             logger.info(
-                "ipm_runner.completed",
+                "ccpm_runner.completed",
                 session_id=sid,
-                signals=len(final.signals),
-                predictions=len(final.predictions),
+                findings=len(final.findings),
+                drifts=len(final.drifts),
                 duration_ms=final.session_duration_ms,
             )
             return final
 
         except Exception as e:
-            logger.error("ipm_runner.failed", session_id=sid, error=str(e))
-            err_state = IncidentPredictionModelState(
+            logger.error("ccpm_runner.failed", session_id=sid, error=str(e))
+            err_state = CrossCloudPostureManagerState(
                 request_id=request_id,
                 tenant_id=tenant_id,
                 config=config or {},
@@ -102,7 +102,7 @@ class IncidentPredictionModelRunner:
     def get_result(
         self,
         session_id: str,
-    ) -> IncidentPredictionModelState | None:
+    ) -> CrossCloudPostureManagerState | None:
         """Retrieve a previous result."""
         return self._results.get(session_id)
 
@@ -112,8 +112,8 @@ class IncidentPredictionModelRunner:
             {
                 "session_id": sid,
                 "request_id": s.request_id,
-                "signals": len(s.signals),
-                "predictions": len(s.predictions),
+                "findings": len(s.findings),
+                "drifts": len(s.drifts),
                 "step": s.current_step,
                 "error": s.error,
             }

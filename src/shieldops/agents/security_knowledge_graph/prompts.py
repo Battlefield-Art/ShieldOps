@@ -1,78 +1,112 @@
-"""Security Knowledge Graph Agent — LLM prompt templates."""
+"""LLM prompt templates for the Security Knowledge Graph Agent."""
+
+from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-
-class PathInsight(BaseModel):
-    """Structured output from attack path analysis."""
-
-    summary: str = Field(
-        description="Brief attack path overview",
-    )
-    critical_paths: list[str] = Field(
-        description="Most critical attack paths discovered",
-    )
-    lateral_movement_risks: list[str] = Field(
-        description="Lateral movement opportunities found",
-    )
+# ── Structured output schemas ─────────────────────────
 
 
-class PatternInsight(BaseModel):
-    """Structured output from pattern detection."""
+class EntityIngestionOutput(BaseModel):
+    """Structured output for entity ingestion."""
 
-    summary: str = Field(
-        description="Pattern detection overview",
-    )
-    anomalous_clusters: list[str] = Field(
-        description="Anomalous entity clusters detected",
-    )
-    recommendations: list[str] = Field(
-        description="Security hardening recommendations",
-    )
+    total_entities: int = Field(description="Total entities ingested")
+    unique_types: int = Field(description="Number of unique entity types")
+    summary: str = Field(description="Ingestion summary")
 
 
-class QueryInsight(BaseModel):
-    """Structured output from graph query analysis."""
+class RelationshipExtractionOutput(BaseModel):
+    """Structured output for relationship extraction."""
 
-    summary: str = Field(
-        description="Query results overview",
-    )
-    key_findings: list[str] = Field(
-        description="Key findings from graph queries",
-    )
-    risk_hotspots: list[str] = Field(
-        description="Identified risk concentration areas",
-    )
+    total_relationships: int = Field(description="Total relationships extracted")
+    high_confidence: int = Field(description="High-confidence relationships")
+    reasoning: str = Field(description="Extraction reasoning")
 
 
-class ReportInsight(BaseModel):
-    """Structured output for final report."""
+class GraphBuildOutput(BaseModel):
+    """Structured output for graph construction."""
 
-    summary: str = Field(
-        description="Executive summary of knowledge graph analysis",
-    )
-    key_findings: list[str] = Field(
-        description="Key findings for security team",
-    )
-    next_steps: list[str] = Field(
-        description="Recommended next steps",
-    )
+    nodes: int = Field(description="Nodes in the graph")
+    edges: int = Field(description="Edges in the graph")
+    reasoning: str = Field(description="Graph construction reasoning")
 
 
-SYSTEM_ANALYZE = (
-    "You are a security knowledge graph analyst reviewing "
-    "entity relationships and attack paths.\n"
-    "1. Identify critical attack paths through the graph\n"
-    "2. Detect lateral movement opportunities\n"
-    "3. Find high-risk entity clusters\n"
-    "4. Recommend relationship-based mitigations"
-)
+class PatternQueryOutput(BaseModel):
+    """Structured output for pattern querying."""
 
-SYSTEM_REPORT = (
-    "You are a security advisor generating a "
-    "knowledge graph analysis report.\n"
-    "1. Summarize graph topology and risk hotspots\n"
-    "2. Highlight critical attack paths requiring action\n"
-    "3. Quantify entity exposure and blast radius\n"
-    "4. Recommend graph-informed security improvements"
-)
+    patterns_found: int = Field(description="Patterns discovered")
+    critical_patterns: int = Field(description="Critical-severity patterns")
+    reasoning: str = Field(description="Pattern query reasoning")
+
+
+class AnomalyDetectionOutput(BaseModel):
+    """Structured output for anomaly detection."""
+
+    anomalies_detected: int = Field(description="Anomalies detected")
+    high_risk_count: int = Field(description="High-risk anomalies")
+    reasoning: str = Field(description="Anomaly detection reasoning")
+
+
+# ── System prompts ────────────────────────────────────
+
+SYSTEM_INGEST_ENTITIES = """\
+You are an expert security knowledge graph engineer performing \
+entity ingestion.
+
+Given the configuration and data sources:
+1. Identify all security-relevant entities (hosts, users, services)
+2. Normalize entity attributes and assign risk scores
+3. Detect duplicate or conflicting entity records
+4. Classify entities by type and criticality
+
+Focus on: completeness, deduplication, accurate classification."""
+
+SYSTEM_EXTRACT_RELATIONSHIPS = """\
+You are an expert security knowledge graph engineer extracting \
+relationships.
+
+Given the ingested entities:
+1. Identify communication, authentication, and dependency links
+2. Extract exploit and mitigation relationships from threat data
+3. Assign confidence scores to each relationship
+4. Detect implicit relationships from behavioral patterns
+
+Prioritize high-confidence relationships with strong evidence."""
+
+SYSTEM_BUILD_GRAPH = """\
+You are an expert security knowledge graph engineer constructing \
+the graph.
+
+Given entities and relationships:
+1. Build a connected graph with proper indexing
+2. Identify strongly connected components
+3. Detect isolated nodes that may indicate gaps
+4. Optimize graph structure for query performance
+
+Focus on: graph integrity, connectivity, query efficiency."""
+
+SYSTEM_QUERY_PATTERNS = """\
+You are an expert security knowledge graph engineer querying \
+for threat patterns.
+
+Given the constructed graph:
+1. Search for known attack patterns (lateral movement, privilege escalation)
+2. Identify suspicious communication chains
+3. Detect policy violation patterns
+4. Find vulnerable dependency chains
+
+Focus on: MITRE ATT&CK mapping, kill chain detection, \
+lateral movement paths."""
+
+SYSTEM_DETECT_ANOMALIES = """\
+You are an expert security knowledge graph engineer detecting \
+anomalies.
+
+Given the graph patterns and matches:
+1. Flag unusual entity relationships not seen before
+2. Detect structural anomalies in the graph topology
+3. Identify risk score outliers and clustering
+4. Compare against baseline graph behavior
+
+Focus on: deviation from baseline, novel attack indicators, \
+graph topology anomalies."""

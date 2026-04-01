@@ -1,351 +1,331 @@
-"""Incident Prediction Model Agent — Node implementations."""
+"""Node implementations for the Incident Prediction Model."""
 
 from __future__ import annotations
 
-import json
-from typing import Any, cast
+import json as _json
+from datetime import UTC, datetime
+from typing import Any
 
 import structlog
-from pydantic import BaseModel
 
-from shieldops.utils.llm import llm_structured
-
-from .models import (
-    ConfidenceAssessment,
-    FeatureVector,
+from shieldops.agents.incident_prediction_model.models import (
+    IncidentPredictionModelState,
     IPMStage,
-    LeadingIndicator,
-    PredictionResult,
     ReasoningStep,
 )
-from .tools import IncidentPredictionModelToolkit
+from shieldops.agents.incident_prediction_model.prompts import (
+    SYSTEM_ANALYZE_PATTERNS,
+    SYSTEM_ASSESS_CONFIDENCE,
+    SYSTEM_BUILD_PREDICTIONS,
+    SYSTEM_COLLECT_SIGNALS,
+    SYSTEM_RECOMMEND_PREVENTIONS,
+    ConfidenceAssessOutput,
+    PatternAnalysisOutput,
+    PredictionBuildOutput,
+    PreventionOutput,
+    SignalCollectionOutput,
+)
+from shieldops.agents.incident_prediction_model.tools import (
+    IncidentPredictionModelToolkit,
+)
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
-_toolkit: IncidentPredictionModelToolkit | None = None  # noqa: PLW0603
+_toolkit: IncidentPredictionModelToolkit | None = None
 
 
-def set_toolkit(tk: IncidentPredictionModelToolkit) -> None:
+def set_toolkit(
+    toolkit: IncidentPredictionModelToolkit,
+) -> None:
     """Set the module-level toolkit instance."""
     global _toolkit  # noqa: PLW0603
-    _toolkit = tk
+    _toolkit = toolkit
 
 
 def _get_toolkit() -> IncidentPredictionModelToolkit:
-    assert _toolkit is not None, "Toolkit not initialised"
+    if _toolkit is None:
+        return IncidentPredictionModelToolkit()
     return _toolkit
 
 
-def _to_dict(state: Any) -> dict[str, Any]:
-    if isinstance(state, BaseModel):
-        return state.model_dump()
-    return state  # type: ignore[no-any-return]
+def _step(
+    state: IncidentPredictionModelState,
+    action: str,
+    input_summary: str,
+    output_summary: str,
+    duration_ms: int,
+    tool_used: str | None = None,
+) -> ReasoningStep:
+    """Create a reasoning step."""
+    return ReasoningStep(
+        step_number=len(state.reasoning_chain) + 1,
+        action=action,
+        input_summary=input_summary,
+        output_summary=output_summary,
+        duration_ms=duration_ms,
+        tool_used=tool_used,
+    )
 
 
-# ------------------------------------------------------------------
-# Node 1: Collect Indicators
-# ------------------------------------------------------------------
-
-
-async def collect_indicators(
-    state: dict[str, Any],
-    toolkit: IncidentPredictionModelToolkit,
+async def collect_signals(
+    state: IncidentPredictionModelState,
 ) -> dict[str, Any]:
-    """Collect leading indicators from telemetry."""
-    logger.info("ipm.node.collect_indicators")
-    state = _to_dict(state)
+    """Collect security signals from configured sources."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    tenant_id = state.get("tenant_id", "default")
-    indicators = await toolkit.collect_indicators(tenant_id)
-    data = [ind.model_dump() for ind in indicators]
-
-    note = f"Collected {len(indicators)} leading indicators"
-
-    return {
-        "stage": IPMStage.EXTRACT_FEATURES.value,
-        "indicators": data,
-        "total_indicators": len(indicators),
-        "current_step": "collect_indicators",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="collect_indicators",
-                detail=note,
-                confidence=0.9,
-            ).model_dump()
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node 2: Extract Features
-# ------------------------------------------------------------------
-
-
-async def extract_features(
-    state: dict[str, Any],
-    toolkit: IncidentPredictionModelToolkit,
-) -> dict[str, Any]:
-    """Extract feature vectors from indicators."""
-    logger.info("ipm.node.extract_features")
-    state = _to_dict(state)
-
-    indicators = [LeadingIndicator(**ind) for ind in state.get("indicators", [])]
-    vectors = await toolkit.extract_features(indicators)
-    data = [v.model_dump() for v in vectors]
-
-    note = f"Extracted {len(vectors)} feature vectors"
-
-    return {
-        "stage": IPMStage.RUN_MODEL.value,
-        "feature_vectors": data,
-        "current_step": "extract_features",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="extract_features",
-                detail=note,
-                confidence=0.88,
-            ).model_dump()
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node 3: Run Model
-# ------------------------------------------------------------------
-
-
-async def run_model(
-    state: dict[str, Any],
-    toolkit: IncidentPredictionModelToolkit,
-) -> dict[str, Any]:
-    """Run the prediction model on feature vectors."""
-    logger.info("ipm.node.run_model")
-    state = _to_dict(state)
-
-    vectors = [FeatureVector(**fv) for fv in state.get("feature_vectors", [])]
-    predictions = await toolkit.run_prediction_model(vectors)
-    data = [p.model_dump() for p in predictions]
-
-    note = f"Generated {len(predictions)} predictions"
+    raw = await toolkit.collect_signals(state.config)
+    high_sev = sum(1 for s in raw if s.get("severity") in ("critical", "high"))
 
     try:
-        from .prompts import SYSTEM_ANALYZE, PredictionInsight
-
-        ctx = json.dumps(
+        ctx = _json.dumps(
             {
-                "predictions": [
-                    {
-                        "type": p.incident_type,
-                        "probability": p.probability,
-                        "risk": p.risk_level.value,
-                        "horizon_h": p.time_horizon_hours,
-                    }
-                    for p in predictions[:20]
-                ],
+                "time_window": state.config.get("time_window_hours", 24),
+                "signal_count": len(raw),
             },
             default=str,
         )
-        llm_result = cast(
-            PredictionInsight,
-            await llm_structured(
-                system_prompt=SYSTEM_ANALYZE,
-                user_prompt=f"Incident predictions:\n{ctx}",
-                schema=PredictionInsight,
-            ),
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_COLLECT_SIGNALS,
+            user_prompt=f"Signal collection context:\n{ctx}",
+            schema=SignalCollectionOutput,
         )
-        logger.info(
-            "llm_enhanced",
-            agent="ipm",
-            node="run_model",
-        )
-        note = f"{llm_result.summary} {note}"
+        if hasattr(llm_result, "total_signals"):
+            logger.info("llm_enhanced", node="collect_signals")
     except Exception:
-        logger.debug(
-            "llm_fallback",
-            agent="ipm",
-            node="run_model",
-        )
+        logger.debug("llm_enhancement_skipped", node="collect_signals")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "collect_signals",
+        f"window={state.config.get('time_window_hours', 24)}h",
+        f"collected {len(raw)} signals, {high_sev} high-severity",
+        elapsed,
+        "siem_client",
+    )
+    await toolkit.record_metric("signals_collected", float(len(raw)))
 
     return {
-        "stage": IPMStage.ASSESS_CONFIDENCE.value,
-        "predictions": data,
-        "predictions_generated": len(predictions),
-        "current_step": "run_model",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="run_model",
-                detail=note,
-                confidence=0.82,
-            ).model_dump()
-        ],
+        "signals": raw,
+        "stage": IPMStage.ANALYZE_PATTERNS,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "collect_signals",
+        "session_start": start,
     }
 
 
-# ------------------------------------------------------------------
-# Node 4: Assess Confidence
-# ------------------------------------------------------------------
+async def analyze_patterns(
+    state: IncidentPredictionModelState,
+) -> dict[str, Any]:
+    """Analyze signals against historical incident patterns."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
+
+    patterns = await toolkit.analyze_patterns(state.signals)
+
+    try:
+        ctx = _json.dumps(
+            {"signal_count": len(state.signals), "pattern_count": len(patterns)},
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_ANALYZE_PATTERNS,
+            user_prompt=f"Pattern analysis context:\n{ctx}",
+            schema=PatternAnalysisOutput,
+        )
+        if hasattr(llm_result, "patterns_found"):
+            logger.info("llm_enhanced", node="analyze_patterns")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="analyze_patterns")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "analyze_patterns",
+        f"analyzing {len(state.signals)} signals",
+        f"{len(patterns)} patterns identified",
+        elapsed,
+        "incident_db",
+    )
+
+    return {
+        "patterns": patterns,
+        "stage": IPMStage.BUILD_PREDICTIONS,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "analyze_patterns",
+    }
+
+
+async def build_predictions(
+    state: IncidentPredictionModelState,
+) -> dict[str, Any]:
+    """Build incident predictions from patterns and signals."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
+
+    predictions = await toolkit.build_predictions(state.patterns, state.signals)
+
+    try:
+        ctx = _json.dumps(
+            {
+                "pattern_count": len(state.patterns),
+                "prediction_count": len(predictions),
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_BUILD_PREDICTIONS,
+            user_prompt=f"Prediction building context:\n{ctx}",
+            schema=PredictionBuildOutput,
+        )
+        if hasattr(llm_result, "predictions_made"):
+            logger.info("llm_enhanced", node="build_predictions")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="build_predictions")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    high_prob = sum(1 for p in predictions if p.get("probability", 0) >= 0.7)
+    step = _step(
+        state,
+        "build_predictions",
+        f"building from {len(state.patterns)} patterns",
+        f"{len(predictions)} predictions, {high_prob} high-probability",
+        elapsed,
+        "incident_db",
+    )
+    await toolkit.record_metric("predictions_built", float(len(predictions)))
+
+    return {
+        "predictions": predictions,
+        "stage": IPMStage.ASSESS_CONFIDENCE,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "build_predictions",
+    }
 
 
 async def assess_confidence(
-    state: dict[str, Any],
-    toolkit: IncidentPredictionModelToolkit,
+    state: IncidentPredictionModelState,
 ) -> dict[str, Any]:
-    """Assess confidence of predictions."""
-    logger.info("ipm.node.assess_confidence")
-    state = _to_dict(state)
+    """Assess confidence for each prediction."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    predictions = [PredictionResult(**p) for p in state.get("predictions", [])]
-    vectors = [FeatureVector(**fv) for fv in state.get("feature_vectors", [])]
-    assessments = await toolkit.assess_confidence(predictions, vectors)
-    data = [a.model_dump() for a in assessments]
+    scores = await toolkit.assess_confidence(state.predictions)
 
-    high_conf = sum(1 for a in assessments if a.overall_confidence > 0.7)
-    note = f"Assessed {len(assessments)} predictions, {high_conf} high confidence"
+    try:
+        ctx = _json.dumps(
+            {"prediction_count": len(state.predictions), "scores": scores[:5]},
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_ASSESS_CONFIDENCE,
+            user_prompt=f"Confidence assessment context:\n{ctx}",
+            schema=ConfidenceAssessOutput,
+        )
+        if hasattr(llm_result, "avg_confidence"):
+            logger.info("llm_enhanced", node="assess_confidence")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="assess_confidence")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "assess_confidence",
+        f"assessing {len(state.predictions)} predictions",
+        f"{len(scores)} confidence scores generated",
+        elapsed,
+        "incident_db",
+    )
 
     return {
-        "stage": IPMStage.GENERATE_WARNINGS.value,
-        "confidence_assessments": data,
+        "confidence_scores": scores,
+        "stage": IPMStage.RECOMMEND_PREVENTIONS,
+        "reasoning_chain": [*state.reasoning_chain, step],
         "current_step": "assess_confidence",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="assess_confidence",
-                detail=note,
-                confidence=0.85,
-            ).model_dump()
-        ],
     }
 
 
-# ------------------------------------------------------------------
-# Node 5: Generate Warnings
-# ------------------------------------------------------------------
-
-
-async def generate_warnings(
-    state: dict[str, Any],
-    toolkit: IncidentPredictionModelToolkit,
+async def recommend_preventions(
+    state: IncidentPredictionModelState,
 ) -> dict[str, Any]:
-    """Generate early warnings from predictions."""
-    logger.info("ipm.node.generate_warnings")
-    state = _to_dict(state)
+    """Recommend prevention plans for predictions."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    predictions = [PredictionResult(**p) for p in state.get("predictions", [])]
-    assessments = [ConfidenceAssessment(**a) for a in state.get("confidence_assessments", [])]
-    warnings = await toolkit.generate_warnings(predictions, assessments)
-    data = [w.model_dump() for w in warnings]
+    plans = await toolkit.recommend_preventions(state.predictions, state.confidence_scores)
 
-    critical = sum(1 for w in warnings if w.severity == "critical")
-    note = f"Generated {len(warnings)} warnings, {critical} critical"
+    try:
+        ctx = _json.dumps(
+            {"prediction_count": len(state.predictions), "plan_count": len(plans)},
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_RECOMMEND_PREVENTIONS,
+            user_prompt=f"Prevention recommendation context:\n{ctx}",
+            schema=PreventionOutput,
+        )
+        if hasattr(llm_result, "plans_created"):
+            logger.info("llm_enhanced", node="recommend_preventions")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="recommend_preventions")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "recommend_preventions",
+        f"planning for {len(state.predictions)} predictions",
+        f"{len(plans)} prevention plans created",
+        elapsed,
+        "threat_intel_client",
+    )
+    await toolkit.record_metric("prevention_plans", float(len(plans)))
 
     return {
-        "stage": IPMStage.REPORT.value,
-        "warnings": data,
-        "current_step": "generate_warnings",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="generate_warnings",
-                detail=note,
-                confidence=0.88,
-            ).model_dump()
-        ],
+        "prevention_plans": plans,
+        "stage": IPMStage.REPORT,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "recommend_preventions",
     }
-
-
-# ------------------------------------------------------------------
-# Node 6: Report
-# ------------------------------------------------------------------
 
 
 async def generate_report(
-    state: dict[str, Any],
-    toolkit: IncidentPredictionModelToolkit,
+    state: IncidentPredictionModelState,
 ) -> dict[str, Any]:
-    """Compile the final incident prediction report."""
-    logger.info("ipm.node.report")
-    state = _to_dict(state)
+    """Generate final prediction model report."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    total_indicators = state.get("total_indicators", 0)
-    prediction_count = state.get("predictions_generated", 0)
-    warning_count = len(state.get("warnings", []))
-    conf_count = len(state.get("confidence_assessments", []))
+    duration_ms = 0
+    if state.session_start:
+        duration_ms = int((datetime.now(UTC) - state.session_start).total_seconds() * 1000)
 
-    lines = [
-        "# Incident Prediction Report",
-        "",
-        f"**Indicators collected:** {total_indicators}",
-        f"**Predictions generated:** {prediction_count}",
-        f"**Confidence assessed:** {conf_count}",
-        f"**Warnings issued:** {warning_count}",
-    ]
+    report = {
+        "request_id": state.request_id,
+        "signals": len(state.signals),
+        "patterns": len(state.patterns),
+        "predictions": len(state.predictions),
+        "confidence_scores": len(state.confidence_scores),
+        "prevention_plans": len(state.prevention_plans),
+        "duration_ms": duration_ms,
+    }
 
-    report_text = "\n".join(lines)
+    await toolkit.record_metric("scan_duration_ms", float(duration_ms))
 
-    try:
-        from .prompts import SYSTEM_REPORT, ReportInsight
-
-        ctx = json.dumps(
-            {
-                "total_indicators": total_indicators,
-                "predictions": prediction_count,
-                "confidence_assessments": conf_count,
-                "warnings": warning_count,
-            },
-            default=str,
-        )
-        llm_result = cast(
-            ReportInsight,
-            await llm_structured(
-                system_prompt=SYSTEM_REPORT,
-                user_prompt=f"Incident prediction report:\n{ctx}",
-                schema=ReportInsight,
-            ),
-        )
-        logger.info(
-            "llm_enhanced",
-            agent="ipm",
-            node="report",
-        )
-        report_text = f"{report_text}\n\n## Summary\n{llm_result.summary}"
-    except Exception:
-        logger.debug(
-            "llm_fallback",
-            agent="ipm",
-            node="report",
-        )
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "generate_report",
+        f"finalizing {state.request_id}",
+        f"report complete in {duration_ms}ms",
+        elapsed,
+        None,
+    )
 
     return {
-        "stage": IPMStage.REPORT.value,
-        "report": report_text,
-        "current_step": "report",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="report",
-                detail="Final report compiled",
-                confidence=0.95,
-            ).model_dump()
-        ],
+        "report": report,
+        "session_duration_ms": duration_ms,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "complete",
     }
