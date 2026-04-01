@@ -1,94 +1,156 @@
-"""Attack Narrative Builder Agent — Entry point and lifecycle."""
+"""Attack Narrative Builder Agent runner — entry point
+for building attack narratives from security events."""
 
 from __future__ import annotations
 
 from typing import Any
+from uuid import uuid4
 
 import structlog
 
-from .graph import build_graph
-from .tools import AttackNarrativeBuilderToolkit
+from shieldops.agents.attack_narrative_builder.graph import (
+    create_attack_narrative_builder_graph,
+)
+from shieldops.agents.attack_narrative_builder.models import (
+    AttackNarrativeBuilderState,
+)
+from shieldops.agents.attack_narrative_builder.nodes import set_toolkit
+from shieldops.agents.attack_narrative_builder.tools import (
+    AttackNarrativeBuilderToolkit,
+)
 
 logger = structlog.get_logger()
 
 
 class AttackNarrativeBuilderRunner:
-    """Runs the Attack Narrative Builder workflow."""
+    """Runner for the Attack Narrative Builder Agent.
+
+    Usage:
+        runner = AttackNarrativeBuilderRunner()
+        result = await runner.run(
+            sources=["siem", "edr"],
+            time_range_hours=24,
+            narrative_type="incident_summary",
+        )
+    """
 
     def __init__(
         self,
-        siem_source: Any | None = None,
-        mitre_api: Any | None = None,
-        repository: Any | None = None,
+        event_source: Any | None = None,
+        mitre_client: Any | None = None,
+        correlation_engine: Any | None = None,
+        narrative_store: Any | None = None,
+        metrics_store: Any | None = None,
     ) -> None:
         self._toolkit = AttackNarrativeBuilderToolkit(
-            siem_source=siem_source,
-            mitre_api=mitre_api,
+            siem_client=event_source,
+            mitre_client=mitre_client,
+            repository=narrative_store,
         )
-        self._repository = repository
-        self._graph = build_graph(self._toolkit)
-        self._app = self._graph.compile()
-        self._results: dict[str, dict[str, Any]] = {}
-        logger.info("anb_runner.init")
+        set_toolkit(self._toolkit)
 
-    async def execute(
+        graph = create_attack_narrative_builder_graph()
+        self._app = graph.compile()
+        self._results: dict[str, AttackNarrativeBuilderState] = {}
+        logger.info("anb_runner.initialized")
+
+    async def run(
         self,
-        tenant_id: str = "default",
-        request_id: str = "",
-    ) -> dict[str, Any]:
-        """Execute attack narrative builder workflow."""
-        initial_state: dict[str, Any] = {
-            "request_id": request_id,
-            "tenant_id": tenant_id,
-            "reasoning_chain": [],
-        }
+        sources: list[str] | None = None,
+        time_range_hours: int = 24,
+        severity_filter: str = "low",
+        narrative_type: str = "incident_summary",
+        tenant_id: str = "",
+    ) -> AttackNarrativeBuilderState:
+        """Run the full narrative-building pipeline.
 
-        logger.info(
-            "anb_runner.execute",
+        Args:
+            sources: Event sources to query (e.g., siem, edr, cloud_audit).
+            time_range_hours: How far back to collect events.
+            severity_filter: Minimum severity to include.
+            narrative_type: Type of narrative to generate.
+            tenant_id: Tenant identifier for multi-tenant deployments.
+
+        Returns:
+            Final AttackNarrativeBuilderState with the complete report.
+        """
+        request_id = f"anb-{uuid4().hex[:12]}"
+
+        initial_state = AttackNarrativeBuilderState(
             request_id=request_id,
             tenant_id=tenant_id,
+            config={
+                "sources": sources or ["siem", "edr", "cloud_audit"],
+                "time_range_hours": time_range_hours,
+                "severity_filter": severity_filter,
+                "narrative_type": narrative_type,
+            },
         )
+
+        logger.info(
+            "anb_runner.starting",
+            request_id=request_id,
+            sources=sources,
+            time_range_hours=time_range_hours,
+            narrative_type=narrative_type,
+        )
+
         try:
             result = await self._app.ainvoke(
-                initial_state,  # type: ignore[arg-type]
+                initial_state.model_dump(),  # type: ignore[arg-type]
+                config={
+                    "metadata": {
+                        "request_id": request_id,
+                        "agent": "attack_narrative_builder",
+                    },
+                },
             )
-            self._results[request_id] = result
-            if self._repository:
-                await self._persist(result)
-            return result
-        except Exception:
-            logger.exception("anb_runner.execute.error")
-            raise
+            final = AttackNarrativeBuilderState.model_validate(result)
+            self._results[request_id] = final
+
+            logger.info(
+                "anb_runner.completed",
+                request_id=request_id,
+                events=len(final.events),
+                clusters=len(final.clusters),
+                mappings=len(final.mitre_mappings),
+                duration_ms=final.session_duration_ms,
+            )
+            return final
+
+        except Exception as e:
+            logger.error(
+                "anb_runner.failed",
+                request_id=request_id,
+                error=str(e),
+            )
+            error_state = AttackNarrativeBuilderState(
+                request_id=request_id,
+                tenant_id=tenant_id,
+                error=str(e),
+                current_step="failed",
+            )
+            self._results[request_id] = error_state
+            return error_state
 
     def get_result(
         self,
         request_id: str,
-    ) -> dict[str, Any] | None:
-        """Retrieve a cached result by request ID."""
+    ) -> AttackNarrativeBuilderState | None:
+        """Retrieve a cached narrative result by request ID."""
         return self._results.get(request_id)
 
     def list_results(self) -> list[dict[str, Any]]:
-        """List all cached results."""
+        """List all narrative results as summaries."""
         return [
             {
                 "request_id": rid,
-                "tenant_id": r.get("tenant_id", ""),
-                "events": r.get(
-                    "total_events_collected",
-                    0,
-                ),
-                "phases": r.get(
-                    "attack_phases_identified",
-                    0,
-                ),
-                "error": r.get("error", ""),
+                "events": len(s.events),
+                "clusters": len(s.clusters),
+                "mitre_mappings": len(s.mitre_mappings),
+                "current_step": s.current_step,
+                "duration_ms": s.session_duration_ms,
+                "error": s.error,
             }
-            for rid, r in self._results.items()
+            for rid, s in self._results.items()
         ]
-
-    async def _persist(
-        self,
-        result: dict[str, Any],
-    ) -> None:
-        if self._repository:
-            await self._repository.save(result)

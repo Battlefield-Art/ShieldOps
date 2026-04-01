@@ -1,352 +1,319 @@
-"""Attack Narrative Builder Agent — Node implementations."""
+"""Node implementations for the Attack Narrative Builder Agent."""
 
 from __future__ import annotations
 
-import json
-from typing import Any, cast
+import json as _json
+from datetime import UTC, datetime
+from typing import Any
 
 import structlog
-from pydantic import BaseModel
 
-from shieldops.utils.llm import llm_structured
-
-from .models import (
+from shieldops.agents.attack_narrative_builder.models import (
     ANBStage,
-    AttackChainLink,
+    AttackNarrativeBuilderState,
     ReasoningStep,
-    SecurityEvent,
-    TechniqueMapping,
-    TimelineEntry,
 )
-from .tools import AttackNarrativeBuilderToolkit
+from shieldops.agents.attack_narrative_builder.prompts import (
+    SYSTEM_BUILD_TIMELINE,
+    SYSTEM_CLUSTER_EVENTS,
+    SYSTEM_GENERATE_NARRATIVE,
+    SYSTEM_MAP_MITRE,
+    SYSTEM_NARRATIVE_REPORT,
+    EventClusterOutput,
+    MITREMappingOutput,
+    NarrativeOutput,
+    NarrativeReportOutput,
+    TimelineOutput,
+)
+from shieldops.agents.attack_narrative_builder.tools import (
+    AttackNarrativeBuilderToolkit,
+)
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
-_toolkit: AttackNarrativeBuilderToolkit | None = None  # noqa: PLW0603
+_toolkit: AttackNarrativeBuilderToolkit | None = None
 
 
-def set_toolkit(tk: AttackNarrativeBuilderToolkit) -> None:
+def set_toolkit(toolkit: AttackNarrativeBuilderToolkit) -> None:
     """Set the module-level toolkit instance."""
     global _toolkit  # noqa: PLW0603
-    _toolkit = tk
+    _toolkit = toolkit
 
 
 def _get_toolkit() -> AttackNarrativeBuilderToolkit:
-    assert _toolkit is not None, "Toolkit not initialised"
+    if _toolkit is None:
+        return AttackNarrativeBuilderToolkit()
     return _toolkit
 
 
-def _to_dict(state: Any) -> dict[str, Any]:
-    if isinstance(state, BaseModel):
-        return state.model_dump()
-    return state  # type: ignore[no-any-return]
-
-
-# ------------------------------------------------------------------
-# Node 1: Collect Events
-# ------------------------------------------------------------------
+def _step(
+    state: AttackNarrativeBuilderState,
+    action: str,
+    input_summary: str,
+    output_summary: str,
+    duration_ms: int,
+    tool_used: str | None = None,
+) -> ReasoningStep:
+    return ReasoningStep(
+        step_number=len(state.reasoning_chain) + 1,
+        action=action,
+        input_summary=input_summary,
+        output_summary=output_summary,
+        duration_ms=duration_ms,
+        tool_used=tool_used,
+    )
 
 
 async def collect_events(
-    state: dict[str, Any],
-    toolkit: AttackNarrativeBuilderToolkit,
+    state: AttackNarrativeBuilderState,
 ) -> dict[str, Any]:
-    """Collect security events from multiple sources."""
-    logger.info("anb.node.collect_events")
-    state = _to_dict(state)
+    """Collect security events from all sources."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    tenant_id = state.get("tenant_id", "default")
-    events = await toolkit.collect_events(tenant_id)
-    data = [e.model_dump() for e in events]
+    events = await toolkit.collect_events(state.config)
 
-    note = f"Collected {len(events)} security events"
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "collect_events",
+        f"config={list(state.config.keys())}",
+        f"collected {len(events)} events",
+        elapsed,
+        "siem_client",
+    )
+    await toolkit.record_metric("events_collected", float(len(events)))
 
     return {
-        "stage": ANBStage.CORRELATE_TIMELINE.value,
-        "security_events": data,
-        "total_events_collected": len(events),
+        "events": events,
+        "stage": ANBStage.CLUSTER,
+        "reasoning_chain": [*state.reasoning_chain, step],
         "current_step": "collect_events",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="collect_events",
-                detail=note,
-                confidence=0.9,
-            ).model_dump()
-        ],
+        "session_start": start,
     }
 
 
-# ------------------------------------------------------------------
-# Node 2: Correlate Timeline
-# ------------------------------------------------------------------
-
-
-async def correlate_timeline(
-    state: dict[str, Any],
-    toolkit: AttackNarrativeBuilderToolkit,
+async def cluster_events(
+    state: AttackNarrativeBuilderState,
 ) -> dict[str, Any]:
-    """Correlate events into a timeline."""
-    logger.info("anb.node.correlate_timeline")
-    state = _to_dict(state)
+    """Cluster related events together."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    events = [SecurityEvent(**e) for e in state.get("security_events", [])]
-    timeline = await toolkit.correlate_timeline(events)
-    data = [t.model_dump() for t in timeline]
-
-    note = f"Correlated {len(timeline)} timeline entries from {len(events)} events"
+    clusters = await toolkit.cluster_events(state.events)
 
     try:
-        from .prompts import SYSTEM_ANALYZE, TimelineInsight
+        ctx = _json.dumps(
+            {"event_count": len(state.events), "cluster_count": len(clusters)},
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_CLUSTER_EVENTS,
+            user_prompt=f"Event clustering context:\n{ctx}",
+            schema=EventClusterOutput,
+        )
+        if hasattr(llm_result, "clusters"):
+            logger.info("llm_enhanced", node="cluster_events")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="cluster_events")
 
-        ctx = json.dumps(
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "cluster_events",
+        f"{len(state.events)} events",
+        f"{len(clusters)} clusters",
+        elapsed,
+        "clustering_engine",
+    )
+
+    return {
+        "clusters": clusters,
+        "stage": ANBStage.TIMELINE,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "cluster_events",
+    }
+
+
+async def build_timeline(
+    state: AttackNarrativeBuilderState,
+) -> dict[str, Any]:
+    """Build chronological attack timeline."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
+
+    timeline = await toolkit.build_timeline(state.events, state.clusters)
+
+    try:
+        ctx = _json.dumps(
+            {"events": len(state.events), "clusters": len(state.clusters)},
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_BUILD_TIMELINE,
+            user_prompt=f"Timeline construction context:\n{ctx}",
+            schema=TimelineOutput,
+        )
+        if hasattr(llm_result, "timeline_entries"):
+            logger.info("llm_enhanced", node="build_timeline")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="build_timeline")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "build_timeline",
+        f"{len(state.events)} events, {len(state.clusters)} clusters",
+        f"{len(timeline)} timeline entries",
+        elapsed,
+        "timeline_engine",
+    )
+
+    return {
+        "timeline": timeline,
+        "stage": ANBStage.NARRATE,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "build_timeline",
+    }
+
+
+async def generate_narrative(
+    state: AttackNarrativeBuilderState,
+) -> dict[str, Any]:
+    """Generate human-readable narrative segments."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
+
+    segments = await toolkit.generate_narrative(state.timeline, state.clusters)
+
+    try:
+        ctx = _json.dumps(
+            {"timeline_entries": len(state.timeline), "clusters": len(state.clusters)},
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_GENERATE_NARRATIVE,
+            user_prompt=f"Narrative generation context:\n{ctx}",
+            schema=NarrativeOutput,
+        )
+        if hasattr(llm_result, "title"):
+            logger.info("llm_enhanced", node="generate_narrative")
+    except Exception:
+        logger.debug("llm_enhancement_skipped", node="generate_narrative")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "generate_narrative",
+        f"{len(state.timeline)} timeline entries",
+        f"{len(segments)} narrative segments",
+        elapsed,
+        "narrative_engine",
+    )
+
+    return {
+        "narrative_segments": segments,
+        "stage": ANBStage.MITRE_MAP,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "generate_narrative",
+    }
+
+
+async def map_mitre(
+    state: AttackNarrativeBuilderState,
+) -> dict[str, Any]:
+    """Map attack to MITRE ATT&CK techniques."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
+
+    mappings = await toolkit.map_mitre(state.clusters, state.narrative_segments)
+
+    try:
+        ctx = _json.dumps(
             {
-                "entries": [
-                    {
-                        "timestamp": t.timestamp,
-                        "host": t.host,
-                        "user": t.user,
-                        "severity": t.severity.value,
-                        "description": t.description,
-                    }
-                    for t in timeline[:20]
-                ],
+                "clusters": len(state.clusters),
+                "segments": len(state.narrative_segments),
             },
             default=str,
         )
-        llm_result = cast(
-            TimelineInsight,
-            await llm_structured(
-                system_prompt=SYSTEM_ANALYZE,
-                user_prompt=f"Attack timeline:\n{ctx}",
-                schema=TimelineInsight,
-            ),
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_MAP_MITRE,
+            user_prompt=f"MITRE mapping context:\n{ctx}",
+            schema=MITREMappingOutput,
         )
-        logger.info(
-            "llm_enhanced",
-            agent="anb",
-            node="correlate_timeline",
-        )
-        note = f"{llm_result.summary} {note}"
+        if hasattr(llm_result, "mappings"):
+            logger.info("llm_enhanced", node="map_mitre")
     except Exception:
-        logger.debug(
-            "llm_fallback",
-            agent="anb",
-            node="correlate_timeline",
-        )
+        logger.debug("llm_enhancement_skipped", node="map_mitre")
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "map_mitre",
+        f"{len(state.clusters)} clusters, {len(state.narrative_segments)} segments",
+        f"{len(mappings)} MITRE mappings",
+        elapsed,
+        "mitre_mapper",
+    )
 
     return {
-        "stage": ANBStage.RECONSTRUCT_CHAIN.value,
-        "timeline_entries": data,
-        "current_step": "correlate_timeline",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="correlate_timeline",
-                detail=note,
-                confidence=0.85,
-            ).model_dump()
-        ],
+        "mitre_mappings": mappings,
+        "stage": ANBStage.REPORT,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "map_mitre",
     }
-
-
-# ------------------------------------------------------------------
-# Node 3: Reconstruct Chain
-# ------------------------------------------------------------------
-
-
-async def reconstruct_chain(
-    state: dict[str, Any],
-    toolkit: AttackNarrativeBuilderToolkit,
-) -> dict[str, Any]:
-    """Reconstruct the attack kill chain."""
-    logger.info("anb.node.reconstruct_chain")
-    state = _to_dict(state)
-
-    timeline = [TimelineEntry(**t) for t in state.get("timeline_entries", [])]
-    events = [SecurityEvent(**e) for e in state.get("security_events", [])]
-    chain = await toolkit.reconstruct_chain(timeline, events)
-    data = [c.model_dump() for c in chain]
-
-    phases = len({c.phase for c in chain})
-    note = f"Reconstructed {len(chain)} chain links across {phases} phases"
-
-    return {
-        "stage": ANBStage.MAP_TECHNIQUES.value,
-        "attack_chain": data,
-        "attack_phases_identified": phases,
-        "current_step": "reconstruct_chain",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="reconstruct_chain",
-                detail=note,
-                confidence=0.82,
-            ).model_dump()
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node 4: Map Techniques
-# ------------------------------------------------------------------
-
-
-async def map_techniques(
-    state: dict[str, Any],
-    toolkit: AttackNarrativeBuilderToolkit,
-) -> dict[str, Any]:
-    """Map attack chain to MITRE ATT&CK techniques."""
-    logger.info("anb.node.map_techniques")
-    state = _to_dict(state)
-
-    chain = [AttackChainLink(**c) for c in state.get("attack_chain", [])]
-    events = [SecurityEvent(**e) for e in state.get("security_events", [])]
-    mappings = await toolkit.map_techniques(chain, events)
-    data = [m.model_dump() for m in mappings]
-
-    note = f"Mapped {len(mappings)} MITRE ATT&CK techniques"
-
-    return {
-        "stage": ANBStage.BUILD_NARRATIVE.value,
-        "technique_mappings": data,
-        "current_step": "map_techniques",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="map_techniques",
-                detail=note,
-                confidence=0.85,
-            ).model_dump()
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node 5: Build Narrative
-# ------------------------------------------------------------------
-
-
-async def build_narrative(
-    state: dict[str, Any],
-    toolkit: AttackNarrativeBuilderToolkit,
-) -> dict[str, Any]:
-    """Build the attack narrative from chain and mappings."""
-    logger.info("anb.node.build_narrative")
-    state = _to_dict(state)
-
-    chain = [AttackChainLink(**c) for c in state.get("attack_chain", [])]
-    mappings = [TechniqueMapping(**m) for m in state.get("technique_mappings", [])]
-    sections = await toolkit.build_narrative(chain, mappings)
-    data = [s.model_dump() for s in sections]
-
-    note = f"Built narrative with {len(sections)} sections"
-
-    return {
-        "stage": ANBStage.REPORT.value,
-        "narrative_sections": data,
-        "current_step": "build_narrative",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="build_narrative",
-                detail=note,
-                confidence=0.88,
-            ).model_dump()
-        ],
-    }
-
-
-# ------------------------------------------------------------------
-# Node 6: Report
-# ------------------------------------------------------------------
 
 
 async def generate_report(
-    state: dict[str, Any],
-    toolkit: AttackNarrativeBuilderToolkit,
+    state: AttackNarrativeBuilderState,
 ) -> dict[str, Any]:
-    """Compile the final attack narrative report."""
-    logger.info("anb.node.report")
-    state = _to_dict(state)
+    """Generate final narrative report."""
+    start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
-    total_events = state.get("total_events_collected", 0)
-    phases = state.get("attack_phases_identified", 0)
-    chain_count = len(state.get("attack_chain", []))
-    technique_count = len(state.get("technique_mappings", []))
+    duration_ms = 0
+    if state.session_start:
+        duration_ms = int((datetime.now(UTC) - state.session_start).total_seconds() * 1000)
 
-    lines = [
-        "# Attack Narrative Report",
-        "",
-        f"**Events collected:** {total_events}",
-        f"**Attack phases:** {phases}",
-        f"**Chain links:** {chain_count}",
-        f"**MITRE techniques:** {technique_count}",
-    ]
-
-    report_text = "\n".join(lines)
+    report = {
+        "request_id": state.request_id,
+        "events_processed": len(state.events),
+        "clusters_analyzed": len(state.clusters),
+        "timeline_entries": len(state.timeline),
+        "narrative_segments": len(state.narrative_segments),
+        "mitre_techniques_mapped": len(state.mitre_mappings),
+        "duration_ms": duration_ms,
+    }
 
     try:
-        from .prompts import SYSTEM_REPORT, ReportInsight
-
-        ctx = json.dumps(
-            {
-                "total_events": total_events,
-                "phases": phases,
-                "chain_links": chain_count,
-                "techniques": technique_count,
-            },
-            default=str,
+        ctx = _json.dumps(report, default=str)
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_NARRATIVE_REPORT,
+            user_prompt=f"Narrative report context:\n{ctx}",
+            schema=NarrativeReportOutput,
         )
-        llm_result = cast(
-            ReportInsight,
-            await llm_structured(
-                system_prompt=SYSTEM_REPORT,
-                user_prompt=(f"Attack narrative:\n{ctx}"),
-                schema=ReportInsight,
-            ),
-        )
-        logger.info(
-            "llm_enhanced",
-            agent="anb",
-            node="report",
-        )
-        report_text = f"{report_text}\n\n## Summary\n{llm_result.summary}"
+        if hasattr(llm_result, "quality_score"):
+            report["quality_score"] = llm_result.quality_score
+            logger.info("llm_enhanced", node="generate_report")
     except Exception:
-        logger.debug(
-            "llm_fallback",
-            agent="anb",
-            node="report",
-        )
+        logger.debug("llm_enhancement_skipped", node="generate_report")
+
+    await toolkit.record_metric("narrative_duration_ms", float(duration_ms))
+
+    elapsed = int((datetime.now(UTC) - start).total_seconds() * 1000)
+    step = _step(
+        state,
+        "generate_report",
+        f"finalizing {state.request_id}",
+        f"report complete in {duration_ms}ms",
+        elapsed,
+        None,
+    )
 
     return {
-        "stage": ANBStage.REPORT.value,
-        "report": report_text,
-        "current_step": "report",
-        "reasoning_chain": state.get(
-            "reasoning_chain",
-            [],
-        )
-        + [
-            ReasoningStep(
-                step="report",
-                detail="Final report compiled",
-                confidence=0.95,
-            ).model_dump()
-        ],
+        "report": report,
+        "session_duration_ms": duration_ms,
+        "reasoning_chain": [*state.reasoning_chain, step],
+        "current_step": "complete",
     }

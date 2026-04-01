@@ -1,128 +1,114 @@
-"""Attack Narrative Builder Agent — LangGraph StateGraph."""
+"""LangGraph workflow definition for the Attack Narrative Builder Agent."""
 
 from __future__ import annotations
 
 from typing import Any
 
+import structlog
 from langgraph.graph import END, StateGraph
 
-from .models import AttackNarrativeBuilderState
-from .nodes import (
-    build_narrative,
-    collect_events,
-    correlate_timeline,
-    generate_report,
-    map_techniques,
-    reconstruct_chain,
+from shieldops.agents.attack_narrative_builder.models import (
+    AttackNarrativeBuilderState,
 )
-from .tools import AttackNarrativeBuilderToolkit
+from shieldops.agents.attack_narrative_builder.nodes import (
+    build_timeline,
+    cluster_events,
+    collect_events,
+    generate_narrative,
+    generate_report,
+    map_mitre,
+)
+from shieldops.agents.tracing import traced_node
+
+logger = structlog.get_logger()
+
+_AGENT = "attack_narrative_builder"
+
+
+def _should_narrate(state: AttackNarrativeBuilderState) -> str:
+    """Route after timeline: generate narrative if clusters exist,
+    otherwise skip to report."""
+    if state.error:
+        return "generate_report"
+    if state.clusters:
+        return "generate_narrative"
+    return "generate_report"
 
 
 def build_graph(
-    toolkit: AttackNarrativeBuilderToolkit,
+    toolkit: Any = None,
 ) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Attack Narrative Builder graph.
+    """Build the Attack Narrative Builder LangGraph workflow.
 
-    Flow:
-        collect_events -> correlate_timeline
-        -> reconstruct_chain -> map_techniques
-        -> build_narrative -> report
+    Workflow:
+        collect_events -> cluster_events -> build_timeline
+            -> [clusters? -> generate_narrative -> map_mitre]
+            -> generate_report -> END
     """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _collect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await collect_events(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _correlate(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await correlate_timeline(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _reconstruct(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await reconstruct_chain(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _map(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await map_techniques(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _narrative(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await build_narrative(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
     graph = StateGraph(AttackNarrativeBuilderState)
-    graph.add_node("collect_events", _collect)
-    graph.add_node("correlate_timeline", _correlate)
-    graph.add_node("reconstruct_chain", _reconstruct)
-    graph.add_node("map_techniques", _map)
-    graph.add_node("build_narrative", _narrative)
-    graph.add_node("report", _report)
 
-    graph.set_entry_point("collect_events")
-    graph.add_edge(
+    graph.add_node(
         "collect_events",
-        "correlate_timeline",
+        traced_node(f"{_AGENT}.collect_events", _AGENT)(collect_events),
     )
-    graph.add_edge(
-        "correlate_timeline",
-        "reconstruct_chain",
+    graph.add_node(
+        "cluster_events",
+        traced_node(f"{_AGENT}.cluster_events", _AGENT)(cluster_events),
     )
-    graph.add_edge(
-        "reconstruct_chain",
-        "map_techniques",
+    graph.add_node(
+        "build_timeline",
+        traced_node(f"{_AGENT}.build_timeline", _AGENT)(build_timeline),
     )
-    graph.add_edge(
-        "map_techniques",
-        "build_narrative",
+    graph.add_node(
+        "generate_narrative",
+        traced_node(f"{_AGENT}.generate_narrative", _AGENT)(generate_narrative),
     )
-    graph.add_edge(
-        "build_narrative",
-        "report",
+    graph.add_node(
+        "map_mitre",
+        traced_node(f"{_AGENT}.map_mitre", _AGENT)(map_mitre),
     )
-    graph.add_edge("report", END)
+    graph.add_node(
+        "generate_report",
+        traced_node(f"{_AGENT}.generate_report", _AGENT)(generate_report),
+    )
+
+    # Edges
+    graph.set_entry_point("collect_events")
+    graph.add_edge("collect_events", "cluster_events")
+    graph.add_edge("cluster_events", "build_timeline")
+    graph.add_conditional_edges(
+        "build_timeline",
+        _should_narrate,
+        {
+            "generate_narrative": "generate_narrative",
+            "generate_report": "generate_report",
+        },
+    )
+    graph.add_edge("generate_narrative", "map_mitre")
+    graph.add_edge("map_mitre", "generate_report")
+    graph.add_edge("generate_report", END)
 
     return graph
 
 
 def create_attack_narrative_builder_graph(
-    siem_source: Any | None = None,
-    mitre_api: Any | None = None,
+    **clients: Any,
 ) -> StateGraph:  # type: ignore[type-arg]
-    """Create the Attack Narrative Builder graph."""
-    toolkit = AttackNarrativeBuilderToolkit(
-        siem_source=siem_source,
-        mitre_api=mitre_api,
-    )
-    return build_graph(toolkit)
+    """Factory to create an Attack Narrative Builder graph
+    with optional dependency injection."""
+    if any(clients.values()):
+        from shieldops.agents.attack_narrative_builder.nodes import (
+            set_toolkit,
+        )
+        from shieldops.agents.attack_narrative_builder.tools import (
+            AttackNarrativeBuilderToolkit,
+        )
+
+        toolkit = AttackNarrativeBuilderToolkit(
+            siem_client=clients.get("siem_client"),
+            mitre_client=clients.get("mitre_client"),
+            repository=clients.get("repository"),
+        )
+        set_toolkit(toolkit)
+
+    return build_graph(toolkit=clients.get("toolkit"))

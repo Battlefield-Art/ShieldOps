@@ -1,22 +1,12 @@
-"""Attack Narrative Builder Agent — Tool functions."""
+"""Tool functions for the Attack Narrative Builder Agent."""
 
 from __future__ import annotations
 
-import hashlib
-import random
+import random  # noqa: S311
 from typing import Any
+from uuid import uuid4
 
 import structlog
-
-from .models import (
-    AttackChainLink,
-    AttackPhase,
-    EventSeverity,
-    NarrativeSection,
-    SecurityEvent,
-    TechniqueMapping,
-    TimelineEntry,
-)
 
 logger = structlog.get_logger()
 
@@ -27,8 +17,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "medium",
         "host": "WORKSTATION-14",
         "user": "jdoe",
-        "process": "powershell.exe",
-        "description": "PowerShell launched with encoded command",
+        "action": "powershell launched with encoded command",
+        "outcome": "success",
     },
     {
         "source": "email_gateway",
@@ -36,8 +26,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "high",
         "host": "EXCHANGE-01",
         "user": "jdoe",
-        "process": "outlook.exe",
-        "description": "Phishing email with malicious attachment opened",
+        "action": "phishing email with malicious attachment opened",
+        "outcome": "delivered",
     },
     {
         "source": "edr",
@@ -45,8 +35,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "high",
         "host": "WORKSTATION-14",
         "user": "jdoe",
-        "process": "powershell.exe",
-        "description": "Suspicious DLL dropped to AppData\\Local\\Temp",
+        "action": "suspicious DLL dropped to AppData temp",
+        "outcome": "success",
     },
     {
         "source": "siem",
@@ -54,8 +44,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "medium",
         "host": "DC-01",
         "user": "jdoe",
-        "process": "lsass.exe",
-        "description": "Kerberos TGT requested with forged ticket",
+        "action": "kerberos TGT requested with forged ticket",
+        "outcome": "success",
     },
     {
         "source": "ndr",
@@ -63,8 +53,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "critical",
         "host": "FILESERVER-02",
         "user": "admin-svc",
-        "process": "psexec.exe",
-        "description": "PsExec remote execution from WORKSTATION-14",
+        "action": "PsExec remote execution from WORKSTATION-14",
+        "outcome": "success",
     },
     {
         "source": "dlp",
@@ -72,8 +62,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "critical",
         "host": "FILESERVER-02",
         "user": "admin-svc",
-        "process": "7z.exe",
-        "description": "Bulk archive of sensitive financial documents",
+        "action": "bulk archive of sensitive financial documents",
+        "outcome": "success",
     },
     {
         "source": "proxy",
@@ -81,8 +71,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "critical",
         "host": "WORKSTATION-14",
         "user": "jdoe",
-        "process": "curl.exe",
-        "description": "Large upload to external cloud storage API",
+        "action": "large upload to external cloud storage API",
+        "outcome": "success",
     },
     {
         "source": "edr",
@@ -90,8 +80,8 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
         "severity": "high",
         "host": "WORKSTATION-14",
         "user": "SYSTEM",
-        "process": "schtasks.exe",
-        "description": "Persistence via scheduled task at boot",
+        "action": "persistence via scheduled task at boot",
+        "outcome": "success",
     },
 ]
 
@@ -100,274 +90,228 @@ _TECHNIQUE_MAP: dict[str, dict[str, str]] = {
         "id": "T1566.001",
         "name": "Spearphishing Attachment",
         "tactic": "Initial Access",
+        "phase": "delivery",
     },
     "process_creation": {
         "id": "T1059.001",
         "name": "PowerShell",
         "tactic": "Execution",
+        "phase": "exploitation",
     },
     "file_write": {
         "id": "T1055",
         "name": "Process Injection",
         "tactic": "Defense Evasion",
+        "phase": "installation",
     },
     "auth_success": {
         "id": "T1558.001",
         "name": "Golden Ticket",
         "tactic": "Credential Access",
+        "phase": "exploitation",
     },
     "lateral_movement": {
         "id": "T1570",
         "name": "Lateral Tool Transfer",
         "tactic": "Lateral Movement",
+        "phase": "command_and_control",
     },
     "data_access": {
         "id": "T1560.001",
         "name": "Archive via Utility",
         "tactic": "Collection",
+        "phase": "actions_on_objectives",
     },
     "exfiltration": {
         "id": "T1567.002",
         "name": "Exfil to Cloud Storage",
         "tactic": "Exfiltration",
+        "phase": "actions_on_objectives",
     },
     "scheduled_task": {
         "id": "T1053.005",
         "name": "Scheduled Task",
         "tactic": "Persistence",
+        "phase": "installation",
     },
 }
 
-_EVENT_TO_PHASE: dict[str, AttackPhase] = {
-    "phishing_detected": AttackPhase.INITIAL_ACCESS,
-    "process_creation": AttackPhase.EXECUTION,
-    "file_write": AttackPhase.PERSISTENCE,
-    "auth_success": AttackPhase.PRIVILEGE_ESCALATION,
-    "lateral_movement": AttackPhase.LATERAL_MOVEMENT,
-    "data_access": AttackPhase.COLLECTION,
-    "exfiltration": AttackPhase.EXFILTRATION,
-    "scheduled_task": AttackPhase.PERSISTENCE,
-}
-
-
-def _gen_id(prefix: str, seed: str, idx: int) -> str:
-    raw = f"{seed}:{idx}"
-    h = hashlib.sha256(raw.encode()).hexdigest()[:8]
-    return f"{prefix}-{h.upper()}"
-
 
 class AttackNarrativeBuilderToolkit:
-    """Tools for attack narrative reconstruction."""
+    """Toolkit for attack narrative reconstruction."""
 
     def __init__(
         self,
-        siem_source: Any | None = None,
-        mitre_api: Any | None = None,
+        siem_client: Any | None = None,
+        mitre_client: Any | None = None,
+        repository: Any | None = None,
     ) -> None:
-        self._siem_source = siem_source
-        self._mitre_api = mitre_api
+        self._siem_client = siem_client
+        self._mitre_client = mitre_client
+        self._repository = repository
 
     async def collect_events(
         self,
-        tenant_id: str,
-    ) -> list[SecurityEvent]:
-        """Collect security events from multiple sources."""
-        logger.info(
-            "anb.collect_events",
-            tenant_id=tenant_id,
-        )
-
-        if self._siem_source is not None:
-            try:
-                raw = await self._siem_source.get_events(
-                    tenant_id=tenant_id,
-                )
-                return [SecurityEvent(**r) for r in raw]
-            except Exception:
-                logger.exception("anb.collect_events.error")
-
-        events: list[SecurityEvent] = []
-        for i, e in enumerate(_SAMPLE_EVENTS):
+        config: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Collect security events from sources."""
+        logger.info("anb.collect_events", config_keys=list(config.keys()))
+        events: list[dict[str, Any]] = []
+        for i, sample in enumerate(_SAMPLE_EVENTS):
             events.append(
-                SecurityEvent(
-                    id=_gen_id("SE", tenant_id, i),
-                    timestamp=f"2026-03-30T0{i + 1}:{random.randint(0, 59):02d}:00Z",  # noqa: S311
-                    source=e["source"],
-                    event_type=e["event_type"],
-                    severity=EventSeverity(e["severity"]),
-                    host=e["host"],
-                    user=e["user"],
-                    process=e["process"],
-                    description=e["description"],
-                )
+                {
+                    "id": f"evt-{uuid4().hex[:8]}",
+                    "source": sample["source"],
+                    "event_type": sample["event_type"],
+                    "severity": sample["severity"],
+                    "host": sample["host"],
+                    "user": sample["user"],
+                    "action": sample["action"],
+                    "outcome": sample["outcome"],
+                    "timestamp": f"2026-03-30T0{i + 1}:{random.randint(0, 59):02d}:00Z",  # noqa: S311
+                    "ioc_indicators": [],
+                    "raw_data": {},
+                }
             )
         return events
 
-    async def correlate_timeline(
+    async def cluster_events(
         self,
-        events: list[SecurityEvent],
-    ) -> list[TimelineEntry]:
-        """Correlate events into a timeline."""
-        logger.info(
-            "anb.correlate_timeline",
-            count=len(events),
-        )
+        events: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Cluster related events together."""
+        logger.info("anb.cluster_events", event_count=len(events))
+        clusters: list[dict[str, Any]] = []
+        by_host: dict[str, list[dict[str, Any]]] = {}
+        for evt in events:
+            by_host.setdefault(evt.get("host", ""), []).append(evt)
 
-        sorted_events = sorted(events, key=lambda e: e.timestamp)
-        entries: list[TimelineEntry] = []
-        for i, e in enumerate(sorted_events):
-            entries.append(
-                TimelineEntry(
-                    id=_gen_id("TL", e.id, i),
-                    timestamp=e.timestamp,
-                    event_ids=[e.id],
-                    description=e.description,
-                    severity=e.severity,
-                    host=e.host,
-                    user=e.user,
-                    confidence=round(
-                        random.uniform(0.7, 0.98),  # noqa: S311
-                        2,
-                    ),
-                )
+        for host, host_events in by_host.items():
+            event_ids = [e.get("id", "") for e in host_events]
+            technique = _TECHNIQUE_MAP.get(host_events[0].get("event_type", ""), {})
+            clusters.append(
+                {
+                    "id": f"cl-{uuid4().hex[:8]}",
+                    "label": f"Activity on {host}",
+                    "event_ids": event_ids,
+                    "kill_chain_phase": technique.get("phase", ""),
+                    "mitre_technique_id": technique.get("id", ""),
+                    "mitre_technique_name": technique.get("name", ""),
+                    "confidence": round(random.uniform(0.7, 0.95), 2),  # noqa: S311
+                    "summary": f"{len(host_events)} events on {host}",
+                }
             )
-        return entries
+        return clusters
 
-    async def reconstruct_chain(
+    async def build_timeline(
         self,
-        timeline: list[TimelineEntry],
-        events: list[SecurityEvent],
-    ) -> list[AttackChainLink]:
-        """Reconstruct the attack kill chain."""
-        logger.info(
-            "anb.reconstruct_chain",
-            timeline_count=len(timeline),
-        )
-
-        event_map: dict[str, SecurityEvent] = {e.id: e for e in events}
-        chain: list[AttackChainLink] = []
-        for i, tl in enumerate(timeline):
-            evt_id = tl.event_ids[0] if tl.event_ids else ""
-            evt = event_map.get(evt_id)
-            if not evt:
-                continue
-
-            phase = _EVENT_TO_PHASE.get(
-                evt.event_type,
-                AttackPhase.EXECUTION,
+        events: list[dict[str, Any]],
+        clusters: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Build chronological attack timeline."""
+        logger.info("anb.build_timeline", events=len(events), clusters=len(clusters))
+        sorted_events = sorted(events, key=lambda e: e.get("timestamp", ""))
+        timeline: list[dict[str, Any]] = []
+        for i, evt in enumerate(sorted_events):
+            phase = _TECHNIQUE_MAP.get(evt.get("event_type", ""), {}).get("phase", "")
+            timeline.append(
+                {
+                    "sequence": i,
+                    "timestamp": evt.get("timestamp", ""),
+                    "event_id": evt.get("id", ""),
+                    "host": evt.get("host", ""),
+                    "user": evt.get("user", ""),
+                    "action": evt.get("action", ""),
+                    "kill_chain_phase": phase,
+                    "severity": evt.get("severity", ""),
+                }
             )
-            tech = _TECHNIQUE_MAP.get(evt.event_type, {})
+        return timeline
 
-            chain.append(
-                AttackChainLink(
-                    id=_gen_id("AC", tl.id, i),
-                    phase=phase,
-                    timeline_entry_id=tl.id,
-                    description=evt.description,
-                    host=evt.host,
-                    user=evt.user,
-                    technique=tech.get("id", ""),
-                    confidence=tl.confidence,
-                    evidence=[
-                        f"Source: {evt.source}",
-                        f"Process: {evt.process}",
-                    ],
-                )
-            )
-        return chain
-
-    async def map_techniques(
+    async def generate_narrative(
         self,
-        chain: list[AttackChainLink],
-        events: list[SecurityEvent],
-    ) -> list[TechniqueMapping]:
-        """Map attack chain to MITRE ATT&CK techniques."""
+        timeline: list[dict[str, Any]],
+        clusters: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Generate narrative segments from timeline and clusters."""
         logger.info(
-            "anb.map_techniques",
-            chain_count=len(chain),
+            "anb.generate_narrative",
+            timeline=len(timeline),
+            clusters=len(clusters),
         )
+        segments: list[dict[str, Any]] = []
+        phases_seen: dict[str, list[dict[str, Any]]] = {}
+        for entry in timeline:
+            phase = entry.get("kill_chain_phase", "unknown")
+            phases_seen.setdefault(phase, []).append(entry)
 
-        event_map: dict[str, SecurityEvent] = {e.id: e for e in events}
-        _unused_event_map = event_map  # referenced for completeness
+        for i, (phase, entries) in enumerate(phases_seen.items()):
+            hosts = list({e.get("host", "") for e in entries})
+            users = list({e.get("user", "") for e in entries})
+            descriptions = [e.get("action", "") for e in entries]
+            techniques: list[str] = []
+            for _e in entries:
+                for _etype, tech in _TECHNIQUE_MAP.items():
+                    if tech.get("phase") == phase and tech["id"] not in techniques:
+                        techniques.append(tech["id"])
 
-        mappings: list[TechniqueMapping] = []
-        for i, link in enumerate(chain):
-            # Find matching technique from the event type
-            matched_tech: dict[str, str] = {}
-            for _etype, tech in _TECHNIQUE_MAP.items():
-                if tech.get("id") == link.technique:
-                    matched_tech = tech
-                    break
-
-            if not matched_tech:
-                continue
-
-            mappings.append(
-                TechniqueMapping(
-                    id=_gen_id("TM", link.id, i),
-                    chain_link_id=link.id,
-                    technique_id=matched_tech.get("id", ""),
-                    technique_name=matched_tech.get("name", ""),
-                    tactic=matched_tech.get("tactic", ""),
-                    sub_technique="",
-                    data_sources=[link.evidence[0] if link.evidence else ""],
-                    confidence=link.confidence,
-                )
+            segments.append(
+                {
+                    "id": f"seg-{uuid4().hex[:8]}",
+                    "sequence": i,
+                    "title": f"Phase: {phase.replace('_', ' ').title()}",
+                    "description": "; ".join(descriptions),
+                    "kill_chain_phase": phase,
+                    "mitre_technique_ids": techniques,
+                    "affected_hosts": hosts,
+                    "affected_users": users,
+                    "event_count": len(entries),
+                }
             )
+        return segments
+
+    async def map_mitre(
+        self,
+        clusters: list[dict[str, Any]],
+        segments: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Map attack to MITRE ATT&CK techniques."""
+        logger.info("anb.map_mitre", clusters=len(clusters), segments=len(segments))
+        mappings: list[dict[str, Any]] = []
+        seen_techniques: set[str] = set()
+        for cluster in clusters:
+            tech_id = cluster.get("mitre_technique_id", "")
+            if tech_id and tech_id not in seen_techniques:
+                seen_techniques.add(tech_id)
+                mappings.append(
+                    {
+                        "technique_id": tech_id,
+                        "technique_name": cluster.get("mitre_technique_name", ""),
+                        "cluster_id": cluster.get("id", ""),
+                        "kill_chain_phase": cluster.get("kill_chain_phase", ""),
+                        "confidence": cluster.get("confidence", 0.0),
+                    }
+                )
+
+        for tech_data in _TECHNIQUE_MAP.values():
+            tid = tech_data["id"]
+            if tid not in seen_techniques:
+                seen_techniques.add(tid)
+                mappings.append(
+                    {
+                        "technique_id": tid,
+                        "technique_name": tech_data["name"],
+                        "cluster_id": "",
+                        "kill_chain_phase": tech_data.get("phase", ""),
+                        "confidence": round(random.uniform(0.5, 0.9), 2),  # noqa: S311
+                    }
+                )
         return mappings
-
-    async def build_narrative(
-        self,
-        chain: list[AttackChainLink],
-        mappings: list[TechniqueMapping],
-    ) -> list[NarrativeSection]:
-        """Build the attack narrative from chain and mappings."""
-        logger.info(
-            "anb.build_narrative",
-            chain_count=len(chain),
-            mapping_count=len(mappings),
-        )
-
-        mapping_by_link: dict[str, TechniqueMapping] = {m.chain_link_id: m for m in mappings}
-
-        phase_groups: dict[AttackPhase, list[AttackChainLink]] = {}
-        for link in chain:
-            phase_groups.setdefault(link.phase, []).append(link)
-
-        sections: list[NarrativeSection] = []
-        for i, (phase, links) in enumerate(phase_groups.items()):
-            techs: list[str] = []
-            refs: list[str] = []
-            body_parts: list[str] = []
-            for link in links:
-                refs.append(link.timeline_entry_id)
-                m = mapping_by_link.get(link.id)
-                if m:
-                    techs.append(f"{m.technique_id}: {m.technique_name}")
-                body_parts.append(f"- [{link.host}] {link.description}")
-
-            sections.append(
-                NarrativeSection(
-                    id=_gen_id("NS", phase.value, i),
-                    phase=phase,
-                    title=f"Phase: {phase.value.replace('_', ' ').title()}",
-                    body="\n".join(body_parts),
-                    timeline_refs=refs,
-                    techniques=techs,
-                )
-            )
-        return sections
 
     async def record_metric(
         self,
-        metric_name: str,
+        metric_type: str,
         value: float,
-        tags: dict[str, str] | None = None,
-    ) -> dict[str, Any]:
-        """Record an attack narrative metric."""
-        logger.info(
-            "anb.record_metric",
-            metric=metric_name,
-            value=value,
-        )
-        return {"metric": metric_name, "recorded": True}
+    ) -> None:
+        """Record a narrative builder metric."""
+        logger.info("anb.record_metric", metric_type=metric_type, value=value)
