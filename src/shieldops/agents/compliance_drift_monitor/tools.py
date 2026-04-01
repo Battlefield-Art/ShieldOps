@@ -1,279 +1,170 @@
-"""Compliance Drift Monitor Agent — Tool functions."""
+"""Tool functions for the Compliance Drift Monitor Agent."""
 
 from __future__ import annotations
 
-import hashlib
-import random
+import random  # noqa: S311
 from typing import Any
 from uuid import uuid4
 
 import structlog
 
-from .models import (
-    AlertRecord,
-    BaselineComparison,
-    ControlScan,
-    ControlStatus,
-    DriftEvent,
-    DriftSeverity,
-    ImpactAssessment,
-)
-
 logger = structlog.get_logger()
-
-_SAMPLE_CONTROLS: list[dict[str, Any]] = [
-    {
-        "control_id": "SOC2-CC6.1",
-        "framework": "SOC 2",
-        "description": "Logical access controls",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "SOC2-CC7.2",
-        "framework": "SOC 2",
-        "description": "System monitoring",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "HIPAA-164.312(a)",
-        "framework": "HIPAA",
-        "description": "Access control",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "PCI-DSS-3.4",
-        "framework": "PCI DSS",
-        "description": "Render PAN unreadable",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "NIST-AC-2",
-        "framework": "NIST 800-53",
-        "description": "Account management",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "ISO27001-A.9.2",
-        "framework": "ISO 27001",
-        "description": "User access management",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "GDPR-Art.32",
-        "framework": "GDPR",
-        "description": "Security of processing",
-        "baseline": "compliant",
-    },
-    {
-        "control_id": "SOC2-CC8.1",
-        "framework": "SOC 2",
-        "description": "Change management",
-        "baseline": "compliant",
-    },
-]
-
-
-def _gen_id(prefix: str, seed: str, idx: int) -> str:
-    raw = f"{seed}:{idx}"
-    h = hashlib.sha256(raw.encode()).hexdigest()[:8]
-    return f"{prefix}-{h.upper()}"
 
 
 class ComplianceDriftMonitorToolkit:
-    """Tools for compliance drift monitoring."""
+    """Toolkit for compliance drift monitoring operations."""
 
     def __init__(
         self,
-        compliance_store: Any | None = None,
-        alert_service: Any | None = None,
+        compliance_client: Any | None = None,
+        scanner_client: Any | None = None,
+        policy_engine: Any | None = None,
+        repository: Any | None = None,
     ) -> None:
-        self._compliance_store = compliance_store
-        self._alert_service = alert_service
+        self._compliance_client = compliance_client
+        self._scanner_client = scanner_client
+        self._policy_engine = policy_engine
+        self._repository = repository
 
-    async def scan_controls(
+    async def load_baselines(
         self,
-        tenant_id: str,
-    ) -> list[ControlScan]:
-        """Scan current compliance control status."""
-        logger.info(
-            "cdm.scan_controls",
-            tenant_id=tenant_id,
-        )
-
-        if self._compliance_store is not None:
-            try:
-                raw = await self._compliance_store.scan(
-                    tenant_id=tenant_id,
+        config: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Load compliance baselines for configured frameworks."""
+        frameworks = config.get("frameworks", ["soc2", "hipaa", "pci_dss"])
+        logger.info("cdm.load_baselines", frameworks=frameworks)
+        baselines: list[dict[str, Any]] = []
+        control_map = {
+            "soc2": ["CC6.1", "CC6.2", "CC6.3", "CC7.1", "CC7.2"],
+            "hipaa": ["164.312(a)", "164.312(b)", "164.312(c)"],
+            "pci_dss": ["1.1", "2.1", "3.1", "6.1", "8.1"],
+            "gdpr": ["Art5", "Art6", "Art32", "Art33"],
+            "nist": ["AC-1", "AC-2", "AU-1", "AU-2", "SC-1"],
+            "iso27001": ["A.5.1", "A.6.1", "A.8.1", "A.9.1"],
+            "fedramp": ["AC-1", "AC-2", "AU-1", "CA-1"],
+        }
+        for framework in frameworks:
+            for ctrl in control_map.get(framework, ["default"]):
+                baselines.append(
+                    {
+                        "baseline_id": f"bl-{uuid4().hex[:8]}",
+                        "framework": framework,
+                        "control_id": ctrl,
+                        "expected_value": "compliant",
+                        "category": "security",
+                        "metadata": {},
+                    }
                 )
-                return [ControlScan(**r) for r in raw]
-            except Exception:
-                logger.exception("cdm.scan_controls.error")
+        return baselines
 
-        controls: list[ControlScan] = []
-        for i, c in enumerate(_SAMPLE_CONTROLS):
-            roll = random.random()  # noqa: S311
-            if roll < 0.6:
-                status = ControlStatus.COMPLIANT
-            elif roll < 0.8:
-                status = ControlStatus.DRIFTED
-            elif roll < 0.9:
-                status = ControlStatus.PARTIALLY_COMPLIANT
-            else:
-                status = ControlStatus.MISSING
-            controls.append(
-                ControlScan(
-                    id=_gen_id("CS", tenant_id, i),
-                    control_id=c["control_id"],
-                    framework=c["framework"],
-                    description=c["description"],
-                    status=status,
-                    evidence=[f"scan-{str(uuid4())[:8]}"],
-                    last_checked="2026-03-30T12:00:00Z",
-                )
-            )
-        return controls
-
-    async def compare_baseline(
+    async def scan_current_state(
         self,
-        controls: list[ControlScan],
-    ) -> list[BaselineComparison]:
-        """Compare current control states against baseline."""
+        baselines: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Scan current infrastructure state against baselines."""
         logger.info(
-            "cdm.compare_baseline",
-            count=len(controls),
+            "cdm.scan_current_state",
+            baseline_count=len(baselines),
         )
-
-        comparisons: list[BaselineComparison] = []
-        for i, c in enumerate(controls):
-            baseline = ControlStatus.COMPLIANT
-            has_drifted = c.status != baseline
-            detail = ""
-            if has_drifted:
-                detail = f"Control {c.control_id} changed from {baseline.value} to {c.status.value}"
-            comparisons.append(
-                BaselineComparison(
-                    id=_gen_id("BC", c.control_id, i),
-                    control_id=c.control_id,
-                    baseline_status=baseline,
-                    current_status=c.status,
-                    has_drifted=has_drifted,
-                    drift_detail=detail,
-                )
+        state_records: list[dict[str, Any]] = []
+        for baseline in baselines:
+            is_compliant = random.random() > 0.3  # noqa: S311
+            state_records.append(
+                {
+                    "control_id": baseline.get("control_id", ""),
+                    "framework": baseline.get("framework", ""),
+                    "actual_value": ("compliant" if is_compliant else "non_compliant"),
+                    "resource": f"res-{uuid4().hex[:8]}",
+                    "scanned_at": "now",
+                }
             )
-        return comparisons
+        return state_records
 
     async def detect_drift(
         self,
-        comparisons: list[BaselineComparison],
-        controls: list[ControlScan],
-    ) -> list[DriftEvent]:
-        """Detect compliance drift from baseline comparisons."""
+        baselines: list[dict[str, Any]],
+        current_state: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Detect drift between baselines and current state."""
         logger.info(
             "cdm.detect_drift",
-            count=len(comparisons),
+            baseline_count=len(baselines),
+            state_count=len(current_state),
         )
-
-        control_map = {c.control_id: c for c in controls}
-        drifts: list[DriftEvent] = []
-        idx = 0
-        for comp in comparisons:
-            if not comp.has_drifted:
-                continue
-            ctrl = control_map.get(comp.control_id)
-            framework = ctrl.framework if ctrl else "Unknown"
-
-            if comp.current_status == ControlStatus.MISSING:
-                sev = DriftSeverity.CRITICAL
-            elif comp.current_status == ControlStatus.DRIFTED:
-                sev = DriftSeverity.HIGH
-            else:
-                sev = DriftSeverity.MEDIUM
-
-            drifts.append(
-                DriftEvent(
-                    id=_gen_id("DE", comp.control_id, idx),
-                    control_id=comp.control_id,
-                    framework=framework,
-                    severity=sev,
-                    drift_type=comp.current_status.value,
-                    description=comp.drift_detail,
-                    detected_at="2026-03-30T12:05:00Z",
-                    remediation_hint=(f"Restore {comp.control_id} to compliant state"),
+        findings: list[dict[str, Any]] = []
+        severities = ["critical", "high", "medium", "low"]
+        for _i, record in enumerate(current_state):
+            if record.get("actual_value") != "compliant":
+                sev = random.choice(severities)  # noqa: S311
+                findings.append(
+                    {
+                        "finding_id": f"df-{uuid4().hex[:8]}",
+                        "control_id": record.get("control_id", ""),
+                        "framework": record.get("framework", ""),
+                        "severity": sev,
+                        "expected_value": "compliant",
+                        "actual_value": record.get("actual_value", "unknown"),
+                        "resource": record.get("resource", ""),
+                        "description": (f"Drift on {record.get('control_id', '')}"),
+                    }
                 )
-            )
-            idx += 1
-        return drifts
+        return findings
 
     async def assess_impact(
         self,
-        drift_events: list[DriftEvent],
-    ) -> list[ImpactAssessment]:
-        """Assess the impact of compliance drifts."""
+        drift_findings: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Assess impact of detected drift findings."""
         logger.info(
             "cdm.assess_impact",
-            count=len(drift_events),
+            finding_count=len(drift_findings),
         )
+        critical = sum(1 for f in drift_findings if f.get("severity") == "critical")
+        frameworks = list({f.get("framework", "") for f in drift_findings})
+        risk = round(random.uniform(1.0, 9.5), 1)  # noqa: S311
+        return [
+            {
+                "total_drifts": len(drift_findings),
+                "critical_count": critical,
+                "frameworks_affected": frameworks,
+                "risk_score": risk,
+                "summary": (f"{len(drift_findings)} drifts, {critical} critical, risk={risk}"),
+            }
+        ]
 
-        assessments: list[ImpactAssessment] = []
-        for i, d in enumerate(drift_events):
-            reg_risk = random.uniform(0.3, 0.95)  # noqa: S311
-            audit_impact = random.uniform(0.2, 0.9)  # noqa: S311
-            priority = (
-                1
-                if d.severity == DriftSeverity.CRITICAL
-                else (2 if d.severity == DriftSeverity.HIGH else 3)
-            )
-            assessments.append(
-                ImpactAssessment(
-                    id=_gen_id("IA", d.id, i),
-                    drift_event_id=d.id,
-                    business_impact=d.severity.value,
-                    regulatory_risk=round(reg_risk, 2),
-                    audit_readiness_impact=round(audit_impact, 2),
-                    affected_assets=["infra-primary", "data-store"],
-                    priority=priority,
-                )
-            )
-        return assessments
-
-    async def send_alerts(
+    async def plan_remediation(
         self,
-        drift_events: list[DriftEvent],
-        assessments: list[ImpactAssessment],
-    ) -> list[AlertRecord]:
-        """Send alerts for detected compliance drifts."""
+        drift_findings: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Generate remediation plans for drift findings."""
         logger.info(
-            "cdm.send_alerts",
-            count=len(drift_events),
+            "cdm.plan_remediation",
+            finding_count=len(drift_findings),
         )
-
-        alerts: list[AlertRecord] = []
-        for i, d in enumerate(drift_events):
-            alerts.append(
-                AlertRecord(
-                    id=_gen_id("AL", d.id, i),
-                    drift_event_id=d.id,
-                    channel="slack",
-                    recipients=["compliance-team", "security-ops"],
-                    sent=True,
-                    acknowledged=False,
-                )
+        plans: list[dict[str, Any]] = []
+        for finding in drift_findings:
+            effort = round(random.uniform(0.5, 8.0), 1)  # noqa: S311
+            automated = random.random() > 0.4  # noqa: S311
+            plans.append(
+                {
+                    "plan_id": f"rp-{uuid4().hex[:8]}",
+                    "finding_id": finding.get("finding_id", ""),
+                    "action": (f"Remediate {finding.get('control_id', '')}"),
+                    "priority": finding.get("severity", "medium"),
+                    "estimated_effort_hours": effort,
+                    "automated": automated,
+                }
             )
-        return alerts
+        return plans
 
     async def record_metric(
         self,
-        metric_name: str,
+        metric_type: str,
         value: float,
-    ) -> dict[str, Any]:
+    ) -> None:
         """Record a compliance drift metric."""
         logger.info(
             "cdm.record_metric",
-            metric=metric_name,
+            metric_type=metric_type,
             value=value,
         )
-        return {
-            "metric": metric_name,
-            "value": value,
-            "recorded": True,
-        }

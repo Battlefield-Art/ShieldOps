@@ -1,128 +1,101 @@
-"""Compliance Drift Monitor Agent — LangGraph StateGraph."""
+"""LangGraph workflow for the Compliance Drift Monitor Agent."""
 
 from __future__ import annotations
 
-from typing import Any
-
 from langgraph.graph import END, StateGraph
 
-from .models import ComplianceDriftMonitorState
-from .nodes import (
+from shieldops.agents.compliance_drift_monitor.models import (
+    ComplianceDriftMonitorState,
+)
+from shieldops.agents.compliance_drift_monitor.nodes import (
     assess_impact,
-    compare_baseline,
     detect_drift,
     generate_report,
-    scan_controls,
-    send_alerts,
+    load_baselines,
+    plan_remediation,
+    scan_current_state,
 )
-from .tools import ComplianceDriftMonitorToolkit
+from shieldops.agents.tracing import traced_node
+
+_AGENT = "compliance_drift_monitor"
 
 
-def build_graph(
-    toolkit: ComplianceDriftMonitorToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Compliance Drift Monitor graph.
+def _should_assess(
+    state: ComplianceDriftMonitorState,
+) -> str:
+    """Route after drift detection."""
+    if state.error:
+        return "generate_report"
+    if state.drift_findings:
+        return "assess_impact"
+    return "generate_report"
 
-    Flow:
-        scan_controls -> compare_baseline
-        -> detect_drift -> assess_impact
-        -> send_alerts -> report
+
+def _should_remediate(
+    state: ComplianceDriftMonitorState,
+) -> str:
+    """Route after impact assessment."""
+    if state.impact_assessments:
+        return "plan_remediation"
+    return "generate_report"
+
+
+def create_compliance_drift_monitor_graph() -> StateGraph:  # type: ignore[type-arg]
+    """Build the Compliance Drift Monitor LangGraph.
+
+    Workflow:
+        load_baselines -> scan_current_state -> detect_drift
+          -> [has_drifts?] -> assess_impact
+          -> [has_impacts?] -> plan_remediation
+          -> generate_report
     """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _scan(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await scan_controls(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _compare(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await compare_baseline(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _detect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await detect_drift(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _assess(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await assess_impact(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _alert(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await send_alerts(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
     graph = StateGraph(ComplianceDriftMonitorState)
-    graph.add_node("scan_controls", _scan)
-    graph.add_node("compare_baseline", _compare)
-    graph.add_node("detect_drift", _detect)
-    graph.add_node("assess_impact", _assess)
-    graph.add_node("send_alerts", _alert)
-    graph.add_node("report", _report)
 
-    graph.set_entry_point("scan_controls")
-    graph.add_edge(
-        "scan_controls",
-        "compare_baseline",
+    graph.add_node(
+        "load_baselines",
+        traced_node(f"{_AGENT}.load_baselines", _AGENT)(load_baselines),
     )
-    graph.add_edge(
-        "compare_baseline",
+    graph.add_node(
+        "scan_current_state",
+        traced_node(f"{_AGENT}.scan_current_state", _AGENT)(scan_current_state),
+    )
+    graph.add_node(
         "detect_drift",
+        traced_node(f"{_AGENT}.detect_drift", _AGENT)(detect_drift),
     )
-    graph.add_edge(
+    graph.add_node(
+        "assess_impact",
+        traced_node(f"{_AGENT}.assess_impact", _AGENT)(assess_impact),
+    )
+    graph.add_node(
+        "plan_remediation",
+        traced_node(f"{_AGENT}.plan_remediation", _AGENT)(plan_remediation),
+    )
+    graph.add_node(
+        "generate_report",
+        traced_node(f"{_AGENT}.generate_report", _AGENT)(generate_report),
+    )
+
+    graph.set_entry_point("load_baselines")
+    graph.add_edge("load_baselines", "scan_current_state")
+    graph.add_edge("scan_current_state", "detect_drift")
+    graph.add_conditional_edges(
         "detect_drift",
+        _should_assess,
+        {
+            "assess_impact": "assess_impact",
+            "generate_report": "generate_report",
+        },
+    )
+    graph.add_conditional_edges(
         "assess_impact",
+        _should_remediate,
+        {
+            "plan_remediation": "plan_remediation",
+            "generate_report": "generate_report",
+        },
     )
-    graph.add_edge(
-        "assess_impact",
-        "send_alerts",
-    )
-    graph.add_edge(
-        "send_alerts",
-        "report",
-    )
-    graph.add_edge("report", END)
+    graph.add_edge("plan_remediation", "generate_report")
+    graph.add_edge("generate_report", END)
 
     return graph
-
-
-def create_compliance_drift_monitor_graph(
-    compliance_store: Any | None = None,
-    alert_service: Any | None = None,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Create the Compliance Drift Monitor graph."""
-    toolkit = ComplianceDriftMonitorToolkit(
-        compliance_store=compliance_store,
-        alert_service=alert_service,
-    )
-    return build_graph(toolkit)

@@ -1,4 +1,4 @@
-"""Compliance Drift Monitor runner — entry point for execution."""
+"""Security Telemetry Aggregator runner — entry point."""
 
 from __future__ import annotations
 
@@ -7,60 +7,60 @@ from uuid import uuid4
 
 import structlog
 
-from shieldops.agents.compliance_drift_monitor.graph import (
-    create_compliance_drift_monitor_graph,
+from shieldops.agents.security_telemetry_aggregator.graph import (
+    create_security_telemetry_aggregator_graph,
 )
-from shieldops.agents.compliance_drift_monitor.models import (
-    ComplianceDriftMonitorState,
+from shieldops.agents.security_telemetry_aggregator.models import (
+    SecurityTelemetryAggregatorState,
 )
-from shieldops.agents.compliance_drift_monitor.nodes import (
+from shieldops.agents.security_telemetry_aggregator.nodes import (
     set_toolkit,
 )
-from shieldops.agents.compliance_drift_monitor.tools import (
-    ComplianceDriftMonitorToolkit,
+from shieldops.agents.security_telemetry_aggregator.tools import (
+    SecurityTelemetryAggregatorToolkit,
 )
 
 logger = structlog.get_logger()
 
 
-class ComplianceDriftMonitorRunner:
-    """Runner for the Compliance Drift Monitor Agent."""
+class SecurityTelemetryAggregatorRunner:
+    """Runner for the Security Telemetry Aggregator Agent."""
 
     def __init__(
         self,
-        compliance_client: Any | None = None,
-        scanner_client: Any | None = None,
-        policy_engine: Any | None = None,
+        telemetry_bus: Any | None = None,
+        enrichment_service: Any | None = None,
+        alert_router: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = ComplianceDriftMonitorToolkit(
-            compliance_client=compliance_client,
-            scanner_client=scanner_client,
-            policy_engine=policy_engine,
+        self._toolkit = SecurityTelemetryAggregatorToolkit(
+            telemetry_bus=telemetry_bus,
+            enrichment_service=enrichment_service,
+            alert_router=alert_router,
             repository=repository,
         )
         set_toolkit(self._toolkit)
-        graph = create_compliance_drift_monitor_graph()
+        graph = create_security_telemetry_aggregator_graph()
         self._app = graph.compile()
-        self._results: dict[str, ComplianceDriftMonitorState] = {}
-        logger.info("cdm_runner.initialized")
+        self._results: dict[str, SecurityTelemetryAggregatorState] = {}
+        logger.info("sta_runner.initialized")
 
     async def run(
         self,
         request_id: str,
         tenant_id: str = "",
         config: dict[str, Any] | None = None,
-    ) -> ComplianceDriftMonitorState:
-        """Run compliance drift monitor workflow."""
-        sid = f"cdm-{uuid4().hex[:12]}"
-        initial = ComplianceDriftMonitorState(
+    ) -> SecurityTelemetryAggregatorState:
+        """Run telemetry aggregation workflow."""
+        sid = f"sta-{uuid4().hex[:12]}"
+        initial = SecurityTelemetryAggregatorState(
             request_id=request_id,
             tenant_id=tenant_id,
             config=config or {},
         )
 
         logger.info(
-            "cdm_runner.starting",
+            "sta_runner.starting",
             session_id=sid,
             request_id=request_id,
         )
@@ -71,29 +71,31 @@ class ComplianceDriftMonitorRunner:
                 config={
                     "metadata": {
                         "session_id": sid,
-                        "agent": "compliance_drift_monitor",
+                        "agent": "security_telemetry_aggregator",
                     },
                 },
             )
-            final = ComplianceDriftMonitorState.model_validate(result)
+            final = SecurityTelemetryAggregatorState.model_validate(
+                result,
+            )
             self._results[sid] = final
 
             logger.info(
-                "cdm_runner.completed",
+                "sta_runner.completed",
                 session_id=sid,
-                baselines=len(final.baselines),
-                drifts=len(final.drift_findings),
+                records=len(final.telemetry_records),
+                alerts=len(final.alert_routings),
                 duration_ms=final.session_duration_ms,
             )
             return final
 
         except Exception as e:
             logger.error(
-                "cdm_runner.failed",
+                "sta_runner.failed",
                 session_id=sid,
                 error=str(e),
             )
-            err_state = ComplianceDriftMonitorState(
+            err_state = SecurityTelemetryAggregatorState(
                 request_id=request_id,
                 tenant_id=tenant_id,
                 config=config or {},
@@ -106,7 +108,7 @@ class ComplianceDriftMonitorRunner:
     def get_result(
         self,
         session_id: str,
-    ) -> ComplianceDriftMonitorState | None:
+    ) -> SecurityTelemetryAggregatorState | None:
         """Retrieve a previous result."""
         return self._results.get(session_id)
 
@@ -116,8 +118,8 @@ class ComplianceDriftMonitorRunner:
             {
                 "session_id": sid,
                 "request_id": s.request_id,
-                "baselines": len(s.baselines),
-                "drifts": len(s.drift_findings),
+                "records": len(s.telemetry_records),
+                "alerts": len(s.alert_routings),
                 "step": s.current_step,
                 "error": s.error,
             }

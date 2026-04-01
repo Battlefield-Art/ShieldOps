@@ -1,4 +1,4 @@
-"""Compliance Drift Monitor runner — entry point for execution."""
+"""Adaptive Access Controller runner — entry point for execution."""
 
 from __future__ import annotations
 
@@ -7,60 +7,60 @@ from uuid import uuid4
 
 import structlog
 
-from shieldops.agents.compliance_drift_monitor.graph import (
-    create_compliance_drift_monitor_graph,
+from shieldops.agents.adaptive_access_controller.graph import (
+    create_adaptive_access_controller_graph,
 )
-from shieldops.agents.compliance_drift_monitor.models import (
-    ComplianceDriftMonitorState,
+from shieldops.agents.adaptive_access_controller.models import (
+    AdaptiveAccessControllerState,
 )
-from shieldops.agents.compliance_drift_monitor.nodes import (
+from shieldops.agents.adaptive_access_controller.nodes import (
     set_toolkit,
 )
-from shieldops.agents.compliance_drift_monitor.tools import (
-    ComplianceDriftMonitorToolkit,
+from shieldops.agents.adaptive_access_controller.tools import (
+    AdaptiveAccessControllerToolkit,
 )
 
 logger = structlog.get_logger()
 
 
-class ComplianceDriftMonitorRunner:
-    """Runner for the Compliance Drift Monitor Agent."""
+class AdaptiveAccessControllerRunner:
+    """Runner for the Adaptive Access Controller Agent."""
 
     def __init__(
         self,
-        compliance_client: Any | None = None,
-        scanner_client: Any | None = None,
+        identity_client: Any | None = None,
         policy_engine: Any | None = None,
+        threat_intel: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = ComplianceDriftMonitorToolkit(
-            compliance_client=compliance_client,
-            scanner_client=scanner_client,
+        self._toolkit = AdaptiveAccessControllerToolkit(
+            identity_client=identity_client,
             policy_engine=policy_engine,
+            threat_intel=threat_intel,
             repository=repository,
         )
         set_toolkit(self._toolkit)
-        graph = create_compliance_drift_monitor_graph()
+        graph = create_adaptive_access_controller_graph()
         self._app = graph.compile()
-        self._results: dict[str, ComplianceDriftMonitorState] = {}
-        logger.info("cdm_runner.initialized")
+        self._results: dict[str, AdaptiveAccessControllerState] = {}
+        logger.info("aac_runner.initialized")
 
     async def run(
         self,
         request_id: str,
         tenant_id: str = "",
         config: dict[str, Any] | None = None,
-    ) -> ComplianceDriftMonitorState:
-        """Run compliance drift monitor workflow."""
-        sid = f"cdm-{uuid4().hex[:12]}"
-        initial = ComplianceDriftMonitorState(
+    ) -> AdaptiveAccessControllerState:
+        """Run adaptive access control workflow."""
+        sid = f"aac-{uuid4().hex[:12]}"
+        initial = AdaptiveAccessControllerState(
             request_id=request_id,
             tenant_id=tenant_id,
             config=config or {},
         )
 
         logger.info(
-            "cdm_runner.starting",
+            "aac_runner.starting",
             session_id=sid,
             request_id=request_id,
         )
@@ -71,29 +71,31 @@ class ComplianceDriftMonitorRunner:
                 config={
                     "metadata": {
                         "session_id": sid,
-                        "agent": "compliance_drift_monitor",
+                        "agent": "adaptive_access_controller",
                     },
                 },
             )
-            final = ComplianceDriftMonitorState.model_validate(result)
+            final = AdaptiveAccessControllerState.model_validate(
+                result,
+            )
             self._results[sid] = final
 
             logger.info(
-                "cdm_runner.completed",
+                "aac_runner.completed",
                 session_id=sid,
-                baselines=len(final.baselines),
-                drifts=len(final.drift_findings),
+                contexts=len(final.access_contexts),
+                enforcements=len(final.enforcement_results),
                 duration_ms=final.session_duration_ms,
             )
             return final
 
         except Exception as e:
             logger.error(
-                "cdm_runner.failed",
+                "aac_runner.failed",
                 session_id=sid,
                 error=str(e),
             )
-            err_state = ComplianceDriftMonitorState(
+            err_state = AdaptiveAccessControllerState(
                 request_id=request_id,
                 tenant_id=tenant_id,
                 config=config or {},
@@ -106,7 +108,7 @@ class ComplianceDriftMonitorRunner:
     def get_result(
         self,
         session_id: str,
-    ) -> ComplianceDriftMonitorState | None:
+    ) -> AdaptiveAccessControllerState | None:
         """Retrieve a previous result."""
         return self._results.get(session_id)
 
@@ -116,8 +118,10 @@ class ComplianceDriftMonitorRunner:
             {
                 "session_id": sid,
                 "request_id": s.request_id,
-                "baselines": len(s.baselines),
-                "drifts": len(s.drift_findings),
+                "contexts": len(s.access_contexts),
+                "enforcements": len(
+                    s.enforcement_results,
+                ),
                 "step": s.current_step,
                 "error": s.error,
             }

@@ -1,78 +1,113 @@
-"""Compliance Drift Monitor Agent — LLM prompt templates."""
+"""LLM prompt templates for the Compliance Drift Monitor Agent."""
+
+from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-
-class DriftInsight(BaseModel):
-    """Structured output from drift detection analysis."""
-
-    summary: str = Field(
-        description="Brief compliance drift overview",
-    )
-    critical_drifts: list[str] = Field(
-        description="Most critical compliance drifts detected",
-    )
-    affected_frameworks: list[str] = Field(
-        description="Regulatory frameworks impacted",
-    )
+# ── Structured output schemas ─────────────────────────
 
 
-class ImpactInsight(BaseModel):
-    """Structured output from impact assessment."""
+class BaselineLoadOutput(BaseModel):
+    """Structured output for baseline loading."""
 
-    summary: str = Field(
-        description="Impact assessment overview",
-    )
-    regulatory_risks: list[str] = Field(
-        description="Regulatory risks from drift",
-    )
-    remediation_priorities: list[str] = Field(
-        description="Prioritized remediation actions",
-    )
+    total_baselines: int = Field(description="Total baselines loaded")
+    frameworks_covered: int = Field(description="Frameworks covered")
+    summary: str = Field(description="Loading summary")
 
 
-class AlertInsight(BaseModel):
-    """Structured output from alert generation."""
+class StateScanOutput(BaseModel):
+    """Structured output for current state scan."""
 
-    summary: str = Field(
-        description="Alert generation overview",
-    )
-    escalation_needed: list[str] = Field(
-        description="Items requiring escalation",
-    )
-    recommendations: list[str] = Field(
-        description="Alert tuning recommendations",
-    )
+    resources_scanned: int = Field(description="Resources scanned")
+    controls_evaluated: int = Field(description="Controls evaluated")
+    reasoning: str = Field(description="Scan reasoning")
 
 
-class ReportInsight(BaseModel):
-    """Structured output for final report."""
+class DriftDetectionOutput(BaseModel):
+    """Structured output for drift detection."""
 
-    summary: str = Field(
-        description="Executive summary of compliance drift analysis",
-    )
-    key_findings: list[str] = Field(
-        description="Key findings for compliance team",
-    )
-    next_steps: list[str] = Field(
-        description="Recommended next steps",
-    )
+    drifts_found: int = Field(description="Number of drifts detected")
+    critical_drifts: int = Field(description="Critical drift count")
+    reasoning: str = Field(description="Drift detection reasoning")
 
 
-SYSTEM_ANALYZE = (
-    "You are a compliance drift analyst reviewing "
-    "control deviations from baseline.\n"
-    "1. Identify the most critical drifts by framework\n"
-    "2. Assess regulatory exposure from each drift\n"
-    "3. Prioritize remediation by business impact\n"
-    "4. Recommend drift prevention measures"
-)
+class ImpactOutput(BaseModel):
+    """Structured output for impact assessment."""
 
-SYSTEM_REPORT = (
-    "You are a compliance advisor generating a "
-    "drift monitoring report.\n"
-    "1. Summarize drift events by framework and severity\n"
-    "2. Highlight controls requiring immediate remediation\n"
-    "3. Quantify audit readiness impact\n"
-    "4. Recommend compliance hardening steps"
-)
+    risk_score: float = Field(description="Overall risk score 0-10")
+    frameworks_at_risk: int = Field(description="Frameworks at risk")
+    reasoning: str = Field(description="Impact reasoning")
+
+
+class RemediationOutput(BaseModel):
+    """Structured output for remediation planning."""
+
+    plans_generated: int = Field(description="Plans generated")
+    automatable: int = Field(description="Automatable remediations")
+    reasoning: str = Field(description="Remediation reasoning")
+
+
+# ── System prompts ────────────────────────────────────
+
+SYSTEM_LOAD_BASELINES = """\
+You are an expert compliance engineer loading compliance \
+baselines.
+
+Given the configuration:
+1. Identify applicable compliance frameworks
+2. Load control baselines for each framework
+3. Validate baseline completeness and currency
+4. Flag any stale or missing baseline controls
+
+Focus on: framework coverage, control completeness, \
+baseline freshness."""
+
+SYSTEM_SCAN_STATE = """\
+You are an expert compliance engineer scanning current \
+infrastructure state.
+
+Given the loaded baselines:
+1. Scan all resources against baseline controls
+2. Capture current configuration values
+3. Identify resources not covered by baselines
+4. Note any scan failures or access issues
+
+Prioritize critical controls and high-risk resources."""
+
+SYSTEM_DETECT_DRIFT = """\
+You are an expert compliance engineer detecting configuration \
+drift.
+
+Given baselines and current state:
+1. Compare current values against expected baselines
+2. Classify drift severity by control criticality
+3. Identify patterns in drift across resources
+4. Flag newly introduced misconfigurations
+
+Focus on: accuracy, severity classification, pattern \
+recognition."""
+
+SYSTEM_ASSESS_IMPACT = """\
+You are an expert compliance risk analyst assessing drift \
+impact.
+
+Given detected drift findings:
+1. Calculate risk scores per framework
+2. Assess cumulative compliance exposure
+3. Identify regulatory reporting obligations
+4. Determine business impact of each drift
+
+Prioritize by: regulatory risk, data exposure, audit \
+readiness."""
+
+SYSTEM_PLAN_REMEDIATION = """\
+You are an expert compliance engineer planning remediation.
+
+Given drift findings and impact assessments:
+1. Generate remediation actions per finding
+2. Identify automatable vs manual remediations
+3. Prioritize by risk score and effort
+4. Estimate remediation timelines
+
+Optimize for: fastest risk reduction, automation \
+opportunities, minimal disruption."""

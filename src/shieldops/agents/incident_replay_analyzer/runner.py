@@ -1,4 +1,4 @@
-"""Compliance Drift Monitor runner — entry point for execution."""
+"""Incident Replay Analyzer runner — entry point for execution."""
 
 from __future__ import annotations
 
@@ -7,60 +7,60 @@ from uuid import uuid4
 
 import structlog
 
-from shieldops.agents.compliance_drift_monitor.graph import (
-    create_compliance_drift_monitor_graph,
+from shieldops.agents.incident_replay_analyzer.graph import (
+    create_incident_replay_analyzer_graph,
 )
-from shieldops.agents.compliance_drift_monitor.models import (
-    ComplianceDriftMonitorState,
+from shieldops.agents.incident_replay_analyzer.models import (
+    IncidentReplayAnalyzerState,
 )
-from shieldops.agents.compliance_drift_monitor.nodes import (
+from shieldops.agents.incident_replay_analyzer.nodes import (
     set_toolkit,
 )
-from shieldops.agents.compliance_drift_monitor.tools import (
-    ComplianceDriftMonitorToolkit,
+from shieldops.agents.incident_replay_analyzer.tools import (
+    IncidentReplayAnalyzerToolkit,
 )
 
 logger = structlog.get_logger()
 
 
-class ComplianceDriftMonitorRunner:
-    """Runner for the Compliance Drift Monitor Agent."""
+class IncidentReplayAnalyzerRunner:
+    """Runner for the Incident Replay Analyzer Agent."""
 
     def __init__(
         self,
-        compliance_client: Any | None = None,
-        scanner_client: Any | None = None,
-        policy_engine: Any | None = None,
+        incident_store: Any | None = None,
+        playbook_engine: Any | None = None,
+        metrics_store: Any | None = None,
         repository: Any | None = None,
     ) -> None:
-        self._toolkit = ComplianceDriftMonitorToolkit(
-            compliance_client=compliance_client,
-            scanner_client=scanner_client,
-            policy_engine=policy_engine,
+        self._toolkit = IncidentReplayAnalyzerToolkit(
+            incident_store=incident_store,
+            playbook_engine=playbook_engine,
+            metrics_store=metrics_store,
             repository=repository,
         )
         set_toolkit(self._toolkit)
-        graph = create_compliance_drift_monitor_graph()
+        graph = create_incident_replay_analyzer_graph()
         self._app = graph.compile()
-        self._results: dict[str, ComplianceDriftMonitorState] = {}
-        logger.info("cdm_runner.initialized")
+        self._results: dict[str, IncidentReplayAnalyzerState] = {}
+        logger.info("ira_runner.initialized")
 
     async def run(
         self,
         request_id: str,
         tenant_id: str = "",
         config: dict[str, Any] | None = None,
-    ) -> ComplianceDriftMonitorState:
-        """Run compliance drift monitor workflow."""
-        sid = f"cdm-{uuid4().hex[:12]}"
-        initial = ComplianceDriftMonitorState(
+    ) -> IncidentReplayAnalyzerState:
+        """Run incident replay workflow."""
+        sid = f"ira-{uuid4().hex[:12]}"
+        initial = IncidentReplayAnalyzerState(
             request_id=request_id,
             tenant_id=tenant_id,
             config=config or {},
         )
 
         logger.info(
-            "cdm_runner.starting",
+            "ira_runner.starting",
             session_id=sid,
             request_id=request_id,
         )
@@ -71,29 +71,31 @@ class ComplianceDriftMonitorRunner:
                 config={
                     "metadata": {
                         "session_id": sid,
-                        "agent": "compliance_drift_monitor",
+                        "agent": "incident_replay_analyzer",
                     },
                 },
             )
-            final = ComplianceDriftMonitorState.model_validate(result)
+            final = IncidentReplayAnalyzerState.model_validate(
+                result,
+            )
             self._results[sid] = final
 
             logger.info(
-                "cdm_runner.completed",
+                "ira_runner.completed",
                 session_id=sid,
-                baselines=len(final.baselines),
-                drifts=len(final.drift_findings),
+                incidents=len(final.selected_incidents),
+                playbooks=len(final.playbooks),
                 duration_ms=final.session_duration_ms,
             )
             return final
 
         except Exception as e:
             logger.error(
-                "cdm_runner.failed",
+                "ira_runner.failed",
                 session_id=sid,
                 error=str(e),
             )
-            err_state = ComplianceDriftMonitorState(
+            err_state = IncidentReplayAnalyzerState(
                 request_id=request_id,
                 tenant_id=tenant_id,
                 config=config or {},
@@ -106,7 +108,7 @@ class ComplianceDriftMonitorRunner:
     def get_result(
         self,
         session_id: str,
-    ) -> ComplianceDriftMonitorState | None:
+    ) -> IncidentReplayAnalyzerState | None:
         """Retrieve a previous result."""
         return self._results.get(session_id)
 
@@ -116,8 +118,8 @@ class ComplianceDriftMonitorRunner:
             {
                 "session_id": sid,
                 "request_id": s.request_id,
-                "baselines": len(s.baselines),
-                "drifts": len(s.drift_findings),
+                "incidents": len(s.selected_incidents),
+                "playbooks": len(s.playbooks),
                 "step": s.current_step,
                 "error": s.error,
             }
