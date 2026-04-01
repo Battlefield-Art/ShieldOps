@@ -6,7 +6,7 @@ This is the main Python package for ShieldOps. All business logic lives here.
 
 ```
 shieldops/
-├── agents/          # 490 LangGraph agents (see agents/CLAUDE.md)
+├── agents/          # 484 LangGraph agents (see agents/CLAUDE.md)
 ├── api/             # FastAPI 934 routes + middleware (see api/CLAUDE.md)
 ├── security/        # 551 security engines (see security/CLAUDE.md)
 ├── observability/   # 232 OTel/telemetry engines (see observability/CLAUDE.md)

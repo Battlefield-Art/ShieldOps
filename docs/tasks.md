@@ -4,9 +4,9 @@
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 490 |
+| **LangGraph Agents** | 484 (verified via graph.py count) |
 | **Engine Modules** | 1,780 |
-| **Dashboard Pages** | 599 |
+| **Dashboard Pages** | 490 (page components) / 599 (all TS/TSX) |
 | **API Route Files** | 934 |
 | **Connectors** | 17 |
 | **Test Files** | 2,214 |
@@ -18,9 +18,9 @@
 
 | Phase | Theme | New Agents | Total |
 |-------|-------|------------|-------|
-| BD | Security mesh, response & intelligence fusion | 6 | 478 |
-| BE | Threat surface, runtime protection & autonomous ops | 6 | 484 |
-| BF | Data security, identity intelligence & fleet coordination | 6 | 490 |
+| BD | Security mesh, response & intelligence fusion | 6 | 472 |
+| BE | Threat surface, runtime protection & autonomous ops | 6 | 478 |
+| BF | Data security, identity intelligence & fleet coordination | 6 | 484 |
 
 **Phase BD agents:** security_orchestration_mesh, automated_response_engine, intelligence_fusion_center, security_policy_optimizer, attack_narrative_builder, compliance_evidence_generator
 

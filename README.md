@@ -25,13 +25,13 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 
 | Metric | Count |
 |--------|-------|
-| Autonomous LangGraph agents | **490** |
+| Autonomous LangGraph agents | **484** |
 | Security & analytics engines | **1,780** |
 | Dashboard pages | **599** |
 | API route files | **934** |
 | Cloud/vendor connectors | **17** |
 | Test files | **2,214** |
-| OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
+| OPA policies | 13 (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
 
 ## Product Modules
 
@@ -145,10 +145,10 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   Dashboard (React · 479 pages)              │
+│                   Dashboard (React · 490 pages)              │
 │    Situations Queue · Agent Monitor · SOC Assistant · DLP     │
 ├──────────────────────────────────────────────────────────────┤
-│                   API Gateway (FastAPI · 888 routes)          │
+│                   API Gateway (FastAPI · 934 routes)          │
 │         JWT Auth · Rate Limiting · Tenant Isolation           │
 ├─────────────┬──────────────┬──────────────┬──────────────────┤
 │ Agent       │  SOC Brain   │ MCP Security │ AI Runtime       │
@@ -159,7 +159,7 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 │                   Policy Engine (OPA · Rego)                  │
 │        HIPAA · SOC 2 · PCI-DSS · GDPR · FedRAMP             │
 ├──────────────────────────────────────────────────────────────┤
-│              Agent Orchestration (LangGraph · 472 agents)     │
+│              Agent Orchestration (LangGraph · 484 agents)     │
 │   Supervisor · Memory · Reflection · Cross-Vendor Correlation │
 ├──────────────────────────────────────────────────────────────┤
 │            Observability Ingestion (OpenTelemetry)            │
@@ -224,8 +224,8 @@ cd dashboard-ui && npm run dev            # Dashboard
 ShieldOps/
 ├── CLAUDE.md                    # Root project instructions
 ├── src/shieldops/
-│   ├── agents/                  # 472 LangGraph agents
-│   ├── api/                     # FastAPI (888 routes)
+│   ├── agents/                  # 484 LangGraph agents
+│   ├── api/                     # FastAPI (934 routes)
 │   ├── security/                # 551 security engines
 │   ├── analytics/               # 276 analytics engines
 │   ├── observability/           # 232 telemetry engines
@@ -236,7 +236,7 @@ ShieldOps/
 │   ├── db/                      # Database (SQLAlchemy + Alembic)
 │   ├── policy/                  # OPA policy engine
 │   └── utils/                   # LLM, routing, self-evolution
-├── dashboard-ui/                # React dashboard (479 pages)
+├── dashboard-ui/                # React dashboard (490 pages)
 ├── tests/                       # 2,214 test files
 ├── infrastructure/              # Docker, K8s, Terraform, CDK, Helm
 └── docs/                        # Documentation
