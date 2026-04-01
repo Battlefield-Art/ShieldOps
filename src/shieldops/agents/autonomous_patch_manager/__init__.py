@@ -1,4 +1,4 @@
-"""Autonomous Patch Manager Agent — autonomous patch management and deployment."""
+"""Autonomous Patch Manager — autonomous patch management with risk assessment."""
 
 from __future__ import annotations
 
