@@ -1,16 +1,32 @@
 # ShieldOps — Master Task Tracker
 
-## Platform Summary (as of Phase BC)
+## Platform Summary (as of Phase BF)
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 472 |
+| **LangGraph Agents** | 490 |
 | **Engine Modules** | 1,780 |
-| **Dashboard Pages** | 479 |
-| **API Route Files** | 888 |
+| **Dashboard Pages** | 599 |
+| **API Route Files** | 934 |
 | **Connectors** | 17 |
 | **Test Files** | 2,214 |
 | **CLAUDE.md Files** | 29 (hierarchical) |
+
+---
+
+## Phases BD–BF — Security Mesh, Intelligence & Fleet Coordination (Done)
+
+| Phase | Theme | New Agents | Total |
+|-------|-------|------------|-------|
+| BD | Security mesh, response & intelligence fusion | 6 | 478 |
+| BE | Threat surface, runtime protection & autonomous ops | 6 | 484 |
+| BF | Data security, identity intelligence & fleet coordination | 6 | 490 |
+
+**Phase BD agents:** security_orchestration_mesh, automated_response_engine, intelligence_fusion_center, security_policy_optimizer, attack_narrative_builder, compliance_evidence_generator
+
+**Phase BE agents:** threat_surface_analyzer, runtime_protection_engine, autonomous_ops_controller, security_knowledge_graph, incident_prediction_model, cross_cloud_posture_manager
+
+**Phase BF agents:** data_security_posture, identity_intelligence_hub, fleet_coordination_engine, security_automation_hub, behavioral_threat_detector, unified_risk_dashboard
 
 ---
 

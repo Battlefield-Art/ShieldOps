@@ -25,10 +25,10 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 
 | Metric | Count |
 |--------|-------|
-| Autonomous LangGraph agents | **472** |
+| Autonomous LangGraph agents | **490** |
 | Security & analytics engines | **1,780** |
-| Dashboard pages | **479** |
-| API route files | **888** |
+| Dashboard pages | **599** |
+| API route files | **934** |
 | Cloud/vendor connectors | **17** |
 | Test files | **2,214** |
 | OPA policies | 10+ (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
