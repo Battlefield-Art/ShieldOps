@@ -1,10 +1,10 @@
 # ShieldOps — Master Task Tracker
 
-## Platform Summary (as of Phase BF)
+## Platform Summary (as of Phase BI)
 
 | Metric | Count |
 |--------|-------|
-| **LangGraph Agents** | 484 (verified via graph.py count) |
+| **LangGraph Agents** | 499 (verified via graph.py count) |
 | **Engine Modules** | 1,780 |
 | **Dashboard Pages** | 490 (page components) / 599 (all TS/TSX) |
 | **API Route Files** | 934 |
@@ -14,19 +14,28 @@
 
 ---
 
-## Phases BD–BF — Security Mesh, Intelligence & Fleet Coordination (Done)
+## Phases BD–BI — Security Mesh, Intelligence, Fleet & Chaos Engineering (Done)
 
 | Phase | Theme | New Agents | Total |
 |-------|-------|------------|-------|
 | BD | Security mesh, response & intelligence fusion | 6 | 472 |
 | BE | Threat surface, runtime protection & autonomous ops | 6 | 478 |
 | BF | Data security, identity intelligence & fleet coordination | 6 | 484 |
+| BG | Adaptive access, threat simulation & trust broker | 6 | 490 |
+| BH | Exploit chain, entitlement optimizer & deception mesh | 6 | 496 |
+| BI | Attack replay, credential hygiene & policy compiler | 6 | 499 |
 
 **Phase BD agents:** security_orchestration_mesh, automated_response_engine, intelligence_fusion_center, security_policy_optimizer, attack_narrative_builder, compliance_evidence_generator
 
 **Phase BE agents:** threat_surface_analyzer, runtime_protection_engine, autonomous_ops_controller, security_knowledge_graph, incident_prediction_model, cross_cloud_posture_manager
 
 **Phase BF agents:** data_security_posture, identity_intelligence_hub, fleet_coordination_engine, security_automation_hub, behavioral_threat_detector, unified_risk_dashboard
+
+**Phase BG agents:** adaptive_access_controller, threat_simulation_engine, security_telemetry_aggregator, compliance_drift_monitor, incident_replay_analyzer, agent_trust_broker
+
+**Phase BH agents:** vulnerability_exploit_chain, cloud_entitlement_optimizer, deception_mesh_controller, security_signal_router, autonomous_patch_manager, risk_appetite_engine
+
+**Phase BI agents:** attack_replay_simulator, credential_hygiene_auditor, multi_tenant_isolation_guard, security_chaos_orchestrator, threat_actor_profiler, unified_policy_compiler
 
 ---
 
