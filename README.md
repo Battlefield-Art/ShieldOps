@@ -27,8 +27,8 @@ ShieldOps intercepts every AI agent tool call at runtime, governs non-human iden
 |--------|-------|
 | Autonomous LangGraph agents | **499** |
 | Security & analytics engines | **1,780** |
-| Dashboard pages | **599** |
-| API route files | **934** |
+| Dashboard pages | **479** |
+| API route files | **888** |
 | Cloud/vendor connectors | **17** |
 | Test files | **2,214** |
 | OPA policies | 13 (HIPAA, SOC 2, PCI-DSS, GDPR, FedRAMP) |
@@ -145,10 +145,10 @@ Visit `http://localhost:3000` for the dashboard, `http://localhost:8000/api/v1/d
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   Dashboard (React · 490 pages)              │
+│                   Dashboard (React · 479 pages)              │
 │    Situations Queue · Agent Monitor · SOC Assistant · DLP     │
 ├──────────────────────────────────────────────────────────────┤
-│                   API Gateway (FastAPI · 934 routes)          │
+│                   API Gateway (FastAPI · 888 routes)          │
 │         JWT Auth · Rate Limiting · Tenant Isolation           │
 ├─────────────┬──────────────┬──────────────┬──────────────────┤
 │ Agent       │  SOC Brain   │ MCP Security │ AI Runtime       │
@@ -225,7 +225,7 @@ ShieldOps/
 ├── CLAUDE.md                    # Root project instructions
 ├── src/shieldops/
 │   ├── agents/                  # 499 LangGraph agents
-│   ├── api/                     # FastAPI (934 routes)
+│   ├── api/                     # FastAPI (888 routes)
 │   ├── security/                # 551 security engines
 │   ├── analytics/               # 276 analytics engines
 │   ├── observability/           # 232 telemetry engines
@@ -236,7 +236,7 @@ ShieldOps/
 │   ├── db/                      # Database (SQLAlchemy + Alembic)
 │   ├── policy/                  # OPA policy engine
 │   └── utils/                   # LLM, routing, self-evolution
-├── dashboard-ui/                # React dashboard (490 pages)
+├── dashboard-ui/                # React dashboard (479 pages)
 ├── tests/                       # 2,214 test files
 ├── infrastructure/              # Docker, K8s, Terraform, CDK, Helm
 └── docs/                        # Documentation

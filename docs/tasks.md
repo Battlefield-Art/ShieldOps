@@ -6,8 +6,8 @@
 |--------|-------|
 | **LangGraph Agents** | 499 (verified via graph.py count) |
 | **Engine Modules** | 1,780 |
-| **Dashboard Pages** | 490 (page components) / 599 (all TS/TSX) |
-| **API Route Files** | 934 |
+| **Dashboard Pages** | 479 |
+| **API Route Files** | 888 |
 | **Connectors** | 17 |
 | **Test Files** | 2,214 |
 | **CLAUDE.md Files** | 29 (hierarchical) |

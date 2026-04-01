@@ -176,7 +176,7 @@ Agents can self-improve via a closed-loop evolution system in `src/shieldops/uti
 - **Monitoring**: `infrastructure/monitoring/`
 
 ## Productionization Status
-- **Phase BI (latest)**: 499 agents, 1,780 engine modules, 934 API routes, 490 dashboard pages
+- **Phase BI (latest)**: 499 agents, 1,780 engine modules, 888 API routes, 479 dashboard pages
 - **LLM Wiring**: Done — all agents wired with `llm_structured()` via `src/shieldops/utils/llm.py`
 - **Self-Evolution**: Agent fitness tracking, prompt A/B testing, cross-agent learning bus
 - LLM Router at `src/shieldops/utils/llm_router.py` (Haiku/Sonnet/Opus complexity routing)

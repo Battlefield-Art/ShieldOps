@@ -22,7 +22,7 @@ dashboard-ui/
 │   ├── App.tsx            # Routes + lazy loading
 │   ├── config/
 │   │   └── products.ts    # Sidebar nav configuration
-│   ├── pages/             # 365 page components
+│   ├── pages/             # 479 page components
 │   │   ├── AgenticMDR.tsx
 │   │   ├── SituationManager.tsx
 │   │   └── ...
