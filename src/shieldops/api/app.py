@@ -79,6 +79,9 @@ from shieldops.api.routes import (
 )
 from shieldops.api.routes import event_query as event_query_routes
 from shieldops.api.routes import (
+    firewall_policies as firewall_policies_routes,
+)
+from shieldops.api.routes import (
     identity_graph as identity_graph_routes,
 )
 from shieldops.api.routes import ingest as ingest_routes
@@ -13961,6 +13964,11 @@ def create_app() -> FastAPI:
         agent_firewall_routes.router,
         prefix=settings.api_prefix,
         tags=["Agent Firewall"],
+    )
+    app.include_router(
+        firewall_policies_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Firewall Policies"],
     )
     app.include_router(
         nhi_registry_routes.router,
