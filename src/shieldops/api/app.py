@@ -81,6 +81,7 @@ from shieldops.api.routes import (
     identity_graph as identity_graph_routes,
 )
 from shieldops.api.routes import ingest as ingest_routes
+from shieldops.api.routes import ingestion as ingestion_routes
 from shieldops.api.routes import (
     mcp_security as mcp_security_routes,
 )
@@ -13971,6 +13972,13 @@ def create_app() -> FastAPI:
         ingest_routes.router,
         prefix=settings.api_prefix,
         tags=["Data Ingestion"],
+    )
+
+    # ── Ingestion API (v2 — rate-limited, deduped, metrics) ──────────
+    app.include_router(
+        ingestion_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Ingestion"],
     )
 
     # ── Phase 142-145 agent routes ────────────────────────────────────

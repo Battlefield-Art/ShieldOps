@@ -7,6 +7,9 @@ from shieldops.api.middleware.compliance import (
     ComplianceMiddleware,
 )
 from shieldops.api.middleware.error_handler import ErrorHandlerMiddleware
+from shieldops.api.middleware.ingestion_rate_limiter import (
+    IngestionRateLimiter,
+)
 from shieldops.api.middleware.logging import RequestLoggingMiddleware
 from shieldops.api.middleware.metrics import MetricsMiddleware
 from shieldops.api.middleware.rate_limiter import RateLimitMiddleware
@@ -28,6 +31,7 @@ __all__ = [
     "APIVersionMiddleware",
     "BillingEnforcementMiddleware",
     "ComplianceMiddleware",
+    "IngestionRateLimiter",
     "ErrorHandlerMiddleware",
     "GracefulShutdownMiddleware",
     "MetricsMiddleware",
