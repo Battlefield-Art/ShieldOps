@@ -1,4 +1,4 @@
-name: Publish SDK to PyPI
+name: SDK Publish to PyPI
 
 on:
   push:
@@ -10,29 +10,32 @@ permissions:
   id-token: write  # Required for trusted publishing (OIDC)
 
 concurrency:
-  group: publish-sdk-${{ github.ref }}
+  group: sdk-publish-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   test:
-    name: Test SDK
+    name: Lint & Test SDK
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install SDK with dev dependencies
         run: |
           cd sdk
           pip install -e ".[dev]"
-      - name: Lint
+      - name: Lint (ruff)
         run: |
           cd sdk
           ruff check src/ tests/
           ruff format --check src/ tests/
-      - name: Run SDK tests
+      - name: Run tests
         run: |
           cd sdk
           python -m pytest tests/ -v --tb=short
@@ -46,7 +49,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install hatch
+      - name: Install build tools
         run: pip install hatch
       - name: Build sdist and wheel
         run: |
@@ -76,3 +79,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+          # Requires PYPI_API_TOKEN secret configured in the 'pypi' environment,
+          # or trusted publishing (OIDC) configured on PyPI for this repository.
