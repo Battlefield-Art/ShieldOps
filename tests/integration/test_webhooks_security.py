@@ -1,18 +1,18 @@
 """Integration tests for vendor security webhook receivers."""
+
 from __future__ import annotations
 
 import hashlib
 import hmac
 import json
-import time
 
 import pytest
 
 from shieldops.api.routes.webhooks_security import (
     NormalizedSecurityEvent,
     _cs_severity_map,
-    _defender_severity_map,
     _dedup_cache,
+    _defender_severity_map,
     _is_duplicate,
     _normalize_crowdstrike,
     _normalize_defender,
@@ -20,7 +20,6 @@ from shieldops.api.routes.webhooks_security import (
     _verify_signature,
     _wiz_severity_map,
 )
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

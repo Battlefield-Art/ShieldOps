@@ -83,8 +83,7 @@ class ShieldOpsAutoGenWrapper:
                 reasons=result.reasons,
             )
             raise PermissionError(
-                f"ShieldOps blocked tool '{tool_name}': "
-                f"{', '.join(result.reasons)}"
+                f"ShieldOps blocked tool '{tool_name}': {', '.join(result.reasons)}"
             )
 
         logger.info(
@@ -159,8 +158,7 @@ class ShieldOpsAutoGenWrapper:
                         reasons=result.reasons,
                     )
                     raise PermissionError(
-                        f"ShieldOps blocked function '{tool_name}': "
-                        f"{', '.join(result.reasons)}"
+                        f"ShieldOps blocked function '{tool_name}': {', '.join(result.reasons)}"
                     )
 
                 start = time.time()

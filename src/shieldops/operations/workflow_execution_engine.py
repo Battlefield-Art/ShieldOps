@@ -161,9 +161,7 @@ class WorkflowExecutionEngine:
         if workflow_type is not None:
             results = [r for r in results if r.workflow_type == workflow_type]
         if execution_status is not None:
-            results = [
-                r for r in results if r.execution_status == execution_status
-            ]
+            results = [r for r in results if r.execution_status == execution_status]
         if team is not None:
             results = [r for r in results if r.team == team]
         return results[-limit:]
@@ -211,9 +209,7 @@ class WorkflowExecutionEngine:
             total = sum(statuses.values())
             failed = statuses.get("failed", 0)
             timeout = statuses.get("timeout", 0)
-            failure_pct = (
-                round((failed + timeout) / total * 100, 1) if total else 0.0
-            )
+            failure_pct = round((failed + timeout) / total * 100, 1) if total else 0.0
             if failed > 0 or timeout > 0:
                 patterns.append(
                     {
@@ -222,9 +218,7 @@ class WorkflowExecutionEngine:
                         "failed": failed,
                         "timeout": timeout,
                         "failure_pct": failure_pct,
-                        "severity": (
-                            "critical" if failure_pct > 20 else "warning"
-                        ),
+                        "severity": ("critical" if failure_pct > 20 else "warning"),
                     }
                 )
         return sorted(patterns, key=lambda x: x["failure_pct"], reverse=True)
@@ -237,18 +231,10 @@ class WorkflowExecutionEngine:
         results: list[dict[str, Any]] = []
         for wf_type, records in type_records.items():
             total = len(records)
-            success = sum(
-                1
-                for r in records
-                if r.execution_status == ExecutionStatus.SUCCESS
-            )
+            success = sum(1 for r in records if r.execution_status == ExecutionStatus.SUCCESS)
             rate = round(success / total * 100, 1) if total else 0.0
             avg_duration = (
-                round(
-                    sum(r.duration_seconds for r in records) / total, 2
-                )
-                if total
-                else 0.0
+                round(sum(r.duration_seconds for r in records) / total, 2) if total else 0.0
             )
             results.append(
                 {
@@ -264,11 +250,7 @@ class WorkflowExecutionEngine:
     def recommend_workflow_improvements(self) -> list[dict[str, Any]]:
         """Recommend workflow improvements based on execution patterns."""
         recommendations: list[dict[str, Any]] = []
-        failed = [
-            r
-            for r in self._records
-            if r.execution_status == ExecutionStatus.FAILED
-        ]
+        failed = [r for r in self._records if r.execution_status == ExecutionStatus.FAILED]
         for r in failed:
             recommendations.append(
                 {
@@ -279,16 +261,11 @@ class WorkflowExecutionEngine:
                     "issue": "execution_failure",
                     "priority": "critical",
                     "suggestion": (
-                        f"Fix failed step '{r.failed_step}' in "
-                        f"{r.workflow_type.value} workflow"
+                        f"Fix failed step '{r.failed_step}' in {r.workflow_type.value} workflow"
                     ),
                 }
             )
-        timeouts = [
-            r
-            for r in self._records
-            if r.execution_status == ExecutionStatus.TIMEOUT
-        ]
+        timeouts = [r for r in self._records if r.execution_status == ExecutionStatus.TIMEOUT]
         for r in timeouts:
             recommendations.append(
                 {
@@ -299,16 +276,11 @@ class WorkflowExecutionEngine:
                     "issue": "timeout",
                     "priority": "high",
                     "suggestion": (
-                        f"Optimize duration ({r.duration_seconds}s) "
-                        f"or increase timeout"
+                        f"Optimize duration ({r.duration_seconds}s) or increase timeout"
                     ),
                 }
             )
-        denied = [
-            r
-            for r in self._records
-            if r.gate_decision == GateDecision.DENIED
-        ]
+        denied = [r for r in self._records if r.gate_decision == GateDecision.DENIED]
         for r in denied:
             recommendations.append(
                 {
@@ -322,9 +294,7 @@ class WorkflowExecutionEngine:
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -373,9 +343,7 @@ class WorkflowExecutionEngine:
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         scores = [r.score for r in matched]
@@ -385,9 +353,7 @@ class WorkflowExecutionEngine:
             "status": "processed",
             "count": len(matched),
             "avg_score": avg,
-            "below_threshold": sum(
-                1 for s in scores if s < self._threshold
-            ),
+            "below_threshold": sum(1 for s in scores if s < self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -397,15 +363,9 @@ class WorkflowExecutionEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.workflow_type.value] = (
-                by_e1.get(r.workflow_type.value, 0) + 1
-            )
-            by_e2[r.execution_status.value] = (
-                by_e2.get(r.execution_status.value, 0) + 1
-            )
-            by_e3[r.gate_decision.value] = (
-                by_e3.get(r.gate_decision.value, 0) + 1
-            )
+            by_e1[r.workflow_type.value] = by_e1.get(r.workflow_type.value, 0) + 1
+            by_e2[r.execution_status.value] = by_e2.get(r.execution_status.value, 0) + 1
+            by_e3[r.gate_decision.value] = by_e3.get(r.gate_decision.value, 0) + 1
         gap_count = sum(1 for r in self._records if r.score < self._threshold)
         scores = [r.score for r in self._records]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
@@ -413,13 +373,9 @@ class WorkflowExecutionEngine:
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) below threshold ({self._threshold})"
-            )
+            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
         if self._records and avg_score < self._threshold:
-            recs.append(
-                f"Avg score {avg_score} below threshold ({self._threshold})"
-            )
+            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
         if not recs:
             recs.append("Workflow Execution Engine is healthy")
         return WorkflowExecutionReport(

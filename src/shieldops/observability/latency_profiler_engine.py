@@ -159,9 +159,7 @@ class LatencyProfilerEngine:
     ) -> list[LatencyProfilerRecord]:
         results = list(self._records)
         if latency_bucket is not None:
-            results = [
-                r for r in results if r.latency_bucket == latency_bucket
-            ]
+            results = [r for r in results if r.latency_bucket == latency_bucket]
         if service_tier is not None:
             results = [r for r in results if r.service_tier == service_tier]
         if team is not None:
@@ -205,9 +203,7 @@ class LatencyProfilerEngine:
             svc_latencies.setdefault(r.service, []).append(r)
         bottlenecks: list[dict[str, Any]] = []
         for svc, records in svc_latencies.items():
-            high_latency = [
-                r for r in records if r.latency_ms > self._threshold
-            ]
+            high_latency = [r for r in records if r.latency_ms > self._threshold]
             if high_latency:
                 avg_latency = round(
                     sum(r.latency_ms for r in high_latency) / len(high_latency),
@@ -225,15 +221,11 @@ class LatencyProfilerEngine:
                         "avg_latency_ms": avg_latency,
                         "top_bottleneck": top_source,
                         "severity": (
-                            "critical"
-                            if avg_latency > self._threshold * 2
-                            else "warning"
+                            "critical" if avg_latency > self._threshold * 2 else "warning"
                         ),
                     }
                 )
-        return sorted(
-            bottlenecks, key=lambda x: x["avg_latency_ms"], reverse=True
-        )
+        return sorted(bottlenecks, key=lambda x: x["avg_latency_ms"], reverse=True)
 
     def compute_latency_percentiles(self) -> list[dict[str, Any]]:
         """Compute latency percentiles per service tier."""
@@ -265,8 +257,7 @@ class LatencyProfilerEngine:
         db_bottlenecks = [
             r
             for r in self._records
-            if r.bottleneck_source == BottleneckSource.DATABASE
-            and r.latency_ms > self._threshold
+            if r.bottleneck_source == BottleneckSource.DATABASE and r.latency_ms > self._threshold
         ]
         for r in db_bottlenecks:
             recommendations.append(
@@ -278,16 +269,14 @@ class LatencyProfilerEngine:
                     "issue": "database_bottleneck",
                     "priority": "critical",
                     "suggestion": (
-                        f"Optimize database queries for {r.service} "
-                        f"(latency: {r.latency_ms}ms)"
+                        f"Optimize database queries for {r.service} (latency: {r.latency_ms}ms)"
                     ),
                 }
             )
         cache_miss = [
             r
             for r in self._records
-            if r.bottleneck_source == BottleneckSource.CACHE_MISS
-            and r.latency_ms > self._threshold
+            if r.bottleneck_source == BottleneckSource.CACHE_MISS and r.latency_ms > self._threshold
         ]
         for r in cache_miss:
             recommendations.append(
@@ -298,10 +287,7 @@ class LatencyProfilerEngine:
                     "bottleneck": r.bottleneck_source.value,
                     "issue": "cache_miss",
                     "priority": "high",
-                    "suggestion": (
-                        f"Add caching for {r.service} "
-                        f"(latency: {r.latency_ms}ms)"
-                    ),
+                    "suggestion": (f"Add caching for {r.service} (latency: {r.latency_ms}ms)"),
                 }
             )
         ext_api = [
@@ -319,15 +305,11 @@ class LatencyProfilerEngine:
                     "bottleneck": r.bottleneck_source.value,
                     "issue": "external_api_latency",
                     "priority": "medium",
-                    "suggestion": (
-                        f"Add circuit breaker for external API in {r.service}"
-                    ),
+                    "suggestion": (f"Add circuit breaker for external API in {r.service}"),
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -369,18 +351,14 @@ class LatencyProfilerEngine:
             results.append(
                 {
                     "service": svc,
-                    "avg_latency_ms": round(
-                        sum(latencies) / len(latencies), 2
-                    ),
+                    "avg_latency_ms": round(sum(latencies) / len(latencies), 2),
                 }
             )
         results.sort(key=lambda x: x["avg_latency_ms"], reverse=True)
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         latencies = [r.latency_ms for r in matched]
@@ -390,9 +368,7 @@ class LatencyProfilerEngine:
             "status": "processed",
             "count": len(matched),
             "avg_latency_ms": avg,
-            "above_threshold": sum(
-                1 for lat in latencies if lat > self._threshold
-            ),
+            "above_threshold": sum(1 for lat in latencies if lat > self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -402,34 +378,19 @@ class LatencyProfilerEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.latency_bucket.value] = (
-                by_e1.get(r.latency_bucket.value, 0) + 1
-            )
-            by_e2[r.service_tier.value] = (
-                by_e2.get(r.service_tier.value, 0) + 1
-            )
-            by_e3[r.bottleneck_source.value] = (
-                by_e3.get(r.bottleneck_source.value, 0) + 1
-            )
-        gap_count = sum(
-            1 for r in self._records if r.latency_ms > self._threshold
-        )
+            by_e1[r.latency_bucket.value] = by_e1.get(r.latency_bucket.value, 0) + 1
+            by_e2[r.service_tier.value] = by_e2.get(r.service_tier.value, 0) + 1
+            by_e3[r.bottleneck_source.value] = by_e3.get(r.bottleneck_source.value, 0) + 1
+        gap_count = sum(1 for r in self._records if r.latency_ms > self._threshold)
         latencies = [r.latency_ms for r in self._records]
-        avg_latency = (
-            round(sum(latencies) / len(latencies), 2) if latencies else 0.0
-        )
+        avg_latency = round(sum(latencies) / len(latencies), 2) if latencies else 0.0
         gap_list = self.identify_gaps()
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) above threshold ({self._threshold}ms)"
-            )
+            recs.append(f"{gap_count} item(s) above threshold ({self._threshold}ms)")
         if self._records and avg_latency > self._threshold:
-            recs.append(
-                f"Avg latency {avg_latency}ms above threshold "
-                f"({self._threshold}ms)"
-            )
+            recs.append(f"Avg latency {avg_latency}ms above threshold ({self._threshold}ms)")
         if not recs:
             recs.append("Latency Profiler Engine is healthy")
         return LatencyProfilerReport(

@@ -209,9 +209,7 @@ class NetworkZoneComplianceEngine:
             total = sum(verdicts.values())
             blocked = verdicts.get("blocked", 0)
             flagged = verdicts.get("flagged", 0)
-            violation_pct = (
-                round((blocked + flagged) / total * 100, 1) if total else 0.0
-            )
+            violation_pct = round((blocked + flagged) / total * 100, 1) if total else 0.0
             if blocked > 0 or flagged > 0:
                 violations.append(
                     {
@@ -236,13 +234,10 @@ class NetworkZoneComplianceEngine:
             compliant = sum(
                 1
                 for r in records
-                if r.traffic_verdict
-                in (TrafficVerdict.ALLOWED, TrafficVerdict.LOGGED)
+                if r.traffic_verdict in (TrafficVerdict.ALLOWED, TrafficVerdict.LOGGED)
             )
             compliance_pct = round(compliant / total * 100, 1) if total else 0.0
-            avg_score = (
-                round(sum(r.score for r in records) / total, 2) if total else 0.0
-            )
+            avg_score = round(sum(r.score for r in records) / total, 2) if total else 0.0
             results.append(
                 {
                     "zone": zone,
@@ -258,9 +253,7 @@ class NetworkZoneComplianceEngine:
         """Recommend policy changes based on violation patterns."""
         recommendations: list[dict[str, Any]] = []
         unauthorized = [
-            r
-            for r in self._records
-            if r.violation_type == ViolationType.UNAUTHORIZED_FLOW
+            r for r in self._records if r.violation_type == ViolationType.UNAUTHORIZED_FLOW
         ]
         for r in unauthorized:
             recommendations.append(
@@ -272,16 +265,11 @@ class NetworkZoneComplianceEngine:
                     "issue": "unauthorized_flow",
                     "priority": "critical",
                     "suggestion": (
-                        f"Block unauthorized flow from {r.source_zone} "
-                        f"to {r.destination_zone}"
+                        f"Block unauthorized flow from {r.source_zone} to {r.destination_zone}"
                     ),
                 }
             )
-        lateral = [
-            r
-            for r in self._records
-            if r.violation_type == ViolationType.LATERAL_MOVEMENT
-        ]
+        lateral = [r for r in self._records if r.violation_type == ViolationType.LATERAL_MOVEMENT]
         for r in lateral:
             recommendations.append(
                 {
@@ -291,15 +279,11 @@ class NetworkZoneComplianceEngine:
                     "zone": r.zone_classification.value,
                     "issue": "lateral_movement",
                     "priority": "critical",
-                    "suggestion": (
-                        f"Restrict lateral movement in {r.zone_classification.value}"
-                    ),
+                    "suggestion": (f"Restrict lateral movement in {r.zone_classification.value}"),
                 }
             )
         unencrypted = [
-            r
-            for r in self._records
-            if r.violation_type == ViolationType.MISSING_ENCRYPTION
+            r for r in self._records if r.violation_type == ViolationType.MISSING_ENCRYPTION
         ]
         for r in unencrypted:
             recommendations.append(
@@ -314,9 +298,7 @@ class NetworkZoneComplianceEngine:
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -385,15 +367,9 @@ class NetworkZoneComplianceEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.zone_classification.value] = (
-                by_e1.get(r.zone_classification.value, 0) + 1
-            )
-            by_e2[r.traffic_verdict.value] = (
-                by_e2.get(r.traffic_verdict.value, 0) + 1
-            )
-            by_e3[r.violation_type.value] = (
-                by_e3.get(r.violation_type.value, 0) + 1
-            )
+            by_e1[r.zone_classification.value] = by_e1.get(r.zone_classification.value, 0) + 1
+            by_e2[r.traffic_verdict.value] = by_e2.get(r.traffic_verdict.value, 0) + 1
+            by_e3[r.violation_type.value] = by_e3.get(r.violation_type.value, 0) + 1
         gap_count = sum(1 for r in self._records if r.score < self._threshold)
         scores = [r.score for r in self._records]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
@@ -401,13 +377,9 @@ class NetworkZoneComplianceEngine:
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) below threshold ({self._threshold})"
-            )
+            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
         if self._records and avg_score < self._threshold:
-            recs.append(
-                f"Avg score {avg_score} below threshold ({self._threshold})"
-            )
+            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
         if not recs:
             recs.append("Network Zone Compliance Engine is healthy")
         return NetworkZoneComplianceReport(

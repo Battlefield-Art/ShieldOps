@@ -1,4 +1,5 @@
 """Performance profiler API routes."""
+
 from __future__ import annotations
 
 import time
@@ -12,9 +13,7 @@ from shieldops.api.auth.dependencies import get_current_user
 from shieldops.api.auth.models import UserResponse
 
 logger = structlog.get_logger()
-router = APIRouter(
-    prefix="/performance-profiler", tags=["Performance Profiler"]
-)
+router = APIRouter(prefix="/performance-profiler", tags=["Performance Profiler"])
 _runner: Any = None
 
 

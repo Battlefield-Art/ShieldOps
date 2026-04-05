@@ -161,9 +161,7 @@ class ApprovalGateTrackerEngine:
         if gate_type is not None:
             results = [r for r in results if r.gate_type == gate_type]
         if approval_outcome is not None:
-            results = [
-                r for r in results if r.approval_outcome == approval_outcome
-            ]
+            results = [r for r in results if r.approval_outcome == approval_outcome]
         if team is not None:
             results = [r for r in results if r.team == team]
         return results[-limit:]
@@ -219,9 +217,7 @@ class ApprovalGateTrackerEngine:
                     "severity": "critical" if avg_wait > 3600 else "warning",
                 }
             )
-        return sorted(
-            bottlenecks, key=lambda x: x["avg_wait_seconds"], reverse=True
-        )
+        return sorted(bottlenecks, key=lambda x: x["avg_wait_seconds"], reverse=True)
 
     def compute_approval_rates(self) -> list[dict[str, Any]]:
         """Compute approval rates per gate type."""
@@ -234,17 +230,10 @@ class ApprovalGateTrackerEngine:
             approved = sum(
                 1
                 for r in records
-                if r.approval_outcome
-                in (ApprovalOutcome.APPROVED, ApprovalOutcome.AUTO_APPROVED)
+                if r.approval_outcome in (ApprovalOutcome.APPROVED, ApprovalOutcome.AUTO_APPROVED)
             )
             rate = round(approved / total * 100, 1) if total else 0.0
-            avg_wait = (
-                round(
-                    sum(r.wait_seconds for r in records) / total, 2
-                )
-                if total
-                else 0.0
-            )
+            avg_wait = round(sum(r.wait_seconds for r in records) / total, 2) if total else 0.0
             results.append(
                 {
                     "gate_type": gate,
@@ -259,11 +248,7 @@ class ApprovalGateTrackerEngine:
     def recommend_gate_optimizations(self) -> list[dict[str, Any]]:
         """Recommend gate optimizations based on wait patterns."""
         recommendations: list[dict[str, Any]] = []
-        timeouts = [
-            r
-            for r in self._records
-            if r.approval_outcome == ApprovalOutcome.TIMEOUT
-        ]
+        timeouts = [r for r in self._records if r.approval_outcome == ApprovalOutcome.TIMEOUT]
         for r in timeouts:
             recommendations.append(
                 {
@@ -282,8 +267,7 @@ class ApprovalGateTrackerEngine:
         long_waits = [
             r
             for r in self._records
-            if r.wait_category
-            in (WaitCategory.OVER_24H, WaitCategory.UNDER_24H)
+            if r.wait_category in (WaitCategory.OVER_24H, WaitCategory.UNDER_24H)
         ]
         for r in long_waits:
             recommendations.append(
@@ -300,11 +284,7 @@ class ApprovalGateTrackerEngine:
                     ),
                 }
             )
-        denied = [
-            r
-            for r in self._records
-            if r.approval_outcome == ApprovalOutcome.DENIED
-        ]
+        denied = [r for r in self._records if r.approval_outcome == ApprovalOutcome.DENIED]
         for r in denied:
             recommendations.append(
                 {
@@ -318,9 +298,7 @@ class ApprovalGateTrackerEngine:
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -369,9 +347,7 @@ class ApprovalGateTrackerEngine:
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         scores = [r.score for r in matched]
@@ -381,9 +357,7 @@ class ApprovalGateTrackerEngine:
             "status": "processed",
             "count": len(matched),
             "avg_score": avg,
-            "below_threshold": sum(
-                1 for s in scores if s < self._threshold
-            ),
+            "below_threshold": sum(1 for s in scores if s < self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -394,12 +368,8 @@ class ApprovalGateTrackerEngine:
         by_e3: dict[str, int] = {}
         for r in self._records:
             by_e1[r.gate_type.value] = by_e1.get(r.gate_type.value, 0) + 1
-            by_e2[r.approval_outcome.value] = (
-                by_e2.get(r.approval_outcome.value, 0) + 1
-            )
-            by_e3[r.wait_category.value] = (
-                by_e3.get(r.wait_category.value, 0) + 1
-            )
+            by_e2[r.approval_outcome.value] = by_e2.get(r.approval_outcome.value, 0) + 1
+            by_e3[r.wait_category.value] = by_e3.get(r.wait_category.value, 0) + 1
         gap_count = sum(1 for r in self._records if r.score < self._threshold)
         scores = [r.score for r in self._records]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
@@ -407,13 +377,9 @@ class ApprovalGateTrackerEngine:
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) below threshold ({self._threshold})"
-            )
+            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
         if self._records and avg_score < self._threshold:
-            recs.append(
-                f"Avg score {avg_score} below threshold ({self._threshold})"
-            )
+            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
         if not recs:
             recs.append("Approval Gate Tracker Engine is healthy")
         return ApprovalGateTrackerReport(

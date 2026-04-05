@@ -303,3 +303,272 @@ class TestAnthropicProviderAnalyze:
 
         result = await provider.structured("system", "user", SampleOutput)
         assert result == expected
+
+
+# ── BedrockStrandsProvider.structured() behavior ─────────────────
+
+
+class TestBedrockStrandsStructured:
+    """Behavioral tests for BedrockStrandsProvider.structured().
+
+    structured() augments the system prompt with JSON schema instructions,
+    delegates to analyze(), then parses through _parse_to_schema.
+    """
+
+    @pytest.mark.asyncio
+    async def test_structured_returns_validated_model_when_analyze_returns_valid_json(
+        self,
+    ) -> None:
+        """Given analyze() returns well-formed JSON matching the schema,
+        When structured() is called,
+        Then it returns a validated SampleOutput Pydantic model."""
+        provider = BedrockStrandsProvider()
+        valid_json = json.dumps(
+            {"summary": "threat detected", "confidence": 0.92, "tags": ["critical", "network"]}
+        )
+        # Mock analyze to return valid JSON content
+        provider.analyze = AsyncMock(return_value={"content": valid_json})  # type: ignore[method-assign]
+
+        result = await provider.structured("analyze threats", "check this log", SampleOutput)
+
+        assert isinstance(result, SampleOutput)
+        assert result.summary == "threat detected"
+        assert result.confidence == pytest.approx(0.92)
+        assert result.tags == ["critical", "network"]
+        # Verify analyze was called with an augmented system prompt containing schema
+        call_args = provider.analyze.call_args
+        augmented_system = call_args[0][0]
+        assert "analyze threats" in augmented_system
+        assert "JSON" in augmented_system
+        assert "schema" in augmented_system.lower()
+
+    @pytest.mark.asyncio
+    async def test_structured_returns_fallback_dict_when_analyze_returns_garbage(
+        self,
+    ) -> None:
+        """Given analyze() returns non-JSON text,
+        When structured() is called,
+        Then it returns a fallback dict with 'content' key."""
+        provider = BedrockStrandsProvider()
+        provider.analyze = AsyncMock(  # type: ignore[method-assign]
+            return_value={"content": "I cannot produce JSON right now, sorry!"}
+        )
+
+        result = await provider.structured("analyze threats", "check this log", SampleOutput)
+
+        assert isinstance(result, dict)
+        assert "content" in result
+        assert "sorry" in result["content"]
+
+
+# ── VertexAIProvider.structured() fallback path ──────────────────
+
+
+class TestVertexAIStructured:
+    """Behavioral tests for VertexAIProvider.structured().
+
+    Happy path uses with_structured_output(). When that raises, falls back to
+    augmenting the system prompt with schema instructions and parsing manually.
+    """
+
+    @pytest.mark.asyncio
+    async def test_structured_happy_path_uses_with_structured_output(self) -> None:
+        """Given with_structured_output works normally,
+        When structured() is called,
+        Then it returns the model from the structured LLM chain."""
+        provider = VertexAIProvider()
+        expected = SampleOutput(summary="vertex result", confidence=0.88, tags=["gcp"])
+
+        mock_llm = MagicMock()
+        mock_structured_chain = MagicMock()
+        mock_structured_chain.ainvoke = AsyncMock(return_value=expected)
+        mock_llm.with_structured_output = MagicMock(return_value=mock_structured_chain)
+        provider._llm = mock_llm
+
+        result = await provider.structured("system prompt", "user prompt", SampleOutput)
+
+        assert result == expected
+        mock_llm.with_structured_output.assert_called_once_with(SampleOutput)
+
+    @pytest.mark.asyncio
+    async def test_structured_falls_back_when_with_structured_output_fails(self) -> None:
+        """Given with_structured_output raises an Exception,
+        When structured() is called,
+        Then it falls back to prompt augmentation + _parse_to_schema."""
+        provider = VertexAIProvider()
+        valid_json = json.dumps(
+            {"summary": "fallback vertex", "confidence": 0.75, "tags": ["fallback"]}
+        )
+
+        mock_llm = MagicMock()
+        # Make with_structured_output raise so the fallback path activates
+        mock_llm.with_structured_output = MagicMock(side_effect=Exception("unsupported schema"))
+        # The fallback calls analyze() which uses ainvoke on the raw llm
+        mock_response = MagicMock()
+        mock_response.content = valid_json
+        mock_llm.ainvoke = AsyncMock(return_value=mock_response)
+        provider._llm = mock_llm
+
+        result = await provider.structured("system prompt", "user prompt", SampleOutput)
+
+        assert isinstance(result, SampleOutput)
+        assert result.summary == "fallback vertex"
+        assert result.confidence == pytest.approx(0.75)
+        assert result.tags == ["fallback"]
+
+    @pytest.mark.asyncio
+    async def test_structured_fallback_returns_dict_on_unparseable_response(self) -> None:
+        """Given with_structured_output fails AND analyze returns non-JSON,
+        When structured() is called,
+        Then it returns a fallback dict."""
+        provider = VertexAIProvider()
+
+        mock_llm = MagicMock()
+        mock_llm.with_structured_output = MagicMock(side_effect=Exception("nope"))
+        mock_response = MagicMock()
+        mock_response.content = "Here is my analysis in plain text."
+        mock_llm.ainvoke = AsyncMock(return_value=mock_response)
+        provider._llm = mock_llm
+
+        result = await provider.structured("system prompt", "user prompt", SampleOutput)
+
+        assert isinstance(result, dict)
+        assert "content" in result
+
+
+# ── AzureOpenAIProvider.structured() fallback path ───────────────
+
+
+class TestAzureOpenAIStructured:
+    """Behavioral tests for AzureOpenAIProvider.structured().
+
+    Same fallback pattern as VertexAI: with_structured_output first,
+    then prompt augmentation + _parse_to_schema on failure.
+    """
+
+    @pytest.mark.asyncio
+    async def test_structured_happy_path_uses_with_structured_output(self) -> None:
+        """Given with_structured_output works normally,
+        When structured() is called,
+        Then it returns the model from the structured LLM chain."""
+        provider = AzureOpenAIProvider(
+            deployment_name="gpt-4o", endpoint="https://test.openai.azure.com", api_key="key"
+        )
+        expected = SampleOutput(summary="azure result", confidence=0.91, tags=["azure"])
+
+        mock_llm = MagicMock()
+        mock_structured_chain = MagicMock()
+        mock_structured_chain.ainvoke = AsyncMock(return_value=expected)
+        mock_llm.with_structured_output = MagicMock(return_value=mock_structured_chain)
+        provider._llm = mock_llm
+
+        result = await provider.structured("system prompt", "user prompt", SampleOutput)
+
+        assert result == expected
+        mock_llm.with_structured_output.assert_called_once_with(SampleOutput)
+
+    @pytest.mark.asyncio
+    async def test_structured_falls_back_when_with_structured_output_fails(self) -> None:
+        """Given with_structured_output raises an Exception,
+        When structured() is called,
+        Then it falls back to prompt augmentation + _parse_to_schema."""
+        provider = AzureOpenAIProvider(
+            deployment_name="gpt-4o", endpoint="https://test.openai.azure.com", api_key="key"
+        )
+        valid_json = json.dumps(
+            {"summary": "fallback azure", "confidence": 0.65, "tags": ["retry"]}
+        )
+
+        mock_llm = MagicMock()
+        mock_llm.with_structured_output = MagicMock(side_effect=Exception("schema error"))
+        mock_response = MagicMock()
+        mock_response.content = valid_json
+        mock_llm.ainvoke = AsyncMock(return_value=mock_response)
+        provider._llm = mock_llm
+
+        result = await provider.structured("system prompt", "user prompt", SampleOutput)
+
+        assert isinstance(result, SampleOutput)
+        assert result.summary == "fallback azure"
+        assert result.confidence == pytest.approx(0.65)
+        assert result.tags == ["retry"]
+
+    @pytest.mark.asyncio
+    async def test_structured_fallback_returns_dict_on_unparseable_response(self) -> None:
+        """Given with_structured_output fails AND analyze returns non-JSON,
+        When structured() is called,
+        Then it returns a fallback dict."""
+        provider = AzureOpenAIProvider(
+            deployment_name="gpt-4o", endpoint="https://test.openai.azure.com", api_key="key"
+        )
+
+        mock_llm = MagicMock()
+        mock_llm.with_structured_output = MagicMock(side_effect=Exception("nope"))
+        mock_response = MagicMock()
+        mock_response.content = "Unable to generate structured output."
+        mock_llm.ainvoke = AsyncMock(return_value=mock_response)
+        provider._llm = mock_llm
+
+        result = await provider.structured("system prompt", "user prompt", SampleOutput)
+
+        assert isinstance(result, dict)
+        assert "content" in result
+
+
+# ── AnthropicProvider._ensure_llm() singleton fallback ───────────
+
+
+class TestAnthropicEnsureLlm:
+    """Behavioral tests for AnthropicProvider._ensure_llm().
+
+    When model and api_key are empty, it falls back to the get_llm() singleton.
+    When both are provided, it creates a new ChatAnthropic instance.
+    """
+
+    def test_empty_config_falls_back_to_singleton(self) -> None:
+        """Given model and api_key are empty strings,
+        When _ensure_llm() is called,
+        Then it imports and returns the get_llm() singleton."""
+        provider = AnthropicProvider(model="", api_key="")
+        mock_singleton = MagicMock(name="singleton_llm")
+
+        with (
+            patch(
+                "shieldops.utils.llm_providers.ChatAnthropic",
+                create=True,
+            ) as mock_chat_cls,
+            patch("shieldops.utils.llm.get_llm", return_value=mock_singleton),
+        ):
+            result = provider._ensure_llm()
+
+            assert result is mock_singleton
+            mock_chat_cls.assert_not_called()
+
+    def test_explicit_config_creates_new_instance(self) -> None:
+        """Given model and api_key are provided,
+        When _ensure_llm() is called,
+        Then it creates a new ChatAnthropic instance (not the singleton)."""
+        provider = AnthropicProvider(model="claude-opus-4-20250514", api_key="sk-test-key")
+        mock_instance = MagicMock(name="new_chat_anthropic")
+
+        with patch(
+            "langchain_anthropic.ChatAnthropic", return_value=mock_instance
+        ) as mock_chat_cls:
+            result = provider._ensure_llm()
+
+            assert result is mock_instance
+            mock_chat_cls.assert_called_once()
+            call_kwargs = mock_chat_cls.call_args[1]
+            assert call_kwargs["model"] == "claude-opus-4-20250514"
+
+    def test_ensure_llm_caches_result(self) -> None:
+        """Given _ensure_llm() has been called once,
+        When called again,
+        Then it returns the cached LLM without re-creating."""
+        provider = AnthropicProvider()
+        sentinel = MagicMock(name="cached_llm")
+        provider._llm = sentinel
+
+        result = provider._ensure_llm()
+
+        assert result is sentinel

@@ -143,9 +143,7 @@ class BottleneckTrackerEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        points = sum(
-            1 for r in self._records if r.service_id == rec.service_id
-        )
+        points = sum(1 for r in self._records if r.service_id == rec.service_id)
         recurring = rec.resolution_status == ResolutionStatus.RECURRING
         impact_weight = {
             ImpactLevel.SERVICE_DOWN: 100,
@@ -155,8 +153,7 @@ class BottleneckTrackerEngine:
             ImpactLevel.NONE: 0,
         }
         score = round(
-            impact_weight.get(rec.impact_level, 0)
-            * (rec.utilization_pct / 100.0),
+            impact_weight.get(rec.impact_level, 0) * (rec.utilization_pct / 100.0),
             2,
         )
         analysis = BottleneckTrackerAnalysis(
@@ -179,42 +176,27 @@ class BottleneckTrackerEngine:
         by_i: dict[str, int] = {}
         res_times: list[float] = []
         for r in self._records:
-            by_t[r.bottleneck_type.value] = (
-                by_t.get(r.bottleneck_type.value, 0) + 1
-            )
-            by_s[r.resolution_status.value] = (
-                by_s.get(r.resolution_status.value, 0) + 1
-            )
-            by_i[r.impact_level.value] = (
-                by_i.get(r.impact_level.value, 0) + 1
-            )
+            by_t[r.bottleneck_type.value] = by_t.get(r.bottleneck_type.value, 0) + 1
+            by_s[r.resolution_status.value] = by_s.get(r.resolution_status.value, 0) + 1
+            by_i[r.impact_level.value] = by_i.get(r.impact_level.value, 0) + 1
             if r.resolution_time_seconds > 0:
                 res_times.append(r.resolution_time_seconds)
-        avg_res = (
-            round(sum(res_times) / len(res_times), 2) if res_times else 0.0
-        )
+        avg_res = round(sum(res_times) / len(res_times), 2) if res_times else 0.0
         high = list(
             {
                 r.service_id
                 for r in self._records
-                if r.impact_level
-                in (ImpactLevel.SERVICE_DOWN, ImpactLevel.DEGRADED)
+                if r.impact_level in (ImpactLevel.SERVICE_DOWN, ImpactLevel.DEGRADED)
             }
         )[:10]
         recs: list[str] = []
         if high:
-            recs.append(
-                f"{len(high)} services with high-impact bottlenecks"
-            )
+            recs.append(f"{len(high)} services with high-impact bottlenecks")
         recurring_count = sum(
-            1
-            for r in self._records
-            if r.resolution_status == ResolutionStatus.RECURRING
+            1 for r in self._records if r.resolution_status == ResolutionStatus.RECURRING
         )
         if recurring_count:
-            recs.append(
-                f"{recurring_count} recurring bottlenecks — investigate root cause"
-            )
+            recs.append(f"{recurring_count} recurring bottlenecks — investigate root cause")
         if not recs:
             recs.append("Bottleneck detection healthy — no critical issues")
         return BottleneckTrackerReport(
@@ -268,9 +250,7 @@ class BottleneckTrackerEngine:
                 {
                     "bottleneck_type": btype,
                     "occurrence_count": data["count"],
-                    "total_duration_seconds": round(
-                        data["total_duration"], 2
-                    ),
+                    "total_duration_seconds": round(data["total_duration"], 2),
                     "total_affected_requests": data["total_affected"],
                 }
             )
@@ -282,9 +262,7 @@ class BottleneckTrackerEngine:
         type_times: dict[str, list[float]] = {}
         for r in self._records:
             if r.resolution_time_seconds > 0:
-                type_times.setdefault(
-                    r.bottleneck_type.value, []
-                ).append(r.resolution_time_seconds)
+                type_times.setdefault(r.bottleneck_type.value, []).append(r.resolution_time_seconds)
         results: list[dict[str, Any]] = []
         for btype, times in type_times.items():
             avg = round(sum(times) / len(times), 2)
@@ -303,12 +281,8 @@ class BottleneckTrackerEngine:
         svc_counts: dict[str, int] = {}
         svc_types: dict[str, set[str]] = {}
         for r in self._records:
-            svc_counts[r.service_id] = (
-                svc_counts.get(r.service_id, 0) + 1
-            )
-            svc_types.setdefault(r.service_id, set()).add(
-                r.bottleneck_type.value
-            )
+            svc_counts[r.service_id] = svc_counts.get(r.service_id, 0) + 1
+            svc_types.setdefault(r.service_id, set()).add(r.bottleneck_type.value)
         results: list[dict[str, Any]] = []
         for sid, count in svc_counts.items():
             if count >= 3:

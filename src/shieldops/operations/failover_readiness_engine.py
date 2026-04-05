@@ -136,7 +136,8 @@ class FailoverReadinessEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> FailoverReadinessAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -145,14 +146,11 @@ class FailoverReadinessEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        points = sum(
-            1 for r in self._records if r.service_id == rec.service_id
-        )
+        points = sum(1 for r in self._records if r.service_id == rec.service_id)
         ready_count = sum(
             1
             for r in self._records
-            if r.service_id == rec.service_id
-            and r.readiness_level == ReadinessLevel.READY
+            if r.service_id == rec.service_id and r.readiness_level == ReadinessLevel.READY
         )
         score = round(ready_count / points * 100, 2) if points else 0.0
         analysis = FailoverReadinessAnalysis(
@@ -161,9 +159,7 @@ class FailoverReadinessEngine:
             readiness_level=rec.readiness_level,
             components_ready=ready_count,
             data_points=points,
-            description=(
-                f"Failover readiness {score}% for {rec.service_id}"
-            ),
+            description=(f"Failover readiness {score}% for {rec.service_id}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -174,15 +170,9 @@ class FailoverReadinessEngine:
         by_f: dict[str, int] = {}
         ready_count = 0
         for r in self._records:
-            by_r[r.readiness_level.value] = (
-                by_r.get(r.readiness_level.value, 0) + 1
-            )
-            by_c[r.failover_component.value] = (
-                by_c.get(r.failover_component.value, 0) + 1
-            )
-            by_f[r.validation_frequency.value] = (
-                by_f.get(r.validation_frequency.value, 0) + 1
-            )
+            by_r[r.readiness_level.value] = by_r.get(r.readiness_level.value, 0) + 1
+            by_c[r.failover_component.value] = by_c.get(r.failover_component.value, 0) + 1
+            by_f[r.validation_frequency.value] = by_f.get(r.validation_frequency.value, 0) + 1
             if r.readiness_level == ReadinessLevel.READY:
                 ready_count += 1
         total = len(self._records)
@@ -191,20 +181,14 @@ class FailoverReadinessEngine:
             {
                 r.service_id
                 for r in self._records
-                if r.readiness_level
-                in (ReadinessLevel.NOT_READY, ReadinessLevel.UNTESTED)
+                if r.readiness_level in (ReadinessLevel.NOT_READY, ReadinessLevel.UNTESTED)
             }
         )[:10]
         recs: list[str] = []
         if rate < self._readiness_threshold:
-            recs.append(
-                f"Readiness {rate}% below threshold"
-                f" {self._readiness_threshold}%"
-            )
+            recs.append(f"Readiness {rate}% below threshold {self._readiness_threshold}%")
         if not_ready:
-            recs.append(
-                f"{len(not_ready)} services not ready for failover"
-            )
+            recs.append(f"{len(not_ready)} services not ready for failover")
         if not recs:
             recs.append("Failover readiness healthy across all services")
         return FailoverReadinessReport(
@@ -249,11 +233,7 @@ class FailoverReadinessEngine:
                 comp_data[k]["ready"] += 1
         results: list[dict[str, Any]] = []
         for comp, data in comp_data.items():
-            rate = (
-                round(data["ready"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            rate = round(data["ready"] / data["total"] * 100, 2) if data["total"] else 0.0
             results.append(
                 {
                     "component": comp,
@@ -266,7 +246,8 @@ class FailoverReadinessEngine:
         return results
 
     def detect_stale_validations(
-        self, max_age_days: int = 90,
+        self,
+        max_age_days: int = 90,
     ) -> list[dict[str, Any]]:
         """Detect services with stale failover validations."""
         cutoff = time.time() - (max_age_days * 86400)
@@ -275,22 +256,16 @@ class FailoverReadinessEngine:
         for r in self._records:
             if r.service_id not in seen and r.last_validated_at < cutoff:
                 seen.add(r.service_id)
-                age_days = round(
-                    (time.time() - r.last_validated_at) / 86400, 1
-                )
+                age_days = round((time.time() - r.last_validated_at) / 86400, 1)
                 results.append(
                     {
                         "service_id": r.service_id,
                         "component": r.failover_component.value,
                         "last_validated_days_ago": age_days,
-                        "validation_frequency": (
-                            r.validation_frequency.value
-                        ),
+                        "validation_frequency": (r.validation_frequency.value),
                     }
                 )
-        results.sort(
-            key=lambda x: x["last_validated_days_ago"], reverse=True
-        )
+        results.sort(key=lambda x: x["last_validated_days_ago"], reverse=True)
         return results
 
     def compute_failover_time_compliance(self) -> list[dict[str, Any]]:
@@ -298,9 +273,7 @@ class FailoverReadinessEngine:
         results: list[dict[str, Any]] = []
         for r in self._records:
             if r.target_failover_seconds > 0:
-                ratio = round(
-                    r.failover_time_seconds / r.target_failover_seconds, 2
-                )
+                ratio = round(r.failover_time_seconds / r.target_failover_seconds, 2)
                 compliant = ratio <= 1.0
                 results.append(
                     {

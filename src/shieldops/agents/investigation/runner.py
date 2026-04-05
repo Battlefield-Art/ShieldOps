@@ -21,6 +21,7 @@ from shieldops.observability.tracing import get_tracer
 
 if __import__("typing").TYPE_CHECKING:
     from shieldops.db.repository import Repository
+    from shieldops.policy.opa.client import PolicyEngine
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class InvestigationRunner:
             connector_router=router,
             log_sources=[k8s_logs],
             metric_sources=[prometheus],
+            policy_engine=policy_engine,
         )
         result = await runner.investigate(alert_context)
     """
@@ -45,6 +47,7 @@ class InvestigationRunner:
         trace_sources: list[TraceSource] | None = None,
         repository: "Repository | None" = None,
         ws_manager: "object | None" = None,
+        policy_engine: "PolicyEngine | None" = None,
     ) -> None:
         self._toolkit = InvestigationToolkit(
             connector_router=connector_router,
@@ -64,6 +67,78 @@ class InvestigationRunner:
         self._investigations: dict[str, InvestigationState] = {}
         self._repository = repository
         self._ws_manager = ws_manager
+        self._policy_engine = policy_engine
+
+    async def _check_policy(
+        self,
+        action: str,
+        target: str,
+        environment: str = "production",
+    ) -> dict[str, Any] | None:
+        """Evaluate OPA policy before an investigation action.
+
+        Returns None if allowed (or no policy engine configured).
+        Returns an error dict if denied.
+        """
+        if self._policy_engine is None:
+            return None
+
+        try:
+            from shieldops.models.base import Environment, RemediationAction, RiskLevel
+
+            # Build a lightweight RemediationAction for policy evaluation
+            env = (
+                Environment(environment)
+                if environment in Environment.__members__.values()
+                else Environment.PRODUCTION
+            )
+            policy_action = RemediationAction(
+                id=f"inv-policy-{uuid4().hex[:8]}",
+                action_type=action,
+                target_resource=target,
+                environment=env,
+                risk_level=RiskLevel.LOW,
+                parameters={"agent_type": "investigation"},
+                description=f"Investigation action: {action}",
+            )
+
+            evaluation = await self._policy_engine.evaluate(
+                action=policy_action,
+                agent_id="investigation",
+                context={
+                    "agent_type": "investigation",
+                    "action": action,
+                    "target_resource": target,
+                    "environment": environment,
+                },
+            )
+
+            if not evaluation.allowed:
+                logger.warning(
+                    "investigation.policy_denied",
+                    action=action,
+                    target=target,
+                    reasons=evaluation.reasons,
+                )
+                return {"error": f"Policy denied: {evaluation.reasons}"}
+
+            logger.info(
+                "investigation.policy_allowed",
+                action=action,
+                target=target,
+            )
+        except Exception as e:
+            # Fail open for read-only investigation queries — log the failure
+            # but allow the investigation to proceed. Remediation actions are
+            # separately gated in the graph's recommend_action node.
+            logger.error(
+                "investigation.policy_evaluation_error",
+                action=action,
+                target=target,
+                error=str(e),
+            )
+
+        return None
 
     async def investigate(self, alert: AlertContext) -> InvestigationState:
         """Run a full investigation for an alert.
@@ -83,6 +158,23 @@ class InvestigationRunner:
             alert_name=alert.alert_name,
             severity=alert.severity,
         )
+
+        # OPA policy check: verify the investigation itself is allowed
+        environment = alert.labels.get("environment", "production")
+        policy_result = await self._check_policy(
+            action="investigate",
+            target=alert.resource_id or alert.alert_id,
+            environment=environment,
+        )
+        if policy_result and "error" in policy_result:
+            error_state = InvestigationState(
+                alert_id=alert.alert_id,
+                alert_context=alert,
+                error=policy_result["error"],
+                current_step="policy_denied",
+            )
+            self._investigations[investigation_id] = error_state
+            return error_state
 
         initial_state = InvestigationState(
             alert_id=alert.alert_id,
@@ -132,6 +224,24 @@ class InvestigationRunner:
                 steps=len(final_state.reasoning_chain),
             )
 
+            # Audit trail: immutable record of investigation outcome
+            logger.info(
+                "investigation.audit",
+                action="investigate",
+                investigation_id=investigation_id,
+                target=alert.alert_id,
+                result="completed",
+                findings_count=(
+                    len(final_state.log_findings)
+                    + len(final_state.metric_anomalies)
+                    + len(final_state.correlated_events)
+                ),
+                hypotheses_count=len(final_state.hypotheses),
+                confidence=final_state.confidence_score,
+                duration_ms=final_state.investigation_duration_ms,
+                environment=environment,
+            )
+
             # Store result
             self._investigations[investigation_id] = final_state
             await self._persist(investigation_id, final_state)
@@ -144,6 +254,16 @@ class InvestigationRunner:
                 investigation_id=investigation_id,
                 alert_id=alert.alert_id,
                 error=str(e),
+            )
+            # Audit trail for failed investigations
+            logger.info(
+                "investigation.audit",
+                action="investigate",
+                investigation_id=investigation_id,
+                target=alert.alert_id,
+                result="failed",
+                error=str(e),
+                environment=environment,
             )
             # Return partial state with error
             error_state = InvestigationState(

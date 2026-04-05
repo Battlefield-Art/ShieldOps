@@ -347,7 +347,7 @@ class CrossVendorCorrelator:
             for eid, vendors in entity_vendors.items()
             if len(vendors) == 1
         ]
-        gaps.sort(key=lambda x: x["finding_count"], reverse=True)
+        gaps.sort(key=lambda x: x["finding_count"], reverse=True)  # type: ignore[arg-type,return-value]
         return gaps
 
     def get_attack_timeline(self) -> list[dict[str, Any]]:

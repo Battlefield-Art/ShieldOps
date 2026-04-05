@@ -4,15 +4,35 @@ Bridges external billing APIs, cloud resource inventories,
 and usage metrics into the cost analysis workflow.
 """
 
+from __future__ import annotations
+
+import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
+from pydantic import BaseModel, Field
 
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.models.base import Environment
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
+
+
+class CostRecommendationOutput(BaseModel):
+    """Structured output from LLM cost recommendation generation."""
+
+    recommendations: list[dict[str, Any]] = Field(
+        description="List of cost optimization recommendations with category, resource_id, "
+        "description, monthly_savings, confidence, effort, and implementation_steps"
+    )
+    total_estimated_savings: float = Field(
+        ge=0.0, description="Total estimated monthly savings in USD"
+    )
+    executive_summary: str = Field(
+        description="Brief executive summary of the cost optimization strategy"
+    )
 
 
 class CostToolkit:
@@ -35,6 +55,11 @@ class CostToolkit:
 
         Returns resource list with types, providers, and basic metadata.
         """
+        logger.info(
+            "cost.resource_inventory_query",
+            environment=environment.value,
+            has_router=self._router is not None,
+        )
         if self._router:
             try:
                 resources: list[dict[str, Any]] = []
@@ -53,14 +78,20 @@ class CostToolkit:
                         }
                         for r in provider_resources
                     )
+                logger.info(
+                    "cost.resource_inventory_success",
+                    total_count=len(resources),
+                    providers=self._router.providers,
+                )
                 return {
                     "resources": resources,
                     "total_count": len(resources),
                     "providers": self._router.providers,
                 }
             except Exception as e:
-                logger.error("resource_inventory_failed", error=str(e))
+                logger.error("cost.resource_inventory_failed", error=str(e))
 
+        logger.debug("cost.resource_inventory_fallback_stub")
         # Default stub response when no router configured
         return {
             "resources": [
@@ -111,16 +142,81 @@ class CostToolkit:
     ) -> dict[str, Any]:
         """Query cloud billing data for resources.
 
-        Returns per-resource cost breakdown with service-level aggregation.
+        Tries sources in order: explicit billing sources, AWS Cost Explorer
+        via connector_router, then falls back to stub data.
         """
+        # 1. Try explicit billing sources first
         for source in self._billing_sources:
             try:
                 result: dict[str, Any] = await source.query(environment=environment, period=period)
+                logger.info(
+                    "cost.billing_query_success",
+                    source=type(source).__name__,
+                    environment=environment.value,
+                    period=period,
+                )
                 return result
             except Exception as e:
-                logger.warning("billing_source_failed", source=type(source).__name__, error=str(e))
+                logger.warning(
+                    "cost.billing_source_failed",
+                    source=type(source).__name__,
+                    error=str(e),
+                )
 
-        # Default stub billing data
+        # 2. Try AWS connector to build cost data from resource inventory
+        if self._router and "aws" in self._router.providers:
+            try:
+                aws_connector = self._router.get("aws")
+                resources = await aws_connector.list_resources(
+                    resource_type="all", environment=environment
+                )
+                if resources:
+                    # Build billing data from discovered resources.
+                    # In production, this would call AWS Cost Explorer (ce_client)
+                    # directly. For now we enrich inventory with cost metadata
+                    # when available via resource tags/labels.
+                    resource_costs = []
+                    for r in resources:
+                        cost_tag = (r.labels or {}).get("monthly_cost", "0")
+                        usage_tag = (r.labels or {}).get("usage_percent", "50")
+                        monthly = float(cost_tag)
+                        resource_costs.append(
+                            {
+                                "resource_id": r.id,
+                                "resource_type": r.resource_type,
+                                "provider": r.provider,
+                                "service": r.resource_type,
+                                "daily_cost": round(monthly / 30, 2),
+                                "monthly_cost": monthly,
+                                "usage_percent": float(usage_tag),
+                            }
+                        )
+                    total_monthly = sum(rc["monthly_cost"] for rc in resource_costs)
+                    logger.info(
+                        "cost.aws_inventory_billing_success",
+                        environment=environment.value,
+                        resource_count=len(resource_costs),
+                        total_monthly=total_monthly,
+                    )
+                    return {
+                        "period": period,
+                        "currency": "USD",
+                        "total_daily": round(total_monthly / 30, 2),
+                        "total_monthly": total_monthly,
+                        "by_service": {},
+                        "by_environment": {environment.value: total_monthly},
+                        "resource_costs": resource_costs,
+                    }
+            except Exception as e:
+                logger.warning("cost.aws_connector_billing_failed", error=str(e))
+
+        logger.debug(
+            "cost.billing_fallback_stub",
+            environment=environment.value,
+            period=period,
+        )
+
+        # 3. Default stub billing data
         return {
             "period": period,
             "currency": "USD",
@@ -192,6 +288,11 @@ class CostToolkit:
         Identifies resources with spending significantly above their
         historical average within the analysis period.
         """
+        logger.info(
+            "cost.anomaly_detection",
+            resource_count=len(resource_costs),
+            threshold_percent=threshold_percent,
+        )
         anomalies = []
         now = datetime.now(UTC)
 
@@ -241,6 +342,11 @@ class CostToolkit:
                 )
 
         critical_count = sum(1 for a in anomalies if a["severity"] == "critical")
+        logger.info(
+            "cost.anomaly_detection_complete",
+            total_anomalies=len(anomalies),
+            critical_count=critical_count,
+        )
 
         return {
             "anomalies": anomalies,
@@ -257,6 +363,7 @@ class CostToolkit:
         Analyzes utilization patterns and suggests rightsizing,
         scheduling, and resource cleanup actions.
         """
+        logger.info("cost.optimization_scan", resource_count=len(resource_costs))
         recommendations = []
         total_savings = 0.0
 
@@ -313,6 +420,11 @@ class CostToolkit:
                     }
                 )
 
+        logger.info(
+            "cost.optimization_scan_complete",
+            total_recommendations=len(recommendations),
+            total_potential_savings=round(total_savings, 2),
+        )
         return {
             "recommendations": recommendations,
             "total_recommendations": len(recommendations),
@@ -328,6 +440,7 @@ class CostToolkit:
 
         Estimates hours saved by ShieldOps automation vs. manual operations.
         """
+        logger.info("cost.automation_savings_query", period=period)
         # In production, this would query the investigation/remediation
         # databases for actual time-saved metrics. Stub data here.
         return {
@@ -340,3 +453,110 @@ class CostToolkit:
             "engineer_hourly_rate": engineer_hourly_rate,
             "automation_savings_usd": (45 * 1.5 + 22 * 2.0) * engineer_hourly_rate,
         }
+
+    async def generate_recommendations(self, cost_data: dict[str, Any]) -> list[dict[str, Any]]:
+        """Generate LLM-powered cost optimization recommendations.
+
+        Uses the LLM to analyze cost data and produce actionable recommendations.
+        Falls back to heuristic analysis when the LLM is unavailable.
+        """
+        logger.info(
+            "cost.generating_recommendations",
+            resource_count=len(cost_data.get("resource_costs", [])),
+            total_monthly=cost_data.get("total_monthly", 0),
+        )
+        try:
+            result = await llm_structured(
+                system_prompt=(
+                    "You are a FinOps expert. Analyze the provided cloud cost data and "
+                    "recommend specific optimizations. For each recommendation include: "
+                    "category (rightsizing/unused_resources/reserved_instances/scheduling/"
+                    "architecture), resource_id, description, monthly_savings estimate, "
+                    "confidence (0-1), effort (low/medium/high), and implementation_steps."
+                ),
+                user_prompt=f"Cost data: {json.dumps(cost_data, default=str)[:2000]}",
+                schema=CostRecommendationOutput,
+            )
+            if isinstance(result, CostRecommendationOutput):
+                logger.info(
+                    "cost.llm_recommendations_success",
+                    count=len(result.recommendations),
+                    total_savings=result.total_estimated_savings,
+                )
+                return result.recommendations
+            # If result is a dict (fallback parse)
+            if isinstance(result, dict) and "recommendations" in result:
+                return result["recommendations"]
+            return [result] if isinstance(result, dict) else []
+        except Exception as e:
+            logger.debug("cost.llm_fallback", error=str(e))
+            return self._heuristic_recommendations(cost_data)
+
+    def _heuristic_recommendations(self, cost_data: dict[str, Any]) -> list[dict[str, Any]]:
+        """Generate rule-based recommendations when LLM is unavailable.
+
+        Applies simple utilization and cost thresholds to produce
+        recommendations without requiring an LLM call.
+        """
+        recommendations: list[dict[str, Any]] = []
+        for rc in cost_data.get("resource_costs", []):
+            usage = rc.get("usage_percent", 50)
+            monthly = rc.get("monthly_cost", 0)
+            resource_id = rc.get("resource_id", "unknown")
+
+            if usage < 10 and monthly > 50:
+                recommendations.append(
+                    {
+                        "category": "unused_resources",
+                        "resource_id": resource_id,
+                        "description": (
+                            f"Resource {resource_id} has only {usage}% utilization "
+                            f"but costs ${monthly:.2f}/mo. Consider termination."
+                        ),
+                        "monthly_savings": monthly,
+                        "confidence": 0.7,
+                        "effort": "low",
+                        "implementation_steps": [
+                            f"Verify {resource_id} has no active dependents",
+                            "Create backup/snapshot",
+                            "Terminate or decommission resource",
+                        ],
+                    }
+                )
+            elif usage < 40 and monthly > 100:
+                savings = monthly * 0.4
+                recommendations.append(
+                    {
+                        "category": "rightsizing",
+                        "resource_id": resource_id,
+                        "description": (
+                            f"Resource {resource_id} is only {usage}% utilized. "
+                            f"Downsize to save ~${savings:.2f}/mo."
+                        ),
+                        "monthly_savings": round(savings, 2),
+                        "confidence": 0.8,
+                        "effort": "low",
+                        "implementation_steps": [
+                            f"Analyze workload pattern for {resource_id}",
+                            "Select appropriate smaller instance type",
+                            "Schedule downsize during maintenance window",
+                            "Monitor performance for 48 hours",
+                        ],
+                    }
+                )
+        logger.info(
+            "cost.heuristic_recommendations",
+            count=len(recommendations),
+        )
+        return recommendations
+
+    @staticmethod
+    def _parse_period_days(period: str) -> int:
+        """Parse a period string like '30d', '7d', '90d' into days."""
+        period = period.strip().lower()
+        if period.endswith("d"):
+            try:
+                return int(period[:-1])
+            except ValueError:
+                pass
+        return 30  # default to 30 days

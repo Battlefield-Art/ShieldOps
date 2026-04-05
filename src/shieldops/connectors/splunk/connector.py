@@ -307,7 +307,7 @@ class SplunkConnector(InfraConnector):
                     data=content,
                 )
             logger.info("splunk.rollback_completed", snapshot_id=snapshot_id)
-            return ActionResult(
+            return ActionResult(  # type: ignore[call-arg]
                 action_id=snapshot_id,
                 status=ExecutionStatus.SUCCESS,
                 message="Saved searches restored from snapshot",

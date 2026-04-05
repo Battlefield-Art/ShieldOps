@@ -1,13 +1,10 @@
 """Integration tests for Phase 9 AI Security deployment modes."""
-from __future__ import annotations
 
-import pytest
+from __future__ import annotations
 
 from shieldops.security.agent_behavioral_firewall import (
     AgentBehavioralFirewall,
-    BehavioralProfile,
     FirewallAction,
-    MonitoringMode,
 )
 from shieldops.security.agent_kill_switch import (
     AgentKillSwitch,
@@ -26,7 +23,6 @@ from shieldops.security.response_approval_workflow import (
     ApprovalTier,
     ResponseApprovalWorkflow,
 )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TestFirewallModeSwitch
@@ -66,9 +62,7 @@ class TestFirewallModeSwitch:
 
         # Audit mode: regardless of the raw action, we allow and record
         audit_action = FirewallAction.ALLOW  # audit wrapper overrides
-        fw.record_event(
-            agent, "rm_rf_slash", action=audit_action, risk_score=detected_risk
-        )
+        fw.record_event(agent, "rm_rf_slash", action=audit_action, risk_score=detected_risk)
         events = fw.list_events(agent_id=agent)
         assert len(events) > 0, "Events should still be recorded in audit mode"
 

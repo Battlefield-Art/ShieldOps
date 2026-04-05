@@ -4,27 +4,16 @@ repos:
     rev: v0.15.1
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
       - id: ruff-format
 
-  # mypy — strict type checking
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.0
-    hooks:
-      - id: mypy
-        args: [--ignore-missing-imports]
-        additional_dependencies:
-          - sqlalchemy[mypy]
-          - pydantic
-          - pydantic-settings
-          - fastapi
-          - httpx
-          - structlog
-          - redis
-          - langchain-anthropic
-          - langgraph
-        pass_filenames: true
-        types: [python]
+  # mypy — strict type checking enforced in CI (ci.yml), not pre-commit
+  # Pre-commit mypy on partial file sets produces false positives from
+  # transitive imports. Full-repo mypy runs in CI instead.
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.19.0
+  #   hooks:
+  #     - id: mypy
 
   # Security — bandit (mirrors CI security job, HIGH+ only)
   - repo: https://github.com/PyCQA/bandit

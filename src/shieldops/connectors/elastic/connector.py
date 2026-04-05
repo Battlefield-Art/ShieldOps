@@ -91,7 +91,7 @@ class ElasticConnector(InfraConnector):
         resp.raise_for_status()
         if resp.status_code == 204:
             return {}
-        return resp.json()
+        return resp.json()  # type: ignore[no-any-return]
 
     # -- InfraConnector interface ------------------------------------------
 
@@ -350,7 +350,7 @@ class ElasticConnector(InfraConnector):
                 message="Detection rules restored from snapshot",
                 started_at=started,
                 completed_at=datetime.now(UTC),
-                snapshot_id=snapshot_id,
+                id=snapshot_id,
             )
         except Exception as e:
             logger.error("elastic.rollback_failed", snapshot_id=snapshot_id, error=str(e))

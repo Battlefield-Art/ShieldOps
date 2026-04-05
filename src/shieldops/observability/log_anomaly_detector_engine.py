@@ -136,7 +136,8 @@ class LogAnomalyDetectorEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> LogAnomalyDetectorAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -145,19 +146,9 @@ class LogAnomalyDetectorEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        svc_recs = [
-            r for r in self._records if r.service_id == rec.service_id
-        ]
-        tp = sum(
-            1
-            for r in svc_recs
-            if r.detection_outcome == DetectionOutcome.TRUE_POSITIVE
-        )
-        fp = sum(
-            1
-            for r in svc_recs
-            if r.detection_outcome == DetectionOutcome.FALSE_POSITIVE
-        )
+        svc_recs = [r for r in self._records if r.service_id == rec.service_id]
+        tp = sum(1 for r in svc_recs if r.detection_outcome == DetectionOutcome.TRUE_POSITIVE)
+        fp = sum(1 for r in svc_recs if r.detection_outcome == DetectionOutcome.FALSE_POSITIVE)
         precision = round(tp / (tp + fp) * 100, 2) if (tp + fp) > 0 else 0.0
         analysis = LogAnomalyDetectorAnalysis(
             service_id=rec.service_id,
@@ -165,10 +156,7 @@ class LogAnomalyDetectorEngine:
             anomaly_method=rec.anomaly_method,
             precision=precision,
             data_points=len(svc_recs),
-            description=(
-                f"Anomaly detection precision {precision}%"
-                f" for {rec.service_id}"
-            ),
+            description=(f"Anomaly detection precision {precision}% for {rec.service_id}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -178,15 +166,9 @@ class LogAnomalyDetectorEngine:
         by_c: dict[str, int] = {}
         by_o: dict[str, int] = {}
         for r in self._records:
-            by_m[r.anomaly_method.value] = (
-                by_m.get(r.anomaly_method.value, 0) + 1
-            )
-            by_c[r.log_category.value] = (
-                by_c.get(r.log_category.value, 0) + 1
-            )
-            by_o[r.detection_outcome.value] = (
-                by_o.get(r.detection_outcome.value, 0) + 1
-            )
+            by_m[r.anomaly_method.value] = by_m.get(r.anomaly_method.value, 0) + 1
+            by_c[r.log_category.value] = by_c.get(r.log_category.value, 0) + 1
+            by_o[r.detection_outcome.value] = by_o.get(r.detection_outcome.value, 0) + 1
         tp = by_o.get(DetectionOutcome.TRUE_POSITIVE.value, 0)
         fp = by_o.get(DetectionOutcome.FALSE_POSITIVE.value, 0)
         precision = round(tp / (tp + fp) * 100, 2) if (tp + fp) > 0 else 0.0
@@ -200,23 +182,17 @@ class LogAnomalyDetectorEngine:
         high_fp = [
             sid
             for sid, cnt in svc_fp.items()
-            if svc_total.get(sid, 1) > 0
-            and (cnt / svc_total[sid] * 100) > 30
+            if svc_total.get(sid, 1) > 0 and (cnt / svc_total[sid] * 100) > 30
         ][:10]
         recs: list[str] = []
         if precision < self._precision_threshold:
             recs.append(
-                f"Overall precision {precision}% below threshold"
-                f" {self._precision_threshold}%"
+                f"Overall precision {precision}% below threshold {self._precision_threshold}%"
             )
         if high_fp:
-            recs.append(
-                f"{len(high_fp)} services with >30% false positive rate"
-            )
+            recs.append(f"{len(high_fp)} services with >30% false positive rate")
         if not recs:
-            recs.append(
-                "Log anomaly detection precision within acceptable range"
-            )
+            recs.append("Log anomaly detection precision within acceptable range")
         return LogAnomalyDetectorReport(
             total_records=len(self._records),
             total_analyses=len(self._analyses),
@@ -280,9 +256,7 @@ class LogAnomalyDetectorEngine:
         method_latencies: dict[str, list[float]] = {}
         for r in self._records:
             if r.latency_ms > 0:
-                method_latencies.setdefault(
-                    r.anomaly_method.value, []
-                ).append(r.latency_ms)
+                method_latencies.setdefault(r.anomaly_method.value, []).append(r.latency_ms)
         results: list[dict[str, Any]] = []
         for method, lats in method_latencies.items():
             avg = round(sum(lats) / len(lats), 2)
@@ -311,9 +285,7 @@ class LogAnomalyDetectorEngine:
         results: list[dict[str, Any]] = []
         for cat, data in cat_data.items():
             tp_fp = data["tp"] + data["fp"]
-            prec = (
-                round(data["tp"] / tp_fp * 100, 2) if tp_fp > 0 else 0.0
-            )
+            prec = round(data["tp"] / tp_fp * 100, 2) if tp_fp > 0 else 0.0
             results.append(
                 {
                     "log_category": cat,

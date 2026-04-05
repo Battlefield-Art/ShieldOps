@@ -90,8 +90,7 @@ class ShieldOpsOpenAIAgentsHandler:
                 reasons=result.reasons,
             )
             raise PermissionError(
-                f"ShieldOps blocked function '{function_name}': "
-                f"{', '.join(result.reasons)}"
+                f"ShieldOps blocked function '{function_name}': {', '.join(result.reasons)}"
             )
 
         logger.info(

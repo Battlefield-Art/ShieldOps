@@ -101,12 +101,12 @@ class FirewallDecisionCache:
                 raw = await self._redis.get(key)
                 if raw:
                     self._stats["hits"] += 1
-                    return json.loads(raw)
+                    return json.loads(raw)  # type: ignore[no-any-return]
             # Local fallback
             local = self._local_get(key)
             if local is not None:
                 self._stats["hits"] += 1
-                return local
+                return local  # type: ignore[no-any-return]
         except Exception:
             self._stats["errors"] += 1
             logger.debug("firewall_cache.get_decision_error", key=key)
@@ -114,7 +114,7 @@ class FirewallDecisionCache:
             local = self._local_get(key)
             if local is not None:
                 self._stats["hits"] += 1
-                return local
+                return local  # type: ignore[no-any-return]
 
         self._stats["misses"] += 1
         return None
@@ -149,18 +149,18 @@ class FirewallDecisionCache:
                 raw = await self._redis.get(key)
                 if raw:
                     self._stats["hits"] += 1
-                    return json.loads(raw)
+                    return json.loads(raw)  # type: ignore[no-any-return]
             local = self._local_get(key)
             if local is not None:
                 self._stats["hits"] += 1
-                return local
+                return local  # type: ignore[no-any-return]
         except Exception:
             self._stats["errors"] += 1
             logger.debug("firewall_cache.get_baseline_error", key=key)
             local = self._local_get(key)
             if local is not None:
                 self._stats["hits"] += 1
-                return local
+                return local  # type: ignore[no-any-return]
 
         self._stats["misses"] += 1
         return None

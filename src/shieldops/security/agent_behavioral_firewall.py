@@ -315,7 +315,7 @@ class AgentBehavioralFirewall:
                 agent_violations[r.agent_id] = agent_violations.get(r.agent_id, 0) + 1
         top_agents = sorted(
             [{"agent_id": k, "violation_count": v} for k, v in agent_violations.items()],
-            key=lambda x: x["violation_count"],
+            key=lambda x: x["violation_count"],  # type: ignore[arg-type,return-value]
             reverse=True,
         )[:10]
 

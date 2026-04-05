@@ -83,8 +83,7 @@ class ShieldOpsLlamaIndexHandler:
                 reasons=result.reasons,
             )
             raise PermissionError(
-                f"ShieldOps blocked tool call: {tool_name} — "
-                f"{', '.join(result.reasons)}"
+                f"ShieldOps blocked tool call: {tool_name} — {', '.join(result.reasons)}"
             )
 
         logger.info(

@@ -139,7 +139,8 @@ class BurnRateAlertEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> BurnRateAlertAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -148,18 +149,10 @@ class BurnRateAlertEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        svc_recs = [
-            r for r in self._records if r.service_id == rec.service_id
-        ]
-        false_alarms = sum(
-            1
-            for r in svc_recs
-            if r.response_outcome == ResponseOutcome.FALSE_ALARM
-        )
+        svc_recs = [r for r in self._records if r.service_id == rec.service_id]
+        false_alarms = sum(1 for r in svc_recs if r.response_outcome == ResponseOutcome.FALSE_ALARM)
         total = len(svc_recs)
-        fa_rate = (
-            round(false_alarms / total * 100, 2) if total > 0 else 0.0
-        )
+        fa_rate = round(false_alarms / total * 100, 2) if total > 0 else 0.0
         score = round(100.0 - fa_rate, 2)
         analysis = BurnRateAlertAnalysis(
             service_id=rec.service_id,
@@ -167,9 +160,7 @@ class BurnRateAlertEngine:
             alert_window=rec.alert_window,
             false_alarm_rate=fa_rate,
             data_points=total,
-            description=(
-                f"Burn rate alert quality {score}% for {rec.service_id}"
-            ),
+            description=(f"Burn rate alert quality {score}% for {rec.service_id}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -180,22 +171,12 @@ class BurnRateAlertEngine:
         by_o: dict[str, int] = {}
         resp_times: list[float] = []
         for r in self._records:
-            by_w[r.alert_window.value] = (
-                by_w.get(r.alert_window.value, 0) + 1
-            )
-            by_s[r.alert_severity.value] = (
-                by_s.get(r.alert_severity.value, 0) + 1
-            )
-            by_o[r.response_outcome.value] = (
-                by_o.get(r.response_outcome.value, 0) + 1
-            )
+            by_w[r.alert_window.value] = by_w.get(r.alert_window.value, 0) + 1
+            by_s[r.alert_severity.value] = by_s.get(r.alert_severity.value, 0) + 1
+            by_o[r.response_outcome.value] = by_o.get(r.response_outcome.value, 0) + 1
             if r.response_time_seconds > 0:
                 resp_times.append(r.response_time_seconds)
-        avg_resp = (
-            round(sum(resp_times) / len(resp_times), 2)
-            if resp_times
-            else 0.0
-        )
+        avg_resp = round(sum(resp_times) / len(resp_times), 2) if resp_times else 0.0
         high_burn = list(
             {
                 r.service_id
@@ -208,21 +189,15 @@ class BurnRateAlertEngine:
         total = len(self._records)
         if total > 0 and false_alarm_count / total > 0.3:
             recs.append(
-                f"High false alarm rate ({false_alarm_count}/{total})"
-                " — tune alert thresholds"
+                f"High false alarm rate ({false_alarm_count}/{total}) — tune alert thresholds"
             )
         if high_burn:
-            recs.append(
-                f"{len(high_burn)} services with burn rate"
-                f" >= {self._burn_rate_threshold}x"
-            )
+            recs.append(f"{len(high_burn)} services with burn rate >= {self._burn_rate_threshold}x")
         pages = by_s.get(AlertSeverity.PAGE.value, 0)
         if pages > 10:
             recs.append(f"{pages} page-level alerts — review SLO targets")
         if not recs:
-            recs.append(
-                "Burn rate alerting healthy — response times acceptable"
-            )
+            recs.append("Burn rate alerting healthy — response times acceptable")
         return BurnRateAlertReport(
             total_records=total,
             total_analyses=len(self._analyses),
@@ -268,9 +243,7 @@ class BurnRateAlertEngine:
                     "budget_consumed_pct": r.error_budget_consumed_pct,
                 }
             )
-        results.sort(
-            key=lambda x: x["burn_rate_multiplier"], reverse=True
-        )
+        results.sort(key=lambda x: x["burn_rate_multiplier"], reverse=True)
         return results[:50]
 
     def compute_response_effectiveness(self) -> list[dict[str, Any]]:
@@ -278,27 +251,17 @@ class BurnRateAlertEngine:
         svc_data: dict[str, dict[str, int]] = {}
         svc_times: dict[str, list[float]] = {}
         for r in self._records:
-            svc_data.setdefault(
-                r.service_id, {"mitigated": 0, "total": 0}
-            )
+            svc_data.setdefault(r.service_id, {"mitigated": 0, "total": 0})
             svc_data[r.service_id]["total"] += 1
             if r.response_outcome == ResponseOutcome.MITIGATED:
                 svc_data[r.service_id]["mitigated"] += 1
             if r.mitigation_time_seconds > 0:
-                svc_times.setdefault(r.service_id, []).append(
-                    r.mitigation_time_seconds
-                )
+                svc_times.setdefault(r.service_id, []).append(r.mitigation_time_seconds)
         results: list[dict[str, Any]] = []
         for sid, data in svc_data.items():
-            rate = (
-                round(data["mitigated"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            rate = round(data["mitigated"] / data["total"] * 100, 2) if data["total"] else 0.0
             times = svc_times.get(sid, [])
-            avg_mit = (
-                round(sum(times) / len(times), 2) if times else 0.0
-            )
+            avg_mit = round(sum(times) / len(times), 2) if times else 0.0
             results.append(
                 {
                     "service_id": sid,
@@ -315,9 +278,7 @@ class BurnRateAlertEngine:
         window_data: dict[str, dict[str, int]] = {}
         for r in self._records:
             k = r.alert_window.value
-            window_data.setdefault(
-                k, {"total": 0, "false_alarm": 0, "mitigated": 0}
-            )
+            window_data.setdefault(k, {"total": 0, "false_alarm": 0, "mitigated": 0})
             window_data[k]["total"] += 1
             if r.response_outcome == ResponseOutcome.FALSE_ALARM:
                 window_data[k]["false_alarm"] += 1
@@ -325,11 +286,7 @@ class BurnRateAlertEngine:
                 window_data[k]["mitigated"] += 1
         results: list[dict[str, Any]] = []
         for window, data in window_data.items():
-            fa_rate = (
-                round(data["false_alarm"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            fa_rate = round(data["false_alarm"] / data["total"] * 100, 2) if data["total"] else 0.0
             results.append(
                 {
                     "alert_window": window,

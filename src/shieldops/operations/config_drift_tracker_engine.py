@@ -142,7 +142,8 @@ class ConfigDriftTrackerEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> ConfigDriftTrackerAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -151,13 +152,9 @@ class ConfigDriftTrackerEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        res_recs = [
-            r for r in self._records if r.resource_id == rec.resource_id
-        ]
+        res_recs = [r for r in self._records if r.resource_id == rec.resource_id]
         drift_count = len(res_recs)
-        score = round(
-            max(0.0, 100.0 - drift_count * 10), 2
-        )
+        score = round(max(0.0, 100.0 - drift_count * 10), 2)
         analysis = ConfigDriftTrackerAnalysis(
             resource_id=rec.resource_id,
             analysis_score=score,
@@ -165,8 +162,7 @@ class ConfigDriftTrackerEngine:
             drift_count=drift_count,
             data_points=drift_count,
             description=(
-                f"Config drift score {score} for {rec.resource_id}"
-                f" ({drift_count} drifts)"
+                f"Config drift score {score} for {rec.resource_id} ({drift_count} drifts)"
             ),
         )
         self._analyses[key] = analysis
@@ -178,40 +174,22 @@ class ConfigDriftTrackerEngine:
         by_r: dict[str, int] = {}
         rem_times: list[float] = []
         for r in self._records:
-            by_s[r.drift_source.value] = (
-                by_s.get(r.drift_source.value, 0) + 1
-            )
-            by_c[r.drift_category.value] = (
-                by_c.get(r.drift_category.value, 0) + 1
-            )
-            by_r[r.remediation_method.value] = (
-                by_r.get(r.remediation_method.value, 0) + 1
-            )
+            by_s[r.drift_source.value] = by_s.get(r.drift_source.value, 0) + 1
+            by_c[r.drift_category.value] = by_c.get(r.drift_category.value, 0) + 1
+            by_r[r.remediation_method.value] = by_r.get(r.remediation_method.value, 0) + 1
             if r.remediated_at > 0 and r.drift_detected_at > 0:
                 rem_times.append(r.remediated_at - r.drift_detected_at)
-        avg_rem = (
-            round(sum(rem_times) / len(rem_times), 2)
-            if rem_times
-            else 0.0
-        )
+        avg_rem = round(sum(rem_times) / len(rem_times), 2) if rem_times else 0.0
         svc_counts: dict[str, int] = {}
         for r in self._records:
             svc_counts[r.service_id] = svc_counts.get(r.service_id, 0) + 1
-        high_drift = [
-            sid
-            for sid, cnt in svc_counts.items()
-            if cnt > self._drift_threshold
-        ][:10]
+        high_drift = [sid for sid, cnt in svc_counts.items() if cnt > self._drift_threshold][:10]
         recs: list[str] = []
         security_drifts = by_c.get(DriftCategory.SECURITY.value, 0)
         if security_drifts:
-            recs.append(
-                f"{security_drifts} security-related drifts — remediate"
-            )
+            recs.append(f"{security_drifts} security-related drifts — remediate")
         if high_drift:
-            recs.append(
-                f"{len(high_drift)} services exceeding drift threshold"
-            )
+            recs.append(f"{len(high_drift)} services exceeding drift threshold")
         if not recs:
             recs.append("Config drift within acceptable limits")
         return ConfigDriftTrackerReport(
@@ -251,12 +229,8 @@ class ConfigDriftTrackerEngine:
         field_services: dict[str, set[str]] = {}
         for r in self._records:
             if r.drift_field:
-                field_counts[r.drift_field] = (
-                    field_counts.get(r.drift_field, 0) + 1
-                )
-                field_services.setdefault(r.drift_field, set()).add(
-                    r.service_id
-                )
+                field_counts[r.drift_field] = field_counts.get(r.drift_field, 0) + 1
+                field_services.setdefault(r.drift_field, set()).add(r.service_id)
         results: list[dict[str, Any]] = []
         for field, count in field_counts.items():
             results.append(
@@ -275,9 +249,7 @@ class ConfigDriftTrackerEngine:
         for r in self._records:
             if r.remediated_at > 0 and r.drift_detected_at > 0:
                 dt = r.remediated_at - r.drift_detected_at
-                source_times.setdefault(
-                    r.drift_source.value, []
-                ).append(dt)
+                source_times.setdefault(r.drift_source.value, []).append(dt)
         results: list[dict[str, Any]] = []
         for source, times in source_times.items():
             avg = round(sum(times) / len(times), 2)
@@ -302,11 +274,7 @@ class ConfigDriftTrackerEngine:
                 cat_data[k]["remediated"] += 1
         results: list[dict[str, Any]] = []
         for cat, data in cat_data.items():
-            rate = (
-                round(data["remediated"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            rate = round(data["remediated"] / data["total"] * 100, 2) if data["total"] else 0.0
             results.append(
                 {
                     "drift_category": cat,

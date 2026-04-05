@@ -209,9 +209,7 @@ class MicroSegmentationEngine:
             total = sum(statuses.values())
             missing = statuses.get("missing", 0)
             drifted = statuses.get("drifted", 0)
-            gap_pct = (
-                round((missing + drifted) / total * 100, 1) if total else 0.0
-            )
+            gap_pct = round((missing + drifted) / total * 100, 1) if total else 0.0
             if missing > 0 or drifted > 0:
                 gaps.append(
                     {
@@ -233,17 +231,9 @@ class MicroSegmentationEngine:
         results: list[dict[str, Any]] = []
         for scope, records in scope_records.items():
             total = len(records)
-            enforced = sum(
-                1
-                for r in records
-                if r.policy_status == PolicyStatus.ENFORCED
-            )
+            enforced = sum(1 for r in records if r.policy_status == PolicyStatus.ENFORCED)
             coverage = round(enforced / total * 100, 1) if total else 0.0
-            avg_score = (
-                round(sum(r.score for r in records) / total, 2)
-                if total
-                else 0.0
-            )
+            avg_score = round(sum(r.score for r in records) / total, 2) if total else 0.0
             results.append(
                 {
                     "scope": scope,
@@ -258,9 +248,7 @@ class MicroSegmentationEngine:
     def recommend_segmentation_improvements(self) -> list[dict[str, Any]]:
         """Recommend segmentation improvements based on policy status."""
         recommendations: list[dict[str, Any]] = []
-        missing = [
-            r for r in self._records if r.policy_status == PolicyStatus.MISSING
-        ]
+        missing = [r for r in self._records if r.policy_status == PolicyStatus.MISSING]
         for r in missing:
             recommendations.append(
                 {
@@ -271,14 +259,11 @@ class MicroSegmentationEngine:
                     "issue": "missing_policy",
                     "priority": "critical",
                     "suggestion": (
-                        f"Create {r.enforcement_method.value} for "
-                        f"{r.segment_name or r.name}"
+                        f"Create {r.enforcement_method.value} for {r.segment_name or r.name}"
                     ),
                 }
             )
-        drifted = [
-            r for r in self._records if r.policy_status == PolicyStatus.DRIFTED
-        ]
+        drifted = [r for r in self._records if r.policy_status == PolicyStatus.DRIFTED]
         for r in drifted:
             recommendations.append(
                 {
@@ -294,9 +279,7 @@ class MicroSegmentationEngine:
                     ),
                 }
             )
-        excessive = [
-            r for r in self._records if r.allowed_peers > 20
-        ]
+        excessive = [r for r in self._records if r.allowed_peers > 20]
         for r in excessive:
             recommendations.append(
                 {
@@ -307,15 +290,12 @@ class MicroSegmentationEngine:
                     "issue": "excessive_peers",
                     "priority": "medium",
                     "suggestion": (
-                        f"Reduce allowed peers ({r.allowed_peers}) "
-                        f"for {r.segment_name or r.name}"
+                        f"Reduce allowed peers ({r.allowed_peers}) for {r.segment_name or r.name}"
                     ),
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -364,9 +344,7 @@ class MicroSegmentationEngine:
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         scores = [r.score for r in matched]
@@ -376,9 +354,7 @@ class MicroSegmentationEngine:
             "status": "processed",
             "count": len(matched),
             "avg_score": avg,
-            "below_threshold": sum(
-                1 for s in scores if s < self._threshold
-            ),
+            "below_threshold": sum(1 for s in scores if s < self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -388,15 +364,9 @@ class MicroSegmentationEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.segment_scope.value] = (
-                by_e1.get(r.segment_scope.value, 0) + 1
-            )
-            by_e2[r.policy_status.value] = (
-                by_e2.get(r.policy_status.value, 0) + 1
-            )
-            by_e3[r.enforcement_method.value] = (
-                by_e3.get(r.enforcement_method.value, 0) + 1
-            )
+            by_e1[r.segment_scope.value] = by_e1.get(r.segment_scope.value, 0) + 1
+            by_e2[r.policy_status.value] = by_e2.get(r.policy_status.value, 0) + 1
+            by_e3[r.enforcement_method.value] = by_e3.get(r.enforcement_method.value, 0) + 1
         gap_count = sum(1 for r in self._records if r.score < self._threshold)
         scores = [r.score for r in self._records]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
@@ -404,13 +374,9 @@ class MicroSegmentationEngine:
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) below threshold ({self._threshold})"
-            )
+            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
         if self._records and avg_score < self._threshold:
-            recs.append(
-                f"Avg score {avg_score} below threshold ({self._threshold})"
-            )
+            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
         if not recs:
             recs.append("Micro Segmentation Engine is healthy")
         return MicroSegmentationReport(

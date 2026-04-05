@@ -155,7 +155,7 @@ class DatadogConnector(InfraConnector):
                 await self._api_request("POST", f"/api/v1/monitor/{monitor_id}/mute")
             return ActionResult(
                 action_id=action_id,
-                status=ExecutionStatus.COMPLETED,
+                status=ExecutionStatus.SUCCESS,
                 message=f"Action {action.action_type} completed",
                 started_at=datetime.now(UTC),
                 completed_at=datetime.now(UTC),
@@ -177,7 +177,7 @@ class DatadogConnector(InfraConnector):
             "created_at": datetime.now(UTC).isoformat(),
         }
         return Snapshot(
-            snapshot_id=snapshot_id,
+            id=snapshot_id,
             resource_id=resource_id,
             created_at=datetime.now(UTC),
         )
@@ -194,7 +194,7 @@ class DatadogConnector(InfraConnector):
             )
         return ActionResult(
             action_id=str(uuid4()),
-            status=ExecutionStatus.COMPLETED,
+            status=ExecutionStatus.SUCCESS,
             message=f"Rollback to {snapshot_id} completed",
             started_at=datetime.now(UTC),
             completed_at=datetime.now(UTC),

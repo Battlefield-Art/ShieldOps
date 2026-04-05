@@ -6,13 +6,13 @@ from __future__ import annotations
 import click
 
 from shieldops.cli.commands.agents import agents
+from shieldops.cli.commands.firewall import firewall
 from shieldops.cli.commands.investigate import investigate
+from shieldops.cli.commands.mcp import mcp
+from shieldops.cli.commands.nhi import nhi
 from shieldops.cli.commands.remediate import remediate
 from shieldops.cli.commands.scan import scan
 from shieldops.cli.commands.status import status
-from shieldops.cli.commands.firewall import firewall
-from shieldops.cli.commands.nhi import nhi
-from shieldops.cli.commands.mcp import mcp
 
 
 @click.group()

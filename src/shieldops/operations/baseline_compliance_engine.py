@@ -139,7 +139,8 @@ class BaselineComplianceEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> BaselineComplianceAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -148,9 +149,7 @@ class BaselineComplianceEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        res_recs = [
-            r for r in self._records if r.resource_id == rec.resource_id
-        ]
+        res_recs = [r for r in self._records if r.resource_id == rec.resource_id]
         pcts = [r.compliance_pct for r in res_recs]
         avg = round(sum(pcts) / len(pcts), 2) if pcts else 0.0
         # Determine trend
@@ -170,9 +169,7 @@ class BaselineComplianceEngine:
             baseline_source=rec.baseline_source,
             trend=trend,
             data_points=len(res_recs),
-            description=(
-                f"Compliance {avg}% for {rec.resource_id} — {trend}"
-            ),
+            description=(f"Compliance {avg}% for {rec.resource_id} — {trend}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -183,15 +180,9 @@ class BaselineComplianceEngine:
         by_t: dict[str, int] = {}
         pcts: list[float] = []
         for r in self._records:
-            by_s[r.baseline_source.value] = (
-                by_s.get(r.baseline_source.value, 0) + 1
-            )
-            by_l[r.compliance_level.value] = (
-                by_l.get(r.compliance_level.value, 0) + 1
-            )
-            by_t[r.validation_trigger.value] = (
-                by_t.get(r.validation_trigger.value, 0) + 1
-            )
+            by_s[r.baseline_source.value] = by_s.get(r.baseline_source.value, 0) + 1
+            by_l[r.compliance_level.value] = by_l.get(r.compliance_level.value, 0) + 1
+            by_t[r.validation_trigger.value] = by_t.get(r.validation_trigger.value, 0) + 1
             pcts.append(r.compliance_pct)
         avg = round(sum(pcts) / len(pcts), 2) if pcts else 0.0
         non_compliant = list(
@@ -203,15 +194,9 @@ class BaselineComplianceEngine:
         )[:10]
         recs: list[str] = []
         if avg < self._compliance_threshold:
-            recs.append(
-                f"Average compliance {avg}% below threshold"
-                f" {self._compliance_threshold}%"
-            )
+            recs.append(f"Average compliance {avg}% below threshold {self._compliance_threshold}%")
         if non_compliant:
-            recs.append(
-                f"{len(non_compliant)} services non-compliant"
-                " with baseline"
-            )
+            recs.append(f"{len(non_compliant)} services non-compliant with baseline")
         failed_total = sum(r.failed_checks for r in self._records)
         if failed_total:
             recs.append(f"{failed_total} total failed checks across fleet")
@@ -272,16 +257,12 @@ class BaselineComplianceEngine:
         source_total: dict[str, int] = {}
         for r in self._records:
             k = r.baseline_source.value
-            source_failures[k] = (
-                source_failures.get(k, 0) + r.failed_checks
-            )
+            source_failures[k] = source_failures.get(k, 0) + r.failed_checks
             source_total[k] = source_total.get(k, 0) + r.total_checks
         results: list[dict[str, Any]] = []
         for source, fails in source_failures.items():
             total = source_total.get(source, 0)
-            rate = (
-                round(fails / total * 100, 2) if total > 0 else 0.0
-            )
+            rate = round(fails / total * 100, 2) if total > 0 else 0.0
             results.append(
                 {
                     "baseline_source": source,
@@ -298,19 +279,13 @@ class BaselineComplianceEngine:
         trigger_data: dict[str, dict[str, int]] = {}
         for r in self._records:
             k = r.validation_trigger.value
-            trigger_data.setdefault(
-                k, {"total": 0, "compliant": 0}
-            )
+            trigger_data.setdefault(k, {"total": 0, "compliant": 0})
             trigger_data[k]["total"] += 1
             if r.compliance_level == ComplianceLevel.FULL:
                 trigger_data[k]["compliant"] += 1
         results: list[dict[str, Any]] = []
         for trigger, data in trigger_data.items():
-            rate = (
-                round(data["compliant"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            rate = round(data["compliant"] / data["total"] * 100, 2) if data["total"] else 0.0
             results.append(
                 {
                     "validation_trigger": trigger,

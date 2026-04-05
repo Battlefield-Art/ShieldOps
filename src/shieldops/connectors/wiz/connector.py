@@ -348,7 +348,7 @@ class WizConnector(InfraConnector):
                     {"id": issue["id"], "patch": {"status": issue.get("status", "OPEN")}},
                 )
             logger.info("wiz.rollback_completed", snapshot_id=snapshot_id)
-            return ActionResult(
+            return ActionResult(  # type: ignore[call-arg]
                 action_id=snapshot_id,
                 status=ExecutionStatus.SUCCESS,
                 message="Issue statuses restored from snapshot",

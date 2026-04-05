@@ -32,7 +32,7 @@ class FieldEncryptor:
     def encrypt(self, plaintext: str) -> str:
         """Encrypt a plaintext string, returning base64-encoded ciphertext."""
         token = self._fernet.encrypt(plaintext.encode("utf-8"))
-        return token.decode("utf-8")
+        return token.decode("utf-8")  # type: ignore[no-any-return]
 
     def decrypt(self, ciphertext: str) -> str:
         """Decrypt a base64-encoded ciphertext back to plaintext.
@@ -41,7 +41,7 @@ class FieldEncryptor:
             InvalidToken: If the ciphertext is invalid or the key is wrong.
         """
         plaintext = self._fernet.decrypt(ciphertext.encode("utf-8"))
-        return plaintext.decode("utf-8")
+        return plaintext.decode("utf-8")  # type: ignore[no-any-return]
 
     def encrypt_dict(self, data: dict[str, Any], fields: list[str]) -> dict[str, Any]:
         """Return a copy of *data* with the specified *fields* encrypted.
@@ -71,4 +71,4 @@ class FieldEncryptor:
     @staticmethod
     def generate_key() -> str:
         """Generate a new Fernet encryption key (URL-safe base64)."""
-        return Fernet.generate_key().decode("utf-8")
+        return Fernet.generate_key().decode("utf-8")  # type: ignore[no-any-return]

@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import pytest
-
 from shieldops.connectors.datadog.connector import DatadogConnector
+from shieldops.connectors.jira.connector import JiraConnector
 from shieldops.connectors.newrelic.connector import NewRelicConnector
+from shieldops.connectors.opsgenie.connector import OpsGenieConnector
 from shieldops.connectors.pagerduty.connector import PagerDutyConnector
 from shieldops.connectors.servicenow.connector import ServiceNowConnector
-from shieldops.connectors.jira.connector import JiraConnector
-from shieldops.connectors.opsgenie.connector import OpsGenieConnector
-
 
 # 7 ABC methods from InfraConnector
 INFRA_METHODS = [

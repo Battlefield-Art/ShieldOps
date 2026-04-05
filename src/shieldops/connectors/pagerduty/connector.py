@@ -369,7 +369,7 @@ class PagerDutyConnector(InfraConnector):
                 message="Service and escalation policy restored from snapshot",
                 started_at=started,
                 completed_at=datetime.now(UTC),
-                snapshot_id=snapshot_id,
+                id=snapshot_id,
             )
         except Exception as e:
             logger.error("pagerduty.rollback_failed", snapshot_id=snapshot_id, error=str(e))

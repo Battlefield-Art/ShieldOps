@@ -142,7 +142,8 @@ class ErrorBudgetTrackerEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> ErrorBudgetTrackerAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -151,9 +152,7 @@ class ErrorBudgetTrackerEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        svc_recs = [
-            r for r in self._records if r.service_id == rec.service_id
-        ]
+        svc_recs = [r for r in self._records if r.service_id == rec.service_id]
         # Project exhaustion
         projected_days = 0
         if rec.burn_rate_multiplier > 0 and rec.budget_remaining_pct > 0:
@@ -168,8 +167,7 @@ class ErrorBudgetTrackerEngine:
             projected_exhaustion_days=projected_days,
             data_points=len(svc_recs),
             description=(
-                f"Error budget {rec.budget_remaining_pct}% remaining"
-                f" for {rec.service_id}"
+                f"Error budget {rec.budget_remaining_pct}% remaining for {rec.service_id}"
             ),
         )
         self._analyses[key] = analysis
@@ -181,42 +179,24 @@ class ErrorBudgetTrackerEngine:
         by_a: dict[str, int] = {}
         remaining: list[float] = []
         for r in self._records:
-            by_s[r.budget_state.value] = (
-                by_s.get(r.budget_state.value, 0) + 1
-            )
-            by_br[r.burn_rate_category.value] = (
-                by_br.get(r.burn_rate_category.value, 0) + 1
-            )
-            by_a[r.budget_action.value] = (
-                by_a.get(r.budget_action.value, 0) + 1
-            )
+            by_s[r.budget_state.value] = by_s.get(r.budget_state.value, 0) + 1
+            by_br[r.burn_rate_category.value] = by_br.get(r.burn_rate_category.value, 0) + 1
+            by_a[r.budget_action.value] = by_a.get(r.budget_action.value, 0) + 1
             remaining.append(r.budget_remaining_pct)
-        avg_rem = (
-            round(sum(remaining) / len(remaining), 2) if remaining else 0.0
-        )
+        avg_rem = round(sum(remaining) / len(remaining), 2) if remaining else 0.0
         exhausted = list(
             {
                 r.service_id
                 for r in self._records
-                if r.budget_state
-                in (BudgetState.EXHAUSTED, BudgetState.EXCEEDED)
+                if r.budget_state in (BudgetState.EXHAUSTED, BudgetState.EXCEEDED)
             }
         )[:10]
         recs: list[str] = []
         if exhausted:
-            recs.append(
-                f"{len(exhausted)} services with exhausted error budget"
-            )
-        critical = sum(
-            1
-            for r in self._records
-            if r.budget_remaining_pct < self._budget_threshold
-        )
+            recs.append(f"{len(exhausted)} services with exhausted error budget")
+        critical = sum(1 for r in self._records if r.budget_remaining_pct < self._budget_threshold)
         if critical:
-            recs.append(
-                f"{critical} records below {self._budget_threshold}%"
-                " budget remaining"
-            )
+            recs.append(f"{critical} records below {self._budget_threshold}% budget remaining")
         if not recs:
             recs.append("Error budgets healthy across all services")
         return ErrorBudgetTrackerReport(
@@ -254,9 +234,7 @@ class ErrorBudgetTrackerEngine:
         """Rank services by error budget risk (lowest remaining first)."""
         svc_budgets: dict[str, list[float]] = {}
         for r in self._records:
-            svc_budgets.setdefault(r.service_id, []).append(
-                r.budget_remaining_pct
-            )
+            svc_budgets.setdefault(r.service_id, []).append(r.budget_remaining_pct)
         results: list[dict[str, Any]] = []
         for sid, pcts in svc_budgets.items():
             latest = pcts[-1]
@@ -276,9 +254,7 @@ class ErrorBudgetTrackerEngine:
         """Compute burn rate trends per service."""
         svc_rates: dict[str, list[float]] = {}
         for r in self._records:
-            svc_rates.setdefault(r.service_id, []).append(
-                r.burn_rate_multiplier
-            )
+            svc_rates.setdefault(r.service_id, []).append(r.burn_rate_multiplier)
         results: list[dict[str, Any]] = []
         for sid, rates in svc_rates.items():
             if len(rates) < 2:
@@ -287,11 +263,7 @@ class ErrorBudgetTrackerEngine:
             first = sum(rates[:mid]) / mid
             second = sum(rates[mid:]) / len(rates[mid:])
             delta = round(second - first, 2)
-            trend = (
-                "stable"
-                if abs(delta) < 0.5
-                else ("increasing" if delta > 0 else "decreasing")
-            )
+            trend = "stable" if abs(delta) < 0.5 else ("increasing" if delta > 0 else "decreasing")
             results.append(
                 {
                     "service_id": sid,
@@ -307,9 +279,7 @@ class ErrorBudgetTrackerEngine:
         """Recommend actions based on current budget state."""
         results: list[dict[str, Any]] = []
         seen: set[str] = set()
-        for r in sorted(
-            self._records, key=lambda x: x.budget_remaining_pct
-        ):
+        for r in sorted(self._records, key=lambda x: x.budget_remaining_pct):
             if r.service_id in seen:
                 continue
             seen.add(r.service_id)

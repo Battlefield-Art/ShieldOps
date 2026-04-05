@@ -139,7 +139,8 @@ class FaultInjectionSafetyEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> FaultInjectionSafetyAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -148,32 +149,17 @@ class FaultInjectionSafetyEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        exp_recs = [
-            r
-            for r in self._records
-            if r.experiment_id == rec.experiment_id
-        ]
-        all_passed = all(
-            r.gate_outcome == GateOutcome.PASSED for r in exp_recs
-        )
-        passed = sum(
-            1
-            for r in exp_recs
-            if r.gate_outcome == GateOutcome.PASSED
-        )
-        score = (
-            round(passed / len(exp_recs) * 100, 2) if exp_recs else 0.0
-        )
+        exp_recs = [r for r in self._records if r.experiment_id == rec.experiment_id]
+        all_passed = all(r.gate_outcome == GateOutcome.PASSED for r in exp_recs)
+        passed = sum(1 for r in exp_recs if r.gate_outcome == GateOutcome.PASSED)
+        score = round(passed / len(exp_recs) * 100, 2) if exp_recs else 0.0
         analysis = FaultInjectionSafetyAnalysis(
             experiment_id=rec.experiment_id,
             analysis_score=score,
             safety_gate=rec.safety_gate,
             all_gates_passed=all_passed,
             data_points=len(exp_recs),
-            description=(
-                f"Safety score {score}% for experiment"
-                f" {rec.experiment_id}"
-            ),
+            description=(f"Safety score {score}% for experiment {rec.experiment_id}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -185,16 +171,10 @@ class FaultInjectionSafetyEngine:
         passed = 0
         rollback_count = 0
         for r in self._records:
-            by_g[r.safety_gate.value] = (
-                by_g.get(r.safety_gate.value, 0) + 1
-            )
-            by_o[r.gate_outcome.value] = (
-                by_o.get(r.gate_outcome.value, 0) + 1
-            )
+            by_g[r.safety_gate.value] = by_g.get(r.safety_gate.value, 0) + 1
+            by_o[r.gate_outcome.value] = by_o.get(r.gate_outcome.value, 0) + 1
             if r.rollback_reason is not None:
-                by_rr[r.rollback_reason.value] = (
-                    by_rr.get(r.rollback_reason.value, 0) + 1
-                )
+                by_rr[r.rollback_reason.value] = by_rr.get(r.rollback_reason.value, 0) + 1
             if r.gate_outcome == GateOutcome.PASSED:
                 passed += 1
             if r.rollback_triggered:
@@ -203,23 +183,14 @@ class FaultInjectionSafetyEngine:
         pass_rate = round(passed / total * 100, 2) if total else 0.0
         recs: list[str] = []
         if pass_rate < self._safety_threshold:
-            recs.append(
-                f"Safety pass rate {pass_rate}% below threshold"
-                f" {self._safety_threshold}%"
-            )
+            recs.append(f"Safety pass rate {pass_rate}% below threshold {self._safety_threshold}%")
         bypassed = by_o.get(GateOutcome.BYPASSED.value, 0)
         if bypassed:
-            recs.append(
-                f"{bypassed} safety gates bypassed — review process"
-            )
+            recs.append(f"{bypassed} safety gates bypassed — review process")
         if rollback_count:
-            recs.append(
-                f"{rollback_count} rollbacks triggered — analyze root causes"
-            )
+            recs.append(f"{rollback_count} rollbacks triggered — analyze root causes")
         if not recs:
-            recs.append(
-                "Fault injection safety healthy — all gates passing"
-            )
+            recs.append("Fault injection safety healthy — all gates passing")
         return FaultInjectionSafetyReport(
             total_records=total,
             total_analyses=len(self._analyses),
@@ -267,9 +238,7 @@ class FaultInjectionSafetyEngine:
             p = gate_pass.get(gate, 0)
             f = gate_fail.get(gate, 0)
             total = p + f
-            fail_rate = (
-                round(f / total * 100, 2) if total > 0 else 0.0
-            )
+            fail_rate = round(f / total * 100, 2) if total > 0 else 0.0
             results.append(
                 {
                     "safety_gate": gate,
@@ -285,19 +254,14 @@ class FaultInjectionSafetyEngine:
         """Detect experiments that exceeded blast radius limits."""
         results: list[dict[str, Any]] = []
         for r in self._records:
-            if (
-                r.blast_radius_limit > 0
-                and r.blast_radius_actual > r.blast_radius_limit
-            ):
+            if r.blast_radius_limit > 0 and r.blast_radius_actual > r.blast_radius_limit:
                 results.append(
                     {
                         "experiment_id": r.experiment_id,
                         "service_id": r.service_id,
                         "actual": r.blast_radius_actual,
                         "limit": r.blast_radius_limit,
-                        "overshoot": (
-                            r.blast_radius_actual - r.blast_radius_limit
-                        ),
+                        "overshoot": (r.blast_radius_actual - r.blast_radius_limit),
                     }
                 )
         results.sort(key=lambda x: x["overshoot"], reverse=True)

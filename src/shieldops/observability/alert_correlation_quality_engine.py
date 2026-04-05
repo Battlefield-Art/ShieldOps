@@ -156,15 +156,9 @@ class AlertCorrelationQualityEngine:
     ) -> list[AlertCorrelationQualityRecord]:
         results = list(self._records)
         if correlation_method is not None:
-            results = [
-                r for r in results if r.correlation_method == correlation_method
-            ]
+            results = [r for r in results if r.correlation_method == correlation_method]
         if correlation_accuracy is not None:
-            results = [
-                r
-                for r in results
-                if r.correlation_accuracy == correlation_accuracy
-            ]
+            results = [r for r in results if r.correlation_accuracy == correlation_accuracy]
         if team is not None:
             results = [r for r in results if r.team == team]
         return results[-limit:]
@@ -243,16 +237,11 @@ class AlertCorrelationQualityEngine:
             good_noise = sum(
                 1
                 for r in records
-                if r.noise_reduction
-                in (NoiseReduction.EXCELLENT, NoiseReduction.GOOD)
+                if r.noise_reduction in (NoiseReduction.EXCELLENT, NoiseReduction.GOOD)
             )
             effectiveness = round(good_noise / total * 100, 1) if total else 0.0
             avg_correlated = (
-                round(
-                    sum(r.alerts_correlated for r in records) / total, 2
-                )
-                if total
-                else 0.0
+                round(sum(r.alerts_correlated for r in records) / total, 2) if total else 0.0
             )
             results.append(
                 {
@@ -269,9 +258,7 @@ class AlertCorrelationQualityEngine:
         """Recommend improvements based on correlation accuracy."""
         recommendations: list[dict[str, Any]] = []
         false_pos = [
-            r
-            for r in self._records
-            if r.correlation_accuracy == CorrelationAccuracy.FALSE_POSITIVE
+            r for r in self._records if r.correlation_accuracy == CorrelationAccuracy.FALSE_POSITIVE
         ]
         for r in false_pos:
             recommendations.append(
@@ -289,9 +276,7 @@ class AlertCorrelationQualityEngine:
                 }
             )
         false_neg = [
-            r
-            for r in self._records
-            if r.correlation_accuracy == CorrelationAccuracy.FALSE_NEGATIVE
+            r for r in self._records if r.correlation_accuracy == CorrelationAccuracy.FALSE_NEGATIVE
         ]
         for r in false_neg:
             recommendations.append(
@@ -302,10 +287,7 @@ class AlertCorrelationQualityEngine:
                     "method": r.correlation_method.value,
                     "issue": "false_negative",
                     "priority": "critical",
-                    "suggestion": (
-                        f"Missed correlation for '{r.name}' "
-                        f"— add detection rule"
-                    ),
+                    "suggestion": (f"Missed correlation for '{r.name}' — add detection rule"),
                 }
             )
         poor_noise = [
@@ -322,16 +304,11 @@ class AlertCorrelationQualityEngine:
                     "method": r.correlation_method.value,
                     "issue": "poor_noise_reduction",
                     "priority": "medium",
-                    "suggestion": (
-                        f"Improve noise reduction for "
-                        f"{r.correlation_method.value}"
-                    ),
+                    "suggestion": (f"Improve noise reduction for {r.correlation_method.value}"),
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -380,9 +357,7 @@ class AlertCorrelationQualityEngine:
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         scores = [r.score for r in matched]
@@ -392,9 +367,7 @@ class AlertCorrelationQualityEngine:
             "status": "processed",
             "count": len(matched),
             "avg_score": avg,
-            "below_threshold": sum(
-                1 for s in scores if s < self._threshold
-            ),
+            "below_threshold": sum(1 for s in scores if s < self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -404,15 +377,9 @@ class AlertCorrelationQualityEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.correlation_method.value] = (
-                by_e1.get(r.correlation_method.value, 0) + 1
-            )
-            by_e2[r.correlation_accuracy.value] = (
-                by_e2.get(r.correlation_accuracy.value, 0) + 1
-            )
-            by_e3[r.noise_reduction.value] = (
-                by_e3.get(r.noise_reduction.value, 0) + 1
-            )
+            by_e1[r.correlation_method.value] = by_e1.get(r.correlation_method.value, 0) + 1
+            by_e2[r.correlation_accuracy.value] = by_e2.get(r.correlation_accuracy.value, 0) + 1
+            by_e3[r.noise_reduction.value] = by_e3.get(r.noise_reduction.value, 0) + 1
         gap_count = sum(1 for r in self._records if r.score < self._threshold)
         scores = [r.score for r in self._records]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
@@ -420,13 +387,9 @@ class AlertCorrelationQualityEngine:
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) below threshold ({self._threshold})"
-            )
+            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
         if self._records and avg_score < self._threshold:
-            recs.append(
-                f"Avg score {avg_score} below threshold ({self._threshold})"
-            )
+            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
         if not recs:
             recs.append("Alert Correlation Quality Engine is healthy")
         return AlertCorrelationQualityReport(

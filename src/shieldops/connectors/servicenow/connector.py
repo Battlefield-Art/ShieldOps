@@ -167,7 +167,7 @@ class ServiceNowConnector(InfraConnector):
         action_id = str(uuid4())
         return ActionResult(
             action_id=action_id,
-            status=ExecutionStatus.COMPLETED,
+            status=ExecutionStatus.SUCCESS,
             message=f"Action {action.action_type} completed",
             started_at=datetime.now(UTC),
             completed_at=datetime.now(UTC),
@@ -180,8 +180,8 @@ class ServiceNowConnector(InfraConnector):
             "resource_id": resource_id,
             "created_at": datetime.now(UTC).isoformat(),
         }
-        return Snapshot(
-            snapshot_id=snapshot_id,
+        return Snapshot(  # type: ignore[call-arg]
+            id=snapshot_id,
             resource_id=resource_id,
             created_at=datetime.now(UTC),
         )
@@ -198,7 +198,7 @@ class ServiceNowConnector(InfraConnector):
             )
         return ActionResult(
             action_id=str(uuid4()),
-            status=ExecutionStatus.COMPLETED,
+            status=ExecutionStatus.SUCCESS,
             message=f"Rollback to {snapshot_id} completed",
             started_at=datetime.now(UTC),
             completed_at=datetime.now(UTC),

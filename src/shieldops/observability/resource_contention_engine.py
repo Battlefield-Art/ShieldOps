@@ -159,15 +159,9 @@ class ResourceContentionEngine:
     ) -> list[ResourceContentionRecord]:
         results = list(self._records)
         if contention_type is not None:
-            results = [
-                r for r in results if r.contention_type == contention_type
-            ]
+            results = [r for r in results if r.contention_type == contention_type]
         if contention_severity is not None:
-            results = [
-                r
-                for r in results
-                if r.contention_severity == contention_severity
-            ]
+            results = [r for r in results if r.contention_severity == contention_severity]
         if team is not None:
             results = [r for r in results if r.team == team]
         return results[-limit:]
@@ -212,13 +206,10 @@ class ResourceContentionEngine:
             critical_count = sum(
                 1
                 for r in records
-                if r.contention_severity
-                in (ContentionSeverity.CRITICAL, ContentionSeverity.HIGH)
+                if r.contention_severity in (ContentionSeverity.CRITICAL, ContentionSeverity.HIGH)
             )
             if critical_count > 0:
-                avg_util = round(
-                    sum(r.utilization_pct for r in records) / len(records), 2
-                )
+                avg_util = round(sum(r.utilization_pct for r in records) / len(records), 2)
                 type_counts: dict[str, int] = {}
                 for r in records:
                     t = r.contention_type.value
@@ -232,15 +223,11 @@ class ResourceContentionEngine:
                         "avg_utilization_pct": avg_util,
                         "top_contention_type": top_type,
                         "severity": (
-                            "critical"
-                            if critical_count > len(records) / 2
-                            else "warning"
+                            "critical" if critical_count > len(records) / 2 else "warning"
                         ),
                     }
                 )
-        return sorted(
-            hotspots, key=lambda x: x["critical_events"], reverse=True
-        )
+        return sorted(hotspots, key=lambda x: x["critical_events"], reverse=True)
 
     def compute_contention_trends(self) -> list[dict[str, Any]]:
         """Compute contention trends per resource type."""
@@ -250,25 +237,11 @@ class ResourceContentionEngine:
         results: list[dict[str, Any]] = []
         for ctype, records in type_records.items():
             total = len(records)
-            avg_util = (
-                round(
-                    sum(r.utilization_pct for r in records) / total, 2
-                )
-                if total
-                else 0.0
-            )
+            avg_util = round(sum(r.utilization_pct for r in records) / total, 2) if total else 0.0
             avg_duration = (
-                round(
-                    sum(r.duration_seconds for r in records) / total, 2
-                )
-                if total
-                else 0.0
+                round(sum(r.duration_seconds for r in records) / total, 2) if total else 0.0
             )
-            above_threshold = sum(
-                1
-                for r in records
-                if r.utilization_pct > self._threshold
-            )
+            above_threshold = sum(1 for r in records if r.utilization_pct > self._threshold)
             results.append(
                 {
                     "contention_type": ctype,
@@ -278,17 +251,13 @@ class ResourceContentionEngine:
                     "above_threshold_count": above_threshold,
                 }
             )
-        return sorted(
-            results, key=lambda x: x["above_threshold_count"], reverse=True
-        )
+        return sorted(results, key=lambda x: x["above_threshold_count"], reverse=True)
 
     def recommend_resolution_actions(self) -> list[dict[str, Any]]:
         """Recommend resolution actions based on contention patterns."""
         recommendations: list[dict[str, Any]] = []
         critical = [
-            r
-            for r in self._records
-            if r.contention_severity == ContentionSeverity.CRITICAL
+            r for r in self._records if r.contention_severity == ContentionSeverity.CRITICAL
         ]
         for r in critical:
             recommendations.append(
@@ -309,8 +278,7 @@ class ResourceContentionEngine:
         high_util = [
             r
             for r in self._records
-            if r.utilization_pct > 90
-            and r.contention_severity != ContentionSeverity.CRITICAL
+            if r.utilization_pct > 90 and r.contention_severity != ContentionSeverity.CRITICAL
         ]
         for r in high_util:
             recommendations.append(
@@ -322,14 +290,11 @@ class ResourceContentionEngine:
                     "issue": "high_utilization",
                     "priority": "high",
                     "suggestion": (
-                        f"Scale {r.service} — "
-                        f"{r.contention_type.value} at {r.utilization_pct}%"
+                        f"Scale {r.service} — {r.contention_type.value} at {r.utilization_pct}%"
                     ),
                 }
             )
-        long_duration = [
-            r for r in self._records if r.duration_seconds > 300
-        ]
+        long_duration = [r for r in self._records if r.duration_seconds > 300]
         for r in long_duration:
             recommendations.append(
                 {
@@ -346,9 +311,7 @@ class ResourceContentionEngine:
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -379,9 +342,7 @@ class ResourceContentionEngine:
                         "team": r.team,
                     }
                 )
-        return sorted(
-            results, key=lambda x: x["utilization_pct"], reverse=True
-        )
+        return sorted(results, key=lambda x: x["utilization_pct"], reverse=True)
 
     def rank_by_score(self) -> list[dict[str, Any]]:
         svc_scores: dict[str, list[float]] = {}
@@ -392,18 +353,14 @@ class ResourceContentionEngine:
             results.append(
                 {
                     "service": svc,
-                    "avg_utilization_pct": round(
-                        sum(utils) / len(utils), 2
-                    ),
+                    "avg_utilization_pct": round(sum(utils) / len(utils), 2),
                 }
             )
         results.sort(key=lambda x: x["avg_utilization_pct"], reverse=True)
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         utils = [r.utilization_pct for r in matched]
@@ -413,9 +370,7 @@ class ResourceContentionEngine:
             "status": "processed",
             "count": len(matched),
             "avg_utilization_pct": avg,
-            "above_threshold": sum(
-                1 for u in utils if u > self._threshold
-            ),
+            "above_threshold": sum(1 for u in utils if u > self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -425,34 +380,19 @@ class ResourceContentionEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.contention_type.value] = (
-                by_e1.get(r.contention_type.value, 0) + 1
-            )
-            by_e2[r.contention_severity.value] = (
-                by_e2.get(r.contention_severity.value, 0) + 1
-            )
-            by_e3[r.resolution_action.value] = (
-                by_e3.get(r.resolution_action.value, 0) + 1
-            )
-        gap_count = sum(
-            1
-            for r in self._records
-            if r.utilization_pct > self._threshold
-        )
+            by_e1[r.contention_type.value] = by_e1.get(r.contention_type.value, 0) + 1
+            by_e2[r.contention_severity.value] = by_e2.get(r.contention_severity.value, 0) + 1
+            by_e3[r.resolution_action.value] = by_e3.get(r.resolution_action.value, 0) + 1
+        gap_count = sum(1 for r in self._records if r.utilization_pct > self._threshold)
         utils = [r.utilization_pct for r in self._records]
         avg_util = round(sum(utils) / len(utils), 2) if utils else 0.0
         gap_list = self.identify_gaps()
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) above threshold ({self._threshold}%)"
-            )
+            recs.append(f"{gap_count} item(s) above threshold ({self._threshold}%)")
         if self._records and avg_util > self._threshold:
-            recs.append(
-                f"Avg utilization {avg_util}% above threshold "
-                f"({self._threshold}%)"
-            )
+            recs.append(f"Avg utilization {avg_util}% above threshold ({self._threshold}%)")
         if not recs:
             recs.append("Resource Contention Engine is healthy")
         return ResourceContentionReport(

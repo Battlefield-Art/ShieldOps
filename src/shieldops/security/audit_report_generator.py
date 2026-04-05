@@ -111,7 +111,7 @@ class AuditReportGenerator:
         for source_key in ("firewall_data", "interceptor_data", "baseline_data"):
             source = data.get(source_key, {})
             if isinstance(source, dict):
-                for item in source.get("tool_calls", source.get("records", [])):
+                for item in source.get("tool_calls", source.get("records", [])):  # type: ignore[union-attr]
                     if isinstance(item, dict):
                         calls.append(item)
             elif isinstance(source, list):
@@ -133,7 +133,7 @@ class AuditReportGenerator:
         violations: list[dict[str, Any]] = []
         for source in data.values():
             if isinstance(source, dict):
-                for item in source.get("policy_violations", source.get("violations", [])):
+                for item in source.get("policy_violations", source.get("violations", [])):  # type: ignore[union-attr]
                     if isinstance(item, dict):
                         violations.append(item)
         return violations

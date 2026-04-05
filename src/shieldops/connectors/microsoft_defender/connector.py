@@ -313,7 +313,7 @@ class MicrosoftDefenderConnector(InfraConnector):
                 message="Machine state restored from snapshot",
                 started_at=started,
                 completed_at=datetime.now(UTC),
-                snapshot_id=snapshot_id,
+                id=snapshot_id,
             )
         except Exception as e:
             logger.error("defender.rollback_failed", snapshot_id=snapshot_id, error=str(e))

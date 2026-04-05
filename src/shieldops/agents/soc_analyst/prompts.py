@@ -21,6 +21,20 @@ class AttackNarrativeOutput(BaseModel):
     severity: str = Field(description="Overall severity: critical/high/medium/low")
 
 
+class ClassificationOutput(BaseModel):
+    """Structured output for true/false positive classification."""
+
+    classification: str = Field(
+        description="Classification: true_positive, false_positive, or needs_investigation"
+    )
+    confidence: float = Field(description="Confidence score 0-1")
+    reasoning: str = Field(description="Reasoning behind the classification")
+    key_signals: list[str] = Field(
+        default_factory=list,
+        description="Key signals that drove the classification decision",
+    )
+
+
 class ContainmentOutput(BaseModel):
     """Structured output for containment recommendations."""
 
@@ -51,6 +65,19 @@ Given the correlated events, threat intelligence, and MITRE ATT&CK mappings:
 3. Assess overall severity and confidence
 
 Focus on timeline, attacker intent, and impact."""
+
+
+SYSTEM_CLASSIFICATION = """\
+You are an expert SOC analyst classifying an enriched alert as true positive, false positive, \
+or needs_investigation.
+
+Given the enriched alert data including threat intelligence, correlated events, and IOC matches:
+1. Classify as true_positive, false_positive, or needs_investigation
+2. Provide a confidence score (0-1)
+3. List the key signals that drove your decision
+
+Consider: IOC match count, threat feed hits, reputation scores, correlated event count, \
+asset criticality, historical false positive rate for this alert type."""
 
 
 SYSTEM_CONTAINMENT = """\

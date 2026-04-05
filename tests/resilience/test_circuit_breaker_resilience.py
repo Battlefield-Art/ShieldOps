@@ -2,24 +2,21 @@
 
 from __future__ import annotations
 
-import pytest
-
+from shieldops.security.agent_behavioral_firewall import (
+    AgentBehavioralFirewall,
+    FirewallAction,
+)
 from shieldops.security.agent_kill_switch import (
     AgentKillSwitch,
     CircuitBreakerConfig,
     CircuitState,
     TripReason,
 )
-from shieldops.security.agent_behavioral_firewall import (
-    AgentBehavioralFirewall,
-    FirewallAction,
-)
 from shieldops.security.firewall_kill_switch_bridge import (
     EscalationConfig,
     EscalationLevel,
     FirewallKillSwitchBridge,
 )
-
 
 # ---------------------------------------------------------------------------
 # Circuit breaker core
@@ -97,7 +94,7 @@ class TestCircuitBreakerResilience:
     def test_bridge_escalation(self) -> None:
         """Send increasing risk through the bridge and verify escalation climbs."""
         firewall = AgentBehavioralFirewall()
-        kill_switch = AgentKillSwitch()
+        _kill_switch = AgentKillSwitch()  # noqa: F841
         bridge = FirewallKillSwitchBridge(
             config=EscalationConfig(
                 monitor_threshold=0.2,

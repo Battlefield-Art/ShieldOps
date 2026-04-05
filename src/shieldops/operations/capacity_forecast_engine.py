@@ -147,11 +147,7 @@ class CapacityForecastEngine:
         if rec is None:
             return {"status": "not_found", "key": key}
         points = sum(1 for r in self._records if r.service_id == rec.service_id)
-        devs = [
-            r.deviation_pct
-            for r in self._records
-            if r.service_id == rec.service_id
-        ]
+        devs = [r.deviation_pct for r in self._records if r.service_id == rec.service_id]
         mean_dev = round(sum(devs) / len(devs), 2) if devs else 0.0
         score = round(max(0.0, 100.0 - mean_dev), 2)
         analysis = CapacityForecastAnalysis(
@@ -171,25 +167,16 @@ class CapacityForecastEngine:
         by_a: dict[str, int] = {}
         devs: list[float] = []
         for r in self._records:
-            by_m[r.forecast_method.value] = (
-                by_m.get(r.forecast_method.value, 0) + 1
-            )
-            by_r[r.resource_category.value] = (
-                by_r.get(r.resource_category.value, 0) + 1
-            )
-            by_a[r.forecast_accuracy.value] = (
-                by_a.get(r.forecast_accuracy.value, 0) + 1
-            )
+            by_m[r.forecast_method.value] = by_m.get(r.forecast_method.value, 0) + 1
+            by_r[r.resource_category.value] = by_r.get(r.resource_category.value, 0) + 1
+            by_a[r.forecast_accuracy.value] = by_a.get(r.forecast_accuracy.value, 0) + 1
             devs.append(r.deviation_pct)
-        avg_acc = round(
-            100.0 - (sum(devs) / len(devs)) if devs else 0.0, 2
-        )
+        avg_acc = round(100.0 - (sum(devs) / len(devs)) if devs else 0.0, 2)
         low = list(
             {
                 r.service_id
                 for r in self._records
-                if r.forecast_accuracy
-                in (ForecastAccuracy.MISSED, ForecastAccuracy.UNDERESTIMATED)
+                if r.forecast_accuracy in (ForecastAccuracy.MISSED, ForecastAccuracy.UNDERESTIMATED)
             }
         )[:10]
         recs: list[str] = []
@@ -201,9 +188,7 @@ class CapacityForecastEngine:
         if low:
             recs.append(f"{len(low)} services with low forecast accuracy")
         if not recs:
-            recs.append(
-                "Capacity forecasting accuracy within acceptable range"
-            )
+            recs.append("Capacity forecasting accuracy within acceptable range")
         return CapacityForecastReport(
             total_records=len(self._records),
             total_analyses=len(self._analyses),
@@ -239,9 +224,7 @@ class CapacityForecastEngine:
         """Rank forecast methods by average accuracy."""
         method_devs: dict[str, list[float]] = {}
         for r in self._records:
-            method_devs.setdefault(r.forecast_method.value, []).append(
-                r.deviation_pct
-            )
+            method_devs.setdefault(r.forecast_method.value, []).append(r.deviation_pct)
         results: list[dict[str, Any]] = []
         for method, devs in method_devs.items():
             avg_dev = round(sum(devs) / len(devs), 2)
@@ -267,9 +250,7 @@ class CapacityForecastEngine:
                 continue
             mid = len(recs) // 2
             first_avg = sum(r.deviation_pct for r in recs[:mid]) / mid
-            second_avg = (
-                sum(r.deviation_pct for r in recs[mid:]) / len(recs[mid:])
-            )
+            second_avg = sum(r.deviation_pct for r in recs[mid:]) / len(recs[mid:])
             delta = round(second_avg - first_avg, 2)
             if delta > 5.0:
                 results.append(

@@ -139,7 +139,8 @@ class LogPatternTrackerEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> LogPatternTrackerAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -148,9 +149,7 @@ class LogPatternTrackerEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        pat_recs = [
-            r for r in self._records if r.pattern_id == rec.pattern_id
-        ]
+        pat_recs = [r for r in self._records if r.pattern_id == rec.pattern_id]
         freqs = [r.frequency_per_hour for r in pat_recs]
         if len(freqs) >= 2:
             mid = len(freqs) // 2
@@ -158,9 +157,7 @@ class LogPatternTrackerEngine:
             second = sum(freqs[mid:]) / len(freqs[mid:])
             delta = second - first
             direction = (
-                "stable"
-                if abs(delta) < 5.0
-                else ("increasing" if delta > 0 else "decreasing")
+                "stable" if abs(delta) < 5.0 else ("increasing" if delta > 0 else "decreasing")
             )
         else:
             direction = "insufficient_data"
@@ -171,9 +168,7 @@ class LogPatternTrackerEngine:
             pattern_status=rec.pattern_status,
             trend_direction=direction,
             data_points=len(pat_recs),
-            description=(
-                f"Pattern {rec.pattern_id} trend: {direction}"
-            ),
+            description=(f"Pattern {rec.pattern_id} trend: {direction}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -184,15 +179,9 @@ class LogPatternTrackerEngine:
         by_e: dict[str, int] = {}
         freqs: list[float] = []
         for r in self._records:
-            by_s[r.pattern_status.value] = (
-                by_s.get(r.pattern_status.value, 0) + 1
-            )
-            by_c[r.pattern_category.value] = (
-                by_c.get(r.pattern_category.value, 0) + 1
-            )
-            by_e[r.evolution_type.value] = (
-                by_e.get(r.evolution_type.value, 0) + 1
-            )
+            by_s[r.pattern_status.value] = by_s.get(r.pattern_status.value, 0) + 1
+            by_c[r.pattern_category.value] = by_c.get(r.pattern_category.value, 0) + 1
+            by_e[r.evolution_type.value] = by_e.get(r.evolution_type.value, 0) + 1
             freqs.append(r.frequency_per_hour)
         avg_freq = round(sum(freqs) / len(freqs), 2) if freqs else 0.0
         high_freq = list(
@@ -300,11 +289,7 @@ class LogPatternTrackerEngine:
                 svc_data[r.service_id]["evolved"] += 1
         results: list[dict[str, Any]] = []
         for sid, data in svc_data.items():
-            rate = (
-                round(data["evolved"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            rate = round(data["evolved"] / data["total"] * 100, 2) if data["total"] else 0.0
             results.append(
                 {
                     "service_id": sid,

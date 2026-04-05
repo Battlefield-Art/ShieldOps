@@ -146,9 +146,7 @@ class DRTestTrackerEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        points = sum(
-            1 for r in self._records if r.service_id == rec.service_id
-        )
+        points = sum(1 for r in self._records if r.service_id == rec.service_id)
         compliant = rec.rto_compliance == RTOCompliance.WITHIN_TARGET
         score = 100.0 if compliant else 0.0
         if rec.rto_target_seconds > 0 and rec.rto_actual_seconds > 0:
@@ -174,36 +172,21 @@ class DRTestTrackerEngine:
         by_rto: dict[str, int] = {}
         compliant_count = 0
         for r in self._records:
-            by_tt[r.test_type.value] = (
-                by_tt.get(r.test_type.value, 0) + 1
-            )
-            by_o[r.test_outcome.value] = (
-                by_o.get(r.test_outcome.value, 0) + 1
-            )
-            by_rto[r.rto_compliance.value] = (
-                by_rto.get(r.rto_compliance.value, 0) + 1
-            )
+            by_tt[r.test_type.value] = by_tt.get(r.test_type.value, 0) + 1
+            by_o[r.test_outcome.value] = by_o.get(r.test_outcome.value, 0) + 1
+            by_rto[r.rto_compliance.value] = by_rto.get(r.rto_compliance.value, 0) + 1
             if r.rto_compliance == RTOCompliance.WITHIN_TARGET:
                 compliant_count += 1
         total = len(self._records)
         rate = round(compliant_count / total * 100, 2) if total else 0.0
         non_compliant = list(
-            {
-                r.service_id
-                for r in self._records
-                if r.rto_compliance != RTOCompliance.WITHIN_TARGET
-            }
+            {r.service_id for r in self._records if r.rto_compliance != RTOCompliance.WITHIN_TARGET}
         )[:10]
         recs: list[str] = []
         if rate < self._compliance_threshold:
-            recs.append(
-                f"RTO compliance {rate}% below threshold"
-                f" {self._compliance_threshold}%"
-            )
+            recs.append(f"RTO compliance {rate}% below threshold {self._compliance_threshold}%")
         failed = sum(
-            1
-            for r in self._records
-            if r.test_outcome in (TestOutcome.FAILED, TestOutcome.ABORTED)
+            1 for r in self._records if r.test_outcome in (TestOutcome.FAILED, TestOutcome.ABORTED)
         )
         if failed:
             recs.append(f"{failed} DR tests failed or aborted — review")
@@ -272,11 +255,7 @@ class DRTestTrackerEngine:
                 type_results[k]["fail"] += 1
         results: list[dict[str, Any]] = []
         for ttype, data in type_results.items():
-            rate = (
-                round(data["success"] / data["total"] * 100, 2)
-                if data["total"]
-                else 0.0
-            )
+            rate = round(data["success"] / data["total"] * 100, 2) if data["total"] else 0.0
             results.append(
                 {
                     "test_type": ttype,
@@ -290,7 +269,8 @@ class DRTestTrackerEngine:
         return results
 
     def identify_untested_services(
-        self, known_services: list[str] | None = None,
+        self,
+        known_services: list[str] | None = None,
     ) -> list[str]:
         """Identify services that have not been DR-tested."""
         tested = {r.service_id for r in self._records}

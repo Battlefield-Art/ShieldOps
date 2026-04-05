@@ -4,21 +4,18 @@ from __future__ import annotations
 
 import asyncio
 
-import pytest
-
 from shieldops.cache.firewall_cache import FirewallDecisionCache
-from shieldops.security.agent_tool_call_interceptor import (
-    AgentToolCallInterceptor,
-    CallDecision,
-    InterceptionPolicy,
-)
 from shieldops.security.agent_behavioral_firewall import (
     AgentBehavioralFirewall,
     FirewallAction,
 )
+from shieldops.security.agent_tool_call_interceptor import (
+    AgentToolCallInterceptor,
+    CallDecision,
+)
 
 
-def _run(coro):
+def _run(coro):  # type: ignore[no-untyped-call]
     """Helper to run an async coroutine synchronously."""
     return asyncio.get_event_loop().run_until_complete(coro)
 
@@ -34,19 +31,19 @@ class TestCacheDegradation:
     def test_cache_works_without_redis(self) -> None:
         cache = FirewallDecisionCache(redis_client=None)
         decision = {"action": "allow", "risk": 0.1}
-        _run(cache.set_decision("agent-1", "tool-a", "abc123", decision))
-        result = _run(cache.get_decision("agent-1", "tool-a", "abc123"))
+        _run(cache.set_decision("agent-1", "tool-a", "abc123", decision))  # type: ignore[no-untyped-call]
+        result = _run(cache.get_decision("agent-1", "tool-a", "abc123"))  # type: ignore[no-untyped-call]
         assert result == decision
 
     def test_cache_stats_track_correctly(self) -> None:
         cache = FirewallDecisionCache(redis_client=None)
         decision = {"action": "block", "risk": 0.9}
-        _run(cache.set_decision("agent-2", "tool-b", "xyz", decision))
+        _run(cache.set_decision("agent-2", "tool-b", "xyz", decision))  # type: ignore[no-untyped-call]
 
         # Hit
-        _run(cache.get_decision("agent-2", "tool-b", "xyz"))
+        _run(cache.get_decision("agent-2", "tool-b", "xyz"))  # type: ignore[no-untyped-call]
         # Miss
-        _run(cache.get_decision("agent-2", "tool-b", "missing"))
+        _run(cache.get_decision("agent-2", "tool-b", "missing"))  # type: ignore[no-untyped-call]
 
         stats = cache.get_stats()
         assert stats["hits"] >= 1
@@ -55,17 +52,17 @@ class TestCacheDegradation:
     def test_cache_invalidate_agent(self) -> None:
         cache = FirewallDecisionCache(redis_client=None)
         decision = {"action": "allow"}
-        _run(cache.set_decision("agent-3", "tool-c", "h1", decision))
+        _run(cache.set_decision("agent-3", "tool-c", "h1", decision))  # type: ignore[no-untyped-call]
 
         # Confirm it is cached
-        assert _run(cache.get_decision("agent-3", "tool-c", "h1")) is not None
+        assert _run(cache.get_decision("agent-3", "tool-c", "h1")) is not None  # type: ignore[no-untyped-call]
 
         # Invalidate
-        deleted = _run(cache.invalidate_agent("agent-3"))
+        deleted = _run(cache.invalidate_agent("agent-3"))  # type: ignore[no-untyped-call]
         assert deleted >= 1
 
         # After invalidation, should be a miss
-        result = _run(cache.get_decision("agent-3", "tool-c", "h1"))
+        result = _run(cache.get_decision("agent-3", "tool-c", "h1"))  # type: ignore[no-untyped-call]
         assert result is None
 
 

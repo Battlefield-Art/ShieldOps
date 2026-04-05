@@ -298,17 +298,17 @@ def engine(
     _max = max_records
     _enums = enum_classes
     _first_ef = first_enum_field
-    _record_cls = record_model
-    _analysis_cls = analysis_model
-    _report_cls = report_model
+    _Record = record_model
+    _Analysis = analysis_model
+    _Report = report_model
 
     class _Engine:
         __doc__ = description or f"{name} engine."
 
         # Expose models and enums as class attributes
-        Record = _record_cls
-        Analysis = _analysis_cls
-        Report = _report_cls
+        Record = _Record
+        Analysis = _Analysis
+        Report = _Report
 
         def __init__(
             self,
@@ -329,7 +329,7 @@ def engine(
         # -- ingest ---------------------------------------------------------
 
         def _ingest(self, **kwargs: Any) -> Any:
-            record = _record_cls(**kwargs)
+            record = _Record(**kwargs)
             self._records.append(record)
             log_kw: dict[str, Any] = {"record_id": getattr(record, "id", "")}
             log_kw[_key] = getattr(record, _key, "")
@@ -359,7 +359,7 @@ def engine(
         # -- analysis -------------------------------------------------------
 
         def add_analysis(self, **kwargs: Any) -> Any:
-            analysis = _analysis_cls(**kwargs)
+            analysis = _Analysis(**kwargs)
             self._analyses.append(analysis)
             log_kw: dict[str, Any] = {_key: getattr(analysis, _key, "")}
             log_kw["analysis_score"] = getattr(analysis, "analysis_score", 0.0)
@@ -511,7 +511,7 @@ def engine(
             for fname, dist in by_enum.items():
                 report_kw[f"by_{fname}"] = dist
 
-            return _report_cls(**report_kw)
+            return _Report(**report_kw)
 
         def get_stats(self) -> dict[str, Any]:
             first_dist: dict[str, int] = {}

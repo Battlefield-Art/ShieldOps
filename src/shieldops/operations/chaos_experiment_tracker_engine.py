@@ -139,7 +139,8 @@ class ChaosExperimentTrackerEngine:
         return record
 
     def process(
-        self, key: str,
+        self,
+        key: str,
     ) -> ChaosExperimentTrackerAnalysis | dict[str, Any]:
         rec = None
         for r in self._records:
@@ -148,9 +149,7 @@ class ChaosExperimentTrackerEngine:
                 break
         if rec is None:
             return {"status": "not_found", "key": key}
-        svc_recs = [
-            r for r in self._records if r.service_id == rec.service_id
-        ]
+        svc_recs = [r for r in self._records if r.service_id == rec.service_id]
         score_map = {
             ResilienceScore.EXCELLENT: 100,
             ResilienceScore.GOOD: 80,
@@ -173,9 +172,7 @@ class ChaosExperimentTrackerEngine:
             experiment_type=rec.experiment_type,
             resilience_improving=improving,
             data_points=len(svc_recs),
-            description=(
-                f"Resilience score {avg_score} for {rec.service_id}"
-            ),
+            description=(f"Resilience score {avg_score} for {rec.service_id}"),
         )
         self._analyses[key] = analysis
         return analysis
@@ -186,45 +183,29 @@ class ChaosExperimentTrackerEngine:
         by_r: dict[str, int] = {}
         recovery_times: list[float] = []
         for r in self._records:
-            by_t[r.experiment_type.value] = (
-                by_t.get(r.experiment_type.value, 0) + 1
-            )
-            by_o[r.hypothesis_outcome.value] = (
-                by_o.get(r.hypothesis_outcome.value, 0) + 1
-            )
-            by_r[r.resilience_score.value] = (
-                by_r.get(r.resilience_score.value, 0) + 1
-            )
+            by_t[r.experiment_type.value] = by_t.get(r.experiment_type.value, 0) + 1
+            by_o[r.hypothesis_outcome.value] = by_o.get(r.hypothesis_outcome.value, 0) + 1
+            by_r[r.resilience_score.value] = by_r.get(r.resilience_score.value, 0) + 1
             if r.recovery_time_seconds > 0:
                 recovery_times.append(r.recovery_time_seconds)
         avg_recovery = (
-            round(sum(recovery_times) / len(recovery_times), 2)
-            if recovery_times
-            else 0.0
+            round(sum(recovery_times) / len(recovery_times), 2) if recovery_times else 0.0
         )
         weak = list(
             {
                 r.service_id
                 for r in self._records
-                if r.resilience_score
-                in (ResilienceScore.POOR, ResilienceScore.FAILING)
+                if r.resilience_score in (ResilienceScore.POOR, ResilienceScore.FAILING)
             }
         )[:10]
         recs: list[str] = []
         disproved = by_o.get(HypothesisOutcome.DISPROVED.value, 0)
         if disproved:
-            recs.append(
-                f"{disproved} experiments disproved hypothesis"
-                " — investigate weaknesses"
-            )
+            recs.append(f"{disproved} experiments disproved hypothesis — investigate weaknesses")
         if weak:
-            recs.append(
-                f"{len(weak)} services with poor resilience scores"
-            )
+            recs.append(f"{len(weak)} services with poor resilience scores")
         if not recs:
-            recs.append(
-                "Chaos experiments healthy — resilience within targets"
-            )
+            recs.append("Chaos experiments healthy — resilience within targets")
         return ChaosExperimentTrackerReport(
             total_records=len(self._records),
             total_analyses=len(self._analyses),
@@ -267,9 +248,7 @@ class ChaosExperimentTrackerEngine:
         }
         svc_scores: dict[str, list[int]] = {}
         for r in self._records:
-            svc_scores.setdefault(r.service_id, []).append(
-                score_map.get(r.resilience_score, 50)
-            )
+            svc_scores.setdefault(r.service_id, []).append(score_map.get(r.resilience_score, 50))
         results: list[dict[str, Any]] = []
         for sid, scores in svc_scores.items():
             avg = round(sum(scores) / len(scores), 2)
@@ -288,9 +267,7 @@ class ChaosExperimentTrackerEngine:
         type_times: dict[str, list[float]] = {}
         for r in self._records:
             if r.recovery_time_seconds > 0:
-                type_times.setdefault(
-                    r.experiment_type.value, []
-                ).append(r.recovery_time_seconds)
+                type_times.setdefault(r.experiment_type.value, []).append(r.recovery_time_seconds)
         results: list[dict[str, Any]] = []
         for etype, times in type_times.items():
             avg = round(sum(times) / len(times), 2)

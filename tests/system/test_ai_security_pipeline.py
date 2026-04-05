@@ -8,28 +8,11 @@ notification -> approval request.
 from __future__ import annotations
 
 import pytest
-import time
 
-from shieldops.security.vendor_telemetry_normalizer import (
-    EventCategory,
-    VendorSource,
-    VendorTelemetryNormalizer,
-)
-from shieldops.security.cross_vendor_correlation import (
-    CrossVendorCorrelator,
-)
+from shieldops.cache.firewall_cache import FirewallDecisionCache
 from shieldops.security.agent_behavioral_firewall import (
     AgentBehavioralFirewall,
     FirewallAction,
-)
-from shieldops.security.agent_tool_call_interceptor import (
-    AgentToolCallInterceptor,
-    CallDecision,
-)
-from shieldops.security.firewall_kill_switch_bridge import (
-    EscalationConfig,
-    EscalationLevel,
-    FirewallKillSwitchBridge,
 )
 from shieldops.security.agent_kill_switch import (
     AgentKillSwitch,
@@ -38,25 +21,40 @@ from shieldops.security.agent_kill_switch import (
     TripReason,
 )
 from shieldops.security.agent_session_revoker import AgentSessionRevoker
-from shieldops.security.soc_situation_engine import (
-    SOCSituationEngine,
-    SituationSeverity,
-    SituationStatus,
+from shieldops.security.agent_tool_call_interceptor import (
+    AgentToolCallInterceptor,
+    CallDecision,
+)
+from shieldops.security.cross_vendor_correlation import (
+    CrossVendorCorrelator,
+)
+from shieldops.security.firewall_kill_switch_bridge import (
+    EscalationConfig,
+    EscalationLevel,
+    FirewallKillSwitchBridge,
 )
 from shieldops.security.response_approval_workflow import (
     ApprovalPolicy,
     ApprovalStatus,
     ResponseApprovalWorkflow,
 )
-from shieldops.cache.firewall_cache import FirewallDecisionCache
-
+from shieldops.security.soc_situation_engine import (
+    SituationSeverity,
+    SituationStatus,
+    SOCSituationEngine,
+)
+from shieldops.security.vendor_telemetry_normalizer import (
+    EventCategory,
+    VendorSource,
+    VendorTelemetryNormalizer,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def _crowdstrike_event(entity_id: str = "device-001") -> dict:
+def _crowdstrike_event(entity_id: str = "device-001") -> dict:  # type: ignore[type-arg]
     return {
         "behaviors": [{"tactic": "Credential Access", "technique": "T1003"}],
         "device": {"device_id": entity_id},
@@ -65,7 +63,7 @@ def _crowdstrike_event(entity_id: str = "device-001") -> dict:
     }
 
 
-def _defender_event(machine_id: str = "device-001") -> dict:
+def _defender_event(machine_id: str = "device-001") -> dict:  # type: ignore[type-arg]
     return {
         "title": "Suspicious PowerShell execution",
         "machineId": machine_id,
@@ -74,7 +72,7 @@ def _defender_event(machine_id: str = "device-001") -> dict:
     }
 
 
-def _wiz_event(resource_id: str = "device-001") -> dict:
+def _wiz_event(resource_id: str = "device-001") -> dict:  # type: ignore[type-arg]
     return {
         "title": "Publicly exposed S3 bucket with sensitive data",
         "entitySnapshot": {"id": resource_id},
@@ -218,7 +216,7 @@ class TestKillSwitchPipeline:
     """Anomaly detection triggers kill switch and recovery."""
 
     def test_bridge_trips_on_high_risk(self) -> None:
-        fw = AgentBehavioralFirewall()
+        _fw = AgentBehavioralFirewall()  # noqa: F841
         ks = AgentKillSwitch()
         ks.configure(
             "agent-ks", CircuitBreakerConfig(agent_id="agent-ks", auto_trip_threshold=0.85)
@@ -267,7 +265,7 @@ class TestKillSwitchPipeline:
 class TestSituationLifecycle:
     """Full SOC situation workflow: create -> triage -> investigate -> close."""
 
-    def _make_findings(self) -> list[dict]:
+    def _make_findings(self) -> list[dict]:  # type: ignore[type-arg]
         return [
             {
                 "id": "f-001",

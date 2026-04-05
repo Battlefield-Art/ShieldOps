@@ -158,13 +158,9 @@ class KillChainCoverageEngine:
     ) -> list[KillChainCoverageRecord]:
         results = list(self._records)
         if kill_chain_phase is not None:
-            results = [
-                r for r in results if r.kill_chain_phase == kill_chain_phase
-            ]
+            results = [r for r in results if r.kill_chain_phase == kill_chain_phase]
         if detection_coverage is not None:
-            results = [
-                r for r in results if r.detection_coverage == detection_coverage
-            ]
+            results = [r for r in results if r.detection_coverage == detection_coverage]
         if team is not None:
             results = [r for r in results if r.team == team]
         return results[-limit:]
@@ -212,11 +208,7 @@ class KillChainCoverageEngine:
             total = sum(coverages.values())
             no_coverage = coverages.get("none", 0)
             partial = coverages.get("partial", 0)
-            gap_pct = (
-                round((no_coverage + partial) / total * 100, 1)
-                if total
-                else 0.0
-            )
+            gap_pct = round((no_coverage + partial) / total * 100, 1) if total else 0.0
             if no_coverage > 0 or partial > 0:
                 blind_spots.append(
                     {
@@ -225,9 +217,7 @@ class KillChainCoverageEngine:
                         "no_coverage": no_coverage,
                         "partial_coverage": partial,
                         "gap_pct": gap_pct,
-                        "severity": (
-                            "critical" if no_coverage > partial else "warning"
-                        ),
+                        "severity": ("critical" if no_coverage > partial else "warning"),
                     }
                 )
         return sorted(blind_spots, key=lambda x: x["gap_pct"], reverse=True)
@@ -243,15 +233,10 @@ class KillChainCoverageEngine:
             covered = sum(
                 1
                 for r in records
-                if r.detection_coverage
-                in (DetectionCoverage.FULL, DetectionCoverage.ALERT_ONLY)
+                if r.detection_coverage in (DetectionCoverage.FULL, DetectionCoverage.ALERT_ONLY)
             )
             coverage = round(covered / total * 100, 1) if total else 0.0
-            avg_score = (
-                round(sum(r.score for r in records) / total, 2)
-                if total
-                else 0.0
-            )
+            avg_score = round(sum(r.score for r in records) / total, 2) if total else 0.0
             results.append(
                 {
                     "phase": phase,
@@ -266,11 +251,7 @@ class KillChainCoverageEngine:
     def recommend_detection_additions(self) -> list[dict[str, Any]]:
         """Recommend detection additions for uncovered techniques."""
         recommendations: list[dict[str, Any]] = []
-        no_detect = [
-            r
-            for r in self._records
-            if r.detection_coverage == DetectionCoverage.NONE
-        ]
+        no_detect = [r for r in self._records if r.detection_coverage == DetectionCoverage.NONE]
         for r in no_detect:
             recommendations.append(
                 {
@@ -286,11 +267,7 @@ class KillChainCoverageEngine:
                     ),
                 }
             )
-        log_only = [
-            r
-            for r in self._records
-            if r.detection_coverage == DetectionCoverage.LOG_ONLY
-        ]
+        log_only = [r for r in self._records if r.detection_coverage == DetectionCoverage.LOG_ONLY]
         for r in log_only:
             recommendations.append(
                 {
@@ -301,16 +278,11 @@ class KillChainCoverageEngine:
                     "issue": "log_only",
                     "priority": "high",
                     "suggestion": (
-                        f"Add alerting for {r.technique_id or r.name} "
-                        f"— currently log-only"
+                        f"Add alerting for {r.technique_id or r.name} — currently log-only"
                     ),
                 }
             )
-        partial = [
-            r
-            for r in self._records
-            if r.detection_coverage == DetectionCoverage.PARTIAL
-        ]
+        partial = [r for r in self._records if r.detection_coverage == DetectionCoverage.PARTIAL]
         for r in partial:
             recommendations.append(
                 {
@@ -320,15 +292,11 @@ class KillChainCoverageEngine:
                     "phase": r.kill_chain_phase.value,
                     "issue": "partial_coverage",
                     "priority": "medium",
-                    "suggestion": (
-                        f"Improve coverage for {r.technique_id or r.name}"
-                    ),
+                    "suggestion": (f"Improve coverage for {r.technique_id or r.name}"),
                 }
             )
         priority_order = {"critical": 0, "high": 1, "medium": 2}
-        return sorted(
-            recommendations, key=lambda x: priority_order.get(x["priority"], 3)
-        )
+        return sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
     # -- standard methods ---------------------------------------------------
 
@@ -377,9 +345,7 @@ class KillChainCoverageEngine:
         return results
 
     def process(self, key: str) -> dict[str, Any]:
-        matched = [
-            r for r in self._records if r.name == key or r.service == key
-        ]
+        matched = [r for r in self._records if r.name == key or r.service == key]
         if not matched:
             return {"key": key, "status": "not_found", "count": 0}
         scores = [r.score for r in matched]
@@ -389,9 +355,7 @@ class KillChainCoverageEngine:
             "status": "processed",
             "count": len(matched),
             "avg_score": avg,
-            "below_threshold": sum(
-                1 for s in scores if s < self._threshold
-            ),
+            "below_threshold": sum(1 for s in scores if s < self._threshold),
         }
 
     # -- report / stats -----------------------------------------------------
@@ -401,15 +365,9 @@ class KillChainCoverageEngine:
         by_e2: dict[str, int] = {}
         by_e3: dict[str, int] = {}
         for r in self._records:
-            by_e1[r.kill_chain_phase.value] = (
-                by_e1.get(r.kill_chain_phase.value, 0) + 1
-            )
-            by_e2[r.detection_coverage.value] = (
-                by_e2.get(r.detection_coverage.value, 0) + 1
-            )
-            by_e3[r.coverage_gap.value] = (
-                by_e3.get(r.coverage_gap.value, 0) + 1
-            )
+            by_e1[r.kill_chain_phase.value] = by_e1.get(r.kill_chain_phase.value, 0) + 1
+            by_e2[r.detection_coverage.value] = by_e2.get(r.detection_coverage.value, 0) + 1
+            by_e3[r.coverage_gap.value] = by_e3.get(r.coverage_gap.value, 0) + 1
         gap_count = sum(1 for r in self._records if r.score < self._threshold)
         scores = [r.score for r in self._records]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
@@ -417,13 +375,9 @@ class KillChainCoverageEngine:
         top_gaps = [o["name"] for o in gap_list[:5]]
         recs: list[str] = []
         if self._records and gap_count > 0:
-            recs.append(
-                f"{gap_count} item(s) below threshold ({self._threshold})"
-            )
+            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
         if self._records and avg_score < self._threshold:
-            recs.append(
-                f"Avg score {avg_score} below threshold ({self._threshold})"
-            )
+            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
         if not recs:
             recs.append("Kill Chain Coverage Engine is healthy")
         return KillChainCoverageReport(

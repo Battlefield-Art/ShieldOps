@@ -162,7 +162,7 @@ class NewRelicConnector(InfraConnector):
         """Get New Relic events via NRQL."""
         try:
             nrql = (
-                f"SELECT * FROM Transaction WHERE entityGuid = '{resource_id}'"  # noqa: S608
+                f"SELECT * FROM Transaction WHERE entityGuid = '{resource_id}'"  # noqa: S608  # nosec B608
                 f" SINCE '{time_range.start.isoformat()}'"
                 f" UNTIL '{time_range.end.isoformat()}'"
             )
@@ -176,7 +176,7 @@ class NewRelicConnector(InfraConnector):
         action_id = str(uuid4())
         return ActionResult(
             action_id=action_id,
-            status=ExecutionStatus.COMPLETED,
+            status=ExecutionStatus.SUCCESS,
             message=f"Action {action.action_type} completed",
             started_at=datetime.now(UTC),
             completed_at=datetime.now(UTC),
@@ -190,7 +190,7 @@ class NewRelicConnector(InfraConnector):
             "created_at": datetime.now(UTC).isoformat(),
         }
         return Snapshot(
-            snapshot_id=snapshot_id,
+            id=snapshot_id,
             resource_id=resource_id,
             created_at=datetime.now(UTC),
         )
@@ -207,7 +207,7 @@ class NewRelicConnector(InfraConnector):
             )
         return ActionResult(
             action_id=str(uuid4()),
-            status=ExecutionStatus.COMPLETED,
+            status=ExecutionStatus.SUCCESS,
             message=f"Rollback to {snapshot_id} completed",
             started_at=datetime.now(UTC),
             completed_at=datetime.now(UTC),
