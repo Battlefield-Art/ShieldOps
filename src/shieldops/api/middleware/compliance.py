@@ -162,7 +162,7 @@ class ComplianceMiddleware(BaseHTTPMiddleware):
         if self._is_sensitive_path(request.url.path):
             # Read the full body from the streaming response so we can scan it
             response_body = b""
-            async for chunk in response.body_iterator:  # type: ignore[union-attr]
+            async for chunk in response.body_iterator:  # type: ignore[union-attr,attr-defined]
                 if isinstance(chunk, str):
                     response_body += chunk.encode("utf-8")
                 else:
