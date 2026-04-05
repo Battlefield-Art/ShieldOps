@@ -9,45 +9,14 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
-from enum import StrEnum
 from typing import Any
 
 import structlog
 from pydantic import BaseModel, Field
 
+from shieldops.utils.evolution_enums import EvolutionReadiness, FitnessDimension, FitnessTrend
+
 logger = structlog.get_logger()
-
-# ---------------------------------------------------------------------------
-# Enums
-# ---------------------------------------------------------------------------
-
-
-class FitnessDimension(StrEnum):
-    """The five dimensions of agent fitness."""
-
-    ACCURACY = "accuracy"
-    SPEED = "speed"
-    COST = "cost"
-    SAFETY = "safety"
-    LEARNING_RATE = "learning_rate"
-
-
-class FitnessTrend(StrEnum):
-    """Trend direction for a fitness dimension."""
-
-    IMPROVING = "improving"
-    STABLE = "stable"
-    DECLINING = "declining"
-    INSUFFICIENT_DATA = "insufficient_data"
-
-
-class EvolutionReadiness(StrEnum):
-    """Whether an agent is ready for evolution."""
-
-    READY = "ready"
-    NEEDS_DATA = "needs_data"
-    DECLINING = "declining"
-    THRIVING = "thriving"
 
 
 # ---------------------------------------------------------------------------

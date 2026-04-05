@@ -25,22 +25,13 @@ from typing import Any
 import structlog
 from pydantic import BaseModel, Field
 
-from shieldops.utils.fitness_tracker import (
+from shieldops.utils.evolution_enums import (
     FitnessDimension,
-    FitnessTracker,
-    get_fitness_tracker,
-)
-from shieldops.utils.learning_bus import (
-    LearningBus,
     LearningEventType,
     LearningPriority,
     PropagationScope,
-    get_learning_bus,
 )
-from shieldops.utils.prompt_evolution import (
-    PromptEvolutionStore,
-    get_prompt_store,
-)
+from shieldops.utils.evolution_service import EvolutionService
 
 logger = structlog.get_logger()
 
@@ -102,15 +93,13 @@ class DeepAgentMixin:
 
     def __init__(self, agent_id: str = "", **kwargs: Any) -> None:
         self._agent_id = agent_id or f"{self.agent_type}_{uuid.uuid4().hex[:8]}"
-        self._fitness_tracker: FitnessTracker = get_fitness_tracker()
-        self._learning_bus: LearningBus = get_learning_bus()
-        self._prompt_store: PromptEvolutionStore = get_prompt_store()
+        self._evo = EvolutionService()
         self._execution_count: int = 0
         self._cumulative_accuracy: float = 0.0
 
         # Auto-subscribe to learning bus
         if self.enable_learning_bus:
-            self._learning_bus.subscribe(
+            self._evo.learning.subscribe(
                 subscriber_id=self._agent_id,
                 subscriber_type=self.agent_type,
                 min_confidence=0.3,
@@ -141,7 +130,7 @@ class DeepAgentMixin:
 
         # 1. Capture current fitness snapshot
         if self.enable_fitness_tracking:
-            fitness = self._fitness_tracker.get_fitness(self._agent_id)
+            fitness = self._evo.fitness.get_fitness(self._agent_id)
             ctx.fitness_snapshot = {
                 dim: score.rolling_avg for dim, score in fitness.dimensions.items()
             }
@@ -152,7 +141,7 @@ class DeepAgentMixin:
 
         # 3. Check for pending learning events
         if self.enable_learning_bus:
-            pending = self._learning_bus.get_pending(
+            pending = self._evo.learning.get_pending(
                 subscriber_id=self._agent_id,
                 limit=10,
             )
@@ -170,7 +159,7 @@ class DeepAgentMixin:
         # 4. Load active prompt versions
         if self.enable_prompt_evolution and node_names:
             for node_name in node_names:
-                version = self._prompt_store.get_active_version(self._agent_id, node_name)
+                version = self._evo.prompts.get_active_version(self._agent_id, node_name)
                 if version:
                     ctx.active_prompt_versions[node_name] = version.version_id
 
@@ -206,12 +195,12 @@ class DeepAgentMixin:
         # 1. Record fitness observations
         if self.enable_fitness_tracking:
             self._record_fitness(outcome)
-            results["fitness"] = self._fitness_tracker.get_fitness(self._agent_id).composite_score
+            results["fitness"] = self._evo.fitness.get_fitness(self._agent_id).composite_score
 
         # 2. Update prompt performance scores
         if self.enable_prompt_evolution:
             for node_name, version_id in ctx.active_prompt_versions.items():
-                self._prompt_store.record_ab_observation(
+                self._evo.prompts.record_ab_observation(
                     agent_id=self._agent_id,
                     node_name=node_name,
                     version_id=version_id,
@@ -227,9 +216,9 @@ class DeepAgentMixin:
         if self.enable_learning_bus:
             for event_id in ctx.learning_events_received:
                 if outcome.success:
-                    self._learning_bus.mark_applied(event_id, self._agent_id)
+                    self._evo.learning.mark_applied(event_id, self._agent_id)
                 else:
-                    self._learning_bus.mark_rejected(event_id, self._agent_id)
+                    self._evo.learning.mark_rejected(event_id, self._agent_id)
 
         # 5. Track cumulative learning rate
         self._cumulative_accuracy = (
@@ -261,10 +250,10 @@ class DeepAgentMixin:
         Creates a new prompt version and starts A/B testing against the
         current champion.
         """
-        from shieldops.utils.prompt_evolution import MutationType
+        from shieldops.utils.evolution_enums import MutationType
 
         mt = MutationType(mutation_type)
-        version = self._prompt_store.mutate(
+        version = self._evo.prompts.mutate(
             agent_id=self._agent_id,
             node_name=node_name,
             new_content=new_prompt,
@@ -273,7 +262,7 @@ class DeepAgentMixin:
         )
 
         # Record evolution in fitness tracker
-        gen = self._fitness_tracker.mark_evolved(self._agent_id)
+        gen = self._evo.fitness.mark_evolved(self._agent_id)
 
         logger.info(
             "deep_agent.evolved",
@@ -290,7 +279,7 @@ class DeepAgentMixin:
 
     def get_fitness(self) -> dict[str, Any]:
         """Get current fitness profile as a dict."""
-        f = self._fitness_tracker.get_fitness(self._agent_id)
+        f = self._evo.fitness.get_fitness(self._agent_id)
         return {
             "agent_id": f.agent_id,
             "composite_score": f.composite_score,
@@ -308,8 +297,8 @@ class DeepAgentMixin:
 
     def get_evolution_status(self) -> dict[str, Any]:
         """Get combined evolution status: fitness + prompts + learning."""
-        fitness = self._fitness_tracker.get_fitness(self._agent_id)
-        pending = self._learning_bus.get_pending(self._agent_id, limit=5)
+        fitness = self._evo.fitness.get_fitness(self._agent_id)
+        pending = self._evo.learning.get_pending(self._agent_id, limit=5)
 
         return {
             "agent_id": self._agent_id,
@@ -320,7 +309,7 @@ class DeepAgentMixin:
             "execution_count": self._execution_count,
             "cumulative_accuracy": round(self._cumulative_accuracy, 4),
             "pending_learnings": len(pending),
-            "prompt_stats": self._prompt_store.get_stats(),
+            "prompt_stats": self._evo.prompts.get_stats(),
         }
 
     # ----- Internal -----
@@ -362,7 +351,7 @@ class DeepAgentMixin:
 
     def _record_fitness(self, outcome: ExecutionOutcome) -> None:
         """Map execution outcome to fitness dimensions."""
-        tracker = self._fitness_tracker
+        tracker = self._evo.fitness
 
         # Accuracy: from the outcome signal
         tracker.record(
@@ -425,7 +414,7 @@ class DeepAgentMixin:
             except ValueError:
                 event_type = LearningEventType.PATTERN_DETECTED
 
-            self._learning_bus.publish(
+            self._evo.learning.publish(
                 event_type=event_type,
                 source_agent_id=self._agent_id,
                 source_agent_type=self.agent_type,

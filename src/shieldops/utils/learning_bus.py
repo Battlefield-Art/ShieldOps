@@ -11,50 +11,14 @@ import time
 import uuid
 from collections import defaultdict
 from collections.abc import Callable
-from enum import StrEnum
 from typing import Any
 
 import structlog
 from pydantic import BaseModel, Field
 
+from shieldops.utils.evolution_enums import LearningEventType, LearningPriority, PropagationScope
+
 logger = structlog.get_logger()
-
-# ---------------------------------------------------------------------------
-# Enums
-# ---------------------------------------------------------------------------
-
-
-class LearningEventType(StrEnum):
-    """Categories of cross-agent learning events."""
-
-    FALSE_POSITIVE_DISCOVERED = "false_positive_discovered"
-    ATTACK_SIGNATURE_LEARNED = "attack_signature_learned"
-    THRESHOLD_OPTIMIZED = "threshold_optimized"
-    PLAYBOOK_IMPROVED = "playbook_improved"
-    PATTERN_DETECTED = "pattern_detected"
-    PROMPT_EVOLVED = "prompt_evolved"
-    REMEDIATION_VALIDATED = "remediation_validated"
-    ESCALATION_REFINED = "escalation_refined"
-    DETECTION_RULE_TUNED = "detection_rule_tuned"
-    CONTEXT_ENRICHED = "context_enriched"
-
-
-class PropagationScope(StrEnum):
-    """How widely a learning event should propagate."""
-
-    SELF_ONLY = "self_only"
-    SAME_TYPE = "same_type"
-    RELATED_TYPES = "related_types"
-    FLEET_WIDE = "fleet_wide"
-
-
-class LearningPriority(StrEnum):
-    """Priority of learning propagation."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
 
 
 # ---------------------------------------------------------------------------

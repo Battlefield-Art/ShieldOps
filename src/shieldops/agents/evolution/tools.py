@@ -18,21 +18,15 @@ from shieldops.agents.evolution.models import (
     PromptMutation,
     ValidationResult,
 )
-from shieldops.utils.fitness_tracker import (
+from shieldops.utils.evolution_enums import (
     FitnessDimension,
     FitnessTrend,
-    get_fitness_tracker,
-)
-from shieldops.utils.learning_bus import (
     LearningEventType,
     LearningPriority,
-    PropagationScope,
-    get_learning_bus,
-)
-from shieldops.utils.prompt_evolution import (
     MutationType,
-    get_prompt_store,
+    PropagationScope,
 )
+from shieldops.utils.evolution_service import EvolutionService
 
 logger = structlog.get_logger()
 
@@ -41,9 +35,10 @@ class EvolutionToolkit:
     """Business logic for the evolution engine agent."""
 
     def __init__(self) -> None:
-        self._fitness = get_fitness_tracker()
-        self._prompts = get_prompt_store()
-        self._bus = get_learning_bus()
+        self._evo = EvolutionService()
+        self._fitness = self._evo.fitness
+        self._prompts = self._evo.prompts
+        self._bus = self._evo.learning
 
     # ----- Fitness Measurement -----
 

@@ -9,51 +9,14 @@ from __future__ import annotations
 import hashlib
 import time
 from collections import defaultdict
-from enum import StrEnum
 from typing import Any
 
 import structlog
 from pydantic import BaseModel, Field
 
+from shieldops.utils.evolution_enums import ABTestResult, MutationType, PromptStatus
+
 logger = structlog.get_logger()
-
-# ---------------------------------------------------------------------------
-# Enums
-# ---------------------------------------------------------------------------
-
-
-class MutationType(StrEnum):
-    """How a prompt was mutated from its parent."""
-
-    ORIGINAL = "original"
-    THRESHOLD_ADJUST = "threshold_adjust"
-    INSTRUCTION_REFINE = "instruction_refine"
-    EXAMPLE_ADD = "example_add"
-    EXAMPLE_REMOVE = "example_remove"
-    CONSTRAINT_ADD = "constraint_add"
-    CONSTRAINT_RELAX = "constraint_relax"
-    TONE_SHIFT = "tone_shift"
-    STRUCTURE_CHANGE = "structure_change"
-    LLM_REWRITE = "llm_rewrite"
-
-
-class PromptStatus(StrEnum):
-    """Lifecycle status of a prompt version."""
-
-    DRAFT = "draft"
-    TESTING = "testing"
-    ACTIVE = "active"
-    SUPERSEDED = "superseded"
-    ROLLED_BACK = "rolled_back"
-
-
-class ABTestResult(StrEnum):
-    """Outcome of an A/B test between two prompt versions."""
-
-    CHALLENGER_WINS = "challenger_wins"
-    CHAMPION_WINS = "champion_wins"
-    NO_DIFFERENCE = "no_difference"
-    INSUFFICIENT_DATA = "insufficient_data"
 
 
 # ---------------------------------------------------------------------------
