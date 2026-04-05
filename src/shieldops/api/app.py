@@ -14415,6 +14415,15 @@ def create_app() -> FastAPI:
             },
         )
 
+    # ── Connector health check routes ────────────────────────────────
+    try:
+        from shieldops.api.routes import connector_health as _ch_mod
+
+        app.include_router(_ch_mod.router, prefix=settings.api_prefix, tags=["Connectors"])
+        logger.info("connector_health_routes_initialized")
+    except Exception as e:
+        logger.warning("connector_health_routes_skipped", error=str(e))
+
     return app
 
 
