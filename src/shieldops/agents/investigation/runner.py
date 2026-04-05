@@ -2,6 +2,12 @@
 
 Takes an AlertContext, constructs the LangGraph, runs it end-to-end,
 and returns the completed investigation state.
+
+Production features:
+- OPA policy gate before execution
+- Connector health checks at startup
+- Result persistence via persist_agent_run() and write_audit_log()
+- Structured logging with investigation.* pattern
 """
 
 from datetime import UTC, datetime
@@ -15,15 +21,25 @@ from shieldops.agents.investigation.models import InvestigationState
 from shieldops.agents.investigation.nodes import set_toolkit
 from shieldops.agents.investigation.tools import InvestigationToolkit
 from shieldops.connectors.base import ConnectorRouter
+from shieldops.connectors.health import (
+    AllConnectorsUnavailableError,
+    ConnectorStatus,
+    check_agent_connectors,
+)
 from shieldops.models.base import AlertContext
 from shieldops.observability.base import LogSource, MetricSource, TraceSource
 from shieldops.observability.tracing import get_tracer
+from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
 if __import__("typing").TYPE_CHECKING:
     from shieldops.db.repository import Repository
     from shieldops.policy.opa.client import PolicyEngine
 
 logger = structlog.get_logger()
+
+# Connectors the investigation agent relies on for full functionality.
+# Degraded operation is possible when some are unavailable.
+_REQUIRED_CONNECTORS = ["kubernetes", "splunk", "crowdstrike"]
 
 
 class InvestigationRunner:
@@ -140,6 +156,46 @@ class InvestigationRunner:
 
         return None
 
+    async def _check_connector_health(self, investigation_id: str) -> dict[str, Any]:
+        """Check health of required connectors before investigation.
+
+        Returns a dict of connector statuses. Logs warnings for degraded
+        connectors and raises on total unavailability.
+        """
+        try:
+            statuses = await check_agent_connectors(
+                agent_name="investigation",
+                required_connectors=_REQUIRED_CONNECTORS,
+            )
+            healthy = [name for name, s in statuses.items() if s.status == ConnectorStatus.HEALTHY]
+            degraded = [name for name, s in statuses.items() if s.status != ConnectorStatus.HEALTHY]
+            logger.info(
+                "investigation.connector_health",
+                investigation_id=investigation_id,
+                healthy=healthy,
+                degraded=degraded,
+            )
+            return {
+                "healthy": healthy,
+                "degraded": degraded,
+                "statuses": {name: s.status.value for name, s in statuses.items()},
+            }
+        except AllConnectorsUnavailableError:
+            logger.error(
+                "investigation.all_connectors_unavailable",
+                investigation_id=investigation_id,
+                connectors=_REQUIRED_CONNECTORS,
+            )
+            raise
+        except Exception as e:
+            # Non-fatal: continue with degraded mode if health check itself fails
+            logger.warning(
+                "investigation.connector_health_check_failed",
+                investigation_id=investigation_id,
+                error=str(e),
+            )
+            return {"healthy": [], "degraded": _REQUIRED_CONNECTORS, "error": str(e)}
+
     async def investigate(self, alert: AlertContext) -> InvestigationState:
         """Run a full investigation for an alert.
 
@@ -152,7 +208,7 @@ class InvestigationRunner:
         investigation_id = f"inv-{uuid4().hex[:12]}"
 
         logger.info(
-            "investigation_started",
+            "investigation.started",
             investigation_id=investigation_id,
             alert_id=alert.alert_id,
             alert_name=alert.alert_name,
@@ -175,6 +231,9 @@ class InvestigationRunner:
             )
             self._investigations[investigation_id] = error_state
             return error_state
+
+        # Connector health check: verify required connectors are available
+        connector_health = await self._check_connector_health(investigation_id)
 
         initial_state = InvestigationState(
             alert_id=alert.alert_id,
@@ -215,7 +274,7 @@ class InvestigationRunner:
                 span.set_attribute("investigation.confidence", final_state.confidence_score)
 
             logger.info(
-                "investigation_completed",
+                "investigation.completed",
                 investigation_id=investigation_id,
                 alert_id=alert.alert_id,
                 duration_ms=final_state.investigation_duration_ms,
@@ -240,17 +299,57 @@ class InvestigationRunner:
                 confidence=final_state.confidence_score,
                 duration_ms=final_state.investigation_duration_ms,
                 environment=environment,
+                connector_health=connector_health,
             )
 
-            # Store result
+            # Store result in memory + repository
             self._investigations[investigation_id] = final_state
             await self._persist(investigation_id, final_state)
             await self._broadcast(investigation_id, final_state)
+
+            # Persist agent run and audit log via utils/persistence.py
+            org_id = alert.labels.get("org_id", "default")
+            await persist_agent_run(
+                agent_name="investigation",
+                org_id=org_id,
+                input_data={
+                    "alert_id": alert.alert_id,
+                    "alert_name": alert.alert_name,
+                    "severity": alert.severity,
+                    "resource_id": alert.resource_id,
+                },
+                output_data={
+                    "investigation_id": investigation_id,
+                    "hypotheses_count": len(final_state.hypotheses),
+                    "confidence": final_state.confidence_score,
+                    "top_hypothesis": (
+                        final_state.hypotheses[0].description[:200]
+                        if final_state.hypotheses
+                        else None
+                    ),
+                },
+                duration_ms=final_state.investigation_duration_ms,
+            )
+            await write_audit_log(
+                action="investigation.completed",
+                actor="investigation-agent",
+                target=alert.alert_id,
+                result="completed",
+                org_id=org_id,
+                metadata={
+                    "investigation_id": investigation_id,
+                    "confidence": final_state.confidence_score,
+                    "hypotheses_count": len(final_state.hypotheses),
+                    "duration_ms": final_state.investigation_duration_ms,
+                    "environment": environment,
+                },
+            )
+
             return final_state
 
         except Exception as e:
             logger.error(
-                "investigation_failed",
+                "investigation.failed",
                 investigation_id=investigation_id,
                 alert_id=alert.alert_id,
                 error=str(e),
@@ -274,6 +373,31 @@ class InvestigationRunner:
             )
             self._investigations[investigation_id] = error_state
             await self._persist(investigation_id, error_state)
+
+            # Persist failed run
+            org_id = alert.labels.get("org_id", "default")
+            await persist_agent_run(
+                agent_name="investigation",
+                org_id=org_id,
+                input_data={
+                    "alert_id": alert.alert_id,
+                    "alert_name": alert.alert_name,
+                },
+                error_message=str(e),
+            )
+            await write_audit_log(
+                action="investigation.failed",
+                actor="investigation-agent",
+                target=alert.alert_id,
+                result="failed",
+                org_id=org_id,
+                metadata={
+                    "investigation_id": investigation_id,
+                    "error": str(e),
+                    "environment": environment,
+                },
+            )
+
             return error_state
 
     async def _broadcast(self, investigation_id: str, state: InvestigationState) -> None:

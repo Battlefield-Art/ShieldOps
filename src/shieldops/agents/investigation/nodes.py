@@ -292,6 +292,13 @@ async def analyze_metrics(state: InvestigationState) -> dict[str, Any]:
             )
         except Exception as e:
             logger.error("llm_metric_analysis_failed", error=str(e))
+            # Heuristic fallback: infer pressure from anomaly severity
+            pressure = _heuristic_resource_pressure(anomalies)
+            bottleneck = _heuristic_bottleneck(anomalies)
+            output_summary = (
+                f"LLM unavailable. {len(anomalies)} anomalies detected. "
+                f"Resource pressure: {pressure}. Bottleneck: {bottleneck}"
+            )
 
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
@@ -403,7 +410,14 @@ async def correlate_findings(state: InvestigationState) -> dict[str, Any]:
             )
         except Exception as e:
             logger.error("llm_correlation_failed", error=str(e))
-            output_summary = f"Correlation failed: {e}"
+            # Heuristic fallback: create basic correlations from co-occurring findings
+            correlated = _heuristic_correlate(state)
+            output_summary = (
+                f"LLM unavailable. Heuristic correlation found "
+                f"{len(correlated)} related events across "
+                f"{len(state.log_findings)} log findings and "
+                f"{len(state.metric_anomalies)} metric anomalies."
+            )
 
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
@@ -468,7 +482,12 @@ async def generate_hypotheses(state: InvestigationState) -> dict[str, Any]:
         )
     except Exception as e:
         logger.error("llm_hypothesis_generation_failed", error=str(e))
-        output_summary = f"Hypothesis generation failed: {e}"
+        # Heuristic fallback: keyword-based severity classification
+        hypotheses, confidence_score = _heuristic_hypotheses(state)
+        output_summary = (
+            f"LLM unavailable. Heuristic generated {len(hypotheses)} hypotheses. "
+            f"Top confidence: {confidence_score:.2f}"
+        )
 
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
@@ -589,6 +608,148 @@ def _format_all_findings(state: InvestigationState) -> str:
         lines.append(f"Total duration: {t.total_duration_ms}ms")
 
     return "\n".join(lines)
+
+
+def _heuristic_resource_pressure(anomalies: list[MetricAnomaly]) -> str:
+    """Classify resource pressure without LLM based on anomaly count and deviation."""
+    if not anomalies:
+        return "none"
+    max_deviation = max(abs(a.deviation_percent) for a in anomalies)
+    if max_deviation > 200 or len(anomalies) >= 4:
+        return "critical"
+    if max_deviation > 100 or len(anomalies) >= 3:
+        return "high"
+    if max_deviation > 50 or len(anomalies) >= 2:
+        return "moderate"
+    return "low"
+
+
+def _heuristic_bottleneck(anomalies: list[MetricAnomaly]) -> str:
+    """Identify likely bottleneck from metric names without LLM."""
+    if not anomalies:
+        return "none detected"
+    # Sort by deviation and check metric name keywords
+    sorted_anomalies = sorted(anomalies, key=lambda a: abs(a.deviation_percent), reverse=True)
+    top = sorted_anomalies[0].metric_name.lower()
+    if "cpu" in top:
+        return "cpu"
+    if "memory" in top or "mem" in top:
+        return "memory"
+    if "network" in top or "bytes" in top:
+        return "network"
+    if "disk" in top or "io" in top:
+        return "disk"
+    if "restart" in top:
+        return "stability (restarts)"
+    return sorted_anomalies[0].metric_name
+
+
+def _heuristic_correlate(state: InvestigationState) -> list[CorrelatedEvent]:
+    """Create basic correlations from co-occurring log findings and metric anomalies."""
+    correlated: list[CorrelatedEvent] = []
+    # Pair each error-level log finding with each anomaly as a correlated event
+    error_findings = [f for f in state.log_findings if f.severity in ("error", "fatal")]
+    for finding in error_findings[:3]:
+        for anomaly in state.metric_anomalies[:3]:
+            correlated.append(
+                CorrelatedEvent(
+                    timestamp=anomaly.started_at,
+                    source="heuristic-correlation",
+                    event_type="co-occurrence",
+                    description=(
+                        f"Log error '{finding.summary[:80]}' co-occurred with "
+                        f"metric anomaly '{anomaly.metric_name}' "
+                        f"(deviation: {anomaly.deviation_percent:.0f}%)"
+                    ),
+                    correlation_score=0.5,
+                )
+            )
+    return correlated[:5]  # Cap at 5
+
+
+def _heuristic_hypotheses(
+    state: InvestigationState,
+) -> tuple[list[Hypothesis], float]:
+    """Generate keyword-based hypotheses when LLM is unavailable."""
+    hypotheses: list[Hypothesis] = []
+    resource_id = state.alert_context.resource_id or "unknown"
+
+    # Keyword patterns for common root causes
+    error_texts = " ".join(f.summary.lower() for f in state.log_findings)
+
+    if "oom" in error_texts or "memory" in error_texts:
+        hypotheses.append(
+            Hypothesis(
+                id=f"hyp-{state.alert_id}-heuristic-1",
+                description="Out-of-memory condition causing container restarts",
+                confidence=0.6,
+                evidence=[
+                    f.summary
+                    for f in state.log_findings
+                    if "oom" in f.summary.lower() or "memory" in f.summary.lower()
+                ],
+                affected_resources=[resource_id],
+                recommended_action="increase_memory_limit",
+                reasoning_chain=["Keyword match: OOM/memory in log findings"],
+            )
+        )
+
+    if "timeout" in error_texts or "connection refused" in error_texts:
+        hypotheses.append(
+            Hypothesis(
+                id=f"hyp-{state.alert_id}-heuristic-2",
+                description="Downstream service connectivity failure causing timeouts",
+                confidence=0.5,
+                evidence=[
+                    f.summary
+                    for f in state.log_findings
+                    if "timeout" in f.summary.lower() or "connection" in f.summary.lower()
+                ],
+                affected_resources=[resource_id],
+                recommended_action="restart_pod",
+                reasoning_chain=["Keyword match: timeout/connection refused in log findings"],
+            )
+        )
+
+    if "cpu" in error_texts or any("cpu" in a.metric_name.lower() for a in state.metric_anomalies):
+        hypotheses.append(
+            Hypothesis(
+                id=f"hyp-{state.alert_id}-heuristic-3",
+                description="CPU saturation causing degraded performance",
+                confidence=0.5,
+                evidence=[
+                    f"{a.metric_name}: {a.deviation_percent:.0f}% deviation"
+                    for a in state.metric_anomalies
+                    if "cpu" in a.metric_name.lower()
+                ],
+                affected_resources=[resource_id],
+                recommended_action="scale_horizontal",
+                reasoning_chain=["Keyword match: CPU anomaly in metrics"],
+            )
+        )
+
+    # Default fallback hypothesis if nothing matched
+    if not hypotheses:
+        hypotheses.append(
+            Hypothesis(
+                id=f"hyp-{state.alert_id}-heuristic-default",
+                description=(
+                    f"Unclassified issue on {resource_id} with "
+                    f"{len(state.log_findings)} log findings and "
+                    f"{len(state.metric_anomalies)} metric anomalies"
+                ),
+                confidence=0.3,
+                evidence=[f.summary for f in state.log_findings[:3]],
+                affected_resources=[resource_id],
+                recommended_action=None,
+                reasoning_chain=["No keyword patterns matched; manual review required"],
+            )
+        )
+
+    # Sort by confidence descending
+    hypotheses.sort(key=lambda h: h.confidence, reverse=True)
+    confidence_score = hypotheses[0].confidence if hypotheses else 0.0
+    return hypotheses, confidence_score
 
 
 def _format_full_investigation_context(state: InvestigationState) -> str:

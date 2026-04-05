@@ -3,7 +3,11 @@
 These bridge observability connectors and infrastructure connectors to the
 agent's LangGraph nodes. Each tool is a self-contained async function that
 queries external systems and returns structured data.
+
+All infrastructure-reading actions are gated by OPA policy evaluation.
 """
+
+from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -14,6 +18,8 @@ from pydantic import BaseModel, Field
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.models.base import TimeRange
 from shieldops.observability.base import LogSource, MetricSource, TraceSource
+from shieldops.policy.engine import PolicyContext
+from shieldops.policy.engine import evaluate as policy_evaluate
 from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
@@ -34,6 +40,9 @@ class InvestigationToolkit:
 
     Injected into nodes at graph construction time to decouple agent logic
     from specific connector implementations.
+
+    All infrastructure-reading actions are gated by an OPA policy check.
+    If denied, the action is skipped and partial/empty results returned.
     """
 
     def __init__(
@@ -50,6 +59,45 @@ class InvestigationToolkit:
         self._trace_sources = trace_sources or []
         self._repository = repository
 
+    async def _check_policy(
+        self,
+        action: str,
+        target: str,
+        environment: str = "production",
+    ) -> bool:
+        """Evaluate OPA policy before an infrastructure action.
+
+        Returns True if the action is allowed, False if denied.
+        On evaluation errors, defaults to allow (fail-open for read-only).
+        """
+        try:
+            ctx = PolicyContext(
+                agent_name="investigation",
+                action_type=action,
+                target_resources=[target] if target else [],
+                environment=environment,
+                risk_score=0.1,  # Read-only investigation actions are low risk
+            )
+            decision = await policy_evaluate(action=action, context=ctx)
+            logger.info(
+                "investigation.policy_check",
+                action=action,
+                target=target,
+                allowed=decision.allowed,
+                decision=decision.decision.value,
+                reason=decision.reason,
+            )
+            return decision.allowed
+        except Exception as e:
+            # Fail-open for read-only investigation queries
+            logger.warning(
+                "investigation.policy_check_error",
+                action=action,
+                target=target,
+                error=str(e),
+            )
+            return True
+
     async def query_logs(
         self,
         resource_id: str,
@@ -62,6 +110,24 @@ class InvestigationToolkit:
         Attempts Splunk via connector_router first, then falls back to
         registered log sources.
         """
+        # OPA policy gate
+        if not await self._check_policy("query_logs", resource_id):
+            logger.warning(
+                "investigation.query_logs.policy_denied",
+                resource_id=resource_id,
+            )
+            return {
+                "total_entries": 0,
+                "error_count": 0,
+                "warning_count": 0,
+                "entries": [],
+                "error_entries": [],
+                "warning_entries": [],
+                "pattern_matches": {},
+                "sources_queried": [],
+                "policy_denied": True,
+            }
+
         logger.info(
             "investigation.query_logs",
             resource_id=resource_id,
@@ -151,6 +217,21 @@ class InvestigationToolkit:
         If metric_names not provided, queries standard SRE metrics:
         CPU, memory, error rate, latency, restarts.
         """
+        # OPA policy gate
+        if not await self._check_policy("query_metrics", resource_id):
+            logger.warning(
+                "investigation.query_metrics.policy_denied",
+                resource_id=resource_id,
+            )
+            return {
+                "current_values": {},
+                "anomalies": [],
+                "anomaly_count": 0,
+                "metrics_checked": [],
+                "sources_queried": [],
+                "policy_denied": True,
+            }
+
         logger.info(
             "investigation.query_metrics",
             resource_id=resource_id,
@@ -227,6 +308,20 @@ class InvestigationToolkit:
         time_range: TimeRange | None = None,
     ) -> dict[str, Any]:
         """Query distributed traces for a service to find bottlenecks."""
+        # OPA policy gate
+        if not await self._check_policy("query_traces", service_name):
+            logger.warning(
+                "investigation.query_traces.policy_denied",
+                service_name=service_name,
+            )
+            return {
+                "traces": [],
+                "bottleneck": None,
+                "error_traces": [],
+                "sources_queried": [],
+                "policy_denied": True,
+            }
+
         logger.info(
             "investigation.query_traces",
             service_name=service_name,
@@ -296,6 +391,14 @@ class InvestigationToolkit:
         time_range: TimeRange | None = None,
     ) -> list[dict[str, Any]]:
         """Get Kubernetes events for a resource."""
+        # OPA policy gate
+        if not await self._check_policy("get_k8s_events", resource_id):
+            logger.warning(
+                "investigation.get_k8s_events.policy_denied",
+                resource_id=resource_id,
+            )
+            return []
+
         logger.info("investigation.get_k8s_events", resource_id=resource_id)
 
         if self._router is None:
@@ -408,6 +511,15 @@ class InvestigationToolkit:
 
         Falls back gracefully when the CrowdStrike connector is unavailable.
         """
+        # OPA policy gate
+        if not await self._check_policy("get_detection_context", resource_id or alert_id):
+            logger.warning(
+                "investigation.get_detection_context.policy_denied",
+                alert_id=alert_id,
+                resource_id=resource_id,
+            )
+            return {"available": False, "reason": "Policy denied"}
+
         logger.info(
             "investigation.get_detection_context",
             alert_id=alert_id,
