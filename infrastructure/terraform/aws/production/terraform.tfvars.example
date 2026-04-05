@@ -1,0 +1,57 @@
+# =============================================================================
+# ShieldOps — Production Terraform Variables
+# Copy to terraform.tfvars and fill in values before applying.
+# =============================================================================
+
+aws_region   = "us-east-1"
+environment  = "production"
+project_name = "shieldops"
+cost_center  = "engineering"
+
+# Networking
+vpc_cidr = "10.0.0.0/16"
+
+# ECS — API Service
+api_cpu           = 2048
+api_memory        = 4096
+api_desired_count = 2
+api_min_capacity  = 2
+api_max_capacity  = 10
+# api_image       = "123456789.dkr.ecr.us-east-1.amazonaws.com/shieldops-api:v1.0.0"
+
+# ECS — Worker Service
+worker_cpu           = 4096
+worker_memory        = 8192
+worker_desired_count = 1
+worker_min_capacity  = 1
+worker_max_capacity  = 20
+# worker_image       = "123456789.dkr.ecr.us-east-1.amazonaws.com/shieldops-worker:v1.0.0"
+
+# Dashboard
+# dashboard_image = "123456789.dkr.ecr.us-east-1.amazonaws.com/shieldops-dashboard:v1.0.0"
+
+# RDS PostgreSQL
+db_instance_class    = "db.r6g.large"
+db_allocated_storage = 100
+
+# ElastiCache Redis
+redis_node_type          = "cache.r6g.large"
+redis_num_shards         = 2
+redis_replicas_per_shard = 1
+
+# MSK Kafka
+kafka_instance_type   = "kafka.m5.large"
+kafka_ebs_volume_size = 100
+
+# TLS — required for production
+# certificate_arn = "arn:aws:acm:us-east-1:123456789:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+# domain_name     = "api.shieldops.io"
+
+# Secrets Manager — existing secret with API keys
+secrets_arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:shieldops/production/app-secrets-XXXXXX"
+
+# Monitoring
+alarm_email = "ops@shieldops.io"
+
+# WAF
+waf_rate_limit = 2000
