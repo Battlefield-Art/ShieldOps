@@ -1263,6 +1263,25 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as e:
         logger.warning("audit_routes_failed", error=str(e))
 
+    # Agent run persistence + audit trail routes
+    try:
+        from shieldops.api.routes import agent_runs as agent_runs_routes
+        from shieldops.db.repositories.agent_run import AgentRunRepository
+        from shieldops.db.repositories.audit_entry import AuditEntryRepository
+        from shieldops.db.session import get_session_factory as _get_sf
+
+        _sf = _get_sf()
+        agent_runs_routes.set_run_repository(AgentRunRepository(_sf))
+        agent_runs_routes.set_audit_repository(AuditEntryRepository(_sf))
+        app.include_router(
+            agent_runs_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Agent Runs", "Audit"],
+        )
+        logger.info("agent_runs_routes_initialized")
+    except Exception as e:
+        logger.warning("agent_runs_routes_failed", error=str(e))
+
     # Data export / compliance report routes
     try:
         from shieldops.api.routes import exports
