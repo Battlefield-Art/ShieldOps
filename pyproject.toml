@@ -55,6 +55,9 @@ dependencies = [
     # Auth
     "passlib[bcrypt]>=1.7.4",
 
+    # Embedded Columnar Storage
+    "duckdb>=1.1.0",
+
     # Utilities
     "httpx>=0.28.0",
     "pyyaml>=6.0.0",
@@ -106,6 +109,8 @@ ignore = ["S101", "S105", "N818", "S110", "SIM102", "SIM108"]  # S101: assert; S
 "tests/**/*.py" = ["S106", "S108", "N802", "N803", "N806"]  # Test naming + hardcoded values
 "src/shieldops/engine.py" = ["N806"]  # Dynamic class generation uses uppercase locals
 "src/shieldops/ingest/*.py" = ["S608"]  # SQL construction is validated before execution
+"src/shieldops/storage/*.py" = ["S608"]  # DuckDB SQL construction with validated inputs
+"src/shieldops/api/routes/event_query.py" = ["S608"]  # SQL wrapping for tenant isolation
 "src/shieldops/agents/nl_query/*.py" = ["S608"]  # SQL construction with validation
 "scripts/*.py" = ["S608"]  # Scripts use controlled SQL
 "examples/**/*.py" = ["S104"]  # Examples may bind to all interfaces
@@ -153,6 +158,8 @@ module = [
     "moto.*",
     "locust",
     "locust.*",
+    "duckdb",
+    "duckdb.*",
     "openpyxl",
     "openpyxl.*",
 ]
