@@ -77,6 +77,7 @@ from shieldops.api.routes import (
 from shieldops.api.routes import (
     ai_security as ai_security_routes,
 )
+from shieldops.api.routes import event_query as event_query_routes
 from shieldops.api.routes import (
     identity_graph as identity_graph_routes,
 )
@@ -91,6 +92,7 @@ from shieldops.api.routes import (
 from shieldops.api.routes import (
     situations as situations_routes,
 )
+from shieldops.api.routes import webhooks as webhooks_routes
 
 try:
     from shieldops.api.routes import audit_reports as audit_reports_routes
@@ -13999,6 +14001,28 @@ def create_app() -> FastAPI:
         prefix=settings.api_prefix,
         tags=["Ingestion"],
     )
+
+    # ── Webhook ingestion (CloudTrail, CrowdStrike, GuardDuty) ─────
+    app.include_router(
+        webhooks_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Webhooks"],
+    )
+
+    # ── Event Query API (DuckDB SQL interface) ─────────────────────
+    try:
+        from shieldops.storage.singleton import get_event_store
+
+        _evt_store = get_event_store()
+        event_query_routes.set_store(_evt_store)
+        app.include_router(
+            event_query_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Event Query"],
+        )
+        logger.info("event_query_routes_registered")
+    except Exception as _eq_err:
+        logger.warning("event_query_routes_skipped", error=str(_eq_err))
 
     # ── Phase 142-145 agent routes ────────────────────────────────────
     _p142_routes: dict[str, Any] = {}
