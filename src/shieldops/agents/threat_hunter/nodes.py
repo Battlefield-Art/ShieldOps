@@ -9,7 +9,12 @@ from shieldops.agents.threat_hunter.models import (
     ReasoningStep,
     ThreatHunterState,
 )
-from shieldops.agents.threat_hunter.prompts import SYSTEM_ASSESSMENT, ThreatAssessmentOutput
+from shieldops.agents.threat_hunter.prompts import (
+    SYSTEM_ASSESSMENT,
+    SYSTEM_MITRE_MAPPING,
+    MitreMappingOutput,
+    ThreatAssessmentOutput,
+)
 from shieldops.agents.threat_hunter.tools import ThreatHunterToolkit
 from shieldops.utils.llm import llm_structured
 
@@ -165,18 +170,80 @@ async def analyze_behavior(state: ThreatHunterState) -> dict[str, Any]:
 
 
 async def check_mitre(state: ThreatHunterState) -> dict[str, Any]:
-    """Check MITRE ATT&CK technique coverage and detection gaps."""
+    """Check MITRE ATT&CK technique coverage and detection gaps.
+
+    Uses LLM to map IOC and behavioral findings to MITRE techniques,
+    with keyword-based fallback when LLM is unavailable.
+    """
     start = datetime.now(UTC)
     toolkit = _get_toolkit()
 
     techniques = state.hunt_scope.get("mitre_techniques", [])
     coverage = await toolkit.check_mitre_coverage(techniques)
 
+    # LLM enhancement: map findings to MITRE techniques
+    llm_mappings: list[dict[str, Any]] = []
+    llm_status = "skipped"
+    try:
+        import json as _json
+
+        findings_context = _json.dumps(
+            {
+                "hypothesis": state.hypothesis,
+                "ioc_results": state.ioc_sweep_results[:10],
+                "behavioral_findings": state.behavioral_findings[:10],
+                "existing_techniques": techniques,
+            },
+            default=str,
+        )
+        llm_result = await llm_structured(
+            system_prompt=SYSTEM_MITRE_MAPPING,
+            user_prompt=f"Threat hunt findings:\n{findings_context}",
+            schema=MitreMappingOutput,
+        )
+        if hasattr(llm_result, "technique_mappings") and llm_result.technique_mappings:
+            llm_mappings = llm_result.technique_mappings
+            llm_status = "enhanced"
+            # Merge LLM-discovered techniques into coverage check
+            llm_technique_ids = [
+                m.get("technique_id", "") for m in llm_mappings if m.get("technique_id")
+            ]
+            new_techniques = [t for t in llm_technique_ids if t not in techniques]
+            if new_techniques:
+                extra_coverage = await toolkit.check_mitre_coverage(new_techniques)
+                coverage.extend(extra_coverage)
+
+        if hasattr(llm_result, "coverage_gaps") and llm_result.coverage_gaps:
+            for gap_id in llm_result.coverage_gaps:
+                if not any(c.get("technique_id") == gap_id for c in coverage):
+                    coverage.append(
+                        {
+                            "technique_id": gap_id,
+                            "technique_name": "LLM-identified gap",
+                            "tactic": "Unknown",
+                            "coverage_level": "none",
+                            "detection_sources": [],
+                            "gap_identified": True,
+                            "recommendation": f"Build detection for {gap_id} (LLM-identified gap).",
+                        }
+                    )
+
+        logger.info(
+            "threat_hunter.check_mitre.llm_enhanced",
+            new_mappings=len(llm_mappings),
+        )
+    except Exception:
+        llm_status = "fallback"
+        logger.debug("threat_hunter.check_mitre.llm_skipped")
+
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="check_mitre",
         input_summary=f"Checking coverage for {len(techniques)} MITRE techniques",
-        output_summary=f"Found {len(coverage)} coverage findings",
+        output_summary=(
+            f"Found {len(coverage)} coverage findings, "
+            f"LLM mappings={len(llm_mappings)} ({llm_status})"
+        ),
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used="mitre_mapper",
     )

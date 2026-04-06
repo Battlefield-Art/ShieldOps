@@ -34,6 +34,30 @@ Given the available context (recent threat intel, environment profile, historica
 Focus on high-impact, low-visibility threats that automated detections may miss."""
 
 
+class MitreMappingOutput(BaseModel):
+    """Structured output for MITRE ATT&CK mapping from findings."""
+
+    technique_mappings: list[dict[str, str]] = Field(
+        description="List of {technique_id, technique_name, tactic, confidence, evidence} dicts"
+    )
+    kill_chain_phase: str = Field(
+        description="Kill chain phase: recon/weaponize/deliver/exploit/install/c2/action"
+    )
+    coverage_gaps: list[str] = Field(description="MITRE technique IDs with no detection coverage")
+
+
+SYSTEM_MITRE_MAPPING = """\
+You are a MITRE ATT&CK mapping specialist. Given threat hunting findings (IOC matches, \
+behavioral deviations, and detection coverage results):
+
+1. Map each finding to the most relevant MITRE ATT&CK technique(s)
+2. Identify the kill chain phase the adversary is likely in
+3. Identify coverage gaps where no detections exist
+
+Return structured mappings with technique IDs (e.g., T1059.001), names, tactics, \
+confidence (high/medium/low), and the specific evidence supporting the mapping."""
+
+
 SYSTEM_ASSESSMENT = """\
 You are an expert threat hunter assessing correlated findings from a hunt campaign.
 

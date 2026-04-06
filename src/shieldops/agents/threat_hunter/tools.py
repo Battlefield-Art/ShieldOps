@@ -8,6 +8,9 @@ from uuid import uuid4
 
 import structlog
 
+from shieldops.policy.engine import PolicyContext
+from shieldops.policy.engine import evaluate as policy_evaluate
+
 logger = structlog.get_logger()
 
 # Common MITRE ATT&CK technique reference for hunt mapping
@@ -356,6 +359,32 @@ class ThreatHunterToolkit:
             scope_keys=list(scope.keys()),
             indicator_count=len(indicators),
         )
+
+        # OPA policy check before querying infrastructure
+        try:
+            policy_ctx = PolicyContext(
+                agent_name="threat_hunter",
+                action_type="sweep_iocs",
+                target_resources=[f"ioc:{ind[:40]}" for ind in indicators[:10]],
+                environment=scope.get("environment", "production"),
+                risk_score=0.2,  # read-only scan
+            )
+            decision = await policy_evaluate(action="sweep_iocs", context=policy_ctx)
+            if not decision.allowed:
+                logger.warning(
+                    "threat_hunter.sweep_iocs.policy_denied",
+                    reason=decision.reason,
+                )
+                return [
+                    {
+                        "source": "policy",
+                        "policy_denied": True,
+                        "reason": decision.reason,
+                    }
+                ]
+        except Exception:
+            logger.debug("threat_hunter.sweep_iocs.policy_error_failopen")
+
         results: list[dict[str, Any]] = []
         now = datetime.now(UTC).isoformat()
 
@@ -441,6 +470,32 @@ class ThreatHunterToolkit:
             baseline_id=baseline_id,
             scope_keys=list(scope.keys()),
         )
+
+        # OPA policy check before querying infrastructure
+        try:
+            policy_ctx = PolicyContext(
+                agent_name="threat_hunter",
+                action_type="analyze_behavior",
+                target_resources=[f"baseline:{baseline_id}"],
+                environment=scope.get("environment", "production"),
+                risk_score=0.2,  # read-only analysis
+            )
+            decision = await policy_evaluate(action="analyze_behavior", context=policy_ctx)
+            if not decision.allowed:
+                logger.warning(
+                    "threat_hunter.analyze_behavior.policy_denied",
+                    reason=decision.reason,
+                )
+                return [
+                    {
+                        "source": "policy",
+                        "policy_denied": True,
+                        "reason": decision.reason,
+                    }
+                ]
+        except Exception:
+            logger.debug("threat_hunter.analyze_behavior.policy_error_failopen")
+
         findings: list[dict[str, Any]] = []
         now = datetime.now(UTC).isoformat()
         time_range = scope.get("time_range", "7d")

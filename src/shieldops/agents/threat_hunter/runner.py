@@ -1,4 +1,11 @@
-"""Threat Hunter Agent runner — entry point for executing threat hunting workflows."""
+"""Threat Hunter Agent runner — entry point for executing threat hunting workflows.
+
+Features:
+- LangGraph workflow execution for hypothesis-driven threat hunting
+- OPA policy evaluation before infrastructure actions
+- Result persistence via persist_agent_run() and write_audit_log()
+- Connector health checks on initialization
+"""
 
 from typing import Any
 from uuid import uuid4
@@ -9,6 +16,7 @@ from shieldops.agents.threat_hunter.graph import create_threat_hunter_graph
 from shieldops.agents.threat_hunter.models import ThreatHunterState
 from shieldops.agents.threat_hunter.nodes import set_toolkit
 from shieldops.agents.threat_hunter.tools import ThreatHunterToolkit
+from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
 logger = structlog.get_logger()
 
@@ -65,6 +73,8 @@ class ThreatHunterRunner:
             hypothesis=hypothesis[:100],
         )
 
+        org_id = ctx.get("org_id", "")
+
         try:
             final_state_dict = await self._app.ainvoke(
                 initial_state.model_dump(),  # type: ignore[arg-type]
@@ -81,6 +91,30 @@ class ThreatHunterRunner:
                 recommendations=len(final_state.response_recommendations),
                 duration_ms=final_state.session_duration_ms,
             )
+
+            # Persist successful run
+            await persist_agent_run(
+                agent_name="threat_hunter",
+                org_id=org_id,
+                input_data={"hypothesis": hypothesis, "session_id": session_id},
+                output_data={
+                    "threat_found": final_state.threat_found,
+                    "effectiveness_score": final_state.effectiveness_score,
+                    "recommendations": len(final_state.response_recommendations),
+                },
+                duration_ms=final_state.session_duration_ms,
+            )
+            await write_audit_log(
+                action="threat_hunter.completed",
+                actor="threat_hunter-agent",
+                org_id=org_id,
+                details={
+                    "session_id": session_id,
+                    "hypothesis_id": hypothesis_id,
+                    "threat_found": final_state.threat_found,
+                },
+            )
+
             return final_state
 
         except Exception as e:
@@ -92,6 +126,26 @@ class ThreatHunterRunner:
                 current_step="failed",
             )
             self._results[session_id] = error_state
+
+            # Persist failed run
+            await persist_agent_run(
+                agent_name="threat_hunter",
+                org_id=org_id,
+                input_data={"hypothesis": hypothesis, "session_id": session_id},
+                error_message=str(e),
+                duration_ms=0,
+            )
+            await write_audit_log(
+                action="threat_hunter.failed",
+                actor="threat_hunter-agent",
+                org_id=org_id,
+                details={
+                    "session_id": session_id,
+                    "hypothesis_id": hypothesis_id,
+                    "error": str(e),
+                },
+            )
+
             return error_state
 
     def get_result(self, session_id: str) -> ThreatHunterState | None:
