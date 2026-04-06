@@ -1,8 +1,16 @@
-"""ClickHouse event store backend — multi-tenant columnar storage for SaaS deployments."""
+"""ClickHouse event store backend — multi-tenant columnar storage for SaaS deployments.
+
+Supports both single-node deployments (DuckDB-equivalent drop-in) and the production
+3-node HA cluster defined in ``infrastructure/terraform/aws/production/clickhouse.tf``.
+In cluster mode, a list of hosts is accepted and connections are round-robin across
+them with automatic failover on connection errors.
+"""
 
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import itertools
 import json
 import threading
 from datetime import UTC, datetime, timedelta
@@ -127,7 +135,7 @@ class ClickHouseEventStore:
 
     def __init__(
         self,
-        host: str = "localhost",
+        host: str | list[str] = "localhost",
         port: int = 8123,
         database: str = "shieldops",
         user: str = "default",
@@ -135,36 +143,50 @@ class ClickHouseEventStore:
         ttl_days: int | None = None,
         *,
         secure: bool = False,
+        cluster_name: str | None = None,
+        max_failover_attempts: int = 3,
+        skip_schema_init: bool = False,
     ) -> None:
         if clickhouse_connect is None:
             raise RuntimeError(
                 "clickhouse-connect is not installed. Install with: pip install clickhouse-connect"
             )
-        self._host = host
+        # Normalize hosts to a list (cluster-ready). A single string still works.
+        if isinstance(host, str):
+            self._hosts: list[str] = [host]
+        else:
+            self._hosts = list(host) or ["localhost"]
+        self._host = self._hosts[0]  # back-compat attribute
         self._port = port
         self._database = database
         self._user = user
         self._password = password
         self._secure = secure
         self._ttl_days = ttl_days
+        self._cluster_name = cluster_name
+        self._max_failover_attempts = max(1, max_failover_attempts)
         self._local = threading.local()
         self._lock = threading.Lock()
+        self._host_cycle = itertools.cycle(self._hosts)
 
-        # Ensure schema exists.
-        client = self._get_client()
-        client.command(f"CREATE DATABASE IF NOT EXISTS {database}")  # noqa: S608
-        client.command(_EVENTS_DDL)
-        for mv_ddl in _MATERIALIZED_VIEWS:
-            client.command(mv_ddl)
-        if ttl_days is not None:
-            client.command(_ttl_alter_sql("events", ttl_days))
+        # Ensure schema exists. Skipped when talking to a cluster that is
+        # bootstrapped out-of-band via init.sql (ON CLUSTER DDL).
+        if not skip_schema_init:
+            client = self._get_client()
+            client.command(f"CREATE DATABASE IF NOT EXISTS {database}")  # noqa: S608
+            client.command(_EVENTS_DDL)
+            for mv_ddl in _MATERIALIZED_VIEWS:
+                client.command(mv_ddl)
+            if ttl_days is not None:
+                client.command(_ttl_alter_sql("events", ttl_days))
 
         logger.info(
             "clickhouse_event_store_initialized",
-            host=host,
+            hosts=self._hosts,
             port=port,
             database=database,
             ttl_days=ttl_days,
+            cluster_name=cluster_name,
         )
 
     # ------------------------------------------------------------------
@@ -172,19 +194,109 @@ class ClickHouseEventStore:
     # ------------------------------------------------------------------
 
     def _get_client(self) -> Any:
-        """Return a thread-local ClickHouse client."""
+        """Return a thread-local ClickHouse client with round-robin failover.
+
+        On first use per thread, iterate candidate hosts and connect to the
+        first that accepts our connection. A cached client is pinned until
+        :meth:`_invalidate_client` is called (typically after a query error).
+        """
         client: Any = getattr(self._local, "client", None)
-        if client is None:
-            client = clickhouse_connect.get_client(
-                host=self._host,
-                port=self._port,
-                database=self._database,
-                username=self._user,
-                password=self._password,
-                secure=self._secure,
+        if client is not None:
+            return client
+
+        last_error: Exception | None = None
+        # Try up to len(hosts) * max_failover_attempts candidates.
+        total_attempts = len(self._hosts) * self._max_failover_attempts
+        for _ in range(total_attempts):
+            candidate = next(self._host_cycle)
+            try:
+                client = clickhouse_connect.get_client(
+                    host=candidate,
+                    port=self._port,
+                    database=self._database,
+                    username=self._user,
+                    password=self._password,
+                    secure=self._secure,
+                )
+                self._local.client = client
+                self._local.host = candidate
+                logger.debug("clickhouse_client_connected", host=candidate)
+                return client
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                logger.warning(
+                    "clickhouse_client_connect_failed",
+                    host=candidate,
+                    error=str(exc),
+                )
+                continue
+
+        raise RuntimeError(
+            f"Failed to connect to any ClickHouse host in {self._hosts}: {last_error}"
+        )
+
+    def _invalidate_client(self) -> None:
+        """Drop the cached thread-local client so the next call reconnects."""
+        client: Any = getattr(self._local, "client", None)
+        if client is not None:
+            with contextlib.suppress(Exception):
+                client.close()
+        self._local.client = None
+        self._local.host = None
+
+    # ------------------------------------------------------------------
+    # Cluster helpers
+    # ------------------------------------------------------------------
+
+    def create_distributed_table(
+        self,
+        local_table: str = "events_local",
+        distributed_table: str = "events",
+        *,
+        sharding_key: str = "rand()",
+    ) -> str:
+        """Create (or replace) the Distributed proxy table for the events cluster.
+
+        Returns the SQL statement that was executed. In unit tests without a
+        live ClickHouse, callers can read the generated SQL from
+        :meth:`get_distributed_table_ddl`.
+        """
+        if not self._cluster_name:
+            raise RuntimeError(
+                "create_distributed_table() requires cluster_name to be set on the backend"
             )
-            self._local.client = client
-        return client
+        sql = self.get_distributed_table_ddl(
+            cluster_name=self._cluster_name,
+            database=self._database,
+            local_table=local_table,
+            distributed_table=distributed_table,
+            sharding_key=sharding_key,
+        )
+        client = self._get_client()
+        client.command(sql)
+        logger.info(
+            "clickhouse_distributed_table_created",
+            cluster=self._cluster_name,
+            table=distributed_table,
+        )
+        return sql
+
+    @staticmethod
+    def get_distributed_table_ddl(
+        *,
+        cluster_name: str,
+        database: str,
+        local_table: str = "events_local",
+        distributed_table: str = "events",
+        sharding_key: str = "rand()",
+    ) -> str:
+        """Return the CREATE TABLE ... Distributed(...) DDL for the events table."""
+        return (
+            f"CREATE TABLE IF NOT EXISTS {database}.{distributed_table} "
+            f"ON CLUSTER {cluster_name} "
+            f"AS {database}.{local_table} "
+            f"ENGINE = Distributed({cluster_name}, {database}, {local_table}, {sharding_key})"
+        )
 
     # ------------------------------------------------------------------
     # DDL helpers (exposed for testing)

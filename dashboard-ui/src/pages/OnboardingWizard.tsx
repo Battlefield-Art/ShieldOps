@@ -401,6 +401,21 @@ export default function OnboardingWizard() {
 
     await delay(1800);
     setLaunchPhase("scanning");
+
+    // Guided first run -- kick off the Investigation Agent so the user
+    // immediately sees a real run after onboarding completes.
+    if (agents.investigation) {
+      try {
+        await post("/investigations", {
+          tenant_id: org.name || "default",
+          alert_summary: "Onboarding guided first run",
+          source: "onboarding_wizard",
+        });
+      } catch {
+        // non-fatal -- continue to the dashboard
+      }
+    }
+
     await delay(2200);
     setLaunchPhase("ready");
     await delay(1500);
@@ -741,14 +756,43 @@ function IntegrationStep({
     }));
   };
 
-  const handleSave = (integration: IntegrationDef) => {
+  // Map wizard integration ids to backend connector providers.
+  // Integrations not in this map are "local-only" and don't hit the API.
+  const BACKEND_PROVIDER_MAP: Record<string, string> = {
+    aws: "aws",
+    splunk: "splunk",
+    pagerduty: "pagerduty",
+    slack_alerts: "slack",
+    crowdstrike: "crowdstrike",
+    servicenow: "servicenow",
+  };
+
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testError, setTestError] = useState<Record<string, string>>({});
+
+  const handleSave = async (integration: IntegrationDef) => {
     const fields = state[integration.id]?.fields ?? {};
-    // Check required fields (at least the first field must be filled)
     const requiredFields = integration.fields.filter(
       (f) => !f.label.toLowerCase().includes("optional"),
     );
     const allFilled = requiredFields.every((f) => fields[f.key]?.trim());
     if (!allFilled) return;
+
+    const provider = BACKEND_PROVIDER_MAP[integration.id];
+    if (provider) {
+      setTestingId(integration.id);
+      setTestError((prev) => ({ ...prev, [integration.id]: "" }));
+      try {
+        await post("/connectors/setup", { provider, credentials: fields });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to save connector";
+        setTestError((prev) => ({ ...prev, [integration.id]: message }));
+        setTestingId(null);
+        return;
+      }
+      setTestingId(null);
+    }
 
     setState((prev) => ({
       ...prev,
@@ -897,12 +941,28 @@ function IntegrationStep({
                             : integration.fileUpload.label}
                         </button>
                       )}
+                      {testError[integration.id] && (
+                        <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-2 text-xs text-red-400">
+                          <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                          <span>{testError[integration.id]}</span>
+                        </div>
+                      )}
                       <button
                         onClick={() => handleSave(integration)}
-                        className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-500"
+                        disabled={testingId === integration.id}
+                        className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-500 disabled:opacity-60"
                       >
-                        <Check className="h-3.5 w-3.5" />
-                        Save & Connect
+                        {testingId === integration.id ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Testing connection...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-3.5 w-3.5" />
+                            Test & Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </motion.div>

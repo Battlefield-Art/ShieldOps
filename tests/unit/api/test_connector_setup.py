@@ -13,8 +13,6 @@ Covers:
 
 from __future__ import annotations
 
-import os
-from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock
 

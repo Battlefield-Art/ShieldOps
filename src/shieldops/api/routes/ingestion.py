@@ -28,6 +28,8 @@ from shieldops.api.models.ingestion import (
     IngestEvent,
     IngestResponse,
 )
+from shieldops.ingestion.kafka_consumer import get_consumer as _get_kafka_consumer
+from shieldops.ingestion.kafka_producer import get_producer as _get_kafka_producer
 
 logger = structlog.get_logger()
 
@@ -35,6 +37,10 @@ router = APIRouter(prefix="/ingestion", tags=["Ingestion"])
 
 # 24 hours in seconds for dedup TTL
 _DEDUP_TTL_SECONDS = 86_400
+
+# Backpressure: reject ingestion when consumer lag exceeds this many messages.
+# Configurable via ``set_backpressure_threshold``.
+_BACKPRESSURE_THRESHOLD: int = 10_000
 
 # Module-level Redis handle — set via ``set_redis()`` during app startup.
 _redis: Any | None = None
@@ -44,6 +50,37 @@ def set_redis(redis_client: Any) -> None:
     """Inject a Redis client for deduplication checks."""
     global _redis  # noqa: PLW0603
     _redis = redis_client
+
+
+def set_backpressure_threshold(threshold: int) -> None:
+    """Override the consumer-lag threshold used for 429 backpressure."""
+    global _BACKPRESSURE_THRESHOLD  # noqa: PLW0603
+    _BACKPRESSURE_THRESHOLD = max(0, int(threshold))
+
+
+async def _check_backpressure() -> None:
+    """Raise 429 if Kafka consumer lag exceeds the configured threshold."""
+    consumer = _get_kafka_consumer()
+    if consumer is None:
+        return
+    try:
+        lag = await consumer.lag()
+    except Exception as exc:
+        logger.warning("ingestion.lag_check_error", error=str(exc))
+        return
+    if lag > _BACKPRESSURE_THRESHOLD:
+        logger.warning(
+            "ingestion.backpressure_triggered",
+            lag=lag,
+            threshold=_BACKPRESSURE_THRESHOLD,
+        )
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Ingestion backpressure: consumer lag {lag} exceeds "
+                f"threshold {_BACKPRESSURE_THRESHOLD}"
+            ),
+        )
 
 
 def _metrics() -> MetricsRegistry:
@@ -113,6 +150,9 @@ async def ingest_events(
     ``IngestEvent`` objects.  Returns 202 Accepted with per-event status.
     """
     metrics = _metrics()
+
+    # Backpressure: reject early if downstream consumers are lagging.
+    await _check_backpressure()
 
     try:
         body = await request.json()

@@ -49,6 +49,73 @@ class Edge:
     routes: dict[str, str]
 
 
+def build_linear_graph(
+    state_type: type[BaseModel],
+    nodes: list[tuple[str, Callable[..., Any]]],
+    toolkit: Any | None = None,
+) -> Any:
+    """Build a linear (sequential) LangGraph StateGraph from a list of node functions.
+
+    This is a lightweight helper for the common case: a graph with N nodes
+    executed in order, no conditional routing. It replaces the boilerplate
+    `graph.add_node`/`graph.add_edge` sequence found in most linear agents.
+
+    Args:
+        state_type: Pydantic BaseModel subclass for the graph state.
+        nodes: Ordered list of ``(node_name, node_fn)`` tuples. Each ``node_fn``
+            may be either a unary ``async (state) -> dict`` coroutine or a
+            binary ``async (state, toolkit) -> dict`` coroutine. If binary and
+            ``toolkit`` is provided, it is bound automatically.
+        toolkit: Optional toolkit instance to bind to binary ``(state, toolkit)``
+            node functions.
+
+    Returns:
+        An uncompiled ``StateGraph`` ready for ``.compile()``.
+    """
+    import inspect
+
+    from langgraph.graph import END, StateGraph
+
+    if not nodes:
+        raise ValueError("At least one node is required.")
+
+    graph: Any = StateGraph(state_type)
+
+    def _to_dict(state: Any) -> dict[str, Any]:
+        if isinstance(state, BaseModel):
+            return state.model_dump()
+        if isinstance(state, dict):
+            return state
+        return dict(state)
+
+    def _wrap(fn: Callable[..., Any]) -> Callable[..., Any]:
+        sig = inspect.signature(fn)
+        n_params = len(sig.parameters)
+        if n_params >= 2 and toolkit is not None:
+
+            async def _binary(state: Any) -> dict[str, Any]:
+                return await fn(_to_dict(state), toolkit)  # type: ignore[no-any-return]
+
+            _binary.__name__ = getattr(fn, "__name__", "node")
+            return _binary
+
+        async def _unary(state: Any) -> dict[str, Any]:
+            return await fn(_to_dict(state))  # type: ignore[no-any-return]
+
+        _unary.__name__ = getattr(fn, "__name__", "node")
+        return _unary
+
+    for node_name, node_fn in nodes:
+        graph.add_node(node_name, _wrap(node_fn))
+
+    graph.set_entry_point(nodes[0][0])
+    for i in range(len(nodes) - 1):
+        graph.add_edge(nodes[i][0], nodes[i + 1][0])
+    graph.add_edge(nodes[-1][0], END)
+
+    return graph
+
+
 def define_agent(
     name: str,
     *,
