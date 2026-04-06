@@ -1325,6 +1325,108 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as e:
         logger.warning("business_metrics_routes_failed", error=str(e))
 
+    # Onboarding progress repository (TDD #1a-wire)
+    try:
+        from shieldops.api.routes import onboarding_progress as onboarding_routes
+        from shieldops.db.repositories.onboarding import OnboardingProgressRepository
+
+        # Bind a per-request session via a thin lazy wrapper
+        class _OnboardingRepoLazy:
+            def __init__(self, sf: Any) -> None:
+                self._sf = sf
+
+            async def get_progress(self, org_id: str) -> Any:
+                async with self._sf() as session:
+                    return await OnboardingProgressRepository(session).get_progress(org_id)
+
+            async def mark_step_complete(self, org_id: str, step: Any) -> Any:
+                async with self._sf() as session:
+                    return await OnboardingProgressRepository(session).mark_step_complete(
+                        org_id, step
+                    )
+
+            async def reset(self, org_id: str) -> int:
+                async with self._sf() as session:
+                    return await OnboardingProgressRepository(session).reset(org_id)
+
+        onboarding_routes.set_repository(_OnboardingRepoLazy(_sf_metrics))
+        logger.info("onboarding_progress_repo_initialized")
+    except Exception as e:
+        logger.warning("onboarding_progress_repo_failed", error=str(e))
+
+    # NL Query audit repository (TDD #1b-wire)
+    try:
+        from shieldops.agents.nl_query import audit as nl_audit_module
+        from shieldops.db.repositories.nl_query_audit import NLQueryAuditRepository
+
+        class _NLQueryAuditRepoLazy:
+            def __init__(self, sf: Any) -> None:
+                self._sf = sf
+
+            async def log_query(self, **kwargs: Any) -> Any:
+                async with self._sf() as session:
+                    return await NLQueryAuditRepository(session).log_query(**kwargs)
+
+            async def list_queries(self, org_id: str, *, limit: int = 50, offset: int = 0) -> Any:
+                async with self._sf() as session:
+                    return await NLQueryAuditRepository(session).list_queries(
+                        org_id, limit=limit, offset=offset
+                    )
+
+        nl_audit_module.set_repository(_NLQueryAuditRepoLazy(_sf_metrics))
+        logger.info("nl_query_audit_repo_initialized")
+    except Exception as e:
+        logger.warning("nl_query_audit_repo_failed", error=str(e))
+
+    # Deep health-check aggregator (TDD #8)
+    try:
+        from shieldops.api.health_aggregator import HealthAggregator, HealthCheck
+        from shieldops.api.routes import health_deep
+
+        async def _db_probe() -> tuple[bool, str]:
+            try:
+                async with _sf_metrics() as session:
+                    await session.execute(_text("SELECT 1"))
+                return (True, "ok")
+            except Exception as exc:
+                return (False, f"db error: {exc}")
+
+        from sqlalchemy import text as _text  # local import to avoid top-level
+
+        deep_agg = HealthAggregator(
+            checks=[HealthCheck(name="database", probe=_db_probe)],
+            cache_ttl_s=5.0,
+            per_check_timeout_s=2.0,
+        )
+        health_deep.set_aggregator(deep_agg)
+        app.include_router(health_deep.router, prefix=settings.api_prefix, tags=["Health"])
+        logger.info("health_deep_routes_initialized")
+    except Exception as e:
+        logger.warning("health_deep_routes_failed", error=str(e))
+
+    # Token bucket rate limiter (TDD #3-wire) — installed as ASGI middleware
+    try:
+        from shieldops.api.middleware.token_bucket_wiring import (
+            install_token_bucket_middleware,
+        )
+
+        install_token_bucket_middleware(
+            app,
+            capacity=getattr(settings, "rate_limit_capacity", 1000),
+            refill_rate_per_sec=getattr(settings, "rate_limit_refill_per_sec", 50.0),
+            exempt_paths=[
+                "/health",
+                "/ready",
+                "/metrics",
+                f"{settings.api_prefix}/health/deep",
+                f"{settings.api_prefix}/docs",
+                f"{settings.api_prefix}/openapi.json",
+            ],
+        )
+        logger.info("token_bucket_middleware_installed")
+    except Exception as e:
+        logger.warning("token_bucket_middleware_failed", error=str(e))
+
     # Data export / compliance report routes
     try:
         from shieldops.api.routes import exports
