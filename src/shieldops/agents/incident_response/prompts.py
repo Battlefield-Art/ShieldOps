@@ -59,3 +59,25 @@ Given the incident status and affected services:
 3. Identify dependencies between recovery steps
 
 Prioritize critical services and ensure validation before declaring recovery complete."""
+
+
+class TimelineSummaryOutput(BaseModel):
+    """Structured output for timeline reconstruction."""
+
+    summary: str = Field(description="Narrative summary of the incident timeline")
+    attack_chain: list[str] = Field(description="Ordered list of attack phases identified")
+    key_findings: list[str] = Field(description="Key findings from the investigation")
+    recommended_actions: list[str] = Field(description="Recommended follow-up actions")
+
+
+SYSTEM_TIMELINE = """\
+You are an expert incident responder reconstructing a post-incident timeline.
+
+Given chronological events from multiple sources (Splunk, CrowdStrike, CloudTrail, ShieldOps IR),
+produce:
+1. A narrative summary of what happened
+2. The attack chain (initial access, execution, persistence, etc.)
+3. Key findings
+4. Recommended follow-up actions
+
+Be precise and reference timestamps where possible."""

@@ -5,8 +5,10 @@ from langgraph.graph import END, StateGraph
 from shieldops.agents.incident_response.models import IncidentResponseState
 from shieldops.agents.incident_response.nodes import (
     assess_incident,
+    build_timeline,
     execute_containment,
     finalize_response,
+    notify_stakeholders,
     plan_containment,
     plan_eradication,
     plan_recovery,
@@ -28,7 +30,7 @@ def should_validate(state: IncidentResponseState) -> str:
     """Check if recovery validation is needed."""
     if state.recovery_tasks:
         return "validate_response"
-    return "finalize_response"
+    return "notify_stakeholders"
 
 
 def create_incident_response_graph() -> StateGraph[IncidentResponseState]:
@@ -38,7 +40,7 @@ def create_incident_response_graph() -> StateGraph[IncidentResponseState]:
         assess_incident -> [severity>=50? -> plan_containment -> execute_containment]
             -> plan_eradication -> plan_recovery
             -> [has_tasks? -> validate_response]
-            -> finalize_response
+            -> notify_stakeholders -> build_timeline -> finalize_response
     """
     graph = StateGraph(IncidentResponseState)
 
@@ -68,6 +70,14 @@ def create_incident_response_graph() -> StateGraph[IncidentResponseState]:
         traced_node("incident_response.validate_response", _agent)(validate_response),
     )
     graph.add_node(
+        "notify_stakeholders",
+        traced_node("incident_response.notify_stakeholders", _agent)(notify_stakeholders),
+    )
+    graph.add_node(
+        "build_timeline",
+        traced_node("incident_response.build_timeline", _agent)(build_timeline),
+    )
+    graph.add_node(
         "finalize_response",
         traced_node("incident_response.finalize_response", _agent)(finalize_response),
     )
@@ -89,9 +99,14 @@ def create_incident_response_graph() -> StateGraph[IncidentResponseState]:
     graph.add_conditional_edges(
         "plan_recovery",
         should_validate,
-        {"validate_response": "validate_response", "finalize_response": "finalize_response"},
+        {
+            "validate_response": "validate_response",
+            "notify_stakeholders": "notify_stakeholders",
+        },
     )
-    graph.add_edge("validate_response", "finalize_response")
+    graph.add_edge("validate_response", "notify_stakeholders")
+    graph.add_edge("notify_stakeholders", "build_timeline")
+    graph.add_edge("build_timeline", "finalize_response")
     graph.add_edge("finalize_response", END)
 
     return graph

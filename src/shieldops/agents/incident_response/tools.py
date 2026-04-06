@@ -8,6 +8,8 @@ from uuid import uuid4
 
 import structlog
 
+from shieldops.policy.engine import Decision, PolicyContext, evaluate
+
 logger = structlog.get_logger()
 
 # Severity weights used for blast-radius and priority scoring
@@ -337,6 +339,791 @@ class IncidentResponseToolkit:
         )
 
         return result
+
+    async def isolate_aws_security_group(
+        self,
+        instance_id: str,
+        vpc_id: str = "",
+    ) -> dict[str, Any]:
+        """Create and apply a restrictive security group to isolate an EC2 instance.
+
+        Creates a new SG that blocks all inbound/outbound traffic, then applies
+        it to the target instance, replacing existing SGs.
+
+        Returns:
+            Dict with status, instance_id, security_group_id, and prior_sgs.
+        """
+        logger.info(
+            "incident_response.isolate_aws_sg",
+            instance_id=instance_id,
+            vpc_id=vpc_id,
+        )
+
+        aws = self._get_connector("aws")
+        result: dict[str, Any] = {
+            "status": "completed",
+            "instance_id": instance_id,
+            "connector_used": False,
+            "executed_at": datetime.now(UTC).isoformat(),
+            "details": {},
+        }
+
+        if aws is not None:
+            try:
+                import asyncio
+                from functools import partial
+
+                loop = asyncio.get_running_loop()
+                aws._ensure_clients()
+                ec2 = aws._ec2_client
+
+                # Determine VPC ID from instance if not provided
+                if not vpc_id:
+                    desc = await loop.run_in_executor(
+                        None,
+                        partial(ec2.describe_instances, InstanceIds=[instance_id]),
+                    )
+                    reservations = desc.get("Reservations", [])
+                    if reservations and reservations[0].get("Instances"):
+                        vpc_id = reservations[0]["Instances"][0].get("VpcId", "")
+                        prior_sgs = [
+                            sg["GroupId"]
+                            for sg in reservations[0]["Instances"][0].get("SecurityGroups", [])
+                        ]
+                        result["details"]["prior_security_groups"] = prior_sgs
+
+                # Create restrictive SG
+                sg_name = f"shieldops-ir-isolate-{instance_id}-{uuid4().hex[:8]}"
+                create_resp = await loop.run_in_executor(
+                    None,
+                    partial(
+                        ec2.create_security_group,
+                        GroupName=sg_name,
+                        Description=f"ShieldOps IR isolation SG for {instance_id}",
+                        VpcId=vpc_id,
+                    ),
+                )
+                sg_id = create_resp["GroupId"]
+
+                # Revoke default egress rule (may not exist)
+                import contextlib
+
+                with contextlib.suppress(Exception):
+                    await loop.run_in_executor(
+                        None,
+                        partial(
+                            ec2.revoke_security_group_egress,
+                            GroupId=sg_id,
+                            IpPermissions=[
+                                {
+                                    "IpProtocol": "-1",
+                                    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                                }
+                            ],
+                        ),
+                    )
+
+                # Apply restrictive SG to instance
+                await loop.run_in_executor(
+                    None,
+                    partial(
+                        ec2.modify_instance_attribute,
+                        InstanceId=instance_id,
+                        Groups=[sg_id],
+                    ),
+                )
+
+                result["connector_used"] = True
+                result["details"]["security_group_id"] = sg_id
+                result["details"]["sg_name"] = sg_name
+                logger.info(
+                    "incident_response.aws_sg_isolation_success",
+                    instance_id=instance_id,
+                    sg_id=sg_id,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "incident_response.aws_sg_isolation_failed",
+                    instance_id=instance_id,
+                    error=str(exc),
+                )
+                result["status"] = "failed"
+                result["details"] = {"error": str(exc), "manual_action_required": True}
+        else:
+            result["status"] = "skipped"
+            result["details"] = {
+                "reason": "AWS connector not available",
+                "manual_action_required": True,
+            }
+
+        self._record_timeline_event(
+            "isolate_aws_sg",
+            f"AWS SG isolation for {instance_id} -> {result['status']}",
+            status=result["status"],
+        )
+        return result
+
+    async def quarantine_k8s_pod(
+        self,
+        namespace: str,
+        pod_name: str,
+    ) -> dict[str, Any]:
+        """Quarantine a Kubernetes pod by labeling it and applying a deny-all NetworkPolicy.
+
+        Adds a 'shieldops.io/quarantined=true' label to the pod, then creates
+        a NetworkPolicy that blocks all ingress/egress for quarantined pods.
+
+        Returns:
+            Dict with status, namespace, pod_name, network_policy_name, and details.
+        """
+        logger.info(
+            "incident_response.quarantine_k8s_pod",
+            namespace=namespace,
+            pod_name=pod_name,
+        )
+
+        k8s = self._get_connector("kubernetes")
+        result: dict[str, Any] = {
+            "status": "completed",
+            "namespace": namespace,
+            "pod_name": pod_name,
+            "connector_used": False,
+            "executed_at": datetime.now(UTC).isoformat(),
+            "details": {},
+        }
+
+        if k8s is not None:
+            try:
+                await k8s._ensure_client()
+                core_api = k8s._core_api
+
+                # Label the pod as quarantined
+                body = {
+                    "metadata": {
+                        "labels": {"shieldops.io/quarantined": "true"},
+                    }
+                }
+                await core_api.patch_namespaced_pod(
+                    name=pod_name,
+                    namespace=namespace,
+                    body=body,
+                )
+
+                # Create deny-all NetworkPolicy for quarantined pods
+                from kubernetes_asyncio import client as k8s_client
+
+                netpol_name = f"shieldops-quarantine-{pod_name[:40]}"
+                netpol = k8s_client.V1NetworkPolicy(
+                    metadata=k8s_client.V1ObjectMeta(
+                        name=netpol_name,
+                        namespace=namespace,
+                    ),
+                    spec=k8s_client.V1NetworkPolicySpec(
+                        pod_selector=k8s_client.V1LabelSelector(
+                            match_labels={"shieldops.io/quarantined": "true"},
+                        ),
+                        policy_types=["Ingress", "Egress"],
+                        ingress=[],
+                        egress=[],
+                    ),
+                )
+
+                networking_api = k8s_client.NetworkingV1Api()
+                await networking_api.create_namespaced_network_policy(
+                    namespace=namespace,
+                    body=netpol,
+                )
+
+                result["connector_used"] = True
+                result["details"]["network_policy_name"] = netpol_name
+                result["details"]["label_applied"] = "shieldops.io/quarantined=true"
+                logger.info(
+                    "incident_response.k8s_quarantine_success",
+                    namespace=namespace,
+                    pod_name=pod_name,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "incident_response.k8s_quarantine_failed",
+                    namespace=namespace,
+                    pod_name=pod_name,
+                    error=str(exc),
+                )
+                result["status"] = "failed"
+                result["details"] = {"error": str(exc), "manual_action_required": True}
+        else:
+            result["status"] = "skipped"
+            result["details"] = {
+                "reason": "Kubernetes connector not available",
+                "manual_action_required": True,
+            }
+
+        self._record_timeline_event(
+            "quarantine_k8s_pod",
+            f"K8s quarantine {namespace}/{pod_name} -> {result['status']}",
+            status=result["status"],
+        )
+        return result
+
+    # ------------------------------------------------------------------
+    # Eradication execution
+    # ------------------------------------------------------------------
+
+    async def execute_eradication(
+        self,
+        step_type: str,
+        target: str,
+        incident_type: str = "",
+    ) -> dict[str, Any]:
+        """Execute a single eradication step using real connectors.
+
+        Supports:
+            - process_termination: Kill processes via CrowdStrike RTR
+            - ioc_removal: Remove malicious files via CrowdStrike RTR
+            - credential_rotation: Deactivate AWS IAM access keys
+
+        Returns:
+            Dict with status, step_type, target, connector_used, and details.
+        """
+        logger.info(
+            "incident_response.execute_eradication",
+            step_type=step_type,
+            target=target,
+        )
+
+        result: dict[str, Any] = {
+            "status": "completed",
+            "step_type": step_type,
+            "target": target,
+            "connector_used": False,
+            "executed_at": datetime.now(UTC).isoformat(),
+            "details": {},
+        }
+
+        if step_type == "process_termination":
+            crowdstrike = self._get_connector("crowdstrike")
+            if crowdstrike is not None:
+                try:
+                    rtr_result = await crowdstrike._api_request(
+                        "POST",
+                        "/real-time-response/entities/command/v1",
+                        json={
+                            "device_id": target,
+                            "base_command": "kill",
+                            "command_string": f"kill {target}",
+                        },
+                    )
+                    result["connector_used"] = True
+                    result["details"] = rtr_result
+                except Exception as exc:
+                    result["status"] = "completed_with_fallback"
+                    result["details"] = {
+                        "fallback": True,
+                        "error": str(exc),
+                        "manual_action_required": True,
+                    }
+            else:
+                result["details"] = {
+                    "method": "manual",
+                    "description": f"Kill processes on {target}",
+                }
+
+        elif step_type == "ioc_removal":
+            crowdstrike = self._get_connector("crowdstrike")
+            if crowdstrike is not None:
+                try:
+                    rtr_result = await crowdstrike._api_request(
+                        "POST",
+                        "/real-time-response/entities/command/v1",
+                        json={
+                            "device_id": target,
+                            "base_command": "rm",
+                            "command_string": f"rm {target}",
+                        },
+                    )
+                    result["connector_used"] = True
+                    result["details"] = rtr_result
+                except Exception as exc:
+                    result["status"] = "completed_with_fallback"
+                    result["details"] = {"fallback": True, "error": str(exc)}
+            else:
+                result["details"] = {
+                    "method": "manual",
+                    "description": f"Remove IOC artifacts from {target}",
+                }
+
+        elif step_type == "credential_rotation":
+            aws = self._get_connector("aws")
+            if aws is not None:
+                try:
+                    import asyncio
+                    from functools import partial
+
+                    aws._ensure_clients()
+                    # Create IAM client
+                    import boto3
+
+                    iam_client = boto3.Session(region_name=aws._region).client("iam")
+                    loop = asyncio.get_running_loop()
+
+                    # List and deactivate access keys for the target user
+                    keys_resp = await loop.run_in_executor(
+                        None,
+                        partial(iam_client.list_access_keys, UserName=target),
+                    )
+                    deactivated_keys: list[str] = []
+                    for key_meta in keys_resp.get("AccessKeyMetadata", []):
+                        key_id = key_meta["AccessKeyId"]
+                        await loop.run_in_executor(
+                            None,
+                            partial(
+                                iam_client.update_access_key,
+                                UserName=target,
+                                AccessKeyId=key_id,
+                                Status="Inactive",
+                            ),
+                        )
+                        deactivated_keys.append(key_id)
+
+                    result["connector_used"] = True
+                    result["details"] = {
+                        "deactivated_keys": deactivated_keys,
+                        "user": target,
+                    }
+                except Exception as exc:
+                    result["status"] = "completed_with_fallback"
+                    result["details"] = {"fallback": True, "error": str(exc)}
+            else:
+                result["details"] = {
+                    "method": "manual",
+                    "description": f"Rotate credentials for {target}",
+                }
+
+        else:
+            result["details"] = {
+                "method": "generic",
+                "description": f"Execute {step_type} on {target}",
+            }
+
+        self._record_timeline_event(
+            "execute_eradication",
+            f"{step_type} on {target} -> {result['status']}",
+            status=result["status"],
+        )
+        return result
+
+    # ------------------------------------------------------------------
+    # Recovery execution
+    # ------------------------------------------------------------------
+
+    async def execute_restore(
+        self,
+        service: str,
+        task_type: str,
+    ) -> dict[str, Any]:
+        """Execute a recovery action using real connectors.
+
+        Supports:
+            - restore_from_snapshot: Log recovery action (snapshot restore)
+            - health_validation: Run health checks via connector
+            - uncontain_host: Lift CrowdStrike containment
+            - remove_isolation_sg: Remove restrictive AWS SG
+
+        Returns:
+            Dict with status, service, task_type, and details.
+        """
+        logger.info(
+            "incident_response.execute_restore",
+            service=service,
+            task_type=task_type,
+        )
+
+        result: dict[str, Any] = {
+            "status": "completed",
+            "service": service,
+            "task_type": task_type,
+            "connector_used": False,
+            "executed_at": datetime.now(UTC).isoformat(),
+            "details": {},
+        }
+
+        if task_type == "uncontain_host":
+            crowdstrike = self._get_connector("crowdstrike")
+            if crowdstrike is not None:
+                try:
+                    cs_result = await crowdstrike.lift_containment(service)
+                    result["connector_used"] = True
+                    result["details"] = cs_result
+                except Exception as exc:
+                    result["status"] = "failed"
+                    result["details"] = {"error": str(exc)}
+            else:
+                result["status"] = "skipped"
+                result["details"] = {"reason": "CrowdStrike connector not available"}
+
+        elif task_type == "remove_isolation_sg":
+            aws = self._get_connector("aws")
+            if aws is not None:
+                try:
+                    import asyncio
+                    from functools import partial
+
+                    aws._ensure_clients()
+                    loop = asyncio.get_running_loop()
+                    # service here is the SG ID to remove
+                    await loop.run_in_executor(
+                        None,
+                        partial(
+                            aws._ec2_client.delete_security_group,
+                            GroupId=service,
+                        ),
+                    )
+                    result["connector_used"] = True
+                    result["details"] = {"deleted_sg": service}
+                except Exception as exc:
+                    result["status"] = "failed"
+                    result["details"] = {"error": str(exc)}
+            else:
+                result["status"] = "skipped"
+                result["details"] = {"reason": "AWS connector not available"}
+
+        elif task_type == "health_validation":
+            # Try to validate health via available connector
+            for provider in ("crowdstrike", "aws", "kubernetes"):
+                connector = self._get_connector(provider)
+                if connector is not None:
+                    try:
+                        health = await connector.get_health(service)
+                        result["connector_used"] = True
+                        result["details"] = {
+                            "provider": provider,
+                            "healthy": health.healthy,
+                            "status": health.status,
+                        }
+                        if not health.healthy:
+                            result["status"] = "warning"
+                        break
+                    except Exception as exc:
+                        logger.debug(
+                            "incident_response.health_check_skipped",
+                            provider=provider,
+                            error=str(exc),
+                        )
+                        continue
+
+            if not result["connector_used"]:
+                result["details"] = {
+                    "method": "manual",
+                    "description": f"Verify health of {service}",
+                }
+
+        else:
+            # Generic recovery: restore_from_snapshot, service_restart, etc.
+            result["details"] = {
+                "method": "logged",
+                "description": f"Recovery action {task_type} for {service} recorded",
+                "recovery_action": task_type,
+            }
+
+        self._record_timeline_event(
+            "execute_restore",
+            f"{task_type} for {service} -> {result['status']}",
+            status=result["status"],
+        )
+        return result
+
+    # ------------------------------------------------------------------
+    # Phase gate (OPA policy evaluation)
+    # ------------------------------------------------------------------
+
+    async def evaluate_phase_gate(
+        self,
+        phase: str,
+        incident_id: str,
+        severity: str,
+        environment: str = "prod",
+        target_resources: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Evaluate OPA policy gate before proceeding to the next IR phase.
+
+        Each IR phase (contain, eradicate, recover) must pass policy evaluation.
+
+        Returns:
+            Dict with allowed bool, decision, reason, and phase.
+        """
+        logger.info(
+            "incident_response.evaluate_phase_gate",
+            phase=phase,
+            incident_id=incident_id,
+        )
+
+        risk_scores = {
+            "contain": 0.4 if severity in ("low", "medium") else 0.6,
+            "eradicate": 0.5 if severity in ("low", "medium") else 0.7,
+            "recover": 0.3 if severity in ("low", "medium") else 0.5,
+        }
+
+        try:
+            context = PolicyContext(
+                agent_name="incident_response",
+                action_type=f"ir_{phase}",
+                target_resources=target_resources or [],
+                environment=environment,
+                risk_score=risk_scores.get(phase, 0.5),
+                metadata={
+                    "incident_id": incident_id,
+                    "severity": severity,
+                    "phase": phase,
+                },
+            )
+
+            decision = await evaluate(
+                action=f"Incident response {phase} phase for {incident_id}",
+                context=context,
+            )
+
+            gate_result = {
+                "allowed": decision.allowed,
+                "decision": decision.decision.value,
+                "reason": decision.reason,
+                "phase": phase,
+                "matched_policies": decision.matched_policies,
+                "blast_radius": decision.blast_radius,
+            }
+        except Exception as exc:
+            logger.warning(
+                "incident_response.phase_gate_error",
+                phase=phase,
+                error=str(exc),
+            )
+            # Fail-open for IR: security incidents must not be blocked by infra failures
+            gate_result = {
+                "allowed": True,
+                "decision": Decision.APPROVED.value,
+                "reason": f"Phase gate evaluation failed ({exc}); fail-open for IR.",
+                "phase": phase,
+                "matched_policies": [],
+                "blast_radius": 0,
+            }
+
+        self._record_timeline_event(
+            "phase_gate",
+            f"{phase} gate: {gate_result['decision']}",
+            status="completed" if gate_result["allowed"] else "blocked",
+        )
+        return gate_result
+
+    # ------------------------------------------------------------------
+    # Multi-source timeline reconstruction
+    # ------------------------------------------------------------------
+
+    async def build_investigation_timeline(
+        self,
+        incident_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Build a chronological timeline from Splunk, CrowdStrike, and CloudTrail.
+
+        Queries each available connector for events within the incident timeframe,
+        merges them into a unified chronological timeline.
+
+        Returns:
+            Dict with events list, sources queried, and total event count.
+        """
+        incident_id = incident_data.get("incident_id", "unknown")
+        affected_host = incident_data.get("affected_host", "*")
+        timeframe = incident_data.get("timeframe", "-24h")
+
+        logger.info(
+            "incident_response.build_investigation_timeline",
+            incident_id=incident_id,
+        )
+
+        events: list[dict[str, Any]] = []
+        sources_queried: list[str] = []
+
+        # --- Splunk logs ---
+        splunk = self._get_connector("splunk")
+        if splunk is not None:
+            try:
+                spl_query = (
+                    f'index=security host="{affected_host}" '
+                    f"| table _time, host, source, sourcetype, action, user, src_ip, dest_ip"
+                )
+                splunk_results = await splunk.search_spl(
+                    query=spl_query,
+                    earliest=timeframe,
+                    latest="now",
+                )
+                for entry in splunk_results:
+                    events.append(
+                        {
+                            "timestamp": entry.get("_time", ""),
+                            "source": "splunk",
+                            "event_type": entry.get("sourcetype", ""),
+                            "action": entry.get("action", ""),
+                            "host": entry.get("host", affected_host),
+                            "user": entry.get("user", ""),
+                            "details": entry,
+                        }
+                    )
+                sources_queried.append("splunk")
+            except Exception as exc:
+                logger.warning("incident_response.splunk_timeline_failed", error=str(exc))
+
+        # --- CrowdStrike detections ---
+        crowdstrike = self._get_connector("crowdstrike")
+        if crowdstrike is not None:
+            try:
+                detections = await crowdstrike.get_detections(
+                    filter_query=f"device.hostname:'{affected_host}'",
+                    limit=50,
+                )
+                for det in detections:
+                    events.append(
+                        {
+                            "timestamp": det.get("created_timestamp", ""),
+                            "source": "crowdstrike",
+                            "event_type": "detection",
+                            "action": det.get("behaviors", [{}])[0].get("tactic", "")
+                            if det.get("behaviors")
+                            else "",
+                            "host": affected_host,
+                            "user": det.get("behaviors", [{}])[0].get("user_name", "")
+                            if det.get("behaviors")
+                            else "",
+                            "details": det,
+                        }
+                    )
+                sources_queried.append("crowdstrike")
+            except Exception as exc:
+                logger.warning("incident_response.crowdstrike_timeline_failed", error=str(exc))
+
+        # --- AWS CloudTrail ---
+        aws = self._get_connector("aws")
+        if aws is not None:
+            try:
+                from datetime import timedelta
+
+                from shieldops.models.base import TimeRange
+
+                end = datetime.now(UTC)
+                start = end - timedelta(hours=24)
+                ct_events = await aws.get_events(
+                    resource_id=affected_host,
+                    time_range=TimeRange(start=start, end=end),
+                )
+                for ct in ct_events:
+                    events.append(
+                        {
+                            "timestamp": str(ct.get("event_time", "")),
+                            "source": "cloudtrail",
+                            "event_type": ct.get("event_name", ""),
+                            "action": ct.get("event_name", ""),
+                            "host": ct.get("resource_name", affected_host),
+                            "user": ct.get("username", ""),
+                            "details": ct,
+                        }
+                    )
+                sources_queried.append("cloudtrail")
+            except Exception as exc:
+                logger.warning("incident_response.cloudtrail_timeline_failed", error=str(exc))
+
+        # Include internal timeline events
+        for internal_event in self._timeline:
+            events.append(
+                {
+                    "timestamp": internal_event["timestamp"],
+                    "source": "shieldops_ir",
+                    "event_type": internal_event["action"],
+                    "action": internal_event["action"],
+                    "host": affected_host,
+                    "user": "shieldops_agent",
+                    "details": internal_event,
+                }
+            )
+        sources_queried.append("shieldops_ir")
+
+        # Sort chronologically
+        events.sort(key=lambda e: e.get("timestamp", ""))
+
+        self._record_timeline_event(
+            "build_investigation_timeline",
+            f"Built timeline with {len(events)} events from {', '.join(sources_queried)}",
+        )
+
+        return {
+            "events": events,
+            "event_count": len(events),
+            "sources_queried": sources_queried,
+            "incident_id": incident_id,
+            "generated_at": datetime.now(UTC).isoformat(),
+        }
+
+    # ------------------------------------------------------------------
+    # ServiceNow ticket creation
+    # ------------------------------------------------------------------
+
+    async def create_servicenow_ticket(
+        self,
+        incident_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Create a ServiceNow incident ticket for tracking.
+
+        Returns:
+            Dict with status, ticket details or fallback info.
+        """
+        incident_id = incident_data.get("incident_id", "unknown")
+        severity = incident_data.get("severity", "medium")
+        incident_type = incident_data.get("type", "unknown")
+
+        logger.info(
+            "incident_response.create_servicenow_ticket",
+            incident_id=incident_id,
+        )
+
+        servicenow = self._get_connector("servicenow")
+        if servicenow is not None:
+            try:
+                urgency_map = {"critical": "1", "high": "2", "medium": "3", "low": "4"}
+                ticket = await servicenow.create_incident(
+                    short_description=(
+                        f"[ShieldOps IR] {severity.upper()} {incident_type} — {incident_id}"
+                    ),
+                    description=(
+                        f"Automated incident response initiated by ShieldOps.\n"
+                        f"Incident ID: {incident_id}\n"
+                        f"Type: {incident_type}\n"
+                        f"Severity: {severity}\n"
+                    ),
+                    urgency=urgency_map.get(severity, "3"),
+                    impact=urgency_map.get(severity, "3"),
+                    assignment_group="Security Operations",
+                )
+                self._record_timeline_event(
+                    "create_servicenow_ticket",
+                    f"Created ServiceNow ticket for {incident_id}",
+                )
+                return {
+                    "status": "created",
+                    "ticket": ticket,
+                    "incident_id": incident_id,
+                }
+            except Exception as exc:
+                logger.warning(
+                    "incident_response.servicenow_ticket_failed",
+                    error=str(exc),
+                )
+                return {
+                    "status": "failed",
+                    "error": str(exc),
+                    "incident_id": incident_id,
+                }
+        else:
+            return {
+                "status": "skipped",
+                "reason": "ServiceNow connector not available",
+                "incident_id": incident_id,
+            }
 
     async def collect_evidence(
         self,
