@@ -362,6 +362,186 @@ class TestGuardDutyWebhook:
 
 
 # ---------------------------------------------------------------------------
+# Azure Activity Log e2e
+# ---------------------------------------------------------------------------
+
+
+class TestAzureActivityWebhook:
+    """Azure Activity Log webhook -> OCSF -> DuckDB -> query."""
+
+    def test_single_event(self, _env: Any) -> None:
+        client, _ = _env
+
+        event = {
+            "operationName": "Microsoft.Compute/virtualMachines/start/action",
+            "eventTimestamp": "2026-04-05T10:15:00Z",
+            "resourceId": (
+                "/subscriptions/sub-1/resourceGroups/rg-1/providers/"
+                "Microsoft.Compute/virtualMachines/vm-42"
+            ),
+            "category": {"value": "Administrative"},
+            "level": "Informational",
+            "caller": "alice@example.com",
+            "status": {"value": "Succeeded"},
+        }
+
+        resp = client.post(
+            "/api/v1/ingest/webhook/azure-activity",
+            json=event,
+            headers={"X-Org-Id": _TEST_ORG},
+        )
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert body["source"] == "azure_activity"
+        assert body["events_accepted"] == 1
+        assert len(body["event_ids"]) == 1
+
+        items = _query_events(client, "azure_activity")
+        assert len(items) >= 1
+        assert items[0]["source_provider"] == "azure_activity"
+
+    def test_event_hub_records_wrapper(self, _env: Any) -> None:
+        client, _ = _env
+
+        payload = {
+            "records": [
+                {
+                    "operationName": "Microsoft.Storage/storageAccounts/write",
+                    "eventTimestamp": "2026-04-05T11:00:00Z",
+                    "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1",
+                    "category": {"value": "Administrative"},
+                    "level": "Informational",
+                    "caller": "bob@example.com",
+                    "status": {"value": "Succeeded"},
+                },
+                {
+                    "operationName": "Microsoft.KeyVault/vaults/secrets/read",
+                    "eventTimestamp": "2026-04-05T11:05:00Z",
+                    "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/kv-1",
+                    "category": {"value": "DataAccess"},
+                    "level": "Informational",
+                    "caller": "carol@example.com",
+                    "status": {"value": "Succeeded"},
+                },
+            ]
+        }
+
+        resp = client.post(
+            "/api/v1/ingest/webhook/azure-activity",
+            json=payload,
+            headers={"X-Org-Id": _TEST_ORG},
+        )
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert body["events_accepted"] == 2
+
+        items = _query_events(client, "azure_activity")
+        assert len(items) == 2
+
+    def test_empty_payload_returns_400(self, _env: Any) -> None:
+        client, _ = _env
+        resp = client.post(
+            "/api/v1/ingest/webhook/azure-activity",
+            json={"unrelated": "data"},
+            headers={"X-Org-Id": _TEST_ORG},
+        )
+        assert resp.status_code == 400
+
+
+# ---------------------------------------------------------------------------
+# VPC Flow Logs e2e
+# ---------------------------------------------------------------------------
+
+
+class TestVPCFlowWebhook:
+    """VPC Flow Logs webhook -> OCSF -> DuckDB -> query."""
+
+    def test_direct_dict_flow(self, _env: Any) -> None:
+        client, _ = _env
+
+        flow = {
+            "version": 2,
+            "account_id": "123456789012",
+            "interface_id": "eni-0abc",
+            "srcaddr": "10.0.1.5",
+            "dstaddr": "10.0.2.10",
+            "srcport": 51234,
+            "dstport": 443,
+            "protocol": "6",
+            "packets": 20,
+            "bytes": 4096,
+            "start": 1712312000,
+            "end": 1712312060,
+            "action": "ACCEPT",
+            "log_status": "OK",
+        }
+
+        resp = client.post(
+            "/api/v1/ingest/webhook/vpc-flow",
+            json=flow,
+            headers={"X-Org-Id": _TEST_ORG},
+        )
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert body["source"] == "vpc_flow"
+        assert body["events_accepted"] == 1
+
+        items = _query_events(client, "vpc_flow")
+        assert len(items) >= 1
+        assert items[0]["source_provider"] == "vpc_flow"
+
+    def test_cloudwatch_logs_subscription(self, _env: Any) -> None:
+        client, _ = _env
+
+        # Space-separated VPC Flow Log v2 format:
+        # version account-id interface-id srcaddr dstaddr srcport dstport
+        # protocol packets bytes start end action log-status
+        line1 = (
+            "2 123456789012 eni-0abc 10.0.1.5 10.0.2.10 "
+            "51234 443 6 20 4096 1712312000 1712312060 ACCEPT OK"
+        )
+        line2 = (
+            "2 123456789012 eni-0abc 198.51.100.7 10.0.2.10 "
+            "44567 22 6 5 512 1712312100 1712312160 REJECT OK"
+        )
+        payload = {
+            "messageType": "DATA_MESSAGE",
+            "owner": "123456789012",
+            "logGroup": "/aws/vpc/flowlogs",
+            "logStream": "eni-0abc-all",
+            "logEvents": [
+                {"id": "1", "timestamp": 1712312000000, "message": line1},
+                {"id": "2", "timestamp": 1712312100000, "message": line2},
+            ],
+        }
+
+        resp = client.post(
+            "/api/v1/ingest/webhook/vpc-flow",
+            json=payload,
+            headers={"X-Org-Id": _TEST_ORG},
+        )
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert body["events_accepted"] == 2
+
+        items = _query_events(client, "vpc_flow")
+        assert len(items) == 2
+
+    def test_empty_payload_returns_400(self, _env: Any) -> None:
+        client, _ = _env
+        resp = client.post(
+            "/api/v1/ingest/webhook/vpc-flow",
+            json={"unrelated": "data"},
+            headers={"X-Org-Id": _TEST_ORG},
+        )
+        assert resp.status_code == 400
+
+
+# ---------------------------------------------------------------------------
 # Cross-source test
 # ---------------------------------------------------------------------------
 

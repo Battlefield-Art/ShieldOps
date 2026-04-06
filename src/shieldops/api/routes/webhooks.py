@@ -1,4 +1,4 @@
-"""Webhook receiver endpoints — CloudTrail, CrowdStrike, GuardDuty.
+"""Webhook receiver endpoints — CloudTrail, CrowdStrike, GuardDuty, Azure Activity, VPC Flow.
 
 Each endpoint accepts vendor-native webhook payloads, extracts events,
 and pushes them through the ingestion pipeline (OCSF normalize + DuckDB store).
@@ -292,6 +292,195 @@ def _extract_guardduty_events(body: Any) -> list[dict[str, Any]]:
     # findings wrapper
     if "findings" in body and isinstance(body["findings"], list):
         return [f for f in body["findings"] if isinstance(f, dict)]
+
+    return []
+
+
+# ---------------------------------------------------------------------------
+# Azure Activity Log webhook
+# ---------------------------------------------------------------------------
+
+
+@router.post("/azure-activity", status_code=202, response_model=WebhookResponse)
+async def ingest_azure_activity(
+    request: Request,
+    x_org_id: str | None = Header(default=None, alias="X-Org-Id"),
+) -> WebhookResponse:
+    """Ingest Azure Activity Log events.
+
+    Accepts:
+    - Event Hub capture format (``{"records": [...]}``).
+    - Capitalized records wrapper (``{"Records": [...]}``).
+    - Single Activity Log event (dict with ``operationName``/``eventTimestamp``).
+    - Plain array of Activity Log events.
+    """
+    org_id = _extract_org_id(x_org_id)
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload") from None
+
+    events = _extract_azure_activity_events(body)
+
+    if not events:
+        raise HTTPException(
+            status_code=400,
+            detail="No Azure Activity Log events found in payload",
+        )
+
+    batch = await process_batch(events, "azure_activity", org_id)
+
+    logger.info(
+        "webhook.azure_activity",
+        org_id=org_id,
+        events_accepted=batch.accepted,
+        events_rejected=batch.rejected,
+    )
+
+    return WebhookResponse(
+        source="azure_activity",
+        events_accepted=batch.accepted,
+        events_rejected=batch.rejected,
+        event_ids=batch.event_ids,
+    )
+
+
+def _extract_azure_activity_events(body: Any) -> list[dict[str, Any]]:
+    """Extract Azure Activity Log events from Event Hub / direct payload formats."""
+    if isinstance(body, list):
+        return [e for e in body if isinstance(e, dict)]
+
+    if not isinstance(body, dict):
+        return []
+
+    # Event Hub capture format (lowercase records)
+    if "records" in body:
+        records = body["records"]
+        if isinstance(records, list):
+            return [r for r in records if isinstance(r, dict)]
+
+    # Capitalized Records wrapper
+    if "Records" in body:
+        records = body["Records"]
+        if isinstance(records, list):
+            return [r for r in records if isinstance(r, dict)]
+
+    # Single Activity Log event
+    if "operationName" in body or "eventTimestamp" in body:
+        return [body]
+
+    return []
+
+
+# ---------------------------------------------------------------------------
+# VPC Flow Logs webhook
+# ---------------------------------------------------------------------------
+
+
+@router.post("/vpc-flow", status_code=202, response_model=WebhookResponse)
+async def ingest_vpc_flow(
+    request: Request,
+    x_org_id: str | None = Header(default=None, alias="X-Org-Id"),
+) -> WebhookResponse:
+    """Ingest AWS VPC Flow Log records.
+
+    Accepts:
+    - CloudWatch Logs subscription format (``{"logEvents": [{"message": "..."}]}``)
+      where each ``message`` is a space-separated VPC Flow Log v2 record.
+    - Kinesis Firehose envelope (``{"records": [{"data": "..."}]}``).
+    - Direct dict flow record (with ``srcaddr``/``src_ip`` keys).
+    - Plain array of flow records.
+    """
+    org_id = _extract_org_id(x_org_id)
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload") from None
+
+    events = _extract_vpc_flow_events(body)
+
+    if not events:
+        raise HTTPException(
+            status_code=400,
+            detail="No VPC Flow Log records found in payload",
+        )
+
+    batch = await process_batch(events, "vpc_flow", org_id)
+
+    logger.info(
+        "webhook.vpc_flow",
+        org_id=org_id,
+        events_accepted=batch.accepted,
+        events_rejected=batch.rejected,
+    )
+
+    return WebhookResponse(
+        source="vpc_flow",
+        events_accepted=batch.accepted,
+        events_rejected=batch.rejected,
+        event_ids=batch.event_ids,
+    )
+
+
+def _extract_vpc_flow_events(body: Any) -> list[dict[str, Any]]:
+    """Extract VPC Flow Log records from CloudWatch/Firehose/direct formats."""
+    import base64
+    import json as json_mod
+
+    if isinstance(body, list):
+        out: list[dict[str, Any]] = []
+        for e in body:
+            if isinstance(e, dict):
+                out.append(e)
+            elif isinstance(e, str):
+                out.append({"message": e})
+        return out
+
+    if not isinstance(body, dict):
+        return []
+
+    # CloudWatch Logs subscription: {"logEvents": [{"message": "..."}]}
+    if "logEvents" in body and isinstance(body["logEvents"], list):
+        out = []
+        for entry in body["logEvents"]:
+            if isinstance(entry, dict) and "message" in entry:
+                out.append({"message": str(entry["message"])})
+        return out
+
+    # Kinesis Firehose envelope: {"records": [{"data": "<base64>"}]}
+    if "records" in body and isinstance(body["records"], list):
+        out = []
+        for rec in body["records"]:
+            if not isinstance(rec, dict):
+                continue
+            data = rec.get("data")
+            if isinstance(data, str):
+                # Try base64 decode; fallback to raw string
+                try:
+                    decoded = base64.b64decode(data).decode("utf-8", errors="replace")
+                except Exception:
+                    decoded = data
+                # Firehose VPC flow data may contain JSON or raw space-separated lines
+                try:
+                    parsed = json_mod.loads(decoded)
+                    if isinstance(parsed, dict):
+                        out.append(parsed)
+                        continue
+                except json_mod.JSONDecodeError:
+                    pass
+                for line in decoded.splitlines():
+                    if line.strip():
+                        out.append({"message": line})
+            elif isinstance(rec, dict) and ("srcaddr" in rec or "src_ip" in rec):
+                out.append(rec)
+        if out:
+            return out
+
+    # Direct dict flow record
+    if "srcaddr" in body or "src_ip" in body or "message" in body:
+        return [body]
 
     return []
 
