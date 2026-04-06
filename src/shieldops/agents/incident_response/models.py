@@ -78,6 +78,15 @@ class IncidentResponseState(BaseModel):
     validation_passed: bool = False
     validation_results: dict[str, Any] = Field(default_factory=dict)
 
+    # Notifications
+    notification_results: dict[str, Any] = Field(default_factory=dict)
+
+    # Timeline
+    timeline: dict[str, Any] = Field(default_factory=dict)
+
+    # Phase gate decisions (OPA policy evaluation at each IR phase)
+    phase_gate_results: dict[str, dict[str, Any]] = Field(default_factory=dict)
+
     # Workflow tracking
     session_start: datetime | None = None
     session_duration_ms: int = 0
