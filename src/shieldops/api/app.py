@@ -1291,6 +1291,25 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as e:
         logger.warning("agent_runs_routes_failed", error=str(e))
 
+    # Agent metrics dashboard routes (aggregated view over agent_runs)
+    try:
+        from shieldops.api.routes import agent_metrics_api
+        from shieldops.db.repositories.agent_run import (
+            AgentRunRepository as _AgentRunRepositoryForMetrics,
+        )
+        from shieldops.db.session import get_session_factory as _get_sf_metrics
+
+        _sf_metrics = _get_sf_metrics()
+        agent_metrics_api.set_run_repository(_AgentRunRepositoryForMetrics(_sf_metrics))
+        app.include_router(
+            agent_metrics_api.router,
+            prefix=settings.api_prefix,
+            tags=["Agent Metrics"],
+        )
+        logger.info("agent_metrics_routes_initialized")
+    except Exception as e:
+        logger.warning("agent_metrics_routes_failed", error=str(e))
+
     # Data export / compliance report routes
     try:
         from shieldops.api.routes import exports
