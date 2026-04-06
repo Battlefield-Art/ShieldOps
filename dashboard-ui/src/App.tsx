@@ -32,6 +32,7 @@ const Cost = lazy(() => import("./pages/Cost"));
 const Learning = lazy(() => import("./pages/Learning"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const AgentPerformance = lazy(() => import("./pages/AgentPerformance"));
+const AgentMetrics = lazy(() => import("./pages/AgentMetrics"));
 const Settings = lazy(() => import("./pages/Settings"));
 const VulnerabilityList = lazy(() => import("./pages/VulnerabilityList"));
 const VulnerabilityDetailPage = lazy(() => import("./pages/VulnerabilityDetail"));
@@ -777,6 +778,7 @@ export default function App() {
               <Route path="learning" element={<Learning />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="agent-performance" element={<AgentPerformance />} />
+              <Route path="agent-metrics" element={<AgentMetrics />} />
               <Route path="marketplace" element={<Marketplace />} />
               <Route path="playbooks" element={<Playbooks />} />
               <Route path="playbooks/editor" element={<PlaybookEditor />} />
