@@ -101,13 +101,14 @@ def test_demotion_criteria_24h_below_threshold(
     engine: PromotionEngine, tracker: FitnessTracker
 ) -> None:
     """GA agent whose latest day is below 0.70 should be demoted."""
-    # First promote the agent.
-    _seed_daily(tracker, "delta", [0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90])
-    engine.evaluate_agent("delta", org_id="acme")
+    # First promote the agent — seed history ending two days ago.
+    base = time.time() - 2 * ONE_DAY
+    _seed_daily(tracker, "delta", [0.90] * 7, end_ts=base)
+    engine.evaluate_agent("delta", org_id="acme", now=base)
     assert engine.get_status("delta", "acme").status == AgentLifecycleStatus.GA
 
-    # Now inject a low-fitness trailing day.
-    _seed_daily(tracker, "delta", [0.50])
+    # Now inject a low-fitness trailing day strictly after the history.
+    _seed_daily(tracker, "delta", [0.50], end_ts=time.time())
     result = engine.evaluate_agent("delta", org_id="acme")
     assert result.action == "demoted"
     assert result.new_status == AgentLifecycleStatus.BETA
