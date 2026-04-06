@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!--
+    ShieldOps ClickHouse user configuration.
+
+    The `shieldops` application user's password hash is injected at boot by
+    the EC2 user-data script in infrastructure/terraform/aws/production/
+    clickhouse.tf which pulls the plaintext from AWS Secrets Manager, SHA-256
+    hashes it, and writes /etc/clickhouse-server/users.d/shieldops.xml. This
+    file ships the default profiles and the read-only `readonly` user.
+
+    DO NOT store plaintext passwords in this file. The `PLACEHOLDER_HASH`
+    below must be replaced at deployment time.
+-->
+<clickhouse>
+    <profiles>
+        <default>
+            <max_memory_usage>10000000000</max_memory_usage>
+            <use_uncompressed_cache>0</use_uncompressed_cache>
+            <load_balancing>in_order</load_balancing>
+            <max_execution_time>300</max_execution_time>
+            <readonly>0</readonly>
+        </default>
+
+        <readonly>
+            <readonly>1</readonly>
+            <max_execution_time>60</max_execution_time>
+            <max_memory_usage>5000000000</max_memory_usage>
+        </readonly>
+    </profiles>
+
+    <users>
+        <!-- Default user is disabled in production. -->
+        <default>
+            <password></password>
+            <networks>
+                <ip>::1</ip>
+                <ip>127.0.0.1</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+        </default>
+
+        <!--
+            Primary application user. The password_sha256_hex is replaced at
+            boot by the EC2 user-data script from AWS Secrets Manager.
+        -->
+        <shieldops>
+            <password_sha256_hex>PLACEHOLDER_HASH</password_sha256_hex>
+            <networks>
+                <ip>10.0.0.0/16</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+            <access_management>1</access_management>
+        </shieldops>
+
+        <shieldops_readonly>
+            <password_sha256_hex>PLACEHOLDER_HASH</password_sha256_hex>
+            <networks>
+                <ip>10.0.0.0/16</ip>
+            </networks>
+            <profile>readonly</profile>
+            <quota>default</quota>
+        </shieldops_readonly>
+    </users>
+
+    <quotas>
+        <default>
+            <interval>
+                <duration>3600</duration>
+                <queries>0</queries>
+                <errors>0</errors>
+                <result_rows>0</result_rows>
+                <read_rows>0</read_rows>
+                <execution_time>0</execution_time>
+            </interval>
+        </default>
+    </quotas>
+</clickhouse>

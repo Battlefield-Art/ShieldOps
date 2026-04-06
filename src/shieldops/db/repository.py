@@ -1860,6 +1860,130 @@ class Repository:
             result = await session.execute(stmt)
             return [self._remediation_to_dict(r) for r in result.scalars().all()]
 
+    # ── Connector Configs ─────────────────────────────────────────────
+
+    @staticmethod
+    def _connector_to_dict(record: Any) -> dict[str, Any]:
+        return {
+            "id": record.id,
+            "org_id": record.org_id,
+            "provider": record.provider,
+            "encrypted_credentials": record.encrypted_credentials,
+            "status": record.status,
+            "last_health_check": (
+                record.last_health_check.isoformat() if record.last_health_check else None
+            ),
+            "last_error": record.last_error or "",
+            "created_at": record.created_at.isoformat() if record.created_at else None,
+            "updated_at": record.updated_at.isoformat() if record.updated_at else None,
+        }
+
+    async def upsert_connector_config(
+        self,
+        org_id: str,
+        provider: str,
+        encrypted_credentials: str,
+        status: str = "active",
+        last_health_check: datetime | None = None,
+        last_error: str = "",
+    ) -> dict[str, Any]:
+        from shieldops.db.models_connector import ConnectorConfig
+
+        async with self._sf() as session:
+            stmt = select(ConnectorConfig).where(
+                ConnectorConfig.org_id == org_id,
+                ConnectorConfig.provider == provider,
+            )
+            result = await session.execute(stmt)
+            record = result.scalar_one_or_none()
+            if record is None:
+                record = ConnectorConfig(
+                    org_id=org_id,
+                    provider=provider,
+                    encrypted_credentials=encrypted_credentials,
+                    status=status,
+                    last_health_check=last_health_check,
+                    last_error=last_error,
+                )
+                session.add(record)
+            else:
+                record.encrypted_credentials = encrypted_credentials
+                record.status = status
+                record.last_health_check = last_health_check
+                record.last_error = last_error
+            await session.commit()
+            await session.refresh(record)
+            return self._connector_to_dict(record)
+
+    async def list_connector_configs(self, org_id: str) -> list[dict[str, Any]]:
+        from shieldops.db.models_connector import ConnectorConfig
+
+        async with self._sf() as session:
+            stmt = (
+                select(ConnectorConfig)
+                .where(ConnectorConfig.org_id == org_id)
+                .order_by(ConnectorConfig.created_at.desc())
+            )
+            result = await session.execute(stmt)
+            return [self._connector_to_dict(r) for r in result.scalars().all()]
+
+    async def get_connector_config(self, org_id: str, provider: str) -> dict[str, Any] | None:
+        from shieldops.db.models_connector import ConnectorConfig
+
+        async with self._sf() as session:
+            stmt = select(ConnectorConfig).where(
+                ConnectorConfig.org_id == org_id,
+                ConnectorConfig.provider == provider,
+            )
+            result = await session.execute(stmt)
+            record = result.scalar_one_or_none()
+            return self._connector_to_dict(record) if record else None
+
+    async def update_connector_config(
+        self,
+        org_id: str,
+        provider: str,
+        status: str | None = None,
+        last_health_check: datetime | None = None,
+        last_error: str | None = None,
+    ) -> dict[str, Any] | None:
+        from shieldops.db.models_connector import ConnectorConfig
+
+        async with self._sf() as session:
+            stmt = select(ConnectorConfig).where(
+                ConnectorConfig.org_id == org_id,
+                ConnectorConfig.provider == provider,
+            )
+            result = await session.execute(stmt)
+            record = result.scalar_one_or_none()
+            if record is None:
+                return None
+            if status is not None:
+                record.status = status
+            if last_health_check is not None:
+                record.last_health_check = last_health_check
+            if last_error is not None:
+                record.last_error = last_error
+            await session.commit()
+            await session.refresh(record)
+            return self._connector_to_dict(record)
+
+    async def delete_connector_config(self, org_id: str, provider: str) -> bool:
+        from shieldops.db.models_connector import ConnectorConfig
+
+        async with self._sf() as session:
+            stmt = select(ConnectorConfig).where(
+                ConnectorConfig.org_id == org_id,
+                ConnectorConfig.provider == provider,
+            )
+            result = await session.execute(stmt)
+            record = result.scalar_one_or_none()
+            if record is None:
+                return False
+            await session.delete(record)
+            await session.commit()
+            return True
+
     async def export_compliance_data(
         self,
         start_date: datetime | None = None,

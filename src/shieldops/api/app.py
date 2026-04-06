@@ -1447,6 +1447,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as e:
         logger.warning("onboarding_routes_failed", error=str(e))
 
+    # Connector setup wizard routes
+    try:
+        from shieldops.api.routes import connector_setup
+
+        connector_setup.set_repository(repository)
+        app.include_router(
+            connector_setup.router,
+            prefix=settings.api_prefix,
+            tags=["Connectors"],
+        )
+        logger.info("connector_setup_routes_initialized")
+    except Exception as e:
+        logger.warning("connector_setup_routes_failed", error=str(e))
+
     # ── Redis Cache Layer ──────────────────────────────────────────
     redis_cache = None
     try:

@@ -28,6 +28,10 @@ from pydantic import BaseModel, Field
 from shieldops.api.auth.dependencies import get_current_user
 from shieldops.api.auth.models import UserResponse
 
+# Import registers ConnectorConfig on Base.metadata so create_all / migrations
+# pick it up when the app starts.
+from shieldops.db import models_connector  # noqa: F401
+
 logger = structlog.get_logger()
 
 router = APIRouter(prefix="/connectors", tags=["Connectors"])
@@ -38,6 +42,9 @@ SUPPORTED_PROVIDERS: dict[str, list[str]] = {
     "aws": ["access_key_id", "secret_access_key", "region"],
     "crowdstrike": ["client_id", "client_secret", "base_url"],
     "splunk": ["host", "token"],
+    "pagerduty": ["api_key"],
+    "slack": ["bot_token"],
+    "servicenow": ["instance_url", "username", "password"],
 }
 
 
