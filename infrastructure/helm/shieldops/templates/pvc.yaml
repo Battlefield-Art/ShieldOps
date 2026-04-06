@@ -1,0 +1,19 @@
+{{- if and .Values.storage.enabled (not .Values.storage.existingClaim) -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "shieldops.fullname" . }}-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "shieldops.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - {{ .Values.storage.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size | default "20Gi" | quote }}
+  {{- if .Values.storage.storageClassName }}
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
+  {{- end }}
+{{- end }}

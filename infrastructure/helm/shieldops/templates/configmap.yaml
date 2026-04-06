@@ -13,3 +13,24 @@ data:
   {{ $key }}: {{ $value | quote }}
   {{- end }}
   {{- end }}
+  # ---- Self-hosted packaging (issue #230) ----
+  SHIELDOPS_LLM_PROVIDER: {{ .Values.llm.provider | default "anthropic" | quote }}
+  {{- if .Values.llm.model }}
+  SHIELDOPS_LLM_MODEL: {{ .Values.llm.model | quote }}
+  {{- end }}
+  {{- if .Values.llm.region }}
+  SHIELDOPS_LLM_REGION: {{ .Values.llm.region | quote }}
+  {{- end }}
+  {{- if .Values.llm.endpoint }}
+  SHIELDOPS_LLM_ENDPOINT: {{ .Values.llm.endpoint | quote }}
+  {{- end }}
+  SHIELDOPS_DATABASE_EMBEDDED: {{ .Values.database.embedded | quote }}
+  SHIELDOPS_DATABASE_EMBEDDED_DRIVER: {{ .Values.database.embeddedDriver | default "duckdb" | quote }}
+  SHIELDOPS_REDIS_EMBEDDED: {{ .Values.redisCompat.embedded | quote }}
+  SHIELDOPS_KAFKA_ENABLED: {{ .Values.kafka.enabled | quote }}
+  SHIELDOPS_INGESTION_MAX_GB_PER_DAY: {{ .Values.ingestion.maxGbPerDay | quote }}
+  {{- if .Values.ingestion.tenantOverridesFile }}
+  SHIELDOPS_INGESTION_TENANT_OVERRIDES_FILE: {{ .Values.ingestion.tenantOverridesFile | quote }}
+  {{- end }}
+  SHIELDOPS_STORAGE_PATH: {{ .Values.storage.path | default "/data" | quote }}
+  SHIELDOPS_AIR_GAPPED: {{ .Values.airGapped | quote }}
