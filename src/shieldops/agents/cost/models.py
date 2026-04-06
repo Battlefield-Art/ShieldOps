@@ -1,6 +1,7 @@
 """State models for the Cost Agent LangGraph workflow."""
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -102,6 +103,9 @@ class CostAnalysisState(BaseModel):
 
     # Savings summary
     cost_savings: CostSavings | None = None
+
+    # Policy decisions for cost-modifying recommendations
+    policy_decisions: list[dict[str, Any]] = Field(default_factory=list)
 
     # Workflow tracking
     analysis_start: datetime | None = None

@@ -16,6 +16,7 @@ from shieldops.agents.cost.nodes import set_toolkit
 from shieldops.agents.cost.tools import CostToolkit
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.models.base import Environment
+from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
 logger = structlog.get_logger()
 
@@ -35,11 +36,13 @@ class CostRunner:
         self,
         connector_router: ConnectorRouter | None = None,
         billing_sources: list[Any] | None = None,
+        org_id: str = "",
     ) -> None:
         self._toolkit = CostToolkit(
             connector_router=connector_router,
             billing_sources=billing_sources or [],
         )
+        self._org_id = org_id
         set_toolkit(self._toolkit)
 
         graph = create_cost_graph()
@@ -112,6 +115,38 @@ class CostRunner:
             )
 
             self._analyses[analysis_id] = final_state
+
+            # Persist run and audit log
+            await persist_agent_run(
+                agent_name="cost",
+                org_id=self._org_id,
+                input_data={
+                    "environment": environment.value,
+                    "analysis_type": analysis_type,
+                    "period": period,
+                },
+                output_data={
+                    "monthly_spend": final_state.total_monthly_spend,
+                    "anomalies": len(final_state.cost_anomalies),
+                    "recommendations": len(final_state.optimization_recommendations),
+                    "potential_savings": final_state.total_potential_savings,
+                },
+                duration_ms=final_state.analysis_duration_ms,
+            )
+            await write_audit_log(
+                action="cost_analysis_completed",
+                actor="cost_agent",
+                target=environment.value,
+                result="success",
+                org_id=self._org_id,
+                metadata={
+                    "analysis_id": analysis_id,
+                    "monthly_spend": final_state.total_monthly_spend,
+                    "potential_savings": final_state.total_potential_savings,
+                    "recommendation_count": len(final_state.optimization_recommendations),
+                },
+            )
+
             return final_state
 
         except Exception as e:
@@ -128,6 +163,27 @@ class CostRunner:
                 current_step="failed",
             )
             self._analyses[analysis_id] = error_state
+
+            # Persist failed run
+            await persist_agent_run(
+                agent_name="cost",
+                org_id=self._org_id,
+                input_data={
+                    "environment": environment.value,
+                    "analysis_type": analysis_type,
+                    "period": period,
+                },
+                error_message=str(e),
+            )
+            await write_audit_log(
+                action="cost_analysis_failed",
+                actor="cost_agent",
+                target=environment.value,
+                result="failure",
+                org_id=self._org_id,
+                metadata={"analysis_id": analysis_id, "error": str(e)},
+            )
+
             return error_state
 
     def get_analysis(self, analysis_id: str) -> CostAnalysisState | None:

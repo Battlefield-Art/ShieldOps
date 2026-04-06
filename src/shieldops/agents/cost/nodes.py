@@ -30,6 +30,8 @@ from shieldops.agents.cost.prompts import (
     OptimizationAssessmentResult,
 )
 from shieldops.agents.cost.tools import CostToolkit
+from shieldops.policy.engine import PolicyContext
+from shieldops.policy.engine import evaluate as policy_evaluate
 from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
@@ -213,8 +215,65 @@ async def detect_anomalies(state: CostAnalysisState) -> dict[str, Any]:
     }
 
 
+async def _evaluate_cost_action(
+    rec: OptimizationRecommendation,
+    environment: str,
+) -> dict[str, Any]:
+    """Evaluate a cost-modifying recommendation against OPA policy.
+
+    Categories that modify infrastructure (terminate, resize) require
+    policy approval. Read-only categories pass through automatically.
+    """
+    cost_modifying_categories = {"rightsizing", "unused_resources", "scheduling", "terminate"}
+    if rec.category not in cost_modifying_categories:
+        return {"resource_id": rec.resource_id, "allowed": True, "decision": "skipped"}
+
+    risk_score = 1.0 - rec.confidence  # lower confidence => higher risk
+    try:
+        context = PolicyContext(
+            agent_name="cost",
+            action_type=f"cost_{rec.category}",
+            target_resources=[rec.resource_id],
+            environment=environment,
+            risk_score=risk_score,
+            metadata={
+                "monthly_savings": rec.monthly_savings,
+                "effort": rec.effort,
+                "category": rec.category,
+            },
+        )
+        decision = await policy_evaluate(
+            action=f"Cost optimization: {rec.category} on {rec.resource_id}",
+            context=context,
+        )
+        return {
+            "resource_id": rec.resource_id,
+            "category": rec.category,
+            "allowed": decision.allowed,
+            "decision": decision.decision.value,
+            "reason": decision.reason,
+        }
+    except Exception as e:
+        logger.warning(
+            "cost_policy_evaluation_failed",
+            resource_id=rec.resource_id,
+            error=str(e),
+        )
+        return {
+            "resource_id": rec.resource_id,
+            "allowed": False,
+            "decision": "error",
+            "reason": str(e),
+        }
+
+
 async def recommend_optimizations(state: CostAnalysisState) -> dict[str, Any]:
-    """Identify and prioritize cost optimization opportunities."""
+    """Identify and prioritize cost optimization opportunities.
+
+    Uses rule-based detection augmented with LLM-powered FinOps recommendations.
+    All cost-modifying recommendations are evaluated against OPA policy before
+    being included in the final output.
+    """
     start = datetime.now(UTC)
     toolkit = _get_toolkit()
 
@@ -235,15 +294,19 @@ async def recommend_optimizations(state: CostAnalysisState) -> dict[str, Any]:
         for rc in state.resource_costs
     ]
 
+    # 1. Rule-based optimization scan
     opt_data = await toolkit.get_optimization_opportunities(rc_dicts)
 
     recommendations: list[OptimizationRecommendation] = []
+    seen_resource_ids: set[str] = set()
     for raw in opt_data.get("recommendations", []):
+        rid = raw.get("resource_id", "unknown")
+        seen_resource_ids.add(rid)
         recommendations.append(
             OptimizationRecommendation(
                 id=f"opt-{uuid4().hex[:8]}",
                 category=raw.get("category", "general"),
-                resource_id=raw.get("resource_id", "unknown"),
+                resource_id=rid,
                 service=raw.get("service", "unknown"),
                 current_monthly_cost=raw.get("current_monthly_cost", 0),
                 projected_monthly_cost=raw.get("projected_monthly_cost", 0),
@@ -255,13 +318,48 @@ async def recommend_optimizations(state: CostAnalysisState) -> dict[str, Any]:
             )
         )
 
-    total_savings = opt_data.get("total_potential_monthly_savings", 0)
+    # 2. LLM-powered FinOps recommendations (augment rule-based)
+    billing_summary = {
+        "total_monthly": state.total_monthly_spend,
+        "total_daily": state.total_daily_spend,
+        "by_service": state.spend_by_service,
+        "resource_costs": rc_dicts,
+    }
+    llm_recs = await toolkit.generate_recommendations(billing_summary)
+    for raw in llm_recs:
+        rid = raw.get("resource_id", "unknown")
+        if rid not in seen_resource_ids:
+            seen_resource_ids.add(rid)
+            recommendations.append(
+                OptimizationRecommendation(
+                    id=f"opt-{uuid4().hex[:8]}",
+                    category=raw.get("category", "general"),
+                    resource_id=rid,
+                    service=raw.get("service", "unknown"),
+                    current_monthly_cost=raw.get("current_monthly_cost", 0),
+                    projected_monthly_cost=raw.get("projected_monthly_cost", 0),
+                    monthly_savings=raw.get("monthly_savings", 0),
+                    confidence=raw.get("confidence", 0.5),
+                    effort=raw.get("effort", "medium"),
+                    description=raw.get("description", ""),
+                    implementation_steps=raw.get("implementation_steps", []),
+                )
+            )
+
+    total_savings = sum(r.monthly_savings for r in recommendations)
     output_summary = (
         f"{len(recommendations)} optimizations identified, "
         f"${total_savings:.0f}/mo potential savings"
     )
 
-    # LLM assessment
+    # 3. OPA policy check for cost-modifying recommendations
+    policy_decisions: list[dict[str, Any]] = []
+    env_str = state.target_environment.value if state.target_environment else "dev"
+    for rec in recommendations:
+        decision = await _evaluate_cost_action(rec, env_str)
+        policy_decisions.append(decision)
+
+    # 4. LLM assessment of the full recommendation set
     if recommendations:
         context_lines = [
             "## Optimization Opportunities",
@@ -300,12 +398,13 @@ async def recommend_optimizations(state: CostAnalysisState) -> dict[str, Any]:
         input_summary=f"Analyzing {len(state.resource_costs)} resources for optimization",
         output_summary=output_summary,
         duration_ms=_elapsed_ms(start),
-        tool_used="optimizer + llm",
+        tool_used="optimizer + llm + opa",
     )
 
     return {
         "optimization_recommendations": recommendations,
         "total_potential_savings": total_savings,
+        "policy_decisions": policy_decisions,
         "reasoning_chain": [*state.reasoning_chain, step],
         "current_step": "recommend_optimizations",
     }
