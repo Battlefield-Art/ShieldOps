@@ -89,6 +89,9 @@ sdk = [
     "opentelemetry-sdk>=1.25",
     "opentelemetry-exporter-otlp-proto-http>=1.25",
 ]
+clickhouse = [
+    "clickhouse-connect>=0.7.0",
+]
 
 [project.scripts]
 shieldops = "shieldops.cli.main:cli"
@@ -160,6 +163,8 @@ module = [
     "locust.*",
     "duckdb",
     "duckdb.*",
+    "clickhouse_connect",
+    "clickhouse_connect.*",
     "openpyxl",
     "openpyxl.*",
 ]

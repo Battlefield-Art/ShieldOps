@@ -1,4 +1,4 @@
-"""ShieldOps embedded columnar storage — DuckDB backend for security events."""
+"""ShieldOps columnar storage — DuckDB and ClickHouse backends for security events."""
 
 from __future__ import annotations
 
