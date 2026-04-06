@@ -13921,6 +13921,27 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix=settings.api_prefix, tags=["Auth"])
 
     # Register route modules
+    # Agent Status Monitor — MUST be registered BEFORE `agents.router` because
+    # the latter owns `/agents/{agent_id}` and would otherwise shadow
+    # `/agents/status`. FastAPI resolves routes in registration order.
+    try:
+        from shieldops.api.routes import agent_status as agent_status_routes
+        from shieldops.db.repositories.agent_run import (
+            AgentRunRepository as _AgentRunRepositoryForStatus,
+        )
+        from shieldops.db.session import get_session_factory as _get_sf_status
+
+        _sf_status = _get_sf_status()
+        agent_status_routes.set_run_repository(_AgentRunRepositoryForStatus(_sf_status))
+        app.include_router(
+            agent_status_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Agent Status"],
+        )
+        logger.info("agent_status_routes_initialized")
+    except Exception as e:
+        logger.warning("agent_status_routes_failed", error=str(e))
+
     app.include_router(agents.router, prefix=settings.api_prefix, tags=["Agents"])
     app.include_router(investigations.router, prefix=settings.api_prefix, tags=["Investigations"])
     app.include_router(remediations.router, prefix=settings.api_prefix, tags=["Remediations"])

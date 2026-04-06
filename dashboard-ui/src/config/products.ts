@@ -204,6 +204,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/app/pipeline", icon: GitBranch, label: "Pipeline" },
       { to: "/app/analytics", icon: BarChart3, label: "Analytics" },
       { to: "/app/agent-performance", icon: Gauge, label: "Agent Perf" },
+      { to: "/app/agent-status-monitor", icon: Activity, label: "Agent Status" },
       { to: "/app/predictions", icon: TrendingUp, label: "Predictions" },
       { to: "/app/capacity", icon: HardDrive, label: "Capacity" },
       { to: "/app/learning", icon: Brain, label: "Learning" },
