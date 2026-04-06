@@ -148,6 +148,48 @@ output "cloudwatch_dashboard_url" {
   value       = "https://${local.region}.console.aws.amazon.com/cloudwatch/home?region=${local.region}#dashboards:name=${aws_cloudwatch_dashboard.main.dashboard_name}"
 }
 
+output "operations_dashboard_url" {
+  description = "URL of the operations CloudWatch dashboard"
+  value       = "https://${local.region}.console.aws.amazon.com/cloudwatch/home?region=${local.region}#dashboards:name=${aws_cloudwatch_dashboard.operations.dashboard_name}"
+}
+
+# ---------------------------------------------------------------------------
+# Backup Verification
+# ---------------------------------------------------------------------------
+
+output "backup_test_lambda_arn" {
+  description = "ARN of the weekly backup verification Lambda"
+  value       = aws_lambda_function.backup_test.arn
+}
+
+output "backup_test_schedule" {
+  description = "Cron schedule for backup verification"
+  value       = aws_cloudwatch_event_rule.backup_test_weekly.schedule_expression
+}
+
+# ---------------------------------------------------------------------------
+# PagerDuty
+# ---------------------------------------------------------------------------
+
+output "pagerduty_critical_topic_arn" {
+  description = "ARN of the dedicated SNS topic for PagerDuty critical paging"
+  value       = aws_sns_topic.pagerduty_critical.arn
+}
+
+# ---------------------------------------------------------------------------
+# Log Archive
+# ---------------------------------------------------------------------------
+
+output "log_archive_bucket" {
+  description = "S3 bucket name for long-term log archive"
+  value       = aws_s3_bucket.log_archive.id
+}
+
+output "log_archive_firehose_arn" {
+  description = "ARN of the Kinesis Firehose for CloudWatch Logs archival"
+  value       = aws_kinesis_firehose_delivery_stream.log_archive.arn
+}
+
 # ---------------------------------------------------------------------------
 # WAF
 # ---------------------------------------------------------------------------
@@ -164,4 +206,43 @@ output "waf_web_acl_arn" {
 output "github_actions_deploy_role_arn" {
   description = "ARN of the IAM role for GitHub Actions OIDC deploy"
   value       = aws_iam_role.github_actions_deploy.arn
+}
+
+# ---------------------------------------------------------------------------
+# DNS / TLS / Status Page
+# ---------------------------------------------------------------------------
+
+output "api_url" {
+  description = "Public HTTPS URL for the ShieldOps API"
+  value       = "https://${var.subdomain_api}.${var.domain_name}"
+}
+
+output "app_url" {
+  description = "Public HTTPS URL for the ShieldOps dashboard (app)"
+  value       = "https://${var.subdomain_app}.${var.domain_name}"
+}
+
+output "status_url" {
+  description = "Public URL for the ShieldOps status page (external provider)"
+  value       = "https://${var.subdomain_status}.${var.domain_name}"
+}
+
+output "certificate_arn" {
+  description = "ARN of the ACM certificate wired to the ALB HTTPS listener"
+  value       = local.effective_certificate_arn
+}
+
+output "route53_zone_id" {
+  description = "ID of the Route53 hosted zone for the ShieldOps domain"
+  value       = data.aws_route53_zone.main.zone_id
+}
+
+output "status_page_sns_topic_arn" {
+  description = "ARN of the SNS topic feeding the external status page provider"
+  value       = aws_sns_topic.status_page.arn
+}
+
+output "canary_names" {
+  description = "Names of the CloudWatch Synthetics canaries monitoring public services"
+  value       = { for k, c in aws_synthetics_canary.service : k => c.name }
 }

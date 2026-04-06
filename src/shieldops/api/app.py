@@ -1311,6 +1311,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as e:
         logger.warning("agent_metrics_routes_failed", error=str(e))
 
+    # Business Value dashboards (MTTD/MTTR/Cost/ROI)
+    try:
+        from shieldops.api.routes import business_metrics
+
+        business_metrics.set_run_repository(_AgentRunRepositoryForMetrics(_sf_metrics))
+        app.include_router(
+            business_metrics.router,
+            prefix=settings.api_prefix,
+            tags=["Business Metrics"],
+        )
+        logger.info("business_metrics_routes_initialized")
+    except Exception as e:
+        logger.warning("business_metrics_routes_failed", error=str(e))
+
     # Data export / compliance report routes
     try:
         from shieldops.api.routes import exports
@@ -14087,6 +14101,23 @@ def create_app() -> FastAPI:
         logger.info("event_query_routes_registered")
     except Exception as _eq_err:
         logger.warning("event_query_routes_skipped", error=str(_eq_err))
+
+    # ── Natural Language Query API (English → SQL → results) ───────
+    try:
+        from shieldops.agents.nl_query import NLQueryRunner
+        from shieldops.api.routes import nl_query as nl_query_routes
+        from shieldops.storage.singleton import get_event_store as _get_nlq_store
+
+        _nlq_store = _get_nlq_store()
+        nl_query_routes.set_runner(NLQueryRunner(storage=_nlq_store))
+        app.include_router(
+            nl_query_routes.router,
+            prefix=settings.api_prefix,
+            tags=["Natural Language Query"],
+        )
+        logger.info("nl_query_routes_registered")
+    except Exception as _nlq_err:
+        logger.warning("nl_query_routes_skipped", error=str(_nlq_err))
 
     # ── Phase 142-145 agent routes ────────────────────────────────────
     _p142_routes: dict[str, Any] = {}

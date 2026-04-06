@@ -1,316 +1,404 @@
 """Natural language query agent toolkit.
 
-Takes English questions about security events, generates SQL,
-executes against the columnar store, and returns markdown results.
+Takes English questions about security events, generates SQL, validates it,
+executes against the columnar EventStore, and formats results.
 """
 
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
+from shieldops.agents.nl_query.models import OutputFormat, QueryType
+from shieldops.agents.nl_query.prompts import (
+    SQL_GENERATION_PROMPT,
+    SQLGenerationOutput,
+)
+
 logger = structlog.get_logger()
 
-# SQL injection prevention — only these operations allowed
-ALLOWED_SQL_KEYWORDS = frozenset(
-    {
-        "select",
-        "from",
-        "where",
-        "and",
-        "or",
-        "not",
-        "in",
-        "like",
-        "between",
-        "order",
-        "by",
-        "asc",
-        "desc",
-        "limit",
-        "count",
-        "sum",
-        "avg",
-        "min",
-        "max",
-        "group",
-        "having",
-        "as",
-        "distinct",
-        "case",
-        "when",
-        "then",
-        "else",
-        "end",
-        "is",
-        "null",
-        "join",
-        "left",
-        "right",
-        "inner",
-        "on",
-        "union",
-    }
+
+# ---------------------------------------------------------------------------
+# SQL safety — whitelists and blocklists
+# ---------------------------------------------------------------------------
+
+ALLOWED_TABLES = frozenset({"events"})
+
+# Statements that mutate data or schema — always rejected.
+BLOCKED_KEYWORDS = re.compile(
+    r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|REPLACE|MERGE|GRANT|REVOKE"
+    r"|ATTACH|DETACH|COPY|EXPORT|IMPORT|LOAD|CALL|EXECUTE|EXEC|PRAGMA|VACUUM)\b",
+    re.IGNORECASE,
 )
 
-BLOCKED_SQL_KEYWORDS = frozenset(
-    {
-        "insert",
-        "update",
-        "delete",
-        "drop",
-        "alter",
-        "create",
-        "truncate",
-        "exec",
-        "execute",
-        "grant",
-        "revoke",
-        "commit",
-        "rollback",
-        "savepoint",
-    }
+# Dangerous file/system functions — always rejected.
+DANGEROUS_FUNCS = re.compile(
+    r"\b(read_csv|read_parquet|read_json|write_parquet|write_csv|httpfs|system|"
+    r"shell_exec|load_extension|install)\s*\(",
+    re.IGNORECASE,
 )
 
-# Common query templates
-QUERY_TEMPLATES = {
-    "daily_threat_briefing": """
-SELECT severity, COUNT(*) as count, source_provider
-FROM events
-WHERE timestamp >= datetime('now', '-24 hours')
-GROUP BY severity, source_provider
-ORDER BY count DESC
-LIMIT 20
-""",
-    "weekly_compliance_summary": """
-SELECT category_name, severity, COUNT(*) as count
-FROM events
-WHERE timestamp >= datetime('now', '-7 days')
-GROUP BY category_name, severity
-ORDER BY count DESC
-""",
-    "top_sources": """
-SELECT source_provider, COUNT(*) as event_count
-FROM events
-GROUP BY source_provider
-ORDER BY event_count DESC
-LIMIT 10
-""",
-}
+# Only SELECT statements allowed.
+SELECT_PATTERN = re.compile(r"^\s*SELECT\s", re.IGNORECASE | re.DOTALL)
+
+# No statement chaining.
+SEMICOLON_PATTERN = re.compile(r";\s*\S")
+
+# Cap on results returned (defense-in-depth vs LIMIT in SQL).
+MAX_ROWS = 10_000
+
+
+# ---------------------------------------------------------------------------
+# Heuristic templates for common query patterns
+# ---------------------------------------------------------------------------
+
+HEURISTIC_TEMPLATES: list[tuple[re.Pattern[str], str, QueryType]] = [
+    (
+        re.compile(r"\b(count|how many|total|number of).*event", re.IGNORECASE),
+        "SELECT COUNT(*) AS event_count FROM events WHERE org_id = :org_id LIMIT 1",
+        QueryType.COUNT,
+    ),
+    (
+        re.compile(r"\b(top|most|highest)\b.*\b(source|provider)", re.IGNORECASE),
+        (
+            "SELECT source_provider, COUNT(*) AS cnt FROM events "
+            "WHERE org_id = :org_id GROUP BY source_provider "
+            "ORDER BY cnt DESC LIMIT 10"
+        ),
+        QueryType.AGGREGATION,
+    ),
+    (
+        re.compile(r"\b(by|per|group).*(type|event_type)", re.IGNORECASE),
+        (
+            "SELECT event_type, COUNT(*) AS cnt FROM events "
+            "WHERE org_id = :org_id GROUP BY event_type "
+            "ORDER BY cnt DESC LIMIT 100"
+        ),
+        QueryType.AGGREGATION,
+    ),
+    (
+        re.compile(r"\b(by|per|group).*severity", re.IGNORECASE),
+        (
+            "SELECT severity, COUNT(*) AS cnt FROM events "
+            "WHERE org_id = :org_id GROUP BY severity ORDER BY cnt DESC LIMIT 10"
+        ),
+        QueryType.AGGREGATION,
+    ),
+    (
+        re.compile(r"\b(critical|high severity)", re.IGNORECASE),
+        (
+            "SELECT * FROM events WHERE org_id = :org_id "
+            "AND severity IN ('critical','high') "
+            "ORDER BY timestamp DESC LIMIT 100"
+        ),
+        QueryType.TABULAR,
+    ),
+    (
+        re.compile(r"\b(trend|over time|by day|daily|per day)", re.IGNORECASE),
+        (
+            "SELECT DATE_TRUNC('day', timestamp) AS day, COUNT(*) AS cnt "
+            "FROM events WHERE org_id = :org_id "
+            "GROUP BY day ORDER BY day DESC LIMIT 90"
+        ),
+        QueryType.TIME_SERIES,
+    ),
+    (
+        re.compile(r"\b(show|list|recent|latest).*event", re.IGNORECASE),
+        (
+            "SELECT event_id, timestamp, event_type, severity, source_provider "
+            "FROM events WHERE org_id = :org_id ORDER BY timestamp DESC LIMIT 100"
+        ),
+        QueryType.TABULAR,
+    ),
+]
+
+
+# ---------------------------------------------------------------------------
+# Validation helpers
+# ---------------------------------------------------------------------------
+
+
+class SQLValidationError(ValueError):
+    """Raised when generated SQL fails safety validation."""
+
+
+def validate_sql(sql: str) -> None:
+    """Validate SQL is a safe read-only SELECT against allowed tables.
+
+    Raises SQLValidationError on any violation.
+    """
+    stripped = sql.strip().rstrip(";").strip()
+    if not stripped:
+        raise SQLValidationError("Empty SQL")
+
+    if not SELECT_PATTERN.match(stripped):
+        raise SQLValidationError("Only SELECT statements are permitted")
+
+    if BLOCKED_KEYWORDS.search(stripped):
+        raise SQLValidationError("Blocked SQL keyword detected")
+
+    if DANGEROUS_FUNCS.search(stripped):
+        raise SQLValidationError("Dangerous function call detected")
+
+    if SEMICOLON_PATTERN.search(stripped):
+        raise SQLValidationError("Statement chaining is not permitted")
+
+    # Table whitelist — look for FROM / JOIN targets.
+    tables = re.findall(
+        r"\b(?:FROM|JOIN)\s+([A-Za-z_][A-Za-z0-9_]*)",
+        stripped,
+        flags=re.IGNORECASE,
+    )
+    for table in tables:
+        if table.lower() not in ALLOWED_TABLES:
+            raise SQLValidationError(f"Table '{table}' is not in the allow-list")
+
+
+def enforce_org_filter(sql: str, org_id: str) -> tuple[str, dict[str, Any]]:
+    """Ensure the query filters by ``org_id`` for tenant isolation.
+
+    Wraps the user SQL in an outer SELECT that enforces the org filter and
+    caps results at ``MAX_ROWS``. Returns ``(sql, params)``.
+    """
+    stripped = sql.strip().rstrip(";").strip()
+    wrapped = (
+        f"SELECT * FROM ({stripped}) AS _inner "  # noqa: S608  # nosec B608
+        f"WHERE _inner.org_id = :org_id "
+        f"LIMIT {MAX_ROWS}"
+    )
+    # If the inner query doesn't SELECT org_id, we still filter via the
+    # events-level join; fallback: apply a direct check.
+    if re.search(r"\bSELECT\s+\*\s+FROM\s+events\b", stripped, re.IGNORECASE):
+        # simple case — rewrite to inject WHERE
+        wrapped = _inject_where(stripped, org_id)
+    return wrapped, {"org_id": org_id}
+
+
+def _inject_where(sql: str, org_id: str) -> str:
+    """Inject `org_id = :org_id` into the WHERE clause of a simple SELECT."""
+    if re.search(r"\bWHERE\b", sql, re.IGNORECASE):
+        # Add org_id as first condition
+        return re.sub(
+            r"\bWHERE\b",
+            "WHERE org_id = :org_id AND",
+            sql,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    # Insert WHERE before ORDER BY / GROUP BY / LIMIT if present.
+    insert_re = re.compile(r"\b(ORDER BY|GROUP BY|LIMIT)\b", re.IGNORECASE)
+    m = insert_re.search(sql)
+    if m:
+        idx = m.start()
+        return sql[:idx] + "WHERE org_id = :org_id " + sql[idx:]
+    return sql + " WHERE org_id = :org_id"
+
+
+# ---------------------------------------------------------------------------
+# Toolkit
+# ---------------------------------------------------------------------------
 
 
 class NLQueryToolkit:
-    """Toolkit for natural language → SQL → results → markdown."""
+    """Toolkit: question → SQL → execution → formatted results."""
 
     def __init__(self, storage: Any = None) -> None:
         self._storage = storage
-        self._query_cache: dict[str, Any] = {}
-        self._query_history: list[dict[str, Any]] = []
+        self._history: list[dict[str, Any]] = []
 
-    async def parse_question(self, question: str) -> dict[str, Any]:
-        """Parse a natural language question into query intent."""
-        logger.info("nl_query.parse", question=question[:100])
+    # --- SQL generation ------------------------------------------------
 
-        q_lower = question.lower()
+    async def generate_sql(
+        self,
+        question: str,
+        schema_hint: str | None = None,
+    ) -> tuple[str, QueryType, str]:
+        """Generate SQL from a natural language question.
 
-        # Detect time range
-        time_range = "24 hours"
-        if "week" in q_lower or "7 day" in q_lower:
-            time_range = "7 days"
-        elif "month" in q_lower or "30 day" in q_lower:
-            time_range = "30 days"
-        elif "hour" in q_lower:
-            time_range = "1 hour"
-        elif "today" in q_lower:
-            time_range = "24 hours"
-
-        # Detect query type
-        is_count = any(w in q_lower for w in ["how many", "count", "total", "number of"])
-        is_top = any(w in q_lower for w in ["top", "most", "highest", "worst"])
-        is_trend = any(w in q_lower for w in ["trend", "over time", "compare", "change"])
-
-        # Detect filters
-        filters: dict[str, str] = {}
-        for severity in ("critical", "high", "medium", "low"):
-            if severity in q_lower:
-                filters["severity"] = severity
-                break
-
-        for source in ("cloudtrail", "crowdstrike", "syslog", "aws"):
-            if source in q_lower:
-                filters["source_provider"] = source
-                break
-
-        # Detect entities
-        ip_match = re.search(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", question)
-        if ip_match:
-            filters["src_ip"] = ip_match.group()
-
-        return {
-            "question": question,
-            "time_range": time_range,
-            "is_count": is_count,
-            "is_top": is_top,
-            "is_trend": is_trend,
-            "filters": filters,
-            "parsed": True,
-        }
-
-    async def generate_sql(self, intent: dict[str, Any]) -> dict[str, Any]:
-        """Generate SQL from parsed intent. Uses LLM with heuristic fallback."""
-        logger.info(
-            "nl_query.generate_sql", intent_type="count" if intent["is_count"] else "select"
-        )
-
+        Tries the LLM first; falls back to heuristic templates on failure.
+        Returns ``(sql, query_type, source)``.
+        """
         # Try LLM first
         try:
-            from shieldops.utils.llm import llm_analyze
+            from shieldops.utils.llm import llm_structured
 
-            result = await llm_analyze(
-                system_prompt=(
-                    "You are a SQL expert. Generate a SQL query for a security events table "
-                    "with columns: event_id, org_id, timestamp, event_type, category_name, "
-                    "severity, severity_id, source_provider, message, activity_name, status, "
-                    "actor_json, src_json, observables_json, metadata_json, raw_data. "
-                    "Return ONLY the SQL query, nothing else. Use single quotes for strings. "
-                    "Always include LIMIT 100."
+            prompt = SQL_GENERATION_PROMPT
+            if schema_hint:
+                prompt = f"{prompt}\n\nExtra schema context:\n{schema_hint}"
+
+            result = cast(
+                SQLGenerationOutput,
+                await llm_structured(
+                    system_prompt=prompt,
+                    user_prompt=question,
+                    schema=SQLGenerationOutput,
                 ),
-                user_prompt=intent["question"],
             )
-            sql = result.get("content", "").strip()
-            if sql and self._validate_sql(sql):
-                return {"sql": sql, "source": "llm", "valid": True}
-        except Exception:
-            logger.debug("nl_query.llm_fallback")
+            sql = result.sql.strip()
+            qtype = _parse_query_type(result.query_type)
+            # Validate before returning.
+            validate_sql(sql)
+            return sql, qtype, "llm"
+        except Exception as exc:
+            logger.debug("nl_query.llm_fallback", error=str(exc))
 
-        # Heuristic SQL generation
-        sql = self._heuristic_sql(intent)
-        return {"sql": sql, "source": "heuristic", "valid": True}
+        # Heuristic fallback
+        sql, qtype = self._heuristic_sql(question)
+        return sql, qtype, "heuristic"
 
-    def _heuristic_sql(self, intent: dict[str, Any]) -> str:
-        """Generate SQL from intent without LLM."""
-        filters = intent.get("filters", {})
-        time_range = intent.get("time_range", "24 hours")
+    def _heuristic_sql(self, question: str) -> tuple[str, QueryType]:
+        """Pattern-match a question against heuristic templates."""
+        for pattern, template, qtype in HEURISTIC_TEMPLATES:
+            if pattern.search(question):
+                return template, qtype
+        # Default: recent events for this org.
+        return (
+            (
+                "SELECT event_id, timestamp, event_type, severity, source_provider "
+                "FROM events WHERE org_id = :org_id "
+                "ORDER BY timestamp DESC LIMIT 100"
+            ),
+            QueryType.TABULAR,
+        )
 
-        where_clauses = [f"timestamp >= datetime('now', '-{time_range}')"]
-        for field, value in filters.items():
-            where_clauses.append(f"{field} = '{value}'")
+    # --- Execution -----------------------------------------------------
 
-        where = " AND ".join(where_clauses)
-
-        if intent.get("is_count"):
-            return f"SELECT COUNT(*) as count FROM events WHERE {where}"  # noqa: S608  # nosec B608
-
-        if intent.get("is_top"):
-            top_sql = (
-                f"SELECT severity, source_provider, COUNT(*) as count "  # noqa: S608  # nosec B608
-                f"FROM events WHERE {where} "
-                f"GROUP BY severity, source_provider ORDER BY count DESC LIMIT 10"
-            )
-            return top_sql
-
-        default_sql = f"SELECT * FROM events WHERE {where} ORDER BY severity_id DESC LIMIT 20"  # noqa: S608  # nosec B608
-        return default_sql
-
-    def _validate_sql(self, sql: str) -> bool:
-        """Validate SQL for safety — no mutations allowed."""
-        sql_lower = sql.lower().strip()
-
-        # Check for blocked keywords
-        words = set(re.findall(r"\b\w+\b", sql_lower))
-        blocked = words & BLOCKED_SQL_KEYWORDS
-        if blocked:
-            logger.warning("nl_query.sql_blocked", blocked=list(blocked))
-            return False
-
-        # Must start with SELECT
-        if not sql_lower.startswith("select"):
-            return False
-
-        # Must have LIMIT (prevent unbounded results)
-        return "limit" in sql_lower
-
-    async def execute_query(self, sql_result: dict[str, Any]) -> dict[str, Any]:
-        """Execute SQL against columnar store."""
-        sql = sql_result.get("sql", "")
-        logger.info("nl_query.execute", sql=sql[:200])
-
-        if not sql:
-            return {"rows": [], "error": "No SQL generated"}
-
-        # Check cache
-        cache_key = sql.strip().lower()
-        if cache_key in self._query_cache:
-            logger.debug("nl_query.cache_hit")
-            return self._query_cache[cache_key]
-
+    async def execute_query(
+        self,
+        sql: str,
+        params: dict[str, Any],
+        org_id: str,
+    ) -> list[dict[str, Any]]:
+        """Execute SQL via the injected EventStore with tenant isolation."""
         if self._storage is None:
-            return {"rows": [], "error": "No storage backend configured"}
+            raise RuntimeError("No storage backend configured")
 
-        try:
-            rows = self._storage.query(sql)
-            result = {"rows": rows, "total": len(rows), "sql": sql, "error": ""}
+        # Re-validate before exec (belt-and-braces).
+        validate_sql(sql)
 
-            # Cache for 5 minutes
-            self._query_cache[cache_key] = result
+        # Always inject org_id param.
+        safe_params = dict(params or {})
+        safe_params.setdefault("org_id", org_id)
 
-            # Record in history
-            self._query_history.append(
-                {
-                    "sql": sql,
-                    "result_count": len(rows),
-                    "source": sql_result.get("source", "unknown"),
-                }
+        # If SQL references :org_id and doesn't yet have it in WHERE, we trust
+        # the caller to have produced an org-filtered query; otherwise inject.
+        if ":org_id" not in sql and "org_id" not in sql.lower():
+            sql = _inject_where(sql, org_id)
+
+        rows = await self._storage.query(sql, safe_params)
+        if len(rows) > MAX_ROWS:
+            rows = rows[:MAX_ROWS]
+
+        self._history.append({"sql": sql, "rows": len(rows)})
+        return rows
+
+    # --- Formatting ----------------------------------------------------
+
+    def format_results(
+        self,
+        results: list[dict[str, Any]],
+        query_type: QueryType,
+        question: str = "",
+    ) -> tuple[str, str, OutputFormat]:
+        """Format results. Returns ``(markdown, summary, format)``."""
+        if not results:
+            return (
+                "No results found.",
+                f"No events matched: {question}" if question else "No results",
+                OutputFormat.EMPTY,
             )
 
-            return result
-        except Exception as e:
-            logger.error("nl_query.execute_error", error=str(e))
-            return {"rows": [], "error": str(e), "sql": sql}
+        if query_type is QueryType.COUNT:
+            # Single count row.
+            row = results[0]
+            val = next(iter(row.values()), 0)
+            summary = f"Found {val} event(s)."
+            md = f"**{summary}**"
+            return md, summary, OutputFormat.SUMMARY
 
-    async def format_results(self, question: str, results: dict[str, Any]) -> dict[str, Any]:
-        """Format query results as markdown."""
-        rows = results.get("rows", [])
-        error = results.get("error", "")
+        if query_type is QueryType.AGGREGATION:
+            md = _markdown_table(results)
+            top = results[0]
+            top_key = next(iter(top.keys()))
+            top_val = top.get(top_key)
+            cnt_key = _find_count_key(top) or "count"
+            cnt_val = top.get(cnt_key, "")
+            summary = f"Top {top_key}: {top_val} ({cnt_val}). {len(results)} group(s) total."
+            return md, summary, OutputFormat.SUMMARY
 
-        if error:
-            return {"markdown": f"**Error:** {error}", "format": "error"}
+        if query_type is QueryType.TIME_SERIES:
+            md = _markdown_table(results)
+            first = results[0]
+            last = results[-1]
+            cnt_key = _find_count_key(first) or "cnt"
+            trend_word = "increasing"
+            try:
+                if float(last.get(cnt_key, 0)) >= float(first.get(cnt_key, 0)):
+                    trend_word = "increasing"
+                else:
+                    trend_word = "decreasing"
+            except (TypeError, ValueError):
+                trend_word = "changing"
+            summary = (
+                f"Time-series of {len(results)} buckets — trend {trend_word} "
+                f"from {first.get(cnt_key)} to {last.get(cnt_key)}."
+            )
+            return md, summary, OutputFormat.TREND
 
-        if not rows:
-            return {"markdown": "No results found for your query.", "format": "empty"}
+        # Default: tabular
+        md = _markdown_table(results)
+        summary = f"Returned {len(results)} row(s)."
+        return md, summary, OutputFormat.MARKDOWN_TABLE
 
-        # Build markdown table
-        if isinstance(rows[0], dict):
-            headers = list(rows[0].keys())
-            md_lines = [
-                "| " + " | ".join(str(h) for h in headers) + " |",
-                "| " + " | ".join("---" for _ in headers) + " |",
-            ]
-            for row in rows[:50]:  # Cap at 50 rows
-                md_lines.append("| " + " | ".join(str(row.get(h, "")) for h in headers) + " |")
+    def get_history(self) -> list[dict[str, Any]]:
+        """Return recent query history (last 50)."""
+        return list(self._history[-50:])
 
-            summary = f"**Query:** {question}\n**Results:** {len(rows)} rows\n\n"
-            markdown = summary + "\n".join(md_lines)
-        else:
-            markdown = f"**Results:** {rows}"
 
-        return {"markdown": markdown, "format": "table", "row_count": len(rows)}
+# ---------------------------------------------------------------------------
+# Small helpers
+# ---------------------------------------------------------------------------
 
-    def get_suggested_queries(self) -> list[dict[str, str | None]]:
-        """Return suggested queries based on common patterns."""
-        return [
-            {
-                "question": "Show me all critical alerts in the last 24 hours",
-                "template": "daily_threat_briefing",
-            },
-            {"question": "What are the top event sources this week?", "template": "top_sources"},
-            {"question": "Weekly compliance summary", "template": "weekly_compliance_summary"},
-            {"question": "How many failed login attempts today?", "template": None},
-            {"question": "Show me events from CrowdStrike with high severity", "template": None},
-        ]
 
-    def get_query_history(self) -> list[dict[str, Any]]:
-        """Return recent query history."""
-        return list(self._query_history[-20:])
+def _parse_query_type(raw: str) -> QueryType:
+    try:
+        return QueryType(raw.lower())
+    except ValueError:
+        return QueryType.TABULAR
+
+
+def _find_count_key(row: dict[str, Any]) -> str | None:
+    for key in row:
+        if key.lower() in {"count", "cnt", "event_count", "total", "n"}:
+            return key
+    return None
+
+
+def _markdown_table(rows: list[dict[str, Any]], max_rows: int = 50) -> str:
+    """Render a list of dicts as a Markdown table."""
+    if not rows:
+        return "_No rows_"
+
+    headers = list(rows[0].keys())
+    lines = [
+        "| " + " | ".join(str(h) for h in headers) + " |",
+        "| " + " | ".join("---" for _ in headers) + " |",
+    ]
+    for row in rows[:max_rows]:
+        lines.append(
+            "| " + " | ".join(_cell(row.get(h)) for h in headers) + " |",
+        )
+    if len(rows) > max_rows:
+        lines.append(f"_...{len(rows) - max_rows} more rows truncated_")
+    return "\n".join(lines)
+
+
+def _cell(value: Any) -> str:
+    """Render a cell value for a Markdown table."""
+    if value is None:
+        return ""
+    s = str(value)
+    # Escape pipes inside values.
+    return s.replace("|", "\\|").replace("\n", " ")

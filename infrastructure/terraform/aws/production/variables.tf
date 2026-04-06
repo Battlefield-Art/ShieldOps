@@ -248,6 +248,13 @@ variable "alarm_email" {
   default     = ""
 }
 
+variable "pagerduty_integration_url" {
+  description = "PagerDuty CloudWatch integration URL (from a PagerDuty service). When empty, PagerDuty paging is disabled."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # ---------------------------------------------------------------------------
 # WAF
 # ---------------------------------------------------------------------------

@@ -34,6 +34,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const AgentPerformance = lazy(() => import("./pages/AgentPerformance"));
 const AgentStatusMonitor = lazy(() => import("./pages/AgentStatusMonitor"));
 const AgentMetrics = lazy(() => import("./pages/AgentMetrics"));
+const BusinessValue = lazy(() => import("./pages/BusinessValue"));
 const Settings = lazy(() => import("./pages/Settings"));
 const VulnerabilityList = lazy(() => import("./pages/VulnerabilityList"));
 const VulnerabilityDetailPage = lazy(() => import("./pages/VulnerabilityDetail"));
@@ -781,6 +782,7 @@ export default function App() {
               <Route path="agent-performance" element={<AgentPerformance />} />
               <Route path="agent-status-monitor" element={<AgentStatusMonitor />} />
               <Route path="agent-metrics" element={<AgentMetrics />} />
+              <Route path="business-value" element={<BusinessValue />} />
               <Route path="marketplace" element={<Marketplace />} />
               <Route path="playbooks" element={<Playbooks />} />
               <Route path="playbooks/editor" element={<PlaybookEditor />} />
