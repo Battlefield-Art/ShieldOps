@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
+from pydantic import BaseModel, Field
 
 from shieldops.connectors.base import ConnectorRouter
+from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
 
@@ -135,6 +138,22 @@ _REMEDIATION_GUIDANCE: dict[str, str] = {
 }
 
 
+class _LLMRemediationSuggestion(BaseModel):
+    """LLM-generated remediation suggestion for a compliance finding."""
+
+    remediation_steps: str = Field(
+        description="Concise, actionable remediation steps for the compliance finding"
+    )
+    estimated_effort: str = Field(
+        default="medium",
+        description="Estimated effort to remediate (low/medium/high)",
+    )
+    aws_services_involved: list[str] = Field(
+        default_factory=list,
+        description="AWS services involved in the remediation",
+    )
+
+
 class ComplianceAuditorToolkit:
     """Tools for compliance scanning, evidence collection, and gap analysis.
 
@@ -148,10 +167,12 @@ class ComplianceAuditorToolkit:
         compliance_backend: Any | None = None,
         evidence_store: Any | None = None,
         connector_router: ConnectorRouter | None = None,
+        opa_client: Any | None = None,
     ) -> None:
         self._compliance_backend = compliance_backend
         self._evidence_store = evidence_store
         self._router = connector_router
+        self._opa_client = opa_client
 
     # ------------------------------------------------------------------
     # 1. AWS Config Auditing
@@ -1012,6 +1033,944 @@ class ComplianceAuditorToolkit:
             "trend": trend,
             "generated_at": datetime.now(UTC).isoformat(),
         }
+
+    # ------------------------------------------------------------------
+    # 7. Security Group Rule Evaluation
+    # ------------------------------------------------------------------
+
+    async def evaluate_security_groups(
+        self,
+        context: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Evaluate AWS security groups for compliance violations.
+
+        Checks for open ports, unrestricted CIDR (0.0.0.0/0 and ::/0),
+        and sensitive port exposure (SSH/22, RDP/3389, DB ports).
+
+        Returns:
+            List of security group finding dicts.
+        """
+        context = context or {}
+        environment = context.get("environment", "production")
+        logger.info("compliance_auditor.evaluate_security_groups", environment=environment)
+
+        findings: list[dict[str, Any]] = []
+
+        if self._router is not None:
+            try:
+                connector = self._router.get("aws")
+                findings = await self._query_security_groups(connector, environment)
+                logger.info(
+                    "compliance_auditor.evaluate_security_groups.complete",
+                    finding_count=len(findings),
+                    source="aws_connector",
+                )
+                return findings
+            except (ValueError, AttributeError) as exc:
+                logger.warning(
+                    "compliance_auditor.evaluate_security_groups.connector_unavailable",
+                    error=str(exc),
+                )
+            except Exception as exc:
+                logger.exception(
+                    "compliance_auditor.evaluate_security_groups.error",
+                    error=str(exc),
+                )
+
+        # Fallback: heuristic findings for dev/testing
+        findings = self._generate_mock_security_group_findings()
+        logger.info(
+            "compliance_auditor.evaluate_security_groups.complete",
+            finding_count=len(findings),
+            source="heuristic",
+        )
+        return findings
+
+    async def _query_security_groups(
+        self,
+        connector: Any,
+        environment: str,
+    ) -> list[dict[str, Any]]:
+        """Query real AWS connector for security group rules."""
+        findings: list[dict[str, Any]] = []
+        sensitive_ports = {22, 3389, 3306, 5432, 1433, 27017, 6379, 9200}
+
+        try:
+            security_groups = await connector.list_resources("security_group", environment, {})
+            for sg in security_groups:
+                metadata = getattr(sg, "metadata", {}) or {}
+                rules = metadata.get("ingress_rules", [])
+                sg_id = getattr(sg, "id", str(sg))
+                sg_name = getattr(sg, "name", sg_id)
+
+                for rule in rules:
+                    cidr = rule.get("cidr", "")
+                    from_port = rule.get("from_port", 0)
+                    to_port = rule.get("to_port", 65535)
+                    protocol = rule.get("protocol", "tcp")
+
+                    is_open_to_world = cidr in ("0.0.0.0/0", "::/0")
+                    exposed_sensitive = False
+                    if is_open_to_world:
+                        for port in sensitive_ports:
+                            if from_port <= port <= to_port:
+                                exposed_sensitive = True
+                                break
+
+                    risk_level = (
+                        "critical" if exposed_sensitive else ("high" if is_open_to_world else "low")
+                    )
+
+                    if is_open_to_world:
+                        findings.append(
+                            {
+                                "group_id": sg_id,
+                                "group_name": sg_name,
+                                "rule_direction": "ingress",
+                                "protocol": protocol,
+                                "port_range": f"{from_port}-{to_port}",
+                                "cidr": cidr,
+                                "is_open_to_world": True,
+                                "risk_level": risk_level,
+                                "has_sensitive_port": exposed_sensitive,
+                                "mapped_controls": _AWS_CONTROL_MAPPING.get("vpc_flow_logs", {}),
+                                "timestamp": datetime.now(UTC).isoformat(),
+                            }
+                        )
+        except Exception as exc:
+            logger.warning(
+                "compliance_auditor.security_group_check_failed",
+                error=str(exc),
+            )
+
+        return findings
+
+    @staticmethod
+    def _generate_mock_security_group_findings() -> list[dict[str, Any]]:
+        """Generate mock security group findings for dev/testing."""
+        now = datetime.now(UTC).isoformat()
+        return [
+            {
+                "group_id": "sg-0abc123",
+                "group_name": "web-servers",
+                "rule_direction": "ingress",
+                "protocol": "tcp",
+                "port_range": "22-22",
+                "cidr": "0.0.0.0/0",
+                "is_open_to_world": True,
+                "risk_level": "critical",
+                "has_sensitive_port": True,
+                "mapped_controls": _AWS_CONTROL_MAPPING.get("vpc_flow_logs", {}),
+                "timestamp": now,
+            },
+            {
+                "group_id": "sg-0def456",
+                "group_name": "db-servers",
+                "rule_direction": "ingress",
+                "protocol": "tcp",
+                "port_range": "5432-5432",
+                "cidr": "0.0.0.0/0",
+                "is_open_to_world": True,
+                "risk_level": "critical",
+                "has_sensitive_port": True,
+                "mapped_controls": _AWS_CONTROL_MAPPING.get("vpc_flow_logs", {}),
+                "timestamp": now,
+            },
+            {
+                "group_id": "sg-0ghi789",
+                "group_name": "app-servers",
+                "rule_direction": "ingress",
+                "protocol": "tcp",
+                "port_range": "443-443",
+                "cidr": "0.0.0.0/0",
+                "is_open_to_world": True,
+                "risk_level": "high",
+                "has_sensitive_port": False,
+                "mapped_controls": _AWS_CONTROL_MAPPING.get("vpc_flow_logs", {}),
+                "timestamp": now,
+            },
+        ]
+
+    # ------------------------------------------------------------------
+    # 8. CloudTrail Event Analysis
+    # ------------------------------------------------------------------
+
+    async def analyze_cloudtrail_events(
+        self,
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Query CloudTrail for compliance-relevant events.
+
+        Detects: unauthorized API calls (AccessDenied), root account usage,
+        and IAM changes (CreateUser, AttachPolicy, DeletePolicy, etc.).
+
+        Returns:
+            Dict with categorized events and summary counts.
+        """
+        context = context or {}
+        hours_back = context.get("hours_back", 24)
+        logger.info(
+            "compliance_auditor.analyze_cloudtrail_events",
+            hours_back=hours_back,
+        )
+
+        iam_change_event_names = {
+            "CreateUser",
+            "DeleteUser",
+            "CreateRole",
+            "DeleteRole",
+            "AttachUserPolicy",
+            "DetachUserPolicy",
+            "AttachRolePolicy",
+            "DetachRolePolicy",
+            "AttachGroupPolicy",
+            "DetachGroupPolicy",
+            "PutUserPolicy",
+            "PutRolePolicy",
+            "PutGroupPolicy",
+            "DeleteUserPolicy",
+            "DeleteRolePolicy",
+            "DeleteGroupPolicy",
+            "CreateAccessKey",
+            "DeleteAccessKey",
+            "UpdateAccessKey",
+            "CreateLoginProfile",
+            "UpdateLoginProfile",
+            "AddUserToGroup",
+            "RemoveUserFromGroup",
+        }
+
+        if self._router is not None:
+            try:
+                connector = self._router.get("aws")
+                events = await self._query_cloudtrail(connector, hours_back, iam_change_event_names)
+                logger.info(
+                    "compliance_auditor.analyze_cloudtrail_events.complete",
+                    source="aws_connector",
+                    total_events=events.get("total_events", 0),
+                )
+                return events
+            except (ValueError, AttributeError) as exc:
+                logger.warning(
+                    "compliance_auditor.analyze_cloudtrail_events.connector_unavailable",
+                    error=str(exc),
+                )
+            except Exception as exc:
+                logger.exception(
+                    "compliance_auditor.analyze_cloudtrail_events.error",
+                    error=str(exc),
+                )
+
+        # Fallback: heuristic events for dev/testing
+        events = self._generate_mock_cloudtrail_events()
+        logger.info(
+            "compliance_auditor.analyze_cloudtrail_events.complete",
+            source="heuristic",
+            total_events=events.get("total_events", 0),
+        )
+        return events
+
+    async def _query_cloudtrail(
+        self,
+        connector: Any,
+        hours_back: int,
+        iam_change_event_names: set[str],
+    ) -> dict[str, Any]:
+        """Query real AWS CloudTrail for compliance-relevant events."""
+        from shieldops.models.base import TimeRange
+
+        end_time = datetime.now(UTC)
+        start_time = end_time - timedelta(hours=hours_back)
+        time_range = TimeRange(start=start_time, end=end_time)
+
+        # Get all events in the time range
+        raw_events = await connector.get_events("*", time_range)
+
+        unauthorized_events: list[dict[str, Any]] = []
+        root_account_events: list[dict[str, Any]] = []
+        iam_change_events: list[dict[str, Any]] = []
+
+        for event in raw_events:
+            event_name = event.get("event_name", "")
+            username = event.get("username", "")
+            raw_json = event.get("raw_event", "")
+
+            # Parse raw CloudTrail event for additional details
+            error_code = ""
+            error_message = ""
+            source_ip = ""
+            if raw_json:
+                try:
+                    parsed = json.loads(raw_json) if isinstance(raw_json, str) else raw_json
+                    error_code = parsed.get("errorCode", "")
+                    error_message = parsed.get("errorMessage", "")
+                    source_ip = parsed.get("sourceIPAddress", "")
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+            enriched = {
+                **event,
+                "error_code": error_code,
+                "error_message": error_message,
+                "source_ip": source_ip,
+                "is_root_account": username in ("root", "Root"),
+                "is_iam_change": event_name in iam_change_event_names,
+                "is_unauthorized": error_code
+                in (
+                    "AccessDenied",
+                    "UnauthorizedAccess",
+                    "Client.UnauthorizedAccess",
+                ),
+            }
+
+            if enriched["is_unauthorized"]:
+                unauthorized_events.append(enriched)
+            if enriched["is_root_account"]:
+                root_account_events.append(enriched)
+            if enriched["is_iam_change"]:
+                iam_change_events.append(enriched)
+
+        return {
+            "unauthorized_events": unauthorized_events,
+            "root_account_events": root_account_events,
+            "iam_change_events": iam_change_events,
+            "unauthorized_count": len(unauthorized_events),
+            "root_usage_count": len(root_account_events),
+            "iam_change_count": len(iam_change_events),
+            "total_events": len(raw_events),
+            "time_range_hours": hours_back,
+            "analyzed_at": datetime.now(UTC).isoformat(),
+        }
+
+    @staticmethod
+    def _generate_mock_cloudtrail_events() -> dict[str, Any]:
+        """Generate mock CloudTrail events for dev/testing."""
+        now = datetime.now(UTC).isoformat()
+        return {
+            "unauthorized_events": [
+                {
+                    "event_id": "evt-unauth-001",
+                    "event_name": "DescribeInstances",
+                    "event_source": "ec2.amazonaws.com",
+                    "event_time": now,
+                    "username": "dev-service-account",
+                    "source_ip": "10.0.1.50",
+                    "error_code": "AccessDenied",
+                    "error_message": "User is not authorized to perform ec2:DescribeInstances",
+                    "is_root_account": False,
+                    "is_iam_change": False,
+                    "is_unauthorized": True,
+                },
+                {
+                    "event_id": "evt-unauth-002",
+                    "event_name": "GetObject",
+                    "event_source": "s3.amazonaws.com",
+                    "event_time": now,
+                    "username": "lambda-execution-role",
+                    "source_ip": "10.0.2.100",
+                    "error_code": "AccessDenied",
+                    "error_message": "Access Denied",
+                    "is_root_account": False,
+                    "is_iam_change": False,
+                    "is_unauthorized": True,
+                },
+            ],
+            "root_account_events": [
+                {
+                    "event_id": "evt-root-001",
+                    "event_name": "ConsoleLogin",
+                    "event_source": "signin.amazonaws.com",
+                    "event_time": now,
+                    "username": "root",
+                    "source_ip": "203.0.113.50",
+                    "error_code": "",
+                    "error_message": "",
+                    "is_root_account": True,
+                    "is_iam_change": False,
+                    "is_unauthorized": False,
+                },
+            ],
+            "iam_change_events": [
+                {
+                    "event_id": "evt-iam-001",
+                    "event_name": "CreateUser",
+                    "event_source": "iam.amazonaws.com",
+                    "event_time": now,
+                    "username": "admin-user",
+                    "source_ip": "10.0.0.5",
+                    "error_code": "",
+                    "error_message": "",
+                    "is_root_account": False,
+                    "is_iam_change": True,
+                    "is_unauthorized": False,
+                },
+                {
+                    "event_id": "evt-iam-002",
+                    "event_name": "AttachRolePolicy",
+                    "event_source": "iam.amazonaws.com",
+                    "event_time": now,
+                    "username": "admin-user",
+                    "source_ip": "10.0.0.5",
+                    "error_code": "",
+                    "error_message": "",
+                    "is_root_account": False,
+                    "is_iam_change": True,
+                    "is_unauthorized": False,
+                },
+            ],
+            "unauthorized_count": 2,
+            "root_usage_count": 1,
+            "iam_change_count": 2,
+            "total_events": 150,
+            "time_range_hours": 24,
+            "analyzed_at": now,
+        }
+
+    # ------------------------------------------------------------------
+    # 9. Public Access Detection (EC2 with public IPs, S3 public buckets)
+    # ------------------------------------------------------------------
+
+    async def detect_public_access(
+        self,
+        context: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Detect resources with public access exposure.
+
+        Checks EC2 instances with public IPs and S3 buckets with
+        public access enabled.
+
+        Returns:
+            List of public access finding dicts.
+        """
+        context = context or {}
+        environment = context.get("environment", "production")
+        logger.info("compliance_auditor.detect_public_access", environment=environment)
+
+        findings: list[dict[str, Any]] = []
+
+        if self._router is not None:
+            try:
+                connector = self._router.get("aws")
+                findings = await self._query_public_access(connector, environment)
+                logger.info(
+                    "compliance_auditor.detect_public_access.complete",
+                    finding_count=len(findings),
+                    source="aws_connector",
+                )
+                return findings
+            except (ValueError, AttributeError) as exc:
+                logger.warning(
+                    "compliance_auditor.detect_public_access.connector_unavailable",
+                    error=str(exc),
+                )
+            except Exception as exc:
+                logger.exception(
+                    "compliance_auditor.detect_public_access.error",
+                    error=str(exc),
+                )
+
+        # Fallback
+        findings = self._generate_mock_public_access_findings()
+        logger.info(
+            "compliance_auditor.detect_public_access.complete",
+            finding_count=len(findings),
+            source="heuristic",
+        )
+        return findings
+
+    async def _query_public_access(
+        self,
+        connector: Any,
+        environment: str,
+    ) -> list[dict[str, Any]]:
+        """Query AWS for resources with public access."""
+        findings: list[dict[str, Any]] = []
+
+        # EC2 instances with public IPs
+        try:
+            instances = await connector.list_resources("ec2", environment, {})
+            for inst in instances:
+                metadata = getattr(inst, "metadata", {}) or {}
+                public_ip = metadata.get("public_ip") or metadata.get("PublicIpAddress")
+                if public_ip:
+                    findings.append(
+                        {
+                            "resource_type": "ec2_instance",
+                            "resource_id": getattr(inst, "id", str(inst)),
+                            "resource_name": getattr(inst, "name", ""),
+                            "public_ip": public_ip,
+                            "risk_level": "high",
+                            "description": f"EC2 instance has public IP {public_ip}",
+                            "mapped_controls": _AWS_CONTROL_MAPPING.get("s3_bucket_policy", {}),
+                            "timestamp": datetime.now(UTC).isoformat(),
+                        }
+                    )
+        except Exception as exc:
+            logger.warning("compliance_auditor.ec2_public_check_failed", error=str(exc))
+
+        # S3 buckets with public access
+        try:
+            buckets = await connector.list_resources("s3_bucket", environment, {})
+            for bucket in buckets:
+                metadata = getattr(bucket, "metadata", {}) or {}
+                public_access_blocked = metadata.get("public_access_blocked", True)
+                if not public_access_blocked:
+                    findings.append(
+                        {
+                            "resource_type": "s3_bucket",
+                            "resource_id": getattr(bucket, "id", str(bucket)),
+                            "resource_name": getattr(bucket, "name", ""),
+                            "public_ip": None,
+                            "risk_level": "critical",
+                            "description": "S3 bucket does not block public access",
+                            "mapped_controls": _AWS_CONTROL_MAPPING.get("s3_bucket_policy", {}),
+                            "timestamp": datetime.now(UTC).isoformat(),
+                        }
+                    )
+        except Exception as exc:
+            logger.warning("compliance_auditor.s3_public_check_failed", error=str(exc))
+
+        return findings
+
+    @staticmethod
+    def _generate_mock_public_access_findings() -> list[dict[str, Any]]:
+        """Generate mock public access findings for dev/testing."""
+        now = datetime.now(UTC).isoformat()
+        return [
+            {
+                "resource_type": "ec2_instance",
+                "resource_id": "i-0abc123def456",
+                "resource_name": "web-server-prod",
+                "public_ip": "54.123.45.67",
+                "risk_level": "high",
+                "description": "EC2 instance has public IP 54.123.45.67",
+                "mapped_controls": _AWS_CONTROL_MAPPING.get("s3_bucket_policy", {}),
+                "timestamp": now,
+            },
+            {
+                "resource_type": "s3_bucket",
+                "resource_id": "data-lake-prod",
+                "resource_name": "data-lake-prod",
+                "public_ip": None,
+                "risk_level": "critical",
+                "description": "S3 bucket does not block public access",
+                "mapped_controls": _AWS_CONTROL_MAPPING.get("s3_bucket_policy", {}),
+                "timestamp": now,
+            },
+        ]
+
+    # ------------------------------------------------------------------
+    # 10. LLM-Enhanced Remediation Suggestions
+    # ------------------------------------------------------------------
+
+    async def generate_remediation_suggestions(
+        self,
+        findings: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Generate remediation suggestions for compliance findings.
+
+        Uses llm_structured() for intelligent recommendations, with a
+        keyword-based fallback if the LLM is unavailable.
+
+        Returns:
+            List of finding dicts enriched with remediation_hint.
+        """
+        logger.info(
+            "compliance_auditor.generate_remediation_suggestions",
+            finding_count=len(findings),
+        )
+
+        enriched: list[dict[str, Any]] = []
+        for finding in findings:
+            check_type = finding.get("check_type", "")
+            description = finding.get("description", "")
+            status = finding.get("status", "")
+
+            if status == "pass":
+                enriched.append({**finding, "remediation_hint": ""})
+                continue
+
+            # Try LLM-powered remediation
+            remediation_hint = ""
+            try:
+                result = await llm_structured(
+                    system_prompt=(
+                        "You are a cloud security compliance expert. "
+                        "Provide a concise, actionable remediation recommendation "
+                        "for the given compliance finding. Be specific about AWS "
+                        "services and configurations to change."
+                    ),
+                    user_prompt=(
+                        f"Finding type: {check_type}\n"
+                        f"Description: {description}\n"
+                        f"Details: {json.dumps(finding.get('details', {}), default=str)}"
+                    ),
+                    schema=_LLMRemediationSuggestion,
+                )
+                if isinstance(result, _LLMRemediationSuggestion):
+                    remediation_hint = result.remediation_steps
+                elif isinstance(result, dict):
+                    remediation_hint = result.get("remediation_steps", "")
+                logger.info(
+                    "compliance_auditor.llm_remediation_generated",
+                    check_type=check_type,
+                )
+            except Exception:
+                logger.debug(
+                    "compliance_auditor.llm_remediation_fallback",
+                    check_type=check_type,
+                )
+
+            # Keyword-based fallback
+            if not remediation_hint:
+                remediation_hint = self._keyword_remediation_fallback(check_type)
+
+            enriched.append({**finding, "remediation_hint": remediation_hint})
+
+        return enriched
+
+    @staticmethod
+    def _keyword_remediation_fallback(check_type: str) -> str:
+        """Keyword-based remediation fallback when LLM is unavailable."""
+        for key, guidance in _REMEDIATION_GUIDANCE.items():
+            if key in check_type or check_type in key:
+                return guidance
+
+        # Generic mappings for common check types
+        keyword_map = {
+            "s3": _REMEDIATION_GUIDANCE.get("s3_public_access", ""),
+            "iam": _REMEDIATION_GUIDANCE.get("iam_weak_password", ""),
+            "cloudtrail": _REMEDIATION_GUIDANCE.get("cloudtrail_disabled", ""),
+            "encrypt": _REMEDIATION_GUIDANCE.get("encryption_missing", ""),
+            "vpc": _REMEDIATION_GUIDANCE.get("vpc_flow_logs_disabled", ""),
+            "mfa": _REMEDIATION_GUIDANCE.get("mfa_not_enforced", ""),
+            "credential": _REMEDIATION_GUIDANCE.get("credential_rotation_overdue", ""),
+            "security_group": (
+                "Restrict security group rules to specific IP ranges. "
+                "Remove 0.0.0.0/0 ingress rules for sensitive ports (SSH, RDP, DB). "
+                "Use VPC endpoints for AWS service access."
+            ),
+            "public_access": (
+                "Remove public IPs from non-public-facing instances. "
+                "Use NAT gateways for outbound access. Enable S3 Block Public Access."
+            ),
+        }
+        for keyword, guidance in keyword_map.items():
+            if keyword in check_type.lower():
+                return guidance
+
+        return "Review the finding details and apply appropriate security controls."
+
+    # ------------------------------------------------------------------
+    # 11. OPA Policy Evaluation
+    # ------------------------------------------------------------------
+
+    async def evaluate_opa_policy(
+        self,
+        findings: list[dict[str, Any]],
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Evaluate compliance findings against OPA policies.
+
+        Uses the OPA client to check whether the current compliance posture
+        meets the required policy gates for the given environment.
+
+        Returns:
+            Dict with decision (approved/denied/requires_approval) and details.
+        """
+        context = context or {}
+        agent_name = context.get("agent_name", "compliance_auditor")
+        environment = context.get("environment", "production")
+
+        logger.info(
+            "compliance_auditor.evaluate_opa_policy",
+            finding_count=len(findings),
+            environment=environment,
+        )
+
+        failed_findings = [f for f in findings if f.get("status") == "fail"]
+        critical_findings = [f for f in failed_findings if f.get("risk_level") == "critical"]
+
+        # Calculate risk score based on findings
+        if not findings:
+            risk_score = 0.0
+        else:
+            fail_ratio = len(failed_findings) / max(len(findings), 1)
+            critical_ratio = len(critical_findings) / max(len(findings), 1)
+            risk_score = min(1.0, fail_ratio * 0.6 + critical_ratio * 0.4)
+
+        if self._opa_client is not None:
+            try:
+                from shieldops.policy.engine import PolicyContext, evaluate
+
+                policy_context = PolicyContext(
+                    agent_name=agent_name,
+                    action_type="compliance_audit_report",
+                    target_resources=[f.get("resource_id", "") for f in failed_findings[:10]],
+                    environment=environment,
+                    risk_score=risk_score,
+                    metadata={
+                        "total_findings": len(findings),
+                        "failed_count": len(failed_findings),
+                        "critical_count": len(critical_findings),
+                    },
+                )
+                decision = await evaluate("generate_compliance_report", policy_context)
+                return {
+                    "decision": decision.decision.value
+                    if hasattr(decision.decision, "value")
+                    else str(decision.decision),
+                    "risk_score": risk_score,
+                    "failed_count": len(failed_findings),
+                    "critical_count": len(critical_findings),
+                    "policy_details": {
+                        "reason": getattr(decision, "reason", ""),
+                        "blast_radius_ok": getattr(decision, "blast_radius_ok", True),
+                    },
+                    "evaluated_at": datetime.now(UTC).isoformat(),
+                }
+            except Exception as exc:
+                logger.warning(
+                    "compliance_auditor.opa_evaluation_failed",
+                    error=str(exc),
+                )
+
+        # Fallback: heuristic policy decision
+        if risk_score > 0.85:
+            decision_str = "denied"
+        elif risk_score > 0.5:
+            decision_str = "requires_approval"
+        else:
+            decision_str = "approved"
+
+        return {
+            "decision": decision_str,
+            "risk_score": round(risk_score, 4),
+            "failed_count": len(failed_findings),
+            "critical_count": len(critical_findings),
+            "policy_details": {
+                "reason": f"Heuristic decision based on risk_score={round(risk_score, 4)}",
+                "blast_radius_ok": True,
+            },
+            "evaluated_at": datetime.now(UTC).isoformat(),
+        }
+
+    # ------------------------------------------------------------------
+    # 12. Compliance Finding Generation
+    # ------------------------------------------------------------------
+
+    def generate_compliance_findings(
+        self,
+        aws_findings: list[dict[str, Any]],
+        security_group_findings: list[dict[str, Any]],
+        cloudtrail_events: dict[str, Any],
+        public_access_findings: list[dict[str, Any]],
+        frameworks: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Generate structured compliance findings from all data sources.
+
+        Maps raw findings to per-framework ComplianceFinding records with
+        control_id, severity, evidence, and remediation hints.
+
+        Returns:
+            List of ComplianceFinding dicts.
+        """
+        frameworks = frameworks or ["soc2"]
+        logger.info(
+            "compliance_auditor.generate_compliance_findings",
+            aws_count=len(aws_findings),
+            sg_count=len(security_group_findings),
+            public_count=len(public_access_findings),
+        )
+
+        results: list[dict[str, Any]] = []
+        now = datetime.now(UTC).isoformat()
+
+        # Map AWS Config findings
+        for finding in aws_findings:
+            check_type = finding.get("check_type", "")
+            status = finding.get("status", "fail")
+            mapped_controls = finding.get("mapped_controls", {})
+
+            for fw in frameworks:
+                control_ids = mapped_controls.get(fw, [])
+                for ctrl_id in control_ids:
+                    severity = "high" if status == "fail" else "low"
+                    results.append(
+                        {
+                            "control_id": ctrl_id,
+                            "framework": fw,
+                            "status": "non_compliant" if status == "fail" else "compliant",
+                            "severity": severity,
+                            "title": f"AWS Config: {check_type}",
+                            "description": _get_finding_gap_description(finding),
+                            "evidence": [
+                                f"aws_config:{check_type}:{finding.get('resource_id', '')}",
+                            ],
+                            "remediation_hint": finding.get(
+                                "remediation_hint",
+                                _REMEDIATION_GUIDANCE.get(
+                                    check_type,
+                                    self._keyword_remediation_fallback(check_type),
+                                ),
+                            ),
+                            "resource_id": finding.get("resource_id", ""),
+                            "check_type": check_type,
+                            "assessed_at": now,
+                        }
+                    )
+
+        # Map security group findings
+        for sg in security_group_findings:
+            risk = sg.get("risk_level", "high")
+            for fw in frameworks:
+                control_ids = sg.get("mapped_controls", {}).get(fw, [])
+                for ctrl_id in control_ids:
+                    results.append(
+                        {
+                            "control_id": ctrl_id,
+                            "framework": fw,
+                            "status": "non_compliant",
+                            "severity": risk,
+                            "title": f"Security Group: {sg.get('group_name', '')} open to world",
+                            "description": (
+                                f"Security group {sg.get('group_id', '')} allows "
+                                f"{sg.get('protocol', 'tcp')} {sg.get('port_range', '')} "
+                                f"from {sg.get('cidr', '')}"
+                            ),
+                            "evidence": [
+                                f"security_group:{sg.get('group_id', '')}:"
+                                f"{sg.get('port_range', '')}",
+                            ],
+                            "remediation_hint": (
+                                "Restrict security group rules to specific IP ranges. "
+                                "Remove 0.0.0.0/0 ingress rules for sensitive ports."
+                            ),
+                            "resource_id": sg.get("group_id", ""),
+                            "check_type": "security_group_open_access",
+                            "assessed_at": now,
+                        }
+                    )
+
+        # Map CloudTrail events to findings
+        ct = cloudtrail_events or {}
+        if ct.get("unauthorized_count", 0) > 0:
+            for fw in frameworks:
+                trail_controls = _AWS_CONTROL_MAPPING.get("cloudtrail_status", {})
+                ctrl_ids = trail_controls.get(fw, [])
+                for ctrl_id in ctrl_ids:
+                    results.append(
+                        {
+                            "control_id": ctrl_id,
+                            "framework": fw,
+                            "status": "non_compliant",
+                            "severity": "high",
+                            "title": "Unauthorized API calls detected",
+                            "description": (
+                                f"{ct['unauthorized_count']} unauthorized API calls "
+                                f"detected in the last {ct.get('time_range_hours', 24)}h"
+                            ),
+                            "evidence": [
+                                f"cloudtrail:unauthorized:{e.get('event_id', '')}"
+                                for e in ct.get("unauthorized_events", [])[:5]
+                            ],
+                            "remediation_hint": (
+                                "Review IAM policies for the affected principals. "
+                                "Apply least-privilege access and remove unused permissions."
+                            ),
+                            "resource_id": "cloudtrail-unauthorized",
+                            "check_type": "cloudtrail_unauthorized_access",
+                            "assessed_at": now,
+                        }
+                    )
+
+        if ct.get("root_usage_count", 0) > 0:
+            for fw in frameworks:
+                trail_controls = _AWS_CONTROL_MAPPING.get("iam_password_policy", {})
+                ctrl_ids = trail_controls.get(fw, [])
+                for ctrl_id in ctrl_ids:
+                    results.append(
+                        {
+                            "control_id": ctrl_id,
+                            "framework": fw,
+                            "status": "non_compliant",
+                            "severity": "critical",
+                            "title": "Root account usage detected",
+                            "description": (
+                                f"{ct['root_usage_count']} root account events "
+                                f"in the last {ct.get('time_range_hours', 24)}h"
+                            ),
+                            "evidence": [
+                                f"cloudtrail:root:{e.get('event_id', '')}"
+                                for e in ct.get("root_account_events", [])[:5]
+                            ],
+                            "remediation_hint": (
+                                "Disable root account access keys. Use IAM users with MFA "
+                                "for all operations. Enable root account MFA with hardware token."
+                            ),
+                            "resource_id": "cloudtrail-root-usage",
+                            "check_type": "cloudtrail_root_usage",
+                            "assessed_at": now,
+                        }
+                    )
+
+        if ct.get("iam_change_count", 0) > 0:
+            for fw in frameworks:
+                trail_controls = _AWS_CONTROL_MAPPING.get("iam_password_policy", {})
+                ctrl_ids = trail_controls.get(fw, [])
+                for ctrl_id in ctrl_ids:
+                    results.append(
+                        {
+                            "control_id": ctrl_id,
+                            "framework": fw,
+                            "status": "non_compliant",
+                            "severity": "medium",
+                            "title": "IAM changes detected",
+                            "description": (
+                                f"{ct['iam_change_count']} IAM changes "
+                                f"in the last {ct.get('time_range_hours', 24)}h"
+                            ),
+                            "evidence": [
+                                f"cloudtrail:iam_change:{e.get('event_id', '')}"
+                                for e in ct.get("iam_change_events", [])[:5]
+                            ],
+                            "remediation_hint": (
+                                "Review all IAM changes for authorization. Implement change "
+                                "management process for IAM modifications. Use AWS Config rules "
+                                "to detect unauthorized changes."
+                            ),
+                            "resource_id": "cloudtrail-iam-changes",
+                            "check_type": "cloudtrail_iam_changes",
+                            "assessed_at": now,
+                        }
+                    )
+
+        # Map public access findings
+        for pa in public_access_findings:
+            risk = pa.get("risk_level", "high")
+            for fw in frameworks:
+                control_ids = pa.get("mapped_controls", {}).get(fw, [])
+                for ctrl_id in control_ids:
+                    results.append(
+                        {
+                            "control_id": ctrl_id,
+                            "framework": fw,
+                            "status": "non_compliant",
+                            "severity": risk,
+                            "title": f"Public access: {pa.get('resource_type', '')}",
+                            "description": pa.get("description", ""),
+                            "evidence": [
+                                f"public_access:{pa.get('resource_type', '')}:"
+                                f"{pa.get('resource_id', '')}",
+                            ],
+                            "remediation_hint": self._keyword_remediation_fallback("public_access"),
+                            "resource_id": pa.get("resource_id", ""),
+                            "check_type": "public_access",
+                            "assessed_at": now,
+                        }
+                    )
+
+        return results
 
     # ------------------------------------------------------------------
     # Original methods preserved for backward compatibility
