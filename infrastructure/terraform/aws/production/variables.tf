@@ -194,13 +194,37 @@ variable "kafka_ebs_volume_size" {
 # ---------------------------------------------------------------------------
 
 variable "domain_name" {
-  description = "Custom domain name for the ALB (leave empty to skip)"
+  description = "Apex domain for the ShieldOps platform"
   type        = string
-  default     = ""
+  default     = "shieldops.io"
+}
+
+variable "subdomain_api" {
+  description = "Subdomain label for the public API endpoint"
+  type        = string
+  default     = "api"
+}
+
+variable "subdomain_app" {
+  description = "Subdomain label for the dashboard/app endpoint"
+  type        = string
+  default     = "app"
+}
+
+variable "subdomain_status" {
+  description = "Subdomain label for the external status page"
+  type        = string
+  default     = "status"
+}
+
+variable "status_page_target" {
+  description = "CNAME target for the external status page provider (e.g. statuspage.io, betterstack, atlassian)"
+  type        = string
+  default     = "statuspage.io."
 }
 
 variable "certificate_arn" {
-  description = "ARN of the ACM certificate for HTTPS (required for production)"
+  description = "Optional override ARN of an existing ACM certificate. Leave empty to provision via acm.tf"
   type        = string
   default     = ""
 }
