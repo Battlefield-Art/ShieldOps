@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -17,8 +19,36 @@ from shieldops.api.auth.dependencies import get_current_user
 from shieldops.api.routes import onboarding_progress, sdk_health
 
 
+class _InlineRepo:
+    def __init__(self) -> None:
+        self._rows: dict[tuple[str, str], Any] = {}
+
+    async def get_progress(self, org_id: str) -> list[Any]:
+        from datetime import datetime
+
+        class _R:
+            def __init__(self, step_name: str, completed_at: datetime) -> None:
+                self.step_name = step_name
+                self.completed_at = completed_at
+
+        return [_R(k[1], v) for k, v in self._rows.items() if k[0] == org_id]
+
+    async def mark_step_complete(self, org_id: str, step: Any) -> Any:
+        from datetime import datetime
+
+        step_value = getattr(step, "value", step)
+        self._rows[(org_id, step_value)] = datetime.now(UTC)
+
+    async def reset(self, org_id: str) -> int:
+        keys = [k for k in self._rows if k[0] == org_id]
+        for k in keys:
+            del self._rows[k]
+        return len(keys)
+
+
 @pytest.fixture()
 def app() -> FastAPI:
+    onboarding_progress.set_repository(_InlineRepo())
     a = FastAPI()
     a.include_router(onboarding_progress.router)
     a.include_router(sdk_health.router)
@@ -30,7 +60,8 @@ def app() -> FastAPI:
         return u
 
     a.dependency_overrides[get_current_user] = _user
-    return a
+    yield a
+    onboarding_progress.set_repository(None)
 
 
 @pytest.fixture(autouse=True)
