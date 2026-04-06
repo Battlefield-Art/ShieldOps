@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import OTelSemanticState
 from .nodes import (
@@ -16,39 +18,18 @@ from .nodes import (
 from .tools import OTelSemanticToolkit
 
 
-def build_graph(toolkit: OTelSemanticToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the OTel Semantic Conventions agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return state  # type: ignore[no-any-return]
-
-    async def _load_rules(state: Any) -> dict[str, Any]:
-        return await load_rules(_to_dict(state), toolkit)
-
-    async def _scan(state: Any) -> dict[str, Any]:
-        return await scan_services(_to_dict(state), toolkit)
-
-    async def _analyze(state: Any) -> dict[str, Any]:
-        return await analyze_violations(_to_dict(state), toolkit)
-
-    async def _fixes(state: Any) -> dict[str, Any]:
-        return await generate_fixes(_to_dict(state), toolkit)
-
-    graph = StateGraph(OTelSemanticState)
-    graph.add_node("load_rules", _load_rules)
-    graph.add_node("scan", _scan)
-    graph.add_node("analyze", _analyze)
-    graph.add_node("generate_fixes", _fixes)
-
-    graph.set_entry_point("load_rules")
-    graph.add_edge("load_rules", "scan")
-    graph.add_edge("scan", "analyze")
-    graph.add_edge("analyze", "generate_fixes")
-    graph.add_edge("generate_fixes", END)
-
-    return graph
+def build_graph(toolkit: OTelSemanticToolkit):  # type: ignore[no-untyped-def]
+    """Build the otel_semantic agent graph (linear sequence)."""
+    return build_linear_graph(
+        OTelSemanticState,
+        [
+            ("load_rules", load_rules),
+            ("scan", scan_services),
+            ("analyze", analyze_violations),
+            ("generate_fixes", generate_fixes),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_otel_semantic_graph(

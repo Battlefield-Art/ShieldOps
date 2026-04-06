@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import SecurityPostureState
 from .nodes import (
@@ -16,39 +18,18 @@ from .nodes import (
 from .tools import SecurityPostureToolkit
 
 
-def build_graph(toolkit: SecurityPostureToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Security Posture Manager agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _assess(state: Any) -> dict[str, Any]:
-        return await assess_domains(_to_dict(state), toolkit)
-
-    async def _identify_gaps(state: Any) -> dict[str, Any]:
-        return await identify_gaps(_to_dict(state), toolkit)
-
-    async def _prioritize(state: Any) -> dict[str, Any]:
-        return await prioritize_remediation(_to_dict(state), toolkit)
-
-    async def _report(state: Any) -> dict[str, Any]:
-        return await generate_report(_to_dict(state), toolkit)
-
-    graph = StateGraph(SecurityPostureState)
-    graph.add_node("assess_domains", _assess)
-    graph.add_node("identify_gaps", _identify_gaps)
-    graph.add_node("prioritize_remediation", _prioritize)
-    graph.add_node("generate_report", _report)
-
-    graph.set_entry_point("assess_domains")
-    graph.add_edge("assess_domains", "identify_gaps")
-    graph.add_edge("identify_gaps", "prioritize_remediation")
-    graph.add_edge("prioritize_remediation", "generate_report")
-    graph.add_edge("generate_report", END)
-
-    return graph
+def build_graph(toolkit: SecurityPostureToolkit):  # type: ignore[no-untyped-def]
+    """Build the security_posture agent graph (linear sequence)."""
+    return build_linear_graph(
+        SecurityPostureState,
+        [
+            ("assess_domains", assess_domains),
+            ("identify_gaps", identify_gaps),
+            ("prioritize_remediation", prioritize_remediation),
+            ("generate_report", generate_report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_security_posture_graph(

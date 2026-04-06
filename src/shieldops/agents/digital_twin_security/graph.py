@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
 
-from shieldops.agents.digital_twin_security.models import DigitalTwinSecurityState
-from shieldops.agents.digital_twin_security.nodes import (
+from shieldops.agents.framework import build_linear_graph
+
+from .models import DigitalTwinSecurityState
+from .nodes import (
     analyze_results,
     configure_environment,
     create_twin,
@@ -15,55 +17,23 @@ from shieldops.agents.digital_twin_security.nodes import (
     generate_report,
     validate_posture,
 )
-from shieldops.agents.digital_twin_security.tools import DigitalTwinSecurityToolkit
-from shieldops.agents.tracing import traced_node
+from .tools import DigitalTwinSecurityToolkit
 
 
-def build_graph(toolkit: DigitalTwinSecurityToolkit) -> StateGraph:
-    """Build the Digital Twin Security Agent LangGraph workflow.
-
-    Workflow:
-        create_twin -> configure_environment -> execute_simulations
-            -> analyze_results -> validate_posture -> generate_report -> END
-    """
-    graph = StateGraph(DigitalTwinSecurityState)
-
-    _agent = "digital_twin_security"
-    graph.add_node(
-        "create_twin",
-        traced_node("digital_twin_security.create_twin", _agent)(create_twin),
+def build_graph(toolkit: DigitalTwinSecurityToolkit):  # type: ignore[no-untyped-def]
+    """Build the digital_twin_security agent graph (linear sequence)."""
+    return build_linear_graph(
+        DigitalTwinSecurityState,
+        [
+            ("create_twin", create_twin),
+            ("configure_environment", configure_environment),
+            ("execute_simulations", execute_simulations),
+            ("analyze_results", analyze_results),
+            ("validate_posture", validate_posture),
+            ("generate_report", generate_report),
+        ],
+        toolkit=toolkit,
     )
-    graph.add_node(
-        "configure_environment",
-        traced_node("digital_twin_security.configure_environment", _agent)(configure_environment),
-    )
-    graph.add_node(
-        "execute_simulations",
-        traced_node("digital_twin_security.execute_simulations", _agent)(execute_simulations),
-    )
-    graph.add_node(
-        "analyze_results",
-        traced_node("digital_twin_security.analyze_results", _agent)(analyze_results),
-    )
-    graph.add_node(
-        "validate_posture",
-        traced_node("digital_twin_security.validate_posture", _agent)(validate_posture),
-    )
-    graph.add_node(
-        "generate_report",
-        traced_node("digital_twin_security.generate_report", _agent)(generate_report),
-    )
-
-    # Define edges
-    graph.set_entry_point("create_twin")
-    graph.add_edge("create_twin", "configure_environment")
-    graph.add_edge("configure_environment", "execute_simulations")
-    graph.add_edge("execute_simulations", "analyze_results")
-    graph.add_edge("analyze_results", "validate_posture")
-    graph.add_edge("validate_posture", "generate_report")
-    graph.add_edge("generate_report", END)
-
-    return graph
 
 
 def create_digital_twin_security_graph(

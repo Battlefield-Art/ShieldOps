@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import EndpointHardeningAgentState
 from .nodes import (
@@ -18,102 +20,20 @@ from .nodes import (
 from .tools import EndpointHardeningAgentToolkit
 
 
-def build_graph(
-    toolkit: EndpointHardeningAgentToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Endpoint Hardening Agent graph.
-
-    Flow:
-        scan_endpoints -> check_baseline
-        -> detect_deviations -> generate_fixes
-        -> apply_hardening -> report
-    """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _scan(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await scan_endpoints(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _baseline(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await check_baseline(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _deviations(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await detect_deviations(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _fixes(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_fixes(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _apply(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await apply_hardening(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
-    graph = StateGraph(EndpointHardeningAgentState)
-    graph.add_node("scan_endpoints", _scan)
-    graph.add_node("check_baseline", _baseline)
-    graph.add_node("detect_deviations", _deviations)
-    graph.add_node("generate_fixes", _fixes)
-    graph.add_node("apply_hardening", _apply)
-    graph.add_node("report", _report)
-
-    graph.set_entry_point("scan_endpoints")
-    graph.add_edge(
-        "scan_endpoints",
-        "check_baseline",
+def build_graph(toolkit: EndpointHardeningAgentToolkit):  # type: ignore[no-untyped-def]
+    """Build the endpoint_hardening_agent agent graph (linear sequence)."""
+    return build_linear_graph(
+        EndpointHardeningAgentState,
+        [
+            ("scan_endpoints", scan_endpoints),
+            ("check_baseline", check_baseline),
+            ("detect_deviations", detect_deviations),
+            ("generate_fixes", generate_fixes),
+            ("apply_hardening", apply_hardening),
+            ("report", generate_report),
+        ],
+        toolkit=toolkit,
     )
-    graph.add_edge(
-        "check_baseline",
-        "detect_deviations",
-    )
-    graph.add_edge(
-        "detect_deviations",
-        "generate_fixes",
-    )
-    graph.add_edge(
-        "generate_fixes",
-        "apply_hardening",
-    )
-    graph.add_edge(
-        "apply_hardening",
-        "report",
-    )
-    graph.add_edge("report", END)
-
-    return graph
 
 
 def create_endpoint_hardening_agent_graph(

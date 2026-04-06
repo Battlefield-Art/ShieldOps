@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
 
-from shieldops.agents.tracing import traced_node
+from shieldops.agents.framework import build_linear_graph
 
 from .models import OnCallOptimizerState
 from .nodes import (
@@ -19,83 +19,21 @@ from .nodes import (
 )
 from .tools import OnCallOptimizerToolkit
 
-_AGENT = "on_call_optimizer"
 
-
-def _check_error(
-    state: OnCallOptimizerState,
-) -> str:
-    if state.error:
-        return "report"
-    return "continue"
-
-
-def build_graph(
-    toolkit: OnCallOptimizerToolkit,
-) -> StateGraph:
-    """Build the On-Call Optimizer graph."""
-
-    def _d(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _analyze(s: Any) -> dict[str, Any]:
-        return await analyze_schedules(_d(s))
-
-    async def _load(s: Any) -> dict[str, Any]:
-        return await evaluate_load(_d(s))
-
-    async def _burnout(s: Any) -> dict[str, Any]:
-        return await detect_burnout(_d(s))
-
-    async def _optimize(s: Any) -> dict[str, Any]:
-        return await optimize_rotation(_d(s))
-
-    async def _recommend(s: Any) -> dict[str, Any]:
-        return await recommend_changes(_d(s))
-
-    async def _report(s: Any) -> dict[str, Any]:
-        return await report(_d(s))
-
-    g = StateGraph(OnCallOptimizerState)
-    g.add_node(
-        "analyze_schedules",
-        traced_node("oco.analyze", _AGENT)(_analyze),
+def build_graph(toolkit: OnCallOptimizerToolkit):  # type: ignore[no-untyped-def]
+    """Build the on_call_optimizer agent graph (linear sequence)."""
+    return build_linear_graph(
+        OnCallOptimizerState,
+        [
+            ("analyze_schedules", analyze_schedules),
+            ("evaluate_load", evaluate_load),
+            ("detect_burnout", detect_burnout),
+            ("optimize_rotation", optimize_rotation),
+            ("recommend_changes", recommend_changes),
+            ("report", report),
+        ],
+        toolkit=toolkit,
     )
-    g.add_node(
-        "evaluate_load",
-        traced_node("oco.load", _AGENT)(_load),
-    )
-    g.add_node(
-        "detect_burnout",
-        traced_node("oco.burnout", _AGENT)(_burnout),
-    )
-    g.add_node(
-        "optimize_rotation",
-        traced_node("oco.optimize", _AGENT)(_optimize),
-    )
-    g.add_node(
-        "recommend_changes",
-        traced_node("oco.recommend", _AGENT)(_recommend),
-    )
-    g.add_node(
-        "report",
-        traced_node("oco.report", _AGENT)(_report),
-    )
-
-    g.set_entry_point("analyze_schedules")
-    g.add_edge("analyze_schedules", "evaluate_load")
-    g.add_edge("evaluate_load", "detect_burnout")
-    g.add_edge("detect_burnout", "optimize_rotation")
-    g.add_edge(
-        "optimize_rotation",
-        "recommend_changes",
-    )
-    g.add_edge("recommend_changes", "report")
-    g.add_edge("report", END)
-
-    return g
 
 
 def create_on_call_optimizer_graph(

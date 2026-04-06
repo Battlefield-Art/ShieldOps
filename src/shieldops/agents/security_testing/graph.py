@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import SecurityTestingState
 from .nodes import (
@@ -16,39 +18,18 @@ from .nodes import (
 from .tools import SecurityTestingToolkit
 
 
-def build_graph(toolkit: SecurityTestingToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Automated Security Testing agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _scope(state: Any) -> dict[str, Any]:
-        return await define_scope(_to_dict(state), toolkit)
-
-    async def _scan(state: Any) -> dict[str, Any]:
-        return await execute_scans(_to_dict(state), toolkit)
-
-    async def _analyze(state: Any) -> dict[str, Any]:
-        return await analyze_findings(_to_dict(state), toolkit)
-
-    async def _report(state: Any) -> dict[str, Any]:
-        return await generate_report(_to_dict(state), toolkit)
-
-    graph = StateGraph(SecurityTestingState)
-    graph.add_node("define_scope", _scope)
-    graph.add_node("execute_scans", _scan)
-    graph.add_node("analyze_findings", _analyze)
-    graph.add_node("generate_report", _report)
-
-    graph.set_entry_point("define_scope")
-    graph.add_edge("define_scope", "execute_scans")
-    graph.add_edge("execute_scans", "analyze_findings")
-    graph.add_edge("analyze_findings", "generate_report")
-    graph.add_edge("generate_report", END)
-
-    return graph
+def build_graph(toolkit: SecurityTestingToolkit):  # type: ignore[no-untyped-def]
+    """Build the security_testing agent graph (linear sequence)."""
+    return build_linear_graph(
+        SecurityTestingState,
+        [
+            ("define_scope", define_scope),
+            ("execute_scans", execute_scans),
+            ("analyze_findings", analyze_findings),
+            ("generate_report", generate_report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_security_testing_graph(

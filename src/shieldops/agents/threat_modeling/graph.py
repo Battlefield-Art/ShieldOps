@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import ThreatModelingState
 from .nodes import (
@@ -16,39 +18,18 @@ from .nodes import (
 from .tools import ThreatModelingToolkit
 
 
-def build_graph(toolkit: ThreatModelingToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Threat Modeling agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _discover(state: Any) -> dict[str, Any]:
-        return await discover_architecture(_to_dict(state), toolkit)
-
-    async def _analyze(state: Any) -> dict[str, Any]:
-        return await analyze_threats(_to_dict(state), toolkit)
-
-    async def _assess(state: Any) -> dict[str, Any]:
-        return await assess_risk(_to_dict(state), toolkit)
-
-    async def _mitigate(state: Any) -> dict[str, Any]:
-        return await recommend_mitigations(_to_dict(state), toolkit)
-
-    graph = StateGraph(ThreatModelingState)
-    graph.add_node("discover_architecture", _discover)
-    graph.add_node("analyze_threats", _analyze)
-    graph.add_node("assess_risk", _assess)
-    graph.add_node("recommend_mitigations", _mitigate)
-
-    graph.set_entry_point("discover_architecture")
-    graph.add_edge("discover_architecture", "analyze_threats")
-    graph.add_edge("analyze_threats", "assess_risk")
-    graph.add_edge("assess_risk", "recommend_mitigations")
-    graph.add_edge("recommend_mitigations", END)
-
-    return graph
+def build_graph(toolkit: ThreatModelingToolkit):  # type: ignore[no-untyped-def]
+    """Build the threat_modeling agent graph (linear sequence)."""
+    return build_linear_graph(
+        ThreatModelingState,
+        [
+            ("discover_architecture", discover_architecture),
+            ("analyze_threats", analyze_threats),
+            ("assess_risk", assess_risk),
+            ("recommend_mitigations", recommend_mitigations),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_threat_modeling_graph(

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import IACScannerState
 from .nodes import (
@@ -18,53 +20,20 @@ from .nodes import (
 from .tools import IACSecurityScannerToolkit
 
 
-def build_graph(
-    toolkit: IACSecurityScannerToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the IaC Security Scanner LangGraph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        if not isinstance(state, dict):
-            return dict(state)
-        return state
-
-    async def _discover(state: Any) -> dict[str, Any]:
-        return await discover_templates(_to_dict(state), toolkit)
-
-    async def _parse(state: Any) -> dict[str, Any]:
-        return await parse_resources(_to_dict(state), toolkit)
-
-    async def _scan(state: Any) -> dict[str, Any]:
-        return await scan_misconfigs(_to_dict(state), toolkit)
-
-    async def _policies(state: Any) -> dict[str, Any]:
-        return await evaluate_policies(_to_dict(state), toolkit)
-
-    async def _prioritize(state: Any) -> dict[str, Any]:
-        return await prioritize_findings(_to_dict(state), toolkit)
-
-    async def _report(state: Any) -> dict[str, Any]:
-        return await generate_report(_to_dict(state), toolkit)
-
-    graph = StateGraph(IACScannerState)
-    graph.add_node("discover_templates", _discover)
-    graph.add_node("parse_resources", _parse)
-    graph.add_node("scan_misconfigs", _scan)
-    graph.add_node("evaluate_policies", _policies)
-    graph.add_node("prioritize", _prioritize)
-    graph.add_node("generate_report", _report)
-
-    graph.set_entry_point("discover_templates")
-    graph.add_edge("discover_templates", "parse_resources")
-    graph.add_edge("parse_resources", "scan_misconfigs")
-    graph.add_edge("scan_misconfigs", "evaluate_policies")
-    graph.add_edge("evaluate_policies", "prioritize")
-    graph.add_edge("prioritize", "generate_report")
-    graph.add_edge("generate_report", END)
-
-    return graph
+def build_graph(toolkit: IACSecurityScannerToolkit):  # type: ignore[no-untyped-def]
+    """Build the iac_security_scanner agent graph (linear sequence)."""
+    return build_linear_graph(
+        IACScannerState,
+        [
+            ("discover_templates", discover_templates),
+            ("parse_resources", parse_resources),
+            ("scan_misconfigs", scan_misconfigs),
+            ("evaluate_policies", evaluate_policies),
+            ("prioritize", prioritize_findings),
+            ("generate_report", generate_report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_iac_security_scanner_graph(

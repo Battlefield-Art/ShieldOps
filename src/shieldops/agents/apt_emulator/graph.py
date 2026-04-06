@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import structlog
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
 
-from shieldops.agents.apt_emulator.models import (
-    APTEmulatorState,
-)
-from shieldops.agents.apt_emulator.nodes import (
+from shieldops.agents.framework import build_linear_graph
+
+from .models import APTEmulatorState
+from .nodes import (
     design_campaign,
     execute_recon,
     report,
@@ -17,65 +16,23 @@ from shieldops.agents.apt_emulator.nodes import (
     test_lateral,
     test_persistence,
 )
-from shieldops.agents.tracing import traced_node
-
-logger = structlog.get_logger()
 
 
-def build_graph(
-    toolkit: object | None = None,
-) -> StateGraph:
-    """Build the APT Emulator LangGraph workflow.
-
-    Workflow::
-
-        design_campaign -> execute_recon
-            -> simulate_access -> test_persistence
-            -> test_lateral -> test_exfil -> report
-            -> END
-    """
-    _agent = "apt_emulator"
-    graph = StateGraph(APTEmulatorState)
-
-    graph.add_node(
-        "design_campaign",
-        traced_node("apt_emulator.design_campaign", _agent)(design_campaign),
+def build_graph(toolkit: object = None):  # type: ignore[no-untyped-def]
+    """Build the apt_emulator agent graph (linear sequence)."""
+    return build_linear_graph(
+        APTEmulatorState,
+        [
+            ("design_campaign", design_campaign),
+            ("execute_recon", execute_recon),
+            ("simulate_access", simulate_access),
+            ("test_persistence", test_persistence),
+            ("test_lateral", test_lateral),
+            ("test_exfil", test_exfil),
+            ("report", report),
+        ],
+        toolkit=toolkit,
     )
-    graph.add_node(
-        "execute_recon",
-        traced_node("apt_emulator.execute_recon", _agent)(execute_recon),
-    )
-    graph.add_node(
-        "simulate_access",
-        traced_node("apt_emulator.simulate_access", _agent)(simulate_access),
-    )
-    graph.add_node(
-        "test_persistence",
-        traced_node("apt_emulator.test_persistence", _agent)(test_persistence),
-    )
-    graph.add_node(
-        "test_lateral",
-        traced_node("apt_emulator.test_lateral", _agent)(test_lateral),
-    )
-    graph.add_node(
-        "test_exfil",
-        traced_node("apt_emulator.test_exfil", _agent)(test_exfil),
-    )
-    graph.add_node(
-        "report",
-        traced_node("apt_emulator.report", _agent)(report),
-    )
-
-    graph.set_entry_point("design_campaign")
-    graph.add_edge("design_campaign", "execute_recon")
-    graph.add_edge("execute_recon", "simulate_access")
-    graph.add_edge("simulate_access", "test_persistence")
-    graph.add_edge("test_persistence", "test_lateral")
-    graph.add_edge("test_lateral", "test_exfil")
-    graph.add_edge("test_exfil", "report")
-    graph.add_edge("report", END)
-
-    return graph
 
 
 def create_apt_emulator_graph() -> StateGraph:

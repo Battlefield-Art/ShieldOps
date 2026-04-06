@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import AgentGovernanceState
 from .nodes import (
@@ -18,49 +20,20 @@ from .nodes import (
 from .tools import AgentGovernanceToolkit
 
 
-def build_graph(toolkit: AgentGovernanceToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Agent Governance agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _discover(state: Any) -> dict[str, Any]:
-        return await discover_agents(_to_dict(state), toolkit)
-
-    async def _assess(state: Any) -> dict[str, Any]:
-        return await assess_capabilities(_to_dict(state), toolkit)
-
-    async def _enforce(state: Any) -> dict[str, Any]:
-        return await enforce_boundaries(_to_dict(state), toolkit)
-
-    async def _escalate(state: Any) -> dict[str, Any]:
-        return await evaluate_escalations(_to_dict(state), toolkit)
-
-    async def _audit(state: Any) -> dict[str, Any]:
-        return await audit_compliance(_to_dict(state), toolkit)
-
-    async def _report(state: Any) -> dict[str, Any]:
-        return await generate_report(_to_dict(state), toolkit)
-
-    graph = StateGraph(AgentGovernanceState)
-    graph.add_node("discover_agents", _discover)
-    graph.add_node("assess_capabilities", _assess)
-    graph.add_node("enforce_boundaries", _enforce)
-    graph.add_node("evaluate_escalations", _escalate)
-    graph.add_node("audit_compliance", _audit)
-    graph.add_node("report", _report)
-
-    graph.set_entry_point("discover_agents")
-    graph.add_edge("discover_agents", "assess_capabilities")
-    graph.add_edge("assess_capabilities", "enforce_boundaries")
-    graph.add_edge("enforce_boundaries", "evaluate_escalations")
-    graph.add_edge("evaluate_escalations", "audit_compliance")
-    graph.add_edge("audit_compliance", "report")
-    graph.add_edge("report", END)
-
-    return graph
+def build_graph(toolkit: AgentGovernanceToolkit):  # type: ignore[no-untyped-def]
+    """Build the agent_governance agent graph (linear sequence)."""
+    return build_linear_graph(
+        AgentGovernanceState,
+        [
+            ("discover_agents", discover_agents),
+            ("assess_capabilities", assess_capabilities),
+            ("enforce_boundaries", enforce_boundaries),
+            ("evaluate_escalations", evaluate_escalations),
+            ("audit_compliance", audit_compliance),
+            ("report", generate_report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_agent_governance_graph(

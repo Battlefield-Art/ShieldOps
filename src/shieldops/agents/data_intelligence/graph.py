@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import DataIntelligenceState
 from .nodes import (
@@ -18,69 +20,20 @@ from .nodes import (
 from .tools import DataIntelligenceToolkit
 
 
-def build_graph(
-    toolkit: DataIntelligenceToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Data Intelligence agent graph.
-
-    Flow:
-        discover_data -> classify_with_ai
-        -> map_data_lineage -> assess_data_risk
-        -> recommend_protection -> report
-    """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _discover(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await discover_data(_to_dict(state), toolkit)
-
-    async def _classify(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await classify_with_ai(_to_dict(state), toolkit)
-
-    async def _lineage(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await map_data_lineage(_to_dict(state), toolkit)
-
-    async def _risk(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await assess_data_risk(_to_dict(state), toolkit)
-
-    async def _protect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await recommend_protection(_to_dict(state), toolkit)
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await report(_to_dict(state), toolkit)
-
-    graph = StateGraph(DataIntelligenceState)
-    graph.add_node("discover_data", _discover)
-    graph.add_node("classify_with_ai", _classify)
-    graph.add_node("map_data_lineage", _lineage)
-    graph.add_node("assess_data_risk", _risk)
-    graph.add_node("recommend_protection", _protect)
-    graph.add_node("report", _report)
-
-    graph.set_entry_point("discover_data")
-    graph.add_edge("discover_data", "classify_with_ai")
-    graph.add_edge("classify_with_ai", "map_data_lineage")
-    graph.add_edge("map_data_lineage", "assess_data_risk")
-    graph.add_edge("assess_data_risk", "recommend_protection")
-    graph.add_edge("recommend_protection", "report")
-    graph.add_edge("report", END)
-
-    return graph
+def build_graph(toolkit: DataIntelligenceToolkit):  # type: ignore[no-untyped-def]
+    """Build the data_intelligence agent graph (linear sequence)."""
+    return build_linear_graph(
+        DataIntelligenceState,
+        [
+            ("discover_data", discover_data),
+            ("classify_with_ai", classify_with_ai),
+            ("map_data_lineage", map_data_lineage),
+            ("assess_data_risk", assess_data_risk),
+            ("recommend_protection", recommend_protection),
+            ("report", report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_data_intelligence_graph(

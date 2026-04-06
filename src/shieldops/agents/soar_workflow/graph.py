@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import SOARWorkflowState
 from .nodes import (
@@ -17,44 +19,19 @@ from .nodes import (
 from .tools import SOARWorkflowToolkit
 
 
-def build_graph(toolkit: SOARWorkflowToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the SOAR Workflow Orchestrator agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _intake(state: Any) -> dict[str, Any]:
-        return await intake_and_classify(_to_dict(state), toolkit)
-
-    async def _enrich(state: Any) -> dict[str, Any]:
-        return await enrich_context(_to_dict(state), toolkit)
-
-    async def _contain(state: Any) -> dict[str, Any]:
-        return await execute_containment(_to_dict(state), toolkit)
-
-    async def _eradicate(state: Any) -> dict[str, Any]:
-        return await execute_eradication(_to_dict(state), toolkit)
-
-    async def _recover(state: Any) -> dict[str, Any]:
-        return await recover_and_report(_to_dict(state), toolkit)
-
-    graph = StateGraph(SOARWorkflowState)
-    graph.add_node("intake_and_classify", _intake)
-    graph.add_node("enrich_context", _enrich)
-    graph.add_node("execute_containment", _contain)
-    graph.add_node("execute_eradication", _eradicate)
-    graph.add_node("recover_and_report", _recover)
-
-    graph.set_entry_point("intake_and_classify")
-    graph.add_edge("intake_and_classify", "enrich_context")
-    graph.add_edge("enrich_context", "execute_containment")
-    graph.add_edge("execute_containment", "execute_eradication")
-    graph.add_edge("execute_eradication", "recover_and_report")
-    graph.add_edge("recover_and_report", END)
-
-    return graph
+def build_graph(toolkit: SOARWorkflowToolkit):  # type: ignore[no-untyped-def]
+    """Build the soar_workflow agent graph (linear sequence)."""
+    return build_linear_graph(
+        SOARWorkflowState,
+        [
+            ("intake_and_classify", intake_and_classify),
+            ("enrich_context", enrich_context),
+            ("execute_containment", execute_containment),
+            ("execute_eradication", execute_eradication),
+            ("recover_and_report", recover_and_report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_soar_workflow_graph(

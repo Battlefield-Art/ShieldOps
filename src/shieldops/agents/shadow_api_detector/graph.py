@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import ShadowAPIDetectorState
 from .nodes import (
@@ -18,102 +20,20 @@ from .nodes import (
 from .tools import ShadowAPIDetectorToolkit
 
 
-def build_graph(
-    toolkit: ShadowAPIDetectorToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Shadow API Detector graph.
-
-    Flow:
-        discover_traffic -> analyze_endpoints
-        -> detect_shadow -> classify_risk
-        -> auto_document -> report
-    """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _discover(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await discover_traffic(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _analyze(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await analyze_endpoints(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _detect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await detect_shadow(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _classify(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await classify_risk(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _document(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await auto_document(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
-    graph = StateGraph(ShadowAPIDetectorState)
-    graph.add_node("discover_traffic", _discover)
-    graph.add_node("analyze_endpoints", _analyze)
-    graph.add_node("detect_shadow", _detect)
-    graph.add_node("classify_risk", _classify)
-    graph.add_node("auto_document", _document)
-    graph.add_node("report", _report)
-
-    graph.set_entry_point("discover_traffic")
-    graph.add_edge(
-        "discover_traffic",
-        "analyze_endpoints",
+def build_graph(toolkit: ShadowAPIDetectorToolkit):  # type: ignore[no-untyped-def]
+    """Build the shadow_api_detector agent graph (linear sequence)."""
+    return build_linear_graph(
+        ShadowAPIDetectorState,
+        [
+            ("discover_traffic", discover_traffic),
+            ("analyze_endpoints", analyze_endpoints),
+            ("detect_shadow", detect_shadow),
+            ("classify_risk", classify_risk),
+            ("auto_document", auto_document),
+            ("report", generate_report),
+        ],
+        toolkit=toolkit,
     )
-    graph.add_edge(
-        "analyze_endpoints",
-        "detect_shadow",
-    )
-    graph.add_edge(
-        "detect_shadow",
-        "classify_risk",
-    )
-    graph.add_edge(
-        "classify_risk",
-        "auto_document",
-    )
-    graph.add_edge(
-        "auto_document",
-        "report",
-    )
-    graph.add_edge("report", END)
-
-    return graph
 
 
 def create_shadow_api_detector_graph(

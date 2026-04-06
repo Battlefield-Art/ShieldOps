@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import AIRuntimeGuardianState
 from .nodes import (
@@ -18,82 +20,20 @@ from .nodes import (
 from .tools import AIRuntimeGuardianToolkit
 
 
-def build_graph(
-    toolkit: AIRuntimeGuardianToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the AI Runtime Guardian agent graph.
-
-    Flow:
-        monitor_ai_runtime -> detect_prompt_attacks
-        -> analyze_model_behavior
-        -> guard_tool_execution
-        -> enforce_guardrails -> report
-    """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _monitor(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await monitor_ai_runtime(_to_dict(state), toolkit)
-
-    async def _detect(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await detect_prompt_attacks(_to_dict(state), toolkit)
-
-    async def _analyze(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await analyze_model_behavior(_to_dict(state), toolkit)
-
-    async def _guard(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await guard_tool_execution(_to_dict(state), toolkit)
-
-    async def _enforce(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await enforce_guardrails(_to_dict(state), toolkit)
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await report(_to_dict(state), toolkit)
-
-    graph = StateGraph(AIRuntimeGuardianState)
-    graph.add_node("monitor_ai_runtime", _monitor)
-    graph.add_node("detect_prompt_attacks", _detect)
-    graph.add_node("analyze_model_behavior", _analyze)
-    graph.add_node("guard_tool_execution", _guard)
-    graph.add_node("enforce_guardrails", _enforce)
-    graph.add_node("report", _report)
-
-    graph.set_entry_point("monitor_ai_runtime")
-    graph.add_edge(
-        "monitor_ai_runtime",
-        "detect_prompt_attacks",
+def build_graph(toolkit: AIRuntimeGuardianToolkit):  # type: ignore[no-untyped-def]
+    """Build the ai_runtime_guardian agent graph (linear sequence)."""
+    return build_linear_graph(
+        AIRuntimeGuardianState,
+        [
+            ("monitor_ai_runtime", monitor_ai_runtime),
+            ("detect_prompt_attacks", detect_prompt_attacks),
+            ("analyze_model_behavior", analyze_model_behavior),
+            ("guard_tool_execution", guard_tool_execution),
+            ("enforce_guardrails", enforce_guardrails),
+            ("report", report),
+        ],
+        toolkit=toolkit,
     )
-    graph.add_edge(
-        "detect_prompt_attacks",
-        "analyze_model_behavior",
-    )
-    graph.add_edge(
-        "analyze_model_behavior",
-        "guard_tool_execution",
-    )
-    graph.add_edge(
-        "guard_tool_execution",
-        "enforce_guardrails",
-    )
-    graph.add_edge("enforce_guardrails", "report")
-    graph.add_edge("report", END)
-
-    return graph
 
 
 def create_ai_runtime_guardian_graph(

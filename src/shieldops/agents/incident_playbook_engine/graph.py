@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
 
-from shieldops.agents.incident_playbook_engine.models import (
-    IncidentPlaybookEngineState,
-)
-from shieldops.agents.incident_playbook_engine.nodes import (
+from shieldops.agents.framework import build_linear_graph
+
+from .models import IncidentPlaybookEngineState
+from .nodes import (
     adapt_steps,
     classify_incident,
     execute_playbook,
@@ -15,55 +15,21 @@ from shieldops.agents.incident_playbook_engine.nodes import (
     select_playbook,
     validate_outcome,
 )
-from shieldops.agents.tracing import traced_node
-
-_AGENT = "incident_playbook_engine"
 
 
-def build_graph() -> StateGraph:
-    """Build the Incident Playbook Engine LangGraph workflow.
-
-    Workflow:
-        classify_incident -> select_playbook -> adapt_steps
-        -> execute_playbook -> validate_outcome
-        -> generate_report -> END
-    """
-    graph = StateGraph(IncidentPlaybookEngineState)
-
-    graph.add_node(
-        "classify_incident",
-        traced_node("ipe.classify_incident", _AGENT)(classify_incident),
+def build_graph():  # type: ignore[no-untyped-def]
+    """Build the incident_playbook_engine agent graph (linear sequence)."""
+    return build_linear_graph(
+        IncidentPlaybookEngineState,
+        [
+            ("classify_incident", classify_incident),
+            ("select_playbook", select_playbook),
+            ("adapt_steps", adapt_steps),
+            ("execute_playbook", execute_playbook),
+            ("validate_outcome", validate_outcome),
+            ("generate_report", generate_report),
+        ],
     )
-    graph.add_node(
-        "select_playbook",
-        traced_node("ipe.select_playbook", _AGENT)(select_playbook),
-    )
-    graph.add_node(
-        "adapt_steps",
-        traced_node("ipe.adapt_steps", _AGENT)(adapt_steps),
-    )
-    graph.add_node(
-        "execute_playbook",
-        traced_node("ipe.execute_playbook", _AGENT)(execute_playbook),
-    )
-    graph.add_node(
-        "validate_outcome",
-        traced_node("ipe.validate_outcome", _AGENT)(validate_outcome),
-    )
-    graph.add_node(
-        "generate_report",
-        traced_node("ipe.generate_report", _AGENT)(generate_report),
-    )
-
-    graph.set_entry_point("classify_incident")
-    graph.add_edge("classify_incident", "select_playbook")
-    graph.add_edge("select_playbook", "adapt_steps")
-    graph.add_edge("adapt_steps", "execute_playbook")
-    graph.add_edge("execute_playbook", "validate_outcome")
-    graph.add_edge("validate_outcome", "generate_report")
-    graph.add_edge("generate_report", END)
-
-    return graph
 
 
 def create_incident_playbook_engine_graph(

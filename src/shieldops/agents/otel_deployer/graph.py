@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import OTelDeployerState
 from .nodes import (
@@ -16,39 +18,18 @@ from .nodes import (
 from .tools import OTelDeployerToolkit
 
 
-def build_graph(toolkit: OTelDeployerToolkit) -> StateGraph:  # type: ignore[type-arg]
-    """Build the OTel Deployment Orchestrator agent graph."""
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return state  # type: ignore[no-any-return]
-
-    async def _plan(state: Any) -> dict[str, Any]:
-        return await plan_deployments(_to_dict(state), toolkit)
-
-    async def _validate(state: Any) -> dict[str, Any]:
-        return await validate_configs(_to_dict(state), toolkit)
-
-    async def _deploy(state: Any) -> dict[str, Any]:
-        return await deploy_collectors(_to_dict(state), toolkit)
-
-    async def _verify(state: Any) -> dict[str, Any]:
-        return await verify_and_report(_to_dict(state), toolkit)
-
-    graph = StateGraph(OTelDeployerState)
-    graph.add_node("plan", _plan)
-    graph.add_node("validate", _validate)
-    graph.add_node("deploy", _deploy)
-    graph.add_node("verify", _verify)
-
-    graph.set_entry_point("plan")
-    graph.add_edge("plan", "validate")
-    graph.add_edge("validate", "deploy")
-    graph.add_edge("deploy", "verify")
-    graph.add_edge("verify", END)
-
-    return graph
+def build_graph(toolkit: OTelDeployerToolkit):  # type: ignore[no-untyped-def]
+    """Build the otel_deployer agent graph (linear sequence)."""
+    return build_linear_graph(
+        OTelDeployerState,
+        [
+            ("plan", plan_deployments),
+            ("validate", validate_configs),
+            ("deploy", deploy_collectors),
+            ("verify", verify_and_report),
+        ],
+        toolkit=toolkit,
+    )
 
 
 def create_otel_deployer_graph(

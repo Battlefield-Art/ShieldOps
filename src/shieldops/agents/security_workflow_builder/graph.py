@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import StateGraph
+
+from shieldops.agents.framework import build_linear_graph
 
 from .models import SecurityWorkflowBuilderState
 from .nodes import (
@@ -18,102 +20,20 @@ from .nodes import (
 from .tools import SecurityWorkflowBuilderToolkit
 
 
-def build_graph(
-    toolkit: SecurityWorkflowBuilderToolkit,
-) -> StateGraph:  # type: ignore[type-arg]
-    """Build the Security Workflow Builder graph.
-
-    Flow:
-        define_trigger -> build_workflow
-        -> validate_logic -> test_execution
-        -> deploy_workflow -> report
-    """
-
-    def _to_dict(state: Any) -> dict[str, Any]:
-        if hasattr(state, "model_dump"):
-            return state.model_dump()  # type: ignore[no-any-return]
-        return dict(state) if not isinstance(state, dict) else state
-
-    async def _trigger(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await define_trigger(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _build(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await build_workflow(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _validate(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await validate_logic(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _test(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await test_execution(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _deploy(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await deploy_workflow(
-            _to_dict(state),
-            toolkit,
-        )
-
-    async def _report(
-        state: Any,
-    ) -> dict[str, Any]:
-        return await generate_report(
-            _to_dict(state),
-            toolkit,
-        )
-
-    graph = StateGraph(SecurityWorkflowBuilderState)
-    graph.add_node("define_trigger", _trigger)
-    graph.add_node("build_workflow", _build)
-    graph.add_node("validate_logic", _validate)
-    graph.add_node("test_execution", _test)
-    graph.add_node("deploy_workflow", _deploy)
-    graph.add_node("report", _report)
-
-    graph.set_entry_point("define_trigger")
-    graph.add_edge(
-        "define_trigger",
-        "build_workflow",
+def build_graph(toolkit: SecurityWorkflowBuilderToolkit):  # type: ignore[no-untyped-def]
+    """Build the security_workflow_builder agent graph (linear sequence)."""
+    return build_linear_graph(
+        SecurityWorkflowBuilderState,
+        [
+            ("define_trigger", define_trigger),
+            ("build_workflow", build_workflow),
+            ("validate_logic", validate_logic),
+            ("test_execution", test_execution),
+            ("deploy_workflow", deploy_workflow),
+            ("report", generate_report),
+        ],
+        toolkit=toolkit,
     )
-    graph.add_edge(
-        "build_workflow",
-        "validate_logic",
-    )
-    graph.add_edge(
-        "validate_logic",
-        "test_execution",
-    )
-    graph.add_edge(
-        "test_execution",
-        "deploy_workflow",
-    )
-    graph.add_edge(
-        "deploy_workflow",
-        "report",
-    )
-    graph.add_edge("report", END)
-
-    return graph
 
 
 def create_security_workflow_builder_graph(

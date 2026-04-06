@@ -117,6 +117,9 @@ ignore = ["S101", "S105", "N818", "S110", "SIM102", "SIM108"]  # S101: assert; S
 "src/shieldops/agents/nl_query/*.py" = ["S608"]  # SQL construction with validation
 "scripts/*.py" = ["S608"]  # Scripts use controlled SQL
 "examples/**/*.py" = ["S104"]  # Examples may bind to all interfaces
+"src/shieldops/integrations/**/*.py" = ["N815"]  # Vendor API field names (camelCase)
+"scripts/migrate_agents.py" = ["F841"]  # AST-walker captures unused locals
+"src/shieldops/dashboard/pages/*.py" = ["N999"]  # Streamlit page prefixes
 
 [tool.ruff.lint.isort]
 known-first-party = ["shieldops"]
