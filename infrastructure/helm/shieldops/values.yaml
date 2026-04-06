@@ -8,6 +8,97 @@
 # -- Number of API server replicas
 replicaCount: 2
 
+# =============================================================================
+# Self-Hosted Packaging (Issue #230)
+# =============================================================================
+# These sections configure ShieldOps for self-hosted deployments, including
+# air-gapped environments, embedded datastores (DuckDB + Redis Streams), and
+# multi-cloud LLM providers.
+
+# -- LLM provider selection and credentials
+llm:
+  # -- Provider: anthropic | bedrock | vertex | azure
+  provider: anthropic
+  # -- API key for the selected provider (stored in the chart secret)
+  apiKey: ""
+  # -- Optional model override (e.g., claude-3-5-sonnet-20240620)
+  model: ""
+  # -- Bedrock/Vertex/Azure region (ignored for direct Anthropic)
+  region: ""
+  # -- Azure OpenAI endpoint (used when provider=azure)
+  endpoint: ""
+
+# -- Database configuration. When embedded=true, the API uses an on-disk
+#    DuckDB/SQLite database backed by the PVC (see storage.* below). When
+#    embedded=false, the URL under external.url is used.
+database:
+  embedded: true
+  # -- Embedded driver: duckdb (default, analytics-optimized) | sqlite
+  embeddedDriver: duckdb
+  external:
+    url: ""
+
+# -- Redis configuration. When embedded=true, the platform uses Redis
+#    Streams via the bundled Bitnami Redis subchart. Set embedded=false
+#    and populate external.url to point at an existing Redis instance.
+redisCompat:
+  embedded: true
+  external:
+    url: ""
+
+# -- Ingestion rate limits enforced by the API ingestion pipeline.
+ingestion:
+  # -- Hard cap on ingestion volume (in GB) per 24h window
+  maxGbPerDay: 5
+  # -- Optional per-tenant override file (path inside the container)
+  tenantOverridesFile: ""
+
+# -- On-disk storage for embedded datastores (DuckDB, Redis AOF,
+#    cached artifacts). Mounted at storage.path in both API and worker.
+storage:
+  # -- Create a PVC and mount it at storage.path
+  enabled: true
+  # -- Mount path inside the container
+  path: /data
+  # -- PVC size
+  size: 20Gi
+  # -- StorageClass name (empty = cluster default)
+  storageClassName: ""
+  # -- Access mode — ReadWriteOnce is required for embedded DuckDB
+  accessMode: ReadWriteOnce
+  # -- Use an existing PVC instead of creating one
+  existingClaim: ""
+
+# -- Air-gapped mode disables all outbound telemetry and external API calls
+#    (LangSmith, OTel exporters, update checks, CrowdStrike/Defender/Wiz
+#    connectors). Combine with pre-pulled images in an internal registry.
+airGapped: false
+
+# -- Worker deployment (async agent execution, ingestion processing).
+worker:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ghcr.io/shieldops/api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  # -- Command to run inside the worker container
+  command:
+    - python
+    - -m
+    - shieldops.worker
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
 # -- API server image configuration
 image:
   repository: ghcr.io/shieldops/api

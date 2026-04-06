@@ -1,9 +1,26 @@
-/** HTTP client for the ShieldOps API. */
+/** HTTP client for the ShieldOps API.
+ *
+ * Centralized fetch wrapper — injects the JWT Authorization header, handles
+ * 401 (auto-logout), 403 (friendly org-mismatch error), and demo mode.
+ * Base URL is resolved from VITE_API_BASE_URL with a sensible fallback.
+ */
 
 import { isDemoMode } from "../demo/config";
 import { resolveRoute } from "../demo/routeMap";
 
-const API_BASE = "/api/v1";
+const TOKEN_KEY = "shieldops_token";
+
+function resolveApiBase(): string {
+  const env = (import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL) as
+    | string
+    | undefined;
+  if (env && env.length > 0) {
+    return env.replace(/\/+$/, "");
+  }
+  return "/api/v1";
+}
+
+const API_BASE = resolveApiBase();
 
 class ApiError extends Error {
   constructor(
@@ -26,7 +43,7 @@ async function request<T>(
     return resolveRoute(path, body) as T;
   }
 
-  const token = localStorage.getItem("shieldops_token");
+  const token = localStorage.getItem(TOKEN_KEY);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...((options.headers as Record<string, string>) ?? {}),
@@ -38,9 +55,18 @@ async function request<T>(
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
   if (res.status === 401) {
-    localStorage.removeItem("shieldops_token");
-    window.location.href = "/login";
-    throw new ApiError(401, "Unauthorized");
+    localStorage.removeItem(TOKEN_KEY);
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new ApiError(401, "Session expired — please sign in again.");
+  }
+
+  if (res.status === 403) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    const detail =
+      body.detail ?? "You don't have access to this resource for the current organization.";
+    throw new ApiError(403, detail);
   }
 
   if (!res.ok) {
