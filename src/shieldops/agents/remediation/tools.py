@@ -16,6 +16,7 @@ from typing import Any
 from uuid import uuid4
 
 import structlog
+from pydantic import BaseModel
 
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.models.base import (
@@ -34,6 +35,16 @@ from shieldops.policy.approval.workflow import ApprovalRequest, ApprovalWorkflow
 from shieldops.policy.opa.client import PolicyDecision, PolicyEngine
 
 logger = structlog.get_logger()
+
+
+class PolicyGateResult(BaseModel):
+    """Result of the three-tier policy engine evaluation."""
+
+    allowed: bool
+    decision: str  # approved, denied, requires_approval
+    reason: str
+    requires_approval: bool = False
+
 
 # Blast-radius limits: max resources per single remediation batch
 BLAST_RADIUS_LIMITS: dict[str, int] = {
@@ -217,6 +228,136 @@ class RemediationToolkit:
                 error=str(e),
             )
             return None
+
+    async def pre_check_state(
+        self,
+        resource_id: str,
+        provider: str = "kubernetes",
+    ) -> HealthStatus | None:
+        """Capture the current state of a resource before remediation.
+
+        Returns the pre-action health status so it can be compared post-action.
+        """
+        if self._router is None:
+            return None
+
+        try:
+            connector = self._router.get(provider)
+            health = await connector.get_health(resource_id)
+            logger.info(
+                "pre_check_state_captured",
+                resource_id=resource_id,
+                status=health.status if health else "unknown",
+            )
+            return health
+        except Exception as e:
+            logger.warning(
+                "pre_check_state_failed",
+                resource_id=resource_id,
+                error=str(e),
+            )
+            return None
+
+    async def post_check_state(
+        self,
+        resource_id: str,
+        pre_health: HealthStatus | None,
+        provider: str = "kubernetes",
+    ) -> tuple[HealthStatus | None, bool]:
+        """Verify that the resource state changed after remediation.
+
+        Returns a tuple of (post_health, state_changed). Logs a warning
+        if the state did not change.
+        """
+        if self._router is None:
+            return None, False
+
+        try:
+            connector = self._router.get(provider)
+            post_health = await connector.get_health(resource_id)
+
+            if pre_health is None or post_health is None:
+                return post_health, False
+
+            state_changed = post_health.status != pre_health.status
+            if not state_changed:
+                logger.warning(
+                    "post_check_state_unchanged",
+                    resource_id=resource_id,
+                    pre_status=pre_health.status,
+                    post_status=post_health.status,
+                )
+            else:
+                logger.info(
+                    "post_check_state_changed",
+                    resource_id=resource_id,
+                    pre_status=pre_health.status,
+                    post_status=post_health.status,
+                )
+            return post_health, state_changed
+        except Exception as e:
+            logger.warning(
+                "post_check_state_failed",
+                resource_id=resource_id,
+                error=str(e),
+            )
+            return None, False
+
+    async def evaluate_policy_gate(
+        self,
+        action: RemediationAction,
+    ) -> "PolicyGateResult":
+        """Evaluate action against the three-tier policy engine.
+
+        Uses ``shieldops.policy.engine.evaluate`` which checks blast-radius,
+        OPA policies, and risk-score thresholds in one call.
+
+        Returns a ``PolicyGateResult`` with the decision.
+        """
+        from shieldops.policy.engine import Decision, PolicyContext, evaluate
+
+        env_map = {
+            "development": "dev",
+            "staging": "staging",
+            "production": "prod",
+        }
+        env_short = env_map.get(action.environment.value, "prod")
+
+        # Map RiskLevel to numeric risk score for the policy engine
+        risk_score_map = {
+            RiskLevel.LOW: 0.2,
+            RiskLevel.MEDIUM: 0.5,
+            RiskLevel.HIGH: 0.75,
+            RiskLevel.CRITICAL: 0.95,
+        }
+        risk_score = risk_score_map.get(action.risk_level, 0.5)
+
+        context = PolicyContext(
+            agent_name="remediation-agent",
+            action_type=action.action_type,
+            target_resources=[action.target_resource],
+            environment=env_short,
+            risk_score=risk_score,
+            metadata={"action_id": action.id, "description": action.description},
+        )
+
+        decision = await evaluate(action.action_type, context)
+
+        logger.info(
+            "policy_gate_evaluated",
+            action_type=action.action_type,
+            target=action.target_resource,
+            decision=decision.decision.value,
+            allowed=decision.allowed,
+            reason=decision.reason,
+        )
+
+        return PolicyGateResult(
+            allowed=decision.allowed,
+            decision=decision.decision.value,
+            reason=decision.reason,
+            requires_approval=decision.decision == Decision.REQUIRES_APPROVAL,
+        )
 
     async def execute_action(
         self,

@@ -227,7 +227,23 @@ async def assess_risk(state: RemediationState) -> dict[str, Any]:
         )
     except Exception as e:
         logger.error("llm_risk_assessment_failed", error=str(e))
-        output_summary += f". LLM assessment failed: {e}"
+        # Rule-based fallback: escalate risk for destructive/prod actions
+        destructive_actions = {
+            "terminate_instance",
+            "delete_namespace",
+            "drain_node",
+            "modify_security_group",
+            "delete_pod",
+            "scale_to_zero",
+        }
+        if state.action.action_type in destructive_actions:
+            assessed_risk = RiskLevel.CRITICAL
+        elif state.action.environment.value == "production":
+            assessed_risk = RiskLevel.HIGH
+        output_summary = (
+            f"Risk: {assessed_risk.value} (baseline: {baseline_risk.value}, "
+            f"llm: fallback-heuristic). LLM failed: {e}"
+        )
 
     step = RemediationStep(
         step_number=len(state.reasoning_chain) + 1,
@@ -342,10 +358,25 @@ async def execute_action(state: RemediationState) -> dict[str, Any]:
         target=state.action.target_resource,
     )
 
+    # Pre-verification: capture current state before modifying
+    pre_health = await toolkit.pre_check_state(state.action.target_resource)
+
+    # Execute the remediation action
     result = await toolkit.execute_action(state.action)
 
+    # Post-verification: confirm state actually changed
+    post_health, state_changed = await toolkit.post_check_state(
+        state.action.target_resource, pre_health
+    )
+
     if result.status == ExecutionStatus.SUCCESS:
-        output_summary = f"Action succeeded: {result.message}"
+        if pre_health and not state_changed:
+            output_summary = (
+                f"Action succeeded: {result.message} "
+                f"(WARNING: resource state unchanged — verify manually)"
+            )
+        else:
+            output_summary = f"Action succeeded: {result.message}"
     else:
         output_summary = f"Action failed: {result.message}"
 
@@ -448,6 +479,11 @@ async def validate_health(state: RemediationState) -> dict[str, Any]:
                 )
         except Exception as e:
             logger.error("llm_validation_assessment_failed", error=str(e))
+            # Rule-based fallback: trust the raw health check results
+            validation_passed = all(c.passed for c in checks) if checks else None
+            output_summary = (
+                f"{len(checks)} checks, all passed: {validation_passed} (LLM fallback: {e})"
+            )
 
     step = RemediationStep(
         step_number=len(state.reasoning_chain) + 1,

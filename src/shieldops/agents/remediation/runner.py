@@ -25,8 +25,10 @@ from shieldops.models.base import (
 from shieldops.observability.tracing import get_tracer
 from shieldops.playbooks.loader import PlaybookLoader
 from shieldops.policy.approval.workflow import ApprovalWorkflow
+from shieldops.policy.blast_radius import check_blast_radius
 from shieldops.policy.opa.client import PolicyEngine
 from shieldops.policy.rollback.manager import RollbackManager
+from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
 if __import__("typing").TYPE_CHECKING:
     from shieldops.db.repository import Repository
@@ -107,6 +109,42 @@ class RemediationRunner:
             risk_level=action.risk_level.value,
         )
 
+        # --- Blast-radius enforcement ---
+        env_map = {
+            "development": "dev",
+            "staging": "staging",
+            "production": "prod",
+        }
+        env_short = env_map.get(action.environment.value, "prod")
+        target_resources = [action.target_resource]
+        # Include any additional resources from parameters
+        extra = action.parameters.get("additional_resources", [])
+        if isinstance(extra, list):
+            target_resources.extend(extra)
+
+        br_result = check_blast_radius(
+            environment=env_short,
+            target_resources=target_resources,
+        )
+        if not br_result.allowed:
+            logger.warning(
+                "remediation_blast_radius_exceeded",
+                remediation_id=remediation_id,
+                resource_count=br_result.resource_count,
+                limit=br_result.limit,
+                environment=env_short,
+            )
+            error_state = RemediationState(
+                remediation_id=remediation_id,
+                action=action,
+                alert_context=alert_context,
+                investigation_id=investigation_id,
+                error=br_result.reason,
+                current_step="blast_radius_exceeded",
+            )
+            self._remediations[remediation_id] = error_state
+            return error_state
+
         initial_state = RemediationState(
             remediation_id=remediation_id,
             action=action,
@@ -163,6 +201,10 @@ class RemediationRunner:
             await self._persist(remediation_id, final_state)
             await self._write_audit(remediation_id, final_state)
             await self._broadcast(remediation_id, final_state)
+
+            # Persist via shared persistence helpers (DB + audit trail)
+            await self._persist_agent_run(remediation_id, final_state)
+
             return final_state
 
         except Exception as e:
@@ -184,6 +226,10 @@ class RemediationRunner:
             self._remediations[remediation_id] = error_state
             await self._persist(remediation_id, error_state)
             await self._write_audit(remediation_id, error_state)
+
+            # Persist via shared persistence helpers
+            await self._persist_agent_run(remediation_id, error_state)
+
             return error_state
 
     async def _broadcast(self, remediation_id: str, state: RemediationState) -> None:
@@ -241,6 +287,49 @@ class RemediationRunner:
             await self._repository.append_audit_log(entry)
         except Exception as e:
             logger.error("audit_log_write_failed", id=remediation_id, error=str(e))
+
+    async def _persist_agent_run(self, remediation_id: str, state: RemediationState) -> None:
+        """Persist via the shared persistence helpers (agent run + audit log)."""
+        outcome = "failed" if state.error else "success"
+        if state.execution_result:
+            outcome = state.execution_result.status.value
+
+        try:
+            await persist_agent_run(
+                agent_name="remediation",
+                org_id=state.action.parameters.get("org_id", ""),
+                input_data={
+                    "remediation_id": remediation_id,
+                    "action_type": state.action.action_type,
+                    "target_resource": state.action.target_resource,
+                    "environment": state.action.environment.value,
+                },
+                output_data={
+                    "current_step": state.current_step,
+                    "validation_passed": state.validation_passed,
+                    "error": state.error,
+                },
+                duration_ms=state.remediation_duration_ms,
+                error_message=state.error or None,
+            )
+        except Exception as e:
+            logger.warning("persist_agent_run_failed", id=remediation_id, error=str(e))
+
+        try:
+            await write_audit_log(
+                action=state.action.action_type,
+                actor=f"remediation-agent:{remediation_id}",
+                target=state.action.target_resource,
+                result=outcome,
+                org_id=state.action.parameters.get("org_id", ""),
+                metadata={
+                    "environment": state.action.environment.value,
+                    "risk_level": (state.assessed_risk or state.action.risk_level).value,
+                    "validation_passed": state.validation_passed,
+                },
+            )
+        except Exception as e:
+            logger.warning("write_audit_log_failed", id=remediation_id, error=str(e))
 
     def get_remediation(self, remediation_id: str) -> RemediationState | None:
         """Retrieve a completed remediation by ID."""
