@@ -20,6 +20,16 @@ _MAX_RETRIES = 3
 _BACKOFF_BASE = 0.5  # seconds — exponential: 0.5, 1.0, 2.0
 
 
+class ShieldOpsDeniedError(Exception):
+    """Raised when a tool call is denied in enforce mode."""
+
+    def __init__(self, tool_name: str, risk_score: float, reasons: list[str]) -> None:
+        self.tool_name = tool_name
+        self.risk_score = risk_score
+        self.reasons = reasons
+        super().__init__(f"Tool '{tool_name}' denied (risk={risk_score}): {'; '.join(reasons)}")
+
+
 class InterceptResult(BaseModel):
     """Result of an interception evaluation."""
 
@@ -149,6 +159,29 @@ class ShieldOpsInterceptor:
             decision=decision,
             risk_score=result.risk_score,
         )
+        return result
+
+    # -- convenience check -----------------------------------------------------
+
+    def check(
+        self,
+        tool_name: str,
+        args: dict[str, Any] | None = None,
+        agent_id: str | None = None,
+    ) -> InterceptResult:
+        """Evaluate a tool call and raise on deny in enforce mode.
+
+        In **audit** mode, logs the evaluation but always returns the result
+        without raising.  In **enforce** mode, raises ``ShieldOpsDeniedError``
+        when the decision is ``block``.
+        """
+        result = self.intercept(tool_name, args, agent_id)
+        if result.decision == "block" and self._config.is_enforce:
+            raise ShieldOpsDeniedError(
+                tool_name=tool_name,
+                risk_score=result.risk_score,
+                reasons=result.reasons,
+            )
         return result
 
     # -- audit recording ------------------------------------------------------

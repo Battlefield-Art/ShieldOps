@@ -79,6 +79,9 @@ from shieldops.api.routes import (
 )
 from shieldops.api.routes import event_query as event_query_routes
 from shieldops.api.routes import (
+    firewall_dashboard as firewall_dashboard_routes,
+)
+from shieldops.api.routes import (
     firewall_policies as firewall_policies_routes,
 )
 from shieldops.api.routes import (
@@ -13969,6 +13972,11 @@ def create_app() -> FastAPI:
         firewall_policies_routes.router,
         prefix=settings.api_prefix,
         tags=["Firewall Policies"],
+    )
+    app.include_router(
+        firewall_dashboard_routes.router,
+        prefix=settings.api_prefix,
+        tags=["Firewall Dashboard"],
     )
     app.include_router(
         nhi_registry_routes.router,

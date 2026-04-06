@@ -19,6 +19,7 @@ from shieldops.firewall.models import (
     PolicyRule,
     ToolCallContext,
 )
+from shieldops.utils.persistence import write_audit_log
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/firewall/policies", tags=["Firewall Policies"])
@@ -195,11 +196,39 @@ async def evaluate_tool_call(
 ) -> PolicyEvaluation:
     """Evaluate a tool call against the policy engine (used by the SDK)."""
     evaluator = _get_evaluator()
+    org_id = _org_id_from_user(user)
     ctx = ToolCallContext(
         tool_name=body.tool_name,
         arguments=body.arguments,
         caller_identity=body.caller_identity or user.email,
-        org_id=_org_id_from_user(user),
+        org_id=org_id,
     )
     result = evaluator.evaluate(ctx)
+
+    # Persist immutable audit log for every evaluation (allowed AND denied)
+    await write_audit_log(
+        action="firewall.evaluate",
+        actor=body.caller_identity or user.email,
+        target=body.tool_name,
+        result=result.decision.value,
+        org_id=org_id,
+        metadata={
+            "risk_score": result.risk_score,
+            "tool_name": body.tool_name,
+            "evaluation_ms": result.evaluation_ms,
+            "matched_rule": (result.matching_rules[0].id if result.matching_rules else None),
+        },
+    )
+
+    # Notify the in-memory dashboard tracker
+    from shieldops.api.routes.firewall_dashboard import record_evaluation
+
+    record_evaluation(
+        org_id=org_id,
+        tool_name=body.tool_name,
+        decision=result.decision.value,
+        risk_score=result.risk_score,
+        caller=body.caller_identity or user.email,
+    )
+
     return result
