@@ -2,435 +2,50 @@
 
 from __future__ import annotations
 
-import time
-import uuid
-from enum import StrEnum
-from typing import Any
+from shieldops.engine import EnumDef, FieldDef, engine
 
-import structlog
-from pydantic import BaseModel, Field
+AnalystProductivityEngine = engine(
+    "AnalystProductivityEngine",
+    description="Measure analyst productivity, time savings, and automation impact.",
+    enums={
+        "task_type": EnumDef(
+            "TaskType",
+            {
+                "TRIAGE": "triage",
+                "INVESTIGATION": "investigation",
+                "RESPONSE": "response",
+                "DOCUMENTATION": "documentation",
+                "REVIEW": "review",
+            },
+        ),
+        "automation_level": EnumDef(
+            "AutomationLevel",
+            {
+                "FULLY_AUTOMATED": "fully_automated",
+                "AI_ASSISTED": "ai_assisted",
+                "MANUAL": "manual",
+            },
+        ),
+        "productivity_metric": EnumDef(
+            "ProductivityMetric",
+            {
+                "TIME_SAVINGS": "time_savings",
+                "CASE_THROUGHPUT": "case_throughput",
+                "QUALITY_SCORE": "quality_score",
+            },
+        ),
+    },
+    record_fields=[
+        FieldDef("time_spent_min", float, 0.0),
+        FieldDef("manual_baseline_min", float, 0.0),
+        FieldDef("analyst_id", str, ""),
+    ],
+)
 
-logger = structlog.get_logger()
-
-
-# --- Enums ---
-
-
-class TaskType(StrEnum):
-    TRIAGE = "triage"
-    INVESTIGATION = "investigation"
-    RESPONSE = "response"
-    DOCUMENTATION = "documentation"
-    REVIEW = "review"
-
-
-class AutomationLevel(StrEnum):
-    FULLY_AUTOMATED = "fully_automated"
-    AI_ASSISTED = "ai_assisted"
-    MANUAL = "manual"
-
-
-class ProductivityMetric(StrEnum):
-    TIME_SAVINGS = "time_savings"
-    CASE_THROUGHPUT = "case_throughput"
-    QUALITY_SCORE = "quality_score"
-
-
-# --- Models ---
-
-
-class ProductivityRecord(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str = ""
-    task_type: TaskType = TaskType.TRIAGE
-    automation_level: AutomationLevel = AutomationLevel.MANUAL
-    productivity_metric: ProductivityMetric = ProductivityMetric.TIME_SAVINGS
-    score: float = 0.0
-    time_spent_min: float = 0.0
-    manual_baseline_min: float = 0.0
-    analyst_id: str = ""
-    service: str = ""
-    team: str = ""
-    created_at: float = Field(default_factory=time.time)
-
-
-class ProductivityAnalysis(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str = ""
-    task_type: TaskType = TaskType.TRIAGE
-    analysis_score: float = 0.0
-    threshold: float = 0.0
-    breached: bool = False
-    description: str = ""
-    created_at: float = Field(default_factory=time.time)
-
-
-class ProductivityReport(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    total_records: int = 0
-    total_analyses: int = 0
-    gap_count: int = 0
-    avg_score: float = 0.0
-    by_task_type: dict[str, int] = Field(default_factory=dict)
-    by_automation_level: dict[str, int] = Field(default_factory=dict)
-    by_productivity_metric: dict[str, int] = Field(default_factory=dict)
-    top_gaps: list[str] = Field(default_factory=list)
-    recommendations: list[str] = Field(default_factory=list)
-    generated_at: float = Field(default_factory=time.time)
-    created_at: float = Field(default_factory=time.time)
-
-
-# --- Engine ---
-
-
-class AnalystProductivityEngine:
-    """Measure analyst productivity, time savings, and automation impact."""
-
-    def __init__(
-        self,
-        max_records: int = 200000,
-        threshold: float = 50.0,
-    ) -> None:
-        self._max_records = max_records
-        self._threshold = threshold
-        self._records: list[ProductivityRecord] = []
-        self._analyses: list[ProductivityAnalysis] = []
-        logger.info(
-            "analyst_productivity_engine.initialized",
-            max_records=max_records,
-            threshold=threshold,
-        )
-
-    # -- record / get / list -----------------------------------
-
-    def add_record(
-        self,
-        name: str,
-        task_type: TaskType = TaskType.TRIAGE,
-        automation_level: AutomationLevel = AutomationLevel.MANUAL,
-        productivity_metric: ProductivityMetric = (ProductivityMetric.TIME_SAVINGS),
-        score: float = 0.0,
-        time_spent_min: float = 0.0,
-        manual_baseline_min: float = 0.0,
-        analyst_id: str = "",
-        service: str = "",
-        team: str = "",
-    ) -> ProductivityRecord:
-        record = ProductivityRecord(
-            name=name,
-            task_type=task_type,
-            automation_level=automation_level,
-            productivity_metric=productivity_metric,
-            score=score,
-            time_spent_min=time_spent_min,
-            manual_baseline_min=manual_baseline_min,
-            analyst_id=analyst_id,
-            service=service,
-            team=team,
-        )
-        self._records.append(record)
-        if len(self._records) > self._max_records:
-            self._records = self._records[-self._max_records :]
-        logger.info(
-            "analyst_productivity_engine.record_added",
-            record_id=record.id,
-            name=name,
-            task_type=task_type.value,
-            automation_level=automation_level.value,
-        )
-        return record
-
-    def get_record(self, record_id: str) -> ProductivityRecord | None:
-        for r in self._records:
-            if r.id == record_id:
-                return r
-        return None
-
-    def list_records(
-        self,
-        task_type: TaskType | None = None,
-        automation_level: AutomationLevel | None = None,
-        team: str | None = None,
-        limit: int = 50,
-    ) -> list[ProductivityRecord]:
-        results = list(self._records)
-        if task_type is not None:
-            results = [r for r in results if r.task_type == task_type]
-        if automation_level is not None:
-            results = [r for r in results if r.automation_level == automation_level]
-        if team is not None:
-            results = [r for r in results if r.team == team]
-        return results[-limit:]
-
-    def add_analysis(
-        self,
-        name: str,
-        task_type: TaskType = TaskType.TRIAGE,
-        analysis_score: float = 0.0,
-        threshold: float = 0.0,
-        breached: bool = False,
-        description: str = "",
-    ) -> ProductivityAnalysis:
-        analysis = ProductivityAnalysis(
-            name=name,
-            task_type=task_type,
-            analysis_score=analysis_score,
-            threshold=threshold,
-            breached=breached,
-            description=description,
-        )
-        self._analyses.append(analysis)
-        if len(self._analyses) > self._max_records:
-            self._analyses = self._analyses[-self._max_records :]
-        logger.info(
-            "analyst_productivity_engine.analysis_added",
-            name=name,
-            task_type=task_type.value,
-            analysis_score=analysis_score,
-        )
-        return analysis
-
-    # -- domain operations -------------------------------------
-
-    def measure_time_savings(self) -> list[dict[str, Any]]:
-        """Measure time savings per task type."""
-        task_data: dict[str, list[ProductivityRecord]] = {}
-        for r in self._records:
-            task_data.setdefault(r.task_type.value, []).append(r)
-        results: list[dict[str, Any]] = []
-        for task, records in task_data.items():
-            total_spent = sum(r.time_spent_min for r in records)
-            total_baseline = sum(r.manual_baseline_min for r in records)
-            saved = total_baseline - total_spent
-            pct = round(saved / total_baseline * 100, 2) if total_baseline > 0 else 0.0
-            results.append(
-                {
-                    "task_type": task,
-                    "task_count": len(records),
-                    "total_time_spent_min": round(total_spent, 2),
-                    "total_baseline_min": round(total_baseline, 2),
-                    "time_saved_min": round(saved, 2),
-                    "savings_pct": pct,
-                }
-            )
-        return sorted(
-            results,
-            key=lambda x: x["savings_pct"],
-            reverse=True,
-        )
-
-    def calculate_case_throughput(self) -> list[dict[str, Any]]:
-        """Calculate case throughput per analyst."""
-        analyst_data: dict[str, list[ProductivityRecord]] = {}
-        for r in self._records:
-            if r.analyst_id:
-                analyst_data.setdefault(r.analyst_id, []).append(r)
-        results: list[dict[str, Any]] = []
-        for analyst, records in analyst_data.items():
-            total_cases = len(records)
-            automated = sum(
-                1
-                for r in records
-                if r.automation_level
-                in (
-                    AutomationLevel.FULLY_AUTOMATED,
-                    AutomationLevel.AI_ASSISTED,
-                )
-            )
-            manual = total_cases - automated
-            avg_time = round(
-                sum(r.time_spent_min for r in records) / total_cases,
-                2,
-            )
-            avg_score = round(sum(r.score for r in records) / total_cases, 2)
-            results.append(
-                {
-                    "analyst_id": analyst,
-                    "total_cases": total_cases,
-                    "automated_cases": automated,
-                    "manual_cases": manual,
-                    "automation_rate_pct": round(automated / total_cases * 100, 2),
-                    "avg_time_per_case_min": avg_time,
-                    "avg_quality_score": avg_score,
-                }
-            )
-        return sorted(
-            results,
-            key=lambda x: x["total_cases"],
-            reverse=True,
-        )
-
-    def benchmark_vs_manual(self) -> dict[str, Any]:
-        """Benchmark AI-assisted vs manual work."""
-        ai_records = [
-            r
-            for r in self._records
-            if r.automation_level
-            in (
-                AutomationLevel.FULLY_AUTOMATED,
-                AutomationLevel.AI_ASSISTED,
-            )
-        ]
-        manual_records = [r for r in self._records if r.automation_level == AutomationLevel.MANUAL]
-        ai_avg_time = (
-            round(
-                sum(r.time_spent_min for r in ai_records) / len(ai_records),
-                2,
-            )
-            if ai_records
-            else 0.0
-        )
-        manual_avg_time = (
-            round(
-                sum(r.time_spent_min for r in manual_records) / len(manual_records),
-                2,
-            )
-            if manual_records
-            else 0.0
-        )
-        ai_avg_score = (
-            round(
-                sum(r.score for r in ai_records) / len(ai_records),
-                2,
-            )
-            if ai_records
-            else 0.0
-        )
-        manual_avg_score = (
-            round(
-                sum(r.score for r in manual_records) / len(manual_records),
-                2,
-            )
-            if manual_records
-            else 0.0
-        )
-        speedup = round(manual_avg_time / ai_avg_time, 2) if ai_avg_time > 0 else 0.0
-        return {
-            "ai_assisted_count": len(ai_records),
-            "manual_count": len(manual_records),
-            "ai_avg_time_min": ai_avg_time,
-            "manual_avg_time_min": manual_avg_time,
-            "speedup_factor": speedup,
-            "ai_avg_quality": ai_avg_score,
-            "manual_avg_quality": manual_avg_score,
-            "quality_delta": round(ai_avg_score - manual_avg_score, 2),
-            "recommendation": (
-                "Increase AI automation"
-                if speedup > 2
-                else ("Maintain current mix" if speedup > 1 else "Review AI effectiveness")
-            ),
-        }
-
-    # -- standard methods --------------------------------------
-
-    def analyze_distribution(self) -> dict[str, Any]:
-        type_data: dict[str, list[float]] = {}
-        for r in self._records:
-            key = r.task_type.value
-            type_data.setdefault(key, []).append(r.score)
-        result: dict[str, Any] = {}
-        for k, scores in type_data.items():
-            result[k] = {
-                "count": len(scores),
-                "avg_score": round(sum(scores) / len(scores), 2),
-            }
-        return result
-
-    def identify_gaps(self) -> list[dict[str, Any]]:
-        results: list[dict[str, Any]] = []
-        for r in self._records:
-            if r.score < self._threshold:
-                results.append(
-                    {
-                        "record_id": r.id,
-                        "name": r.name,
-                        "task_type": r.task_type.value,
-                        "score": r.score,
-                        "service": r.service,
-                        "team": r.team,
-                    }
-                )
-        return sorted(results, key=lambda x: x["score"])
-
-    def rank_by_score(self) -> list[dict[str, Any]]:
-        svc_scores: dict[str, list[float]] = {}
-        for r in self._records:
-            svc_scores.setdefault(r.service, []).append(r.score)
-        results: list[dict[str, Any]] = []
-        for svc, scores in svc_scores.items():
-            results.append(
-                {
-                    "service": svc,
-                    "avg_score": round(sum(scores) / len(scores), 2),
-                }
-            )
-        results.sort(key=lambda x: x["avg_score"])
-        return results
-
-    def process(self, key: str) -> dict[str, Any]:
-        matched = [r for r in self._records if r.name == key or r.service == key]
-        if not matched:
-            return {"key": key, "status": "not_found", "count": 0}
-        scores = [r.score for r in matched]
-        avg = round(sum(scores) / len(scores), 2)
-        return {
-            "key": key,
-            "status": "processed",
-            "count": len(matched),
-            "avg_score": avg,
-            "below_threshold": sum(1 for s in scores if s < self._threshold),
-        }
-
-    # -- report / stats ----------------------------------------
-
-    def generate_report(self) -> ProductivityReport:
-        by_e1: dict[str, int] = {}
-        by_e2: dict[str, int] = {}
-        by_e3: dict[str, int] = {}
-        for r in self._records:
-            by_e1[r.task_type.value] = by_e1.get(r.task_type.value, 0) + 1
-            by_e2[r.automation_level.value] = by_e2.get(r.automation_level.value, 0) + 1
-            by_e3[r.productivity_metric.value] = by_e3.get(r.productivity_metric.value, 0) + 1
-        gap_count = sum(1 for r in self._records if r.score < self._threshold)
-        scores = [r.score for r in self._records]
-        avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
-        gap_list = self.identify_gaps()
-        top_gaps = [o["name"] for o in gap_list[:5]]
-        recs: list[str] = []
-        if self._records and gap_count > 0:
-            recs.append(f"{gap_count} item(s) below threshold ({self._threshold})")
-        if self._records and avg_score < self._threshold:
-            recs.append(f"Avg score {avg_score} below threshold ({self._threshold})")
-        if not recs:
-            recs.append("Analyst Productivity Engine is healthy")
-        return ProductivityReport(
-            total_records=len(self._records),
-            total_analyses=len(self._analyses),
-            gap_count=gap_count,
-            avg_score=avg_score,
-            by_task_type=by_e1,
-            by_automation_level=by_e2,
-            by_productivity_metric=by_e3,
-            top_gaps=top_gaps,
-            recommendations=recs,
-        )
-
-    def clear_data(self) -> dict[str, str]:
-        self._records.clear()
-        self._analyses.clear()
-        logger.info("analyst_productivity_engine.cleared")
-        return {"status": "cleared"}
-
-    def get_stats(self) -> dict[str, Any]:
-        e1_dist: dict[str, int] = {}
-        for r in self._records:
-            key = r.task_type.value
-            e1_dist[key] = e1_dist.get(key, 0) + 1
-        return {
-            "total_records": len(self._records),
-            "total_analyses": len(self._analyses),
-            "threshold": self._threshold,
-            "task_type_distribution": e1_dist,
-            "unique_teams": len({r.team for r in self._records}),
-            "unique_services": len({r.service for r in self._records}),
-        }
+# Backward-compatible re-exports
+TaskType = AnalystProductivityEngine.TaskType
+AutomationLevel = AnalystProductivityEngine.AutomationLevel
+ProductivityMetric = AnalystProductivityEngine.ProductivityMetric
+ProductivityRecord = AnalystProductivityEngine.Record
+ProductivityAnalysis = AnalystProductivityEngine.Analysis
+ProductivityReport = AnalystProductivityEngine.Report
