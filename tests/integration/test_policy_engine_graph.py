@@ -59,7 +59,7 @@ def test_state_model_validation():
         policy_type=PolicyType.AGENT_BEHAVIOR,
         name="agent_blast_radius",
         description="Limits agent blast radius to 5 services",
-        rego_code="package shieldops.agent\ndefault allow = false\nallow { count(input.targets) <= 5 }",
+        rego_code="package shieldops.agent\ndefault allow = false\nallow { count(input.targets) <= 5 }",  # noqa: E501
         requirements_covered=["req-001"],
         status=PolicyStatus.ACTIVE,
     )

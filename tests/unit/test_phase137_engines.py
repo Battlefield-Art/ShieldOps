@@ -1,4 +1,4 @@
-"""Tests for Phase 137 engines (kill chain, SOAR response, resource governor, investigation pattern, evolution tracker)."""
+"""Tests for Phase 137 engines (kill chain, SOAR response, resource governor, investigation pattern, evolution tracker)."""  # noqa: E501
 
 from __future__ import annotations
 

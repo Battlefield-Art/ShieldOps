@@ -460,7 +460,7 @@ class TestIdentityRiskEngine:
         assert result.identity_id == "nonexistent"
 
     def test_generate_risk_report_populated(self, engine: IdentityRiskEngine) -> None:
-        # u1 gets high composite: LATERAL_MOVEMENT(40*0.95=38) + PRIVILEGE_ESCALATION(35*0.9=31.5) = 69.5
+        # u1 gets high composite: LATERAL_MOVEMENT(40*0.95=38) + PRIVILEGE_ESCALATION(35*0.9=31.5) = 69.5  # noqa: E501
         engine.add_risk_signal(
             identity_id="u1",
             risk_factor=RiskFactor.LATERAL_MOVEMENT,

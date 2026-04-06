@@ -222,6 +222,20 @@ async def ingest_events(
         # --- Event accepted ---
         await _mark_ingested(event.event_id)
 
+        # Publish to Kafka if a producer is configured. Failures are
+        # logged but do not fail the request (fail-open so the existing
+        # in-process pipeline can still handle the event).
+        kafka_producer = _get_kafka_producer()
+        if kafka_producer is not None and kafka_producer.available:
+            try:
+                await kafka_producer.publish(
+                    org_id=str(getattr(event, "org_id", "") or ""),
+                    event_id=str(event.event_id),
+                    event=raw,
+                )
+            except Exception as exc:
+                logger.warning("ingestion.kafka_publish_error", error=str(exc))
+
         # Track metrics
         metrics.inc_counter(
             "ingestion_events_total",

@@ -17,7 +17,7 @@ import pytest
 def _try_import_slo():
     try:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         return True
@@ -29,7 +29,7 @@ def _try_import_slo():
 class TestSloSamplingEnums:
     def test_enum_values_exist(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -40,7 +40,7 @@ class TestSloSamplingEnums:
 class TestSloSamplingModels:
     def test_engine_instantiation(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -48,7 +48,7 @@ class TestSloSamplingModels:
 
     def test_engine_with_max_records(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine(max_records=100)
@@ -59,7 +59,7 @@ class TestSloSamplingModels:
 class TestSloSamplingAddRecord:
     def test_basic_add(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -69,7 +69,7 @@ class TestSloSamplingAddRecord:
 
     def test_add_with_fields(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -78,7 +78,7 @@ class TestSloSamplingAddRecord:
 
     def test_eviction_at_max(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine(max_records=3)
@@ -88,7 +88,7 @@ class TestSloSamplingAddRecord:
 
     def test_get_record_found(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -98,7 +98,7 @@ class TestSloSamplingAddRecord:
 
     def test_get_record_not_found(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -110,7 +110,7 @@ class TestSloSamplingAddRecord:
 class TestSloSamplingProcess:
     def test_process_existing(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -121,7 +121,7 @@ class TestSloSamplingProcess:
 
     def test_process_not_found(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -134,7 +134,7 @@ class TestSloSamplingProcess:
 class TestSloSamplingReport:
     def test_generate_report_populated(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -145,7 +145,7 @@ class TestSloSamplingReport:
 
     def test_generate_report_empty(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -157,7 +157,7 @@ class TestSloSamplingReport:
 class TestSloSamplingStats:
     def test_stats_empty(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -166,7 +166,7 @@ class TestSloSamplingStats:
 
     def test_stats_populated(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -179,7 +179,7 @@ class TestSloSamplingStats:
 class TestSloSamplingClearData:
     def test_clears(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -193,7 +193,7 @@ class TestSloSamplingClearData:
 class TestSloSamplingDomainMethod1:
     def test_estimate_sampling_savings(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -203,7 +203,7 @@ class TestSloSamplingDomainMethod1:
 
     def test_estimate_sampling_savings_empty(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -215,7 +215,7 @@ class TestSloSamplingDomainMethod1:
 class TestSloSamplingDomainMethod2:
     def test_compute_slo_aware_rate(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -228,7 +228,7 @@ class TestSloSamplingDomainMethod2:
 class TestSloSamplingDomainMethod3:
     def test_detect_burn_rate_anomalies(self) -> None:
         from shieldops.observability.slo_aware_sampling_engine import (
-            SloAwareSamplingEngine,
+            SloAwareSamplingEngine,  # noqa: F401
         )
 
         eng = SloAwareSamplingEngine()
@@ -245,7 +245,7 @@ class TestSloSamplingDomainMethod3:
 def _try_import_cardinality():
     try:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         return True
@@ -260,7 +260,7 @@ def _try_import_cardinality():
 class TestCardinalityEnums:
     def test_enum_values_exist(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -274,7 +274,7 @@ class TestCardinalityEnums:
 class TestCardinalityModels:
     def test_engine_instantiation(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -282,7 +282,7 @@ class TestCardinalityModels:
 
     def test_engine_with_max_records(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine(max_records=100)
@@ -296,7 +296,7 @@ class TestCardinalityModels:
 class TestCardinalityAddRecord:
     def test_basic_add(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -306,7 +306,7 @@ class TestCardinalityAddRecord:
 
     def test_add_with_fields(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -315,7 +315,7 @@ class TestCardinalityAddRecord:
 
     def test_eviction_at_max(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine(max_records=3)
@@ -325,7 +325,7 @@ class TestCardinalityAddRecord:
 
     def test_get_record_found(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -335,7 +335,7 @@ class TestCardinalityAddRecord:
 
     def test_get_record_not_found(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -350,7 +350,7 @@ class TestCardinalityAddRecord:
 class TestCardinalityProcess:
     def test_process_existing(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -361,7 +361,7 @@ class TestCardinalityProcess:
 
     def test_process_not_found(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -377,7 +377,7 @@ class TestCardinalityProcess:
 class TestCardinalityReport:
     def test_generate_report_populated(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -388,7 +388,7 @@ class TestCardinalityReport:
 
     def test_generate_report_empty(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -403,7 +403,7 @@ class TestCardinalityReport:
 class TestCardinalityStats:
     def test_stats_empty(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -412,7 +412,7 @@ class TestCardinalityStats:
 
     def test_stats_populated(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -428,7 +428,7 @@ class TestCardinalityStats:
 class TestCardinalityClearData:
     def test_clears(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -445,7 +445,7 @@ class TestCardinalityClearData:
 class TestCardinalityDomainMethod1:
     def test_with_data(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -472,7 +472,7 @@ class TestCardinalityDomainMethod1:
 
     def test_empty(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -504,7 +504,7 @@ class TestCardinalityDomainMethod1:
 class TestCardinalityDomainMethod2:
     def test_with_data(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()
@@ -537,7 +537,7 @@ class TestCardinalityDomainMethod2:
 class TestCardinalityDomainMethod3:
     def test_with_data(self) -> None:
         from shieldops.observability.cardinality_control_engine import (
-            CardinalityControlEngine,
+            CardinalityControlEngine,  # noqa: F401
         )
 
         eng = CardinalityControlEngine()

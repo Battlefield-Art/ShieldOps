@@ -17,6 +17,7 @@ Event envelope shape (sent as JSON over the wire)::
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import time
 from collections import defaultdict
 from enum import StrEnum
@@ -111,26 +112,48 @@ class Broadcaster:
     async def broadcast_to_org(
         self,
         org_id: str,
-        event_type: RealtimeEventType | str,
-        data: dict[str, Any],
+        event_type: RealtimeEventType | str | dict[str, Any],
+        data: dict[str, Any] | None = None,
     ) -> int:
         """Send an event to all connections subscribed under *org_id*.
 
+        Two calling conventions are supported:
+
+        - ``broadcast_to_org(org_id, event_type, data)`` — build envelope
+        - ``broadcast_to_org(org_id, {"type": ..., "data": ...})`` — pass
+          a pre-built event dict. Missing keys are filled in.
+
         Returns the number of successful deliveries.
         """
-        envelope = self._envelope(event_type, data, org_id)
+        envelope = self._coerce_envelope(event_type, data, org_id)
         targets = list(self._by_org.get(org_id, set()))
         return await self._fanout(targets, envelope)
 
     async def broadcast_to_all(
         self,
-        event_type: RealtimeEventType | str,
-        data: dict[str, Any],
+        event_type: RealtimeEventType | str | dict[str, Any],
+        data: dict[str, Any] | None = None,
     ) -> int:
         """Admin-only: broadcast to every active connection."""
-        envelope = self._envelope(event_type, data, _ADMIN_CHANNEL)
+        envelope = self._coerce_envelope(event_type, data, _ADMIN_CHANNEL)
         targets = list(self._all)
         return await self._fanout(targets, envelope)
+
+    def _coerce_envelope(
+        self,
+        event_type: RealtimeEventType | str | dict[str, Any],
+        data: dict[str, Any] | None,
+        org_id: str,
+    ) -> dict[str, Any]:
+        """Accept either (type, data) or a single event-dict form."""
+        if isinstance(event_type, dict):
+            ev = dict(event_type)
+            ev.setdefault("type", "unknown")
+            ev.setdefault("org_id", org_id)
+            ev.setdefault("data", {})
+            ev.setdefault("ts", time.time())
+            return ev
+        return self._envelope(event_type, data or {}, org_id)
 
     async def _fanout(
         self,
@@ -165,10 +188,8 @@ class Broadcaster:
         now = time.time()
         stale: list[_Connection] = [c for c in list(self._all) if c.is_stale(now)]
         for conn in stale:
-            try:
+            with contextlib.suppress(Exception):
                 await conn.websocket.close(code=4002, reason="Heartbeat timeout")
-            except Exception:
-                pass
             await self.unsubscribe(conn)
         if stale:
             logger.info("ws_stale_evicted", count=len(stale))
@@ -193,10 +214,8 @@ class Broadcaster:
     async def stop_cleanup_task(self) -> None:
         if self._cleanup_task is not None:
             self._cleanup_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError, Exception):
                 await self._cleanup_task
-            except (asyncio.CancelledError, Exception):
-                pass
             self._cleanup_task = None
 
     # -- Introspection ----------------------------------------------------
@@ -207,6 +226,16 @@ class Broadcaster:
 
     def connections_for_org(self, org_id: str) -> int:
         return len(self._by_org.get(org_id, set()))
+
+    def get_stats(self) -> dict[str, Any]:
+        """Return connection statistics for monitoring / debug endpoints."""
+        per_org = {org_id: len(conns) for org_id, conns in self._by_org.items()}
+        return {
+            "total_connections": len(self._all),
+            "org_count": len(self._by_org),
+            "per_org": per_org,
+            "max_connections": MAX_CONNECTIONS,
+        }
 
 
 # --- Module-level singleton --------------------------------------------------

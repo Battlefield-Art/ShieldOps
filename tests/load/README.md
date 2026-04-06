@@ -39,6 +39,29 @@ k6 run tests/load/smoke-test.js
 make load-test
 ```
 
+### Issue #223 SLO tests
+
+The three top-level scripts target the GA launch SLOs from issue #223.
+
+```bash
+# 1000 RPS sustained 30 min, P99 < 500ms
+k6 run tests/load/api_load.js
+
+# 100 concurrent agent runs, P99 < 30s
+k6 run tests/load/agent_concurrent.js
+
+# 10 GB/day ingestion throughput
+k6 run tests/load/ingestion_throughput.js
+```
+
+Each script prints an SLO PASS/NO summary block after the run. Tune via env:
+
+| Script                   | Key env vars                                    |
+| ------------------------ | ----------------------------------------------- |
+| `api_load.js`            | `TARGET_RPS` (1000), `DURATION` (30m)            |
+| `agent_concurrent.js`    | `CONCURRENCY` (100), `DURATION` (10m), `AGENT_TIMEOUT_SEC` (60) |
+| `ingestion_throughput.js`| `TARGET_GB_PER_DAY` (10), `BATCH_SIZE` (200)     |
+
 ### Full scenario suite
 
 ```bash
@@ -158,3 +181,73 @@ Add to your GitHub Actions workflow:
 
 For full load tests in CI, use the `smoke` profile to keep run times short,
 and reserve `load`/`stress` profiles for scheduled nightly runs.
+
+A manual-trigger workflow is provided at `.github/workflows/load-test.yml`:
+
+```bash
+gh workflow run load-test.yml -f script=api_load.js -f target_rps=1000
+```
+
+## Baseline Numbers
+
+Record the observed numbers from your first clean run so future runs have a
+regression baseline. These will be filled in after the first validated run.
+
+| Script                    | Target             | Observed | Date | Commit | Env      |
+| ------------------------- | ------------------ | -------- | ---- | ------ | -------- |
+| `api_load.js`             | 1000 RPS, P99<500ms| TBD      | TBD  | TBD    | staging  |
+| `agent_concurrent.js`     | 100 conc, P99<30s  | TBD      | TBD  | TBD    | staging  |
+| `ingestion_throughput.js` | 10 GB/day          | TBD      | TBD  | TBD    | staging  |
+
+## Chaos Engineering (tests/chaos/)
+
+Chaos scripts verify graceful degradation and recovery SLOs. All require
+pre-configured cloud credentials (AWS CLI, kubectl, docker, redis-cli,
+kafka-* CLI tools as applicable).
+
+| Script                       | What it does                                  | SLO gate                            |
+| ---------------------------- | ---------------------------------------------- | ----------------------------------- |
+| `test_ecs_task_kill.sh`      | `aws ecs stop-task`, verify auto-restart       | Replacement RUNNING < 120s, health streak <= 3 |
+| `test_rds_failover.sh`       | `aws rds reboot --force-failover`, verify reconnect | API reconnects < 30s after DB ready |
+| `test_redis_eviction.sh`     | Fill Redis past `maxmemory`, check degradation | /health 2xx throughout, cached endpoints work |
+| `test_kafka_broker_down.sh`  | Kill broker, verify durability + ISR recovery  | Zero msg loss, max 5s health streak, ISR recovered < 60s |
+
+### Running chaos tests
+
+```bash
+# ECS task kill (AWS)
+CLUSTER=shieldops-prod SERVICE=shieldops-api \
+  HEALTH_URL=https://api.shieldops.io/health \
+  ./tests/chaos/test_ecs_task_kill.sh
+
+# RDS failover
+DB_INSTANCE=shieldops-prod-db \
+  HEALTH_URL=https://api.shieldops.io/health \
+  ./tests/chaos/test_rds_failover.sh
+
+# Redis eviction
+REDIS_HOST=prod-redis.shieldops.io \
+  HEALTH_URL=https://api.shieldops.io/health \
+  CACHED_URL=https://api.shieldops.io/api/v1/analytics/summary \
+  AUTH_TOKEN=$(gh secret get CHAOS_TEST_TOKEN) \
+  ./tests/chaos/test_redis_eviction.sh
+
+# Kafka broker kill (K8s)
+BROKER_POD=kafka-0 NAMESPACE=shieldops \
+  HEALTH_URL=https://api.shieldops.io/health \
+  TOPIC=shieldops.events \
+  BOOTSTRAP=kafka.shieldops.svc:9092 \
+  ./tests/chaos/test_kafka_broker_down.sh
+```
+
+Each script exits 0 on SLO pass and non-zero with a `FAIL:` message on
+breach. Pipe into a notification tool (Slack, PagerDuty) for scheduled
+game-days.
+
+### Chaos scheduling
+
+Recommended cadence:
+- ECS task kill — weekly, automated
+- Redis eviction — monthly, game-day
+- RDS failover — quarterly, game-day (maintenance window)
+- Kafka broker down — quarterly, game-day

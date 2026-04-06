@@ -131,7 +131,7 @@ class TestEnrichmentResult:
         assert er.confidence == 0.95
 
     def test_confidence_validation(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             EnrichmentResult(confidence=1.5)
 
 
