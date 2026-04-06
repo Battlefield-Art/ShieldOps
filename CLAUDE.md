@@ -181,8 +181,15 @@ Agents can self-improve via a closed-loop evolution system in `src/shieldops/uti
 - **Self-Evolution**: Agent fitness tracking, prompt A/B testing, cross-agent learning bus
 - LLM Router at `src/shieldops/utils/llm_router.py` (Haiku/Sonnet/Opus complexity routing)
 - Cloud connectors have real SDK implementations (boto3, google-cloud, azure, kubernetes-client)
-- 14 API middleware modules (rate limiter, tenant isolation, billing enforcement, security headers)
-- See `docs/tasks.md` for remaining GA checklist (integration tests, pentest, SOC 2, docs site)
+- 14+ API middleware modules (rate limiter, tenant isolation, billing enforcement, security headers, **token bucket** with Redis variant)
+- **PRD-1 through PRD-6 AFK work complete** (Apr 2026): all 10 launch agents production-ready, full data ingestion (5 sources + OCSF + DuckDB + ClickHouse), SDK v1.0.0 with 4 framework integrations, Terraform AWS production infra, Helm chart, BI dashboards, NL Query agent, licensing, fitness promotion
+- **Engine migration complete**: 621 of 1,780 engines migrated to `engine()` factory (155K+ lines eliminated). Agent migration: 114 of 122 linear agents migrated to `build_linear_graph()` helper.
+- **TDD additions** (Apr 2026): TokenBucket rate limiter, LicenseGuard startup hook, NL Query SOC templates e2e, OnboardingProgressRepository, NLQueryAuditRepository, AuditLogRepository, BoundedSender backpressure, TokenUsage typed model, HealthAggregator, RedisTokenBucket
+- See `docs/tasks.md` for remaining GA checklist (real auditor engagement for SOC 2, third-party pentest, design partner SIEM cutover)
+- See `docs/compliance/soc2/` for SOC 2 audit prep artifacts
+- See `docs/security/` for vulnerability disclosure + pentest scope
+- See `docs/marketplace/` for agent marketplace design
+- See `docs/runbooks/siem-migration.md` for the design partner cutover playbook
 
 ## Environment Variables
 ```
