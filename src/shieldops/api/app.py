@@ -95,6 +95,7 @@ from shieldops.api.routes import (
 from shieldops.api.routes import (
     nhi_registry as nhi_registry_routes,
 )
+from shieldops.api.routes import otlp_logs as otlp_logs_routes
 from shieldops.api.routes import (
     situations as situations_routes,
 )
@@ -14042,6 +14043,13 @@ def create_app() -> FastAPI:
         webhooks_routes.router,
         prefix=settings.api_prefix,
         tags=["Webhooks"],
+    )
+
+    # ── OTLP log ingestion (OTLP/HTTP JSON + Protobuf) ─────────────
+    app.include_router(
+        otlp_logs_routes.router,
+        prefix=settings.api_prefix,
+        tags=["OTLP Ingestion"],
     )
 
     # ── Event Query API (DuckDB SQL interface) ─────────────────────
