@@ -530,3 +530,93 @@ resource "aws_cloudwatch_dashboard" "main" {
     ]
   })
 }
+
+# ---------------------------------------------------------------------------
+# ClickHouse HA Cluster — Alarms
+# ---------------------------------------------------------------------------
+
+resource "aws_cloudwatch_metric_alarm" "clickhouse_disk_usage" {
+  for_each = toset([for i in local.clickhouse_nodes : tostring(i)])
+
+  alarm_name          = "${local.name_prefix}-clickhouse-${each.key}-disk-usage"
+  alarm_description   = "ClickHouse node ${each.key} root volume usage exceeds 80%"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 3
+  metric_name         = "disk_used_percent"
+  namespace           = "CWAgent"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  treat_missing_data  = "breaching"
+
+  dimensions = {
+    InstanceId = aws_instance.clickhouse[each.key].id
+    path       = "/var/lib/clickhouse"
+    fstype     = "xfs"
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name        = "${local.name_prefix}-clickhouse-${each.key}-disk-alarm"
+    Service     = "clickhouse"
+    Environment = var.environment
+    ManagedBy   = "terraform"
+    CostCenter  = var.cost_center
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "clickhouse_replication_lag" {
+  for_each = toset([for i in local.clickhouse_nodes : tostring(i)])
+
+  alarm_name          = "${local.name_prefix}-clickhouse-${each.key}-replication-lag"
+  alarm_description   = "ClickHouse node ${each.key} replication lag exceeds 60s"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 3
+  metric_name         = "ClickHouseReplicationLagSeconds"
+  namespace           = "ShieldOps/ClickHouse"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 60
+  treat_missing_data  = "breaching"
+
+  dimensions = {
+    InstanceId = aws_instance.clickhouse[each.key].id
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name        = "${local.name_prefix}-clickhouse-${each.key}-replication-lag-alarm"
+    Service     = "clickhouse"
+    Environment = var.environment
+    ManagedBy   = "terraform"
+    CostCenter  = var.cost_center
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "clickhouse_query_latency_p95" {
+  alarm_name          = "${local.name_prefix}-clickhouse-query-latency-p95"
+  alarm_description   = "ClickHouse distributed query P95 latency exceeds 5s"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  metric_name         = "ClickHouseQueryLatencyP95Seconds"
+  namespace           = "ShieldOps/ClickHouse"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 5
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name        = "${local.name_prefix}-clickhouse-query-latency-alarm"
+    Service     = "clickhouse"
+    Environment = var.environment
+    ManagedBy   = "terraform"
+    CostCenter  = var.cost_center
+  }
+}
