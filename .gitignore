@@ -59,3 +59,6 @@ junit.xml
 # Claude Code audit logs (local only)
 .claude/audit/
 .claude/settings.local.json
+.claude/worktrees/
+.agents/
+shieldops_events.duckdb
