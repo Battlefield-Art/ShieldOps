@@ -70,6 +70,8 @@ LLM_LATENCY = "shieldops_agent_llm_latency_seconds"
 LLM_TOKENS_TOTAL = "shieldops_agent_llm_tokens_total"
 CONFIDENCE_SCORE = "shieldops_agent_confidence_score"
 AGENT_ACTIVE = "shieldops_agent_active"
+CONNECTOR_CALLS_TOTAL = "shieldops_agent_connector_calls_total"
+POLICY_EVALUATIONS_TOTAL = "shieldops_agent_policy_evaluations_total"
 
 
 class AgentMetricsCollector:
@@ -190,6 +192,91 @@ class AgentMetricsCollector:
             agent_type=agent_type,
             score=score,
         )
+
+    def record_connector_call(
+        self,
+        agent_type: str,
+        connector: str,
+        status: str,
+    ) -> None:
+        """Record a connector invocation.
+
+        Args:
+            agent_type: Agent kind that made the call.
+            connector: Connector name (e.g. ``splunk``, ``crowdstrike``).
+            status: Outcome -- ``success``, ``failure``, or ``timeout``.
+        """
+        self._registry.inc_counter(
+            CONNECTOR_CALLS_TOTAL,
+            {"agent_type": agent_type, "connector": connector, "status": status},
+        )
+        logger.debug(
+            "agent_connector_call_recorded",
+            agent_type=agent_type,
+            connector=connector,
+            status=status,
+        )
+
+    def record_policy_evaluation(
+        self,
+        agent_type: str,
+        decision: str,
+    ) -> None:
+        """Record an OPA policy evaluation result.
+
+        Args:
+            agent_type: Agent kind that triggered the evaluation.
+            decision: Policy outcome -- ``allow``, ``deny``, or ``error``.
+        """
+        self._registry.inc_counter(
+            POLICY_EVALUATIONS_TOTAL,
+            {"agent_type": agent_type, "decision": decision},
+        )
+        logger.debug(
+            "agent_policy_evaluation_recorded",
+            agent_type=agent_type,
+            decision=decision,
+        )
+
+    def record_full_execution(
+        self,
+        agent_name: str,
+        status: str,
+        duration_seconds: float,
+        tokens: int = 0,
+        connector_calls: list[dict[str, str]] | None = None,
+        policy_decisions: list[str] | None = None,
+    ) -> None:
+        """Convenience method to record a complete agent execution.
+
+        Increments all relevant counters in a single call.
+
+        Args:
+            agent_name: Agent identifier.
+            status: Outcome -- ``success``, ``failure``, or ``timeout``.
+            duration_seconds: Wall-clock execution time.
+            tokens: Total LLM tokens consumed (input + output).
+            connector_calls: List of ``{"connector": ..., "status": ...}`` dicts.
+            policy_decisions: List of decision strings (``allow``, ``deny``, ``error``).
+        """
+        self.record_execution(agent_name, status, duration_seconds)
+
+        if tokens > 0:
+            self._registry.inc_counter(
+                LLM_TOKENS_TOTAL,
+                {"agent_type": agent_name, "model": "aggregate", "direction": "total"},
+                amount=tokens,
+            )
+
+        for call in connector_calls or []:
+            self.record_connector_call(
+                agent_name,
+                call.get("connector", "unknown"),
+                call.get("status", "success"),
+            )
+
+        for decision in policy_decisions or []:
+            self.record_policy_evaluation(agent_name, decision)
 
     def set_active(self, agent_type: str, count: int) -> None:
         """Set the number of currently active agents of a given type.
