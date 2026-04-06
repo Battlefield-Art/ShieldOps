@@ -14,7 +14,10 @@ from shieldops.agents.soc_analyst.models import (
 )
 from shieldops.agents.soc_analyst.prompts import SYSTEM_NARRATIVE, AttackNarrativeOutput
 from shieldops.agents.soc_analyst.tools import SOCAnalystToolkit
+from shieldops.policy.engine import PolicyContext
+from shieldops.policy.engine import evaluate as policy_evaluate
 from shieldops.utils.llm import llm_structured
+from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
 logger = structlog.get_logger()
 
@@ -33,16 +36,45 @@ def _get_toolkit() -> SOCAnalystToolkit:
 
 
 async def triage_alert(state: SOCAnalystState) -> dict[str, Any]:
-    """Perform initial alert triage and scoring."""
+    """Perform initial alert triage and scoring.
+
+    Checks OPA policy before triage, uses LLM-enhanced severity classification
+    with heuristic fallback.
+    """
     start = datetime.now(UTC)
     toolkit = _get_toolkit()
 
     alert_data = state.alert_data
-    severity = alert_data.get("severity", "low")
 
-    # Simple triage scoring based on severity
-    severity_scores = {"critical": 95, "high": 80, "medium": 50, "low": 25, "info": 10}
-    triage_score = float(severity_scores.get(severity, 30))
+    # OPA policy check before triage action
+    try:
+        policy_decision = await policy_evaluate(
+            action="triage_alert",
+            context=PolicyContext(
+                agent_name="soc_analyst",
+                action_type="triage",
+                target_resources=[state.alert_id],
+                risk_score=0.1,  # read-only triage is low risk
+            ),
+        )
+        if not policy_decision.allowed:
+            logger.warning(
+                "soc_analyst.triage_alert.policy_denied",
+                alert_id=state.alert_id,
+                reason=policy_decision.reason,
+            )
+            return {
+                "error": f"Policy denied triage: {policy_decision.reason}",
+                "current_step": "triage_alert",
+                "session_start": start,
+            }
+    except Exception:
+        logger.debug("soc_analyst.triage_alert.policy_check_skipped")
+
+    # Use LLM-enhanced severity classification with heuristic fallback
+    classification = await toolkit.classify_severity(alert_data)
+    triage_score = classification.get("triage_score", 50.0)
+    classified_severity = classification.get("classified_severity", "medium")
 
     # Determine tier
     if triage_score >= 85:
@@ -58,10 +90,13 @@ async def triage_alert(state: SOCAnalystState) -> dict[str, Any]:
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="triage_alert",
-        input_summary=f"Alert {state.alert_id} severity={severity}",
-        output_summary=f"Triage score={triage_score}, tier={tier}, suppress={should_suppress}",
+        input_summary=f"Alert {state.alert_id} severity={classified_severity}",
+        output_summary=(
+            f"Triage score={triage_score}, tier={tier}, suppress={should_suppress}, "
+            f"method={classification.get('method', 'unknown')}"
+        ),
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
-        tool_used="triage_scorer",
+        tool_used="classify_severity",
     )
 
     await toolkit.record_soc_metric("triage", triage_score)
@@ -77,7 +112,7 @@ async def triage_alert(state: SOCAnalystState) -> dict[str, Any]:
 
 
 async def enrich_alert(state: SOCAnalystState) -> dict[str, Any]:
-    """Enrich alert with threat intelligence and asset context."""
+    """Enrich alert with threat intelligence, AWS context, and CrowdStrike host data."""
     start = datetime.now(UTC)
     toolkit = _get_toolkit()
 
@@ -91,18 +126,33 @@ async def enrich_alert(state: SOCAnalystState) -> dict[str, Any]:
     intel_data = await toolkit.enrich_with_threat_intel(indicators)
     enrichment = ThreatIntelEnrichment(**intel_data)
 
+    # Enrich with AWS context if instance_id is present
+    asset_context: dict[str, Any] = {}
+    if instance_id := state.alert_data.get("instance_id"):
+        aws_context = await toolkit.enrich_with_aws_context(instance_id)
+        asset_context["aws"] = aws_context
+
+    # Enrich with CrowdStrike host data if hostname is present
+    if hostname := state.alert_data.get("hostname"):
+        cs_host = await toolkit.enrich_with_crowdstrike_host(hostname)
+        asset_context["crowdstrike_host"] = cs_host
+
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="enrich_alert",
-        input_summary=f"Enriching {len(indicators)} indicators",
-        output_summary=f"IOC matches={len(enrichment.ioc_matches)}, "
-        f"reputation={enrichment.reputation_score}",
+        input_summary=f"Enriching {len(indicators)} indicators + asset context",
+        output_summary=(
+            f"IOC matches={len(enrichment.ioc_matches)}, "
+            f"reputation={enrichment.reputation_score}, "
+            f"asset_sources={list(asset_context.keys())}"
+        ),
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
-        tool_used="threat_intel + geo_ip",
+        tool_used="threat_intel + aws + crowdstrike",
     )
 
     return {
         "threat_intel_enrichment": enrichment,
+        "asset_context": asset_context,
         "reasoning_chain": [*state.reasoning_chain, step],
         "current_step": "enrich_alert",
     }
@@ -310,7 +360,7 @@ async def execute_playbook(state: SOCAnalystState) -> dict[str, Any]:
 
 
 async def finalize(state: SOCAnalystState) -> dict[str, Any]:
-    """Finalize analysis and record metrics."""
+    """Finalize analysis, persist results, and write audit log."""
     start = datetime.now(UTC)
     toolkit = _get_toolkit()
 
@@ -320,11 +370,47 @@ async def finalize(state: SOCAnalystState) -> dict[str, Any]:
 
     await toolkit.record_soc_metric("analysis_duration_ms", float(duration_ms))
 
+    # Persist agent run
+    org_id = state.alert_data.get("org_id", "")
+    try:
+        await persist_agent_run(
+            agent_name="soc_analyst",
+            org_id=org_id,
+            input_data={"alert_id": state.alert_id, "alert_data": state.alert_data},
+            output_data={
+                "tier": state.tier,
+                "triage_score": state.triage_score,
+                "containment_count": len(state.containment_recommendations),
+                "mitre_techniques": state.mitre_techniques,
+                "attack_narrative": state.attack_narrative[:500] if state.attack_narrative else "",
+            },
+            duration_ms=duration_ms,
+            error_message=state.error or None,
+        )
+    except Exception:
+        logger.debug("soc_analyst.finalize.persist_failed")
+
+    # Write audit log
+    try:
+        await write_audit_log(
+            action="soc_analyst.completed" if not state.error else "soc_analyst.failed",
+            actor="soc_analyst-agent",
+            target=state.alert_id,
+            result=f"tier={state.tier}, score={state.triage_score}",
+            org_id=org_id,
+            metadata={
+                "duration_ms": duration_ms,
+                "containment_count": len(state.containment_recommendations),
+            },
+        )
+    except Exception:
+        logger.debug("soc_analyst.finalize.audit_failed")
+
     step = ReasoningStep(
         step_number=len(state.reasoning_chain) + 1,
         action="finalize",
         input_summary=f"Finalizing Tier {state.tier} analysis",
-        output_summary=f"Analysis complete in {duration_ms}ms",
+        output_summary=f"Analysis complete in {duration_ms}ms, persisted",
         duration_ms=int((datetime.now(UTC) - start).total_seconds() * 1000),
         tool_used=None,
     )

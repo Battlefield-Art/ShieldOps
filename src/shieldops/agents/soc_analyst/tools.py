@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
+import json as _json
 import time
 from datetime import UTC, datetime
 from typing import Any
 
 import structlog
 
-from shieldops.agents.soc_analyst.prompts import SYSTEM_CLASSIFICATION, ClassificationOutput
+from shieldops.agents.soc_analyst.prompts import (
+    SYSTEM_CLASSIFICATION,
+    SYSTEM_TRIAGE,
+    ClassificationOutput,
+    TriageOutput,
+)
+from shieldops.policy.engine import PolicyContext
+from shieldops.policy.engine import evaluate as policy_evaluate
 from shieldops.utils.llm import llm_structured
 
 logger = structlog.get_logger()
@@ -801,3 +809,832 @@ class SOCAnalystToolkit:
     async def record_soc_metric(self, metric_type: str, value: float) -> None:
         """Record a SOC metric (MTTD, MTTC, etc.)."""
         logger.info("soc_analyst.record_metric", metric_type=metric_type, value=value)
+
+    # ── 7. Fetch Splunk Alerts (Notable Events) ───────────────────────────
+
+    async def fetch_splunk_alerts(
+        self,
+        severity: str = "",
+        time_range: str = "1h",
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        """Fetch notable events from Splunk Enterprise Security.
+
+        Uses the Splunk connector to query ES notable events via SPL.
+        Falls back to empty list if connector is unavailable.
+
+        Args:
+            severity: Filter by severity (critical, high, medium, low).
+            time_range: Lookback window (e.g. '1h', '24h').
+            limit: Maximum notable events to return.
+
+        Returns:
+            List of notable event dicts with rule_name, severity, src, dest, etc.
+        """
+        logger.info(
+            "soc_analyst.fetch_splunk_alerts",
+            severity=severity,
+            time_range=time_range,
+            limit=limit,
+        )
+
+        splunk = self._get_connector("splunk")
+        if not splunk:
+            logger.debug("soc_analyst.fetch_splunk_alerts.no_connector")
+            return []
+
+        try:
+            notables = await splunk.get_notable_events(severity=severity, limit=limit)
+            logger.info(
+                "soc_analyst.fetch_splunk_alerts.complete",
+                count=len(notables),
+            )
+            return notables
+        except Exception as e:
+            logger.warning("soc_analyst.fetch_splunk_alerts.error", error=str(e))
+            return []
+
+    # ── 8. Fetch CrowdStrike Detections ───────────────────────────────────
+
+    async def fetch_crowdstrike_detections(
+        self,
+        filter_query: str = "",
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        """Fetch recent detections from CrowdStrike Falcon.
+
+        Queries the Falcon detections API with an optional FQL filter.
+        Returns structured detection data including severity, tactic, technique.
+
+        Args:
+            filter_query: FQL filter (e.g. "max_severity_displayname:'Critical'").
+            limit: Maximum detections to return.
+
+        Returns:
+            List of detection dicts with detection_id, severity, tactic, technique.
+        """
+        logger.info(
+            "soc_analyst.fetch_crowdstrike_detections",
+            filter_query=filter_query,
+            limit=limit,
+        )
+
+        crowdstrike = self._get_connector("crowdstrike")
+        if not crowdstrike:
+            logger.debug("soc_analyst.fetch_crowdstrike_detections.no_connector")
+            return []
+
+        try:
+            detections = await crowdstrike.get_detections(
+                filter_query=filter_query,
+                limit=limit,
+            )
+            results = []
+            for det in detections:
+                results.append(
+                    {
+                        "detection_id": det.get("detection_id", ""),
+                        "severity": det.get("max_severity_displayname", "medium"),
+                        "severity_score": det.get("max_severity", 0),
+                        "tactic": det.get("tactic", ""),
+                        "technique": det.get("technique", ""),
+                        "hostname": det.get("device", {}).get("hostname", ""),
+                        "os": det.get("device", {}).get("os_version", ""),
+                        "description": det.get("description", ""),
+                        "created_timestamp": det.get("created_timestamp", ""),
+                    }
+                )
+            logger.info(
+                "soc_analyst.fetch_crowdstrike_detections.complete",
+                count=len(results),
+            )
+            return results
+        except Exception as e:
+            logger.warning("soc_analyst.fetch_crowdstrike_detections.error", error=str(e))
+            return []
+
+    # ── 9. Classify Severity (LLM + heuristic fallback) ──────────────────
+
+    async def classify_severity(self, alert_data: dict[str, Any]) -> dict[str, Any]:
+        """Classify alert severity using LLM with heuristic keyword fallback.
+
+        Attempts LLM-based classification first via llm_structured(). On failure,
+        falls back to keyword-based heuristic matching against the alert description,
+        alert_type, and other text fields.
+
+        Args:
+            alert_data: Alert dict with fields like description, alert_type, severity.
+
+        Returns:
+            Dict with classified_severity, confidence, method, reasoning.
+        """
+        logger.info("soc_analyst.classify_severity")
+
+        # Try LLM classification first
+        try:
+            context = _json.dumps(
+                {
+                    "alert_type": alert_data.get("alert_type", ""),
+                    "description": alert_data.get("description", ""),
+                    "severity": alert_data.get("severity", ""),
+                    "source": alert_data.get("source", ""),
+                    "source_ip": alert_data.get("source_ip", ""),
+                    "dest_ip": alert_data.get("dest_ip", ""),
+                    "hostname": alert_data.get("hostname", ""),
+                },
+                default=str,
+            )
+            llm_result = await llm_structured(
+                system_prompt=SYSTEM_TRIAGE,
+                user_prompt=f"Alert data for severity classification:\n{context}",
+                schema=TriageOutput,
+            )
+            severity = "medium"
+            score = getattr(llm_result, "triage_score", 50.0)
+            if score >= 85:
+                severity = "critical"
+            elif score >= 60:
+                severity = "high"
+            elif score >= 30:
+                severity = "medium"
+            else:
+                severity = "low"
+
+            logger.info(
+                "soc_analyst.classify_severity.llm_complete",
+                severity=severity,
+                score=score,
+            )
+            return {
+                "classified_severity": severity,
+                "triage_score": score,
+                "confidence": 0.85,
+                "method": "llm",
+                "reasoning": getattr(llm_result, "reasoning", "LLM classification"),
+            }
+        except Exception:
+            logger.debug("soc_analyst.classify_severity.llm_skipped")
+
+        # Heuristic keyword fallback
+        return self._heuristic_severity_classification(alert_data)
+
+    def _heuristic_severity_classification(self, alert_data: dict[str, Any]) -> dict[str, Any]:
+        """Keyword-based severity classification fallback.
+
+        Scans alert_type, description, and other text fields for severity keywords.
+        """
+        text = " ".join(
+            str(v).lower()
+            for k, v in alert_data.items()
+            if isinstance(v, str)
+            and k
+            in (
+                "alert_type",
+                "description",
+                "severity",
+                "title",
+                "rule_name",
+            )
+        )
+
+        # Critical keywords
+        critical_kw = [
+            "critical",
+            "ransomware",
+            "c2_communication",
+            "data_exfiltration",
+            "apt",
+            "zero-day",
+            "rootkit",
+            "backdoor",
+        ]
+        high_kw = [
+            "malware",
+            "high",
+            "privilege_escalation",
+            "lateral_movement",
+            "credential_theft",
+            "exploit",
+            "trojan",
+            "phishing",
+        ]
+        medium_kw = [
+            "medium",
+            "brute_force",
+            "suspicious",
+            "anomaly",
+            "port_scan",
+        ]
+        low_kw = [
+            "low",
+            "info",
+            "policy_violation",
+            "informational",
+            "benign",
+        ]
+
+        for kw in critical_kw:
+            if kw in text:
+                return {
+                    "classified_severity": "critical",
+                    "triage_score": 95.0,
+                    "confidence": 0.7,
+                    "method": "heuristic",
+                    "reasoning": f"Keyword match: '{kw}' indicates critical severity",
+                }
+        for kw in high_kw:
+            if kw in text:
+                return {
+                    "classified_severity": "high",
+                    "triage_score": 80.0,
+                    "confidence": 0.65,
+                    "method": "heuristic",
+                    "reasoning": f"Keyword match: '{kw}' indicates high severity",
+                }
+        for kw in medium_kw:
+            if kw in text:
+                return {
+                    "classified_severity": "medium",
+                    "triage_score": 50.0,
+                    "confidence": 0.55,
+                    "method": "heuristic",
+                    "reasoning": f"Keyword match: '{kw}' indicates medium severity",
+                }
+        for kw in low_kw:
+            if kw in text:
+                return {
+                    "classified_severity": "low",
+                    "triage_score": 25.0,
+                    "confidence": 0.5,
+                    "method": "heuristic",
+                    "reasoning": f"Keyword match: '{kw}' indicates low severity",
+                }
+
+        # Default
+        return {
+            "classified_severity": "medium",
+            "triage_score": 50.0,
+            "confidence": 0.3,
+            "method": "heuristic",
+            "reasoning": "No keyword match; defaulting to medium severity",
+        }
+
+    # ── 10. Enrich with AWS Context ──────────────────────────────────────
+
+    async def enrich_with_aws_context(
+        self,
+        instance_id: str,
+    ) -> dict[str, Any]:
+        """Correlate alert with AWS EC2 instance context.
+
+        Queries the AWS connector for instance details, security groups, and
+        recent events. Falls back gracefully if connector is unavailable.
+
+        Args:
+            instance_id: EC2 instance ID (e.g. 'i-0abc123def456').
+
+        Returns:
+            Dict with instance_details, security_groups, recent_events.
+        """
+        logger.info("soc_analyst.enrich_aws_context", instance_id=instance_id)
+
+        result: dict[str, Any] = {
+            "instance_id": instance_id,
+            "instance_details": {},
+            "security_groups": [],
+            "recent_events": [],
+        }
+
+        aws = self._get_connector("aws")
+        if not aws:
+            logger.debug("soc_analyst.enrich_aws_context.no_connector")
+            return result
+
+        try:
+            # Get instance health/details
+            health = await aws.get_health(instance_id)
+            result["instance_details"] = {
+                "resource_id": health.resource_id,
+                "healthy": health.healthy,
+                "status": health.status,
+                "message": getattr(health, "message", ""),
+            }
+
+            # Get recent events via CloudTrail
+            from datetime import timedelta
+
+            from shieldops.models.base import TimeRange
+
+            now = datetime.now(UTC)
+            events = await aws.get_events(
+                resource_id=instance_id,
+                time_range=TimeRange(start=now - timedelta(hours=24), end=now),
+            )
+            result["recent_events"] = events[:20]
+
+            logger.info(
+                "soc_analyst.enrich_aws_context.complete",
+                healthy=health.healthy,
+                event_count=len(result["recent_events"]),
+            )
+        except Exception as e:
+            logger.warning("soc_analyst.enrich_aws_context.error", error=str(e))
+
+        return result
+
+    # ── 11. Enrich with CrowdStrike Host Data ────────────────────────────
+
+    async def enrich_with_crowdstrike_host(
+        self,
+        hostname: str,
+    ) -> dict[str, Any]:
+        """Enrich with CrowdStrike host data (hostname, OS, agent version, last seen).
+
+        Queries Falcon for host information and recent detections.
+
+        Args:
+            hostname: Hostname or device identifier to look up.
+
+        Returns:
+            Dict with host_info, recent_detections.
+        """
+        logger.info("soc_analyst.enrich_crowdstrike_host", hostname=hostname)
+
+        result: dict[str, Any] = {
+            "hostname": hostname,
+            "host_info": {},
+            "recent_detections": [],
+        }
+
+        crowdstrike = self._get_connector("crowdstrike")
+        if not crowdstrike:
+            logger.debug("soc_analyst.enrich_crowdstrike_host.no_connector")
+            return result
+
+        try:
+            # Get recent detections for this host
+            detections = await crowdstrike.get_detections(
+                filter_query=f"device.hostname:'{hostname}'",
+                limit=20,
+            )
+            for det in detections:
+                device = det.get("device", {})
+                if not result["host_info"] and device:
+                    result["host_info"] = {
+                        "hostname": device.get("hostname", hostname),
+                        "os_version": device.get("os_version", "unknown"),
+                        "agent_version": device.get("agent_version", "unknown"),
+                        "last_seen": device.get("last_seen", ""),
+                        "platform_name": device.get("platform_name", ""),
+                        "device_id": device.get("device_id", ""),
+                    }
+                result["recent_detections"].append(
+                    {
+                        "detection_id": det.get("detection_id", ""),
+                        "severity": det.get("max_severity_displayname", "medium"),
+                        "tactic": det.get("tactic", ""),
+                        "technique": det.get("technique", ""),
+                        "timestamp": det.get("created_timestamp", ""),
+                    }
+                )
+
+            # If no detections found host info, try threat graph
+            if not result["host_info"]:
+                graph_data = await crowdstrike.get_threat_graph(hostname)
+                if graph_data.get("resources"):
+                    result["host_info"] = {"hostname": hostname, "threat_graph_hit": True}
+
+            logger.info(
+                "soc_analyst.enrich_crowdstrike_host.complete",
+                detection_count=len(result["recent_detections"]),
+                has_host_info=bool(result["host_info"]),
+            )
+        except Exception as e:
+            logger.warning("soc_analyst.enrich_crowdstrike_host.error", error=str(e))
+
+        return result
+
+    # ── 12. Auto-resolve Low-severity Alerts ─────────────────────────────
+
+    async def auto_resolve_alert(
+        self,
+        alert_id: str,
+        severity: str,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """Auto-resolve a low-severity alert (log + close).
+
+        Only resolves alerts classified as low/info severity. Logs the resolution
+        decision for audit trail.
+
+        Args:
+            alert_id: Alert identifier.
+            severity: Alert severity.
+            reason: Reason for auto-resolution.
+
+        Returns:
+            Dict with resolved status, reason, and timestamp.
+        """
+        logger.info(
+            "soc_analyst.auto_resolve_alert",
+            alert_id=alert_id,
+            severity=severity,
+        )
+
+        if severity.lower() not in ("low", "info"):
+            return {
+                "resolved": False,
+                "reason": f"Severity '{severity}' too high for auto-resolution",
+                "alert_id": alert_id,
+            }
+
+        # Policy check before auto-resolve
+        try:
+            policy_decision = await policy_evaluate(
+                action="auto_resolve_alert",
+                context=PolicyContext(
+                    agent_name="soc_analyst",
+                    action_type="auto_resolve",
+                    target_resources=[alert_id],
+                    risk_score=0.1,
+                ),
+            )
+            if not policy_decision.allowed:
+                return {
+                    "resolved": False,
+                    "reason": f"Policy denied: {policy_decision.reason}",
+                    "alert_id": alert_id,
+                    "policy_denied": True,
+                }
+        except Exception:
+            logger.debug("soc_analyst.auto_resolve_alert.policy_check_skipped")
+
+        resolution = {
+            "resolved": True,
+            "alert_id": alert_id,
+            "severity": severity,
+            "reason": reason or f"Auto-resolved: {severity} severity alert",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "method": "auto_resolve",
+        }
+
+        logger.info(
+            "soc_analyst.auto_resolve_alert.complete",
+            alert_id=alert_id,
+            reason=resolution["reason"],
+        )
+        return resolution
+
+    # ── 13. Create PagerDuty Incident ────────────────────────────────────
+
+    async def create_pagerduty_incident(
+        self,
+        alert_id: str,
+        title: str,
+        severity: str = "high",
+        details: str = "",
+        service_id: str = "",
+    ) -> dict[str, Any]:
+        """Create a PagerDuty incident for high-severity alerts.
+
+        Uses the PagerDuty connector to create an incident or trigger an event.
+        Falls back to event trigger if create_incident fails.
+
+        Args:
+            alert_id: Source alert ID.
+            title: Incident title.
+            severity: Alert severity (maps to PD urgency).
+            details: Incident body/description.
+            service_id: PagerDuty service ID (optional).
+
+        Returns:
+            Dict with incident_id, status, dedup_key.
+        """
+        logger.info(
+            "soc_analyst.create_pagerduty_incident",
+            alert_id=alert_id,
+            severity=severity,
+        )
+
+        # Policy check
+        try:
+            policy_decision = await policy_evaluate(
+                action="create_pagerduty_incident",
+                context=PolicyContext(
+                    agent_name="soc_analyst",
+                    action_type="escalation",
+                    target_resources=[alert_id],
+                    risk_score=0.3,
+                ),
+            )
+            if not policy_decision.allowed:
+                return {
+                    "created": False,
+                    "reason": f"Policy denied: {policy_decision.reason}",
+                    "alert_id": alert_id,
+                    "policy_denied": True,
+                }
+        except Exception:
+            logger.debug("soc_analyst.create_pagerduty_incident.policy_check_skipped")
+
+        pagerduty = self._get_connector("pagerduty")
+        if not pagerduty:
+            logger.debug("soc_analyst.create_pagerduty_incident.no_connector")
+            return {
+                "created": False,
+                "reason": "PagerDuty connector not available",
+                "alert_id": alert_id,
+            }
+
+        urgency = "high" if severity.lower() in ("critical", "high") else "low"
+
+        try:
+            if service_id:
+                result = await pagerduty.create_incident(
+                    service_id=service_id,
+                    title=f"[ShieldOps] {title}",
+                    body=details or f"SOC alert {alert_id} escalated — severity: {severity}",
+                    urgency=urgency,
+                )
+                incident = result.get("incident", {})
+                return {
+                    "created": True,
+                    "incident_id": incident.get("id", ""),
+                    "status": incident.get("status", "triggered"),
+                    "urgency": urgency,
+                    "alert_id": alert_id,
+                }
+
+            # Fall back to Events API v2 trigger
+            result = await pagerduty.trigger_event(
+                routing_key="",  # uses connector default
+                summary=f"[ShieldOps] {title} — Alert {alert_id}",
+                severity="critical" if severity.lower() == "critical" else "error",
+                source="shieldops-soc-analyst",
+                component="soc_analyst_agent",
+                custom_details={
+                    "alert_id": alert_id,
+                    "severity": severity,
+                    "details": details,
+                },
+            )
+            return {
+                "created": True,
+                "dedup_key": result.get("dedup_key", ""),
+                "status": result.get("status", "success"),
+                "alert_id": alert_id,
+            }
+        except Exception as e:
+            logger.warning("soc_analyst.create_pagerduty_incident.error", error=str(e))
+            return {
+                "created": False,
+                "reason": str(e),
+                "alert_id": alert_id,
+            }
+
+    # ── 14. Send Slack Notification ──────────────────────────────────────
+
+    async def send_slack_notification(
+        self,
+        alert_id: str,
+        channel: str,
+        message: str,
+        severity: str = "high",
+    ) -> dict[str, Any]:
+        """Send a Slack notification for escalated alerts.
+
+        Uses the Slack connector/messaging module. Falls back gracefully
+        if Slack is not configured.
+
+        Args:
+            alert_id: Source alert ID.
+            channel: Slack channel (e.g. '#soc-alerts').
+            message: Notification message body.
+            severity: Alert severity for formatting.
+
+        Returns:
+            Dict with sent status.
+        """
+        logger.info(
+            "soc_analyst.send_slack_notification",
+            alert_id=alert_id,
+            channel=channel,
+            severity=severity,
+        )
+
+        slack = self._get_connector("slack")
+        if not slack:
+            logger.debug("soc_analyst.send_slack_notification.no_connector")
+            return {
+                "sent": False,
+                "reason": "Slack connector not available",
+                "alert_id": alert_id,
+            }
+
+        severity_emoji = {
+            "critical": ":rotating_light:",
+            "high": ":warning:",
+            "medium": ":large_blue_circle:",
+            "low": ":white_circle:",
+        }
+        emoji = severity_emoji.get(severity.lower(), ":question:")
+
+        try:
+            formatted_msg = (
+                f"{emoji} *SOC Alert Escalation*\n"
+                f"*Alert ID:* `{alert_id}`\n"
+                f"*Severity:* {severity.upper()}\n"
+                f"*Details:* {message}"
+            )
+            await slack.send_message(channel=channel, text=formatted_msg)
+            return {
+                "sent": True,
+                "channel": channel,
+                "alert_id": alert_id,
+            }
+        except Exception as e:
+            logger.warning("soc_analyst.send_slack_notification.error", error=str(e))
+            return {
+                "sent": False,
+                "reason": str(e),
+                "alert_id": alert_id,
+            }
+
+    # ── 15. Create ServiceNow Ticket ─────────────────────────────────────
+
+    async def create_servicenow_ticket(
+        self,
+        alert_id: str,
+        short_description: str,
+        description: str = "",
+        severity: str = "high",
+        assignment_group: str = "",
+    ) -> dict[str, Any]:
+        """Create a ServiceNow incident ticket for tracked alerts.
+
+        Maps SOC severity to ServiceNow urgency/impact fields and creates
+        an incident record.
+
+        Args:
+            alert_id: Source alert ID.
+            short_description: Short description for the ticket.
+            description: Full description.
+            severity: Alert severity.
+            assignment_group: ServiceNow assignment group.
+
+        Returns:
+            Dict with ticket_number, sys_id, created status.
+        """
+        logger.info(
+            "soc_analyst.create_servicenow_ticket",
+            alert_id=alert_id,
+            severity=severity,
+        )
+
+        # Policy check
+        try:
+            policy_decision = await policy_evaluate(
+                action="create_servicenow_ticket",
+                context=PolicyContext(
+                    agent_name="soc_analyst",
+                    action_type="ticket_creation",
+                    target_resources=[alert_id],
+                    risk_score=0.2,
+                ),
+            )
+            if not policy_decision.allowed:
+                return {
+                    "created": False,
+                    "reason": f"Policy denied: {policy_decision.reason}",
+                    "alert_id": alert_id,
+                    "policy_denied": True,
+                }
+        except Exception:
+            logger.debug("soc_analyst.create_servicenow_ticket.policy_check_skipped")
+
+        servicenow = self._get_connector("servicenow")
+        if not servicenow:
+            logger.debug("soc_analyst.create_servicenow_ticket.no_connector")
+            return {
+                "created": False,
+                "reason": "ServiceNow connector not available",
+                "alert_id": alert_id,
+            }
+
+        # Map severity to ServiceNow urgency: 1=high, 2=medium, 3=low
+        urgency_map = {"critical": "1", "high": "1", "medium": "2", "low": "3"}
+        impact_map = {"critical": "1", "high": "2", "medium": "2", "low": "3"}
+        sn_urgency = urgency_map.get(severity.lower(), "2")
+        sn_impact = impact_map.get(severity.lower(), "2")
+
+        try:
+            result = await servicenow.create_incident(
+                short_description=f"[ShieldOps SOC] {short_description}",
+                description=(description or f"SOC analyst alert {alert_id} — severity: {severity}"),
+                urgency=sn_urgency,
+                impact=sn_impact,
+                assignment_group=assignment_group,
+            )
+            return {
+                "created": True,
+                "sys_id": result.get("sys_id", ""),
+                "ticket_number": result.get("number", ""),
+                "alert_id": alert_id,
+            }
+        except Exception as e:
+            logger.warning("soc_analyst.create_servicenow_ticket.error", error=str(e))
+            return {
+                "created": False,
+                "reason": str(e),
+                "alert_id": alert_id,
+            }
+
+    # ── 16. Full Escalation Pipeline ─────────────────────────────────────
+
+    async def escalate_alert(
+        self,
+        alert_id: str,
+        alert_data: dict[str, Any],
+        classification: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Full escalation pipeline: route based on severity and classification.
+
+        Orchestrates the appropriate combination of auto-resolve, PagerDuty,
+        Slack, and ServiceNow actions based on the alert classification.
+
+        Args:
+            alert_id: Alert identifier.
+            alert_data: Original alert data.
+            classification: Classification result from classify_true_false_positive.
+
+        Returns:
+            Dict with all escalation actions taken and their results.
+        """
+        logger.info("soc_analyst.escalate_alert", alert_id=alert_id)
+
+        severity = alert_data.get("severity", "medium").lower()
+        cls = classification.get("classification", "needs_investigation")
+        confidence = classification.get("confidence", 0.0)
+
+        escalation_result: dict[str, Any] = {
+            "alert_id": alert_id,
+            "severity": severity,
+            "classification": cls,
+            "actions_taken": [],
+        }
+
+        # False positive with high confidence -> auto-resolve
+        if cls == "false_positive" and confidence > 0.7:
+            resolve = await self.auto_resolve_alert(
+                alert_id=alert_id,
+                severity="low",
+                reason=f"False positive (confidence={confidence:.2f})",
+            )
+            escalation_result["actions_taken"].append({"action": "auto_resolve", **resolve})
+            return escalation_result
+
+        # Low severity -> auto-resolve
+        if severity in ("low", "info") and cls != "true_positive":
+            resolve = await self.auto_resolve_alert(
+                alert_id=alert_id,
+                severity=severity,
+                reason="Low severity alert auto-resolved",
+            )
+            escalation_result["actions_taken"].append({"action": "auto_resolve", **resolve})
+            return escalation_result
+
+        # High/Critical severity -> PagerDuty + Slack + ServiceNow
+        if severity in ("critical", "high"):
+            pd_result = await self.create_pagerduty_incident(
+                alert_id=alert_id,
+                title=alert_data.get("title", f"SOC Alert {alert_id}"),
+                severity=severity,
+                details=alert_data.get("description", ""),
+            )
+            escalation_result["actions_taken"].append({"action": "pagerduty_incident", **pd_result})
+
+            slack_result = await self.send_slack_notification(
+                alert_id=alert_id,
+                channel="#soc-alerts",
+                message=alert_data.get("description", f"Alert {alert_id} escalated"),
+                severity=severity,
+            )
+            escalation_result["actions_taken"].append(
+                {"action": "slack_notification", **slack_result}
+            )
+
+        # All non-auto-resolved alerts get a ServiceNow ticket
+        sn_result = await self.create_servicenow_ticket(
+            alert_id=alert_id,
+            short_description=alert_data.get("title", f"SOC Alert {alert_id}"),
+            description=alert_data.get("description", ""),
+            severity=severity,
+        )
+        escalation_result["actions_taken"].append({"action": "servicenow_ticket", **sn_result})
+
+        logger.info(
+            "soc_analyst.escalate_alert.complete",
+            alert_id=alert_id,
+            actions_count=len(escalation_result["actions_taken"]),
+        )
+        return escalation_result
