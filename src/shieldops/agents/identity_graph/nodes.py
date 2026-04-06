@@ -45,7 +45,15 @@ def _elapsed_ms(start: datetime) -> int:
 
 
 async def discover_identities(state: IdentityGraphState) -> dict[str, Any]:
-    """Discover all identities in the target org/tenant."""
+    """Discover all identities in the target org/tenant.
+
+    Performs multi-source discovery:
+    1. Directory scan (Azure AD, Okta, etc.)
+    2. AWS IAM enumeration (users, roles, access keys)
+    3. CrowdStrike host identity correlation
+    4. NHI (non-human identity) detection and cataloging
+    5. Service account and AI agent permission mapping
+    """
     start = datetime.now(UTC)
     toolkit = _get_toolkit()
 
@@ -55,11 +63,39 @@ async def discover_identities(state: IdentityGraphState) -> dict[str, Any]:
         types=state.identity_types,
     )
 
+    # OPA policy check for scan permission
+    policy_result = await toolkit.check_policy(
+        action="scan",
+        target_identities=[state.scan_target],
+        environment=state.scope.get("environment", "production"),
+    )
+    if not policy_result.get("allowed", True):
+        logger.warning(
+            "identity_graph.scan_denied",
+            reason=policy_result.get("reason", ""),
+        )
+
+    # Phase 1: Directory scan (existing providers)
     raw_identities = await toolkit.scan_directory(state.scan_target, state.identity_types)
     service_accounts = await toolkit.map_service_accounts(state.scan_target)
     ai_agents = await toolkit.trace_ai_agent_permissions(state.scan_target)
 
+    # Phase 2: AWS IAM enumeration
+    iam_users = await toolkit.enumerate_iam_users()
+    iam_roles = await toolkit.enumerate_iam_roles()
+    stale_credentials = await toolkit.identify_stale_credentials(iam_users)
+
+    # Phase 3: CrowdStrike identity correlation
+    cs_hosts = await toolkit.fetch_crowdstrike_hosts()
+    correlations = await toolkit.correlate_crowdstrike_aws_identities(iam_users, cs_hosts)
+
+    # Phase 4: NHI discovery
+    nhis = await toolkit.discover_nhis(iam_users, iam_roles)
+
+    # Build identity nodes from all sources
     identities: list[IdentityNode] = []
+
+    # From directory scan
     for raw in raw_identities:
         identities.append(
             IdentityNode(
@@ -73,6 +109,7 @@ async def discover_identities(state: IdentityGraphState) -> dict[str, Any]:
             )
         )
 
+    # From service accounts
     for sa in service_accounts:
         identities.append(
             IdentityNode(
@@ -84,6 +121,7 @@ async def discover_identities(state: IdentityGraphState) -> dict[str, Any]:
             )
         )
 
+    # From AI agents
     for agent in ai_agents:
         identities.append(
             IdentityNode(
@@ -95,20 +133,89 @@ async def discover_identities(state: IdentityGraphState) -> dict[str, Any]:
             )
         )
 
+    # From AWS IAM users (deduplicate by identity_id)
+    seen_ids = {i.identity_id for i in identities}
+    for user in iam_users:
+        uid = user.get("user_name", "")
+        if uid and uid not in seen_ids:
+            policies = user.get("attached_policies", [])
+            identities.append(
+                IdentityNode(
+                    identity_id=uid,
+                    identity_name=uid,
+                    identity_type=(
+                        "service_account" if "/service/" in user.get("path", "") else "human"
+                    ),
+                    provider="aws_iam",
+                    permissions=[p.get("policy_name", "") for p in policies],
+                    groups=user.get("groups", []),
+                    mfa_enabled=False,
+                    metadata={
+                        "arn": user.get("arn", ""),
+                        "access_key_count": len(user.get("access_keys", [])),
+                    },
+                )
+            )
+            seen_ids.add(uid)
+
+    # From AWS IAM roles
+    for role in iam_roles:
+        rid = role.get("role_name", "")
+        if rid and rid not in seen_ids:
+            policies = role.get("attached_policies", [])
+            identities.append(
+                IdentityNode(
+                    identity_id=rid,
+                    identity_name=rid,
+                    identity_type="service_account",
+                    provider="aws_iam",
+                    permissions=[p.get("policy_name", "") for p in policies],
+                    metadata={
+                        "arn": role.get("arn", ""),
+                        "trust_policy": role.get("trust_policy", {}),
+                    },
+                )
+            )
+            seen_ids.add(rid)
+
+    # Store enrichment data in scope for downstream nodes
+    enrichment = {
+        "iam_users": iam_users,
+        "iam_roles": iam_roles,
+        "stale_credentials": stale_credentials,
+        "cs_hosts": cs_hosts,
+        "correlations": correlations,
+        "nhis": nhis,
+    }
+
     step = ReasoningStep(
         step_number=1,
         action="discover_identities",
         input_summary=f"Scanning {state.scan_target} for {state.identity_types}",
-        output_summary=f"Discovered {len(identities)} identities",
+        output_summary=(
+            f"Discovered {len(identities)} identities "
+            f"({len(iam_users)} IAM users, {len(iam_roles)} roles, "
+            f"{len(nhis)} NHIs, {len(correlations)} CS correlations)"
+        ),
         duration_ms=_elapsed_ms(start),
-        tool_used="directory_scan",
+        tool_used="directory_scan+iam+crowdstrike+nhi",
     )
 
     return {
         "identities_discovered": identities,
+        "credential_risks": [
+            {
+                "identity_id": s["user_name"],
+                "risk": "stale_credential",
+                "idle_days": s.get("idle_days"),
+                "age_days": s.get("age_days"),
+            }
+            for s in stale_credentials
+        ],
         "reasoning_chain": [step],
         "current_step": "discover_identities",
         "session_start": start,
+        "scope": {**state.scope, "_enrichment": enrichment},
     }
 
 
@@ -221,10 +328,24 @@ async def analyze_trust_chains(state: IdentityGraphState) -> dict[str, Any]:
 
 
 async def assess_risks(state: IdentityGraphState) -> dict[str, Any]:
-    """Assess risks using LLM analysis of the identity graph."""
+    """Assess risks using LLM analysis of the identity graph.
+
+    Enhanced with:
+    - NHI-aware risk assessment via toolkit.assess_identity_risk_llm()
+    - Stale credential detection from IAM enumeration
+    - CrowdStrike correlation enrichment
+    - Heuristic fallback when LLM is unavailable
+    """
     start = datetime.now(UTC)
+    toolkit = _get_toolkit()
 
     logger.info("identity_graph.assessing_risks", identity_count=len(state.identities_discovered))
+
+    # Extract enrichment data from scope (set by discover_identities)
+    enrichment = state.scope.get("_enrichment", {})
+    nhis = enrichment.get("nhis", [])
+    stale_credentials = enrichment.get("stale_credentials", [])
+    correlations = enrichment.get("correlations", [])
 
     # Build context for LLM
     context_lines = [
@@ -254,8 +375,33 @@ async def assess_risks(state: IdentityGraphState) -> dict[str, Any]:
     over_privileged: list[dict[str, Any]] = []
     stale: list[dict[str, Any]] = []
     lateral_paths: list[list[str]] = []
-    credential_risks: list[dict[str, Any]] = []
+    credential_risks: list[dict[str, Any]] = state.credential_risks[:]
 
+    # NHI-enhanced risk assessment (LLM with heuristic fallback)
+    if nhis or stale_credentials:
+        nhi_risk_result = await toolkit.assess_identity_risk_llm(
+            nhis,
+            stale_credentials,
+            correlations,
+        )
+        for hri in nhi_risk_result.get("high_risk_identities", []):
+            risk_assessments.append(
+                RiskAssessment(
+                    entity_id=hri,
+                    risk_score=75.0,
+                    risk_factors=nhi_risk_result.get("risk_factors", [])[:3],
+                    recommended_action="restrict",
+                )
+            )
+        over_privileged.extend(nhi_risk_result.get("over_privileged_accounts", []))
+        stale.extend(
+            [
+                {"identity_id": s.get("identity_id", ""), "reason": "stale_credentials"}
+                for s in nhi_risk_result.get("stale_accounts", [])
+            ]
+        )
+
+    # Standard LLM risk assessment
     try:
         risk_result = cast(
             IdentityRiskResult,
@@ -267,20 +413,25 @@ async def assess_risks(state: IdentityGraphState) -> dict[str, Any]:
         )
 
         for identity_id in risk_result.high_risk_identities:
-            risk_assessments.append(
-                RiskAssessment(
-                    entity_id=identity_id,
-                    risk_score=75.0,
-                    risk_factors=risk_result.risk_factors[:3],
-                    recommended_action="restrict",
+            # Avoid duplicates from NHI assessment
+            existing_ids = {ra.entity_id for ra in risk_assessments}
+            if identity_id not in existing_ids:
+                risk_assessments.append(
+                    RiskAssessment(
+                        entity_id=identity_id,
+                        risk_score=75.0,
+                        risk_factors=risk_result.risk_factors[:3],
+                        recommended_action="restrict",
+                    )
                 )
-            )
 
-        over_privileged = risk_result.over_privileged
-        stale = [
-            {"identity_id": cid, "reason": "stale_credentials"}
-            for cid in risk_result.stale_credentials
-        ]
+        over_privileged.extend(risk_result.over_privileged)
+        stale.extend(
+            [
+                {"identity_id": cid, "reason": "stale_credentials"}
+                for cid in risk_result.stale_credentials
+            ]
+        )
 
         # Lateral movement analysis
         lateral_result = cast(
@@ -292,22 +443,28 @@ async def assess_risks(state: IdentityGraphState) -> dict[str, Any]:
             ),
         )
         lateral_paths = lateral_result.paths
-        credential_risks = [
-            {"identity_id": cp, "risk": "lateral_movement_choke_point"}
-            for cp in lateral_result.choke_points
-        ]
+        credential_risks.extend(
+            [
+                {"identity_id": cp, "risk": "lateral_movement_choke_point"}
+                for cp in lateral_result.choke_points
+            ]
+        )
 
         output_summary = (
             f"Risk: {risk_result.risk_summary[:150]}. "
             f"{len(over_privileged)} over-privileged, "
-            f"{len(lateral_paths)} lateral movement paths"
+            f"{len(lateral_paths)} lateral movement paths, "
+            f"{len(nhis)} NHIs assessed"
         )
     except Exception as e:
         logger.error("identity_graph.risk_assessment_failed", error=str(e))
-        output_summary = f"Risk assessment failed: {e}"
+        output_summary = f"Risk assessment failed (using heuristic fallback): {e}"
 
-        # Fallback: flag identities without MFA
+        # Fallback: flag identities without MFA and over-privileged
         for identity in state.identities_discovered:
+            existing_ids = {ra.entity_id for ra in risk_assessments}
+            if identity.identity_id in existing_ids:
+                continue
             if not identity.mfa_enabled and identity.identity_type == "human":
                 risk_assessments.append(
                     RiskAssessment(
@@ -330,11 +487,11 @@ async def assess_risks(state: IdentityGraphState) -> dict[str, Any]:
         action="assess_risks",
         input_summary=(
             f"Assessing {len(state.identities_discovered)} identities, "
-            f"{len(state.trust_chains)} chains"
+            f"{len(state.trust_chains)} chains, {len(nhis)} NHIs"
         ),
         output_summary=output_summary,
         duration_ms=_elapsed_ms(start),
-        tool_used="llm",
+        tool_used="llm+nhi_assessment",
     )
 
     return {
@@ -431,14 +588,36 @@ async def generate_remediations(state: IdentityGraphState) -> dict[str, Any]:
 
 
 async def report(state: IdentityGraphState) -> dict[str, Any]:
-    """Generate final report summary."""
+    """Generate final report summary and persist results."""
     start = datetime.now(UTC)
+    toolkit = _get_toolkit()
+
+    session_duration = 0
+    if state.session_start:
+        session_duration = int((datetime.now(UTC) - state.session_start).total_seconds() * 1000)
 
     output_summary = (
         f"Scan complete: {len(state.identities_discovered)} identities, "
         f"{len(state.relationships_mapped)} relationships, "
         f"{len(state.risk_assessments)} risks, "
-        f"{len(state.remediation_actions)} remediations"
+        f"{len(state.remediation_actions)} remediations, "
+        f"{len(state.credential_risks)} credential risks"
+    )
+
+    # Persist scan results
+    await toolkit.persist_scan_result(
+        scan_target=state.scan_target,
+        result={
+            "identities": len(state.identities_discovered),
+            "relationships": len(state.relationships_mapped),
+            "risks": len(state.risk_assessments),
+            "remediations": len(state.remediation_actions),
+            "credential_risks": len(state.credential_risks),
+            "over_privileged": len(state.over_privileged_identities),
+            "stale_grants": len(state.stale_grants),
+        },
+        duration_ms=session_duration,
+        error=state.error or None,
     )
 
     step = ReasoningStep(
@@ -448,10 +627,6 @@ async def report(state: IdentityGraphState) -> dict[str, Any]:
         output_summary=output_summary,
         duration_ms=_elapsed_ms(start),
     )
-
-    session_duration = 0
-    if state.session_start:
-        session_duration = int((datetime.now(UTC) - state.session_start).total_seconds() * 1000)
 
     return {
         "reasoning_chain": [*state.reasoning_chain, step],
