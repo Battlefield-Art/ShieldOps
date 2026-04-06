@@ -82,6 +82,94 @@ class TokenBucket:
         return (False, retry_after)
 
 
+# ---------------------------------------------------------------------------
+# Redis-backed implementation for multi-node deployments
+# ---------------------------------------------------------------------------
+
+
+_REDIS_LUA_SCRIPT = """
+local key = KEYS[1]
+local capacity = tonumber(ARGV[1])
+local rate = tonumber(ARGV[2])
+local requested = tonumber(ARGV[3])
+local now = tonumber(ARGV[4])
+
+local state = redis.call('HMGET', key, 'tokens', 'last')
+local tokens
+local last
+if state[1] == false then
+    tokens = capacity
+    last = now
+else
+    tokens = tonumber(state[1])
+    last = tonumber(state[2])
+    local elapsed = now - last
+    if elapsed < 0 then elapsed = 0 end
+    tokens = math.min(capacity, tokens + elapsed * rate)
+    last = now
+end
+
+if tokens >= requested then
+    tokens = tokens - requested
+    redis.call('HMSET', key, 'tokens', tokens, 'last', last)
+    redis.call('EXPIRE', key, 3600)
+    return {1, 0}
+else
+    local deficit = requested - tokens
+    local retry = deficit / rate
+    redis.call('HMSET', key, 'tokens', tokens, 'last', last)
+    redis.call('EXPIRE', key, 3600)
+    return {0, tostring(retry)}
+end
+"""
+
+
+class RedisTokenBucket:
+    """Redis-backed TokenBucket for multi-worker coordination.
+
+    Uses an atomic Lua script so concurrent workers cannot double-spend
+    tokens. The script key format is ``shieldops:ratelimit:{key}``.
+
+    Constructor accepts any object with an ``async eval(script, numkeys, *args)``
+    method — real redis.asyncio.Redis, or a test fake.
+    """
+
+    def __init__(
+        self,
+        *,
+        redis_client: Any,
+        capacity: int,
+        refill_rate_per_sec: float,
+        key_prefix: str = "shieldops:ratelimit:",
+    ) -> None:
+        if capacity <= 0:
+            raise ValueError("capacity must be > 0")
+        if refill_rate_per_sec <= 0:
+            raise ValueError("refill_rate_per_sec must be > 0")
+        self._redis = redis_client
+        self._capacity = float(capacity)
+        self._rate = float(refill_rate_per_sec)
+        self._prefix = key_prefix
+
+    async def try_consume(self, key: str, tokens: int = 1) -> tuple[bool, float]:
+        """Atomically consume ``tokens`` from the bucket stored in Redis."""
+        full_key = f"{self._prefix}{key}"
+        now = time.time()
+        result = await self._redis.eval(
+            _REDIS_LUA_SCRIPT,
+            1,
+            full_key,
+            self._capacity,
+            self._rate,
+            tokens,
+            now,
+        )
+        allowed_raw, retry_raw = result[0], result[1]
+        allowed = bool(int(allowed_raw)) if not isinstance(allowed_raw, bool) else allowed_raw
+        retry_after = float(retry_raw)
+        return (allowed, retry_after)
+
+
 class TokenBucketMiddleware:
     """Starlette/FastAPI middleware that applies a TokenBucket per request key.
 
