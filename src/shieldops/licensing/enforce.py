@@ -25,8 +25,12 @@ import inspect
 from collections.abc import AsyncIterator, Callable
 from typing import Any, TypeVar
 
+import structlog
+
 from shieldops.licensing.composition import get_license_manager
 from shieldops.licensing.manager import AgentLease
+
+logger = structlog.get_logger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -35,6 +39,39 @@ F = TypeVar("F", bound=Callable[..., Any])
 # - RFC #247 framework patch (agents/framework.py::define_agent)
 # Both check this flag so re-applying @enforced is a no-op.
 _ENFORCED_MARKER = "_shieldops_enforced"
+
+# Module-level once-flag for the "no manager installed" warning.
+# PR-2 of RFC #244 wires @enforced into define_agent() for all 114
+# framework-built agents. Since those agents are constructed at import
+# time (before app.py lifespan installs the manager), the decorator
+# must tolerate a missing manager gracefully — it logs once and the
+# wrapped function runs without enforcement. This preserves the
+# existing test suite while letting production deployments opt in
+# by installing a manager at lifespan.
+_missing_manager_warned: bool = False
+
+
+def _try_get_manager() -> Any | None:
+    """Return the installed license manager or ``None`` if unset.
+
+    On the first miss per process, emits a warning so operators notice
+    unwired environments. Subsequent misses are silent.
+    """
+    global _missing_manager_warned
+    try:
+        return get_license_manager()
+    except RuntimeError:
+        if not _missing_manager_warned:
+            _missing_manager_warned = True
+            logger.warning(
+                "license.enforced.manager_not_installed",
+                message=(
+                    "@enforced decorator invoked but no LicenseManager is "
+                    "installed. Enforcement is a no-op until "
+                    "set_license_manager() is called at app startup."
+                ),
+            )
+        return None
 
 
 def enforced(
@@ -79,26 +116,31 @@ def enforced(
 
             @functools.wraps(func)
             async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
-                manager = get_license_manager()
+                manager = _try_get_manager()
+                if manager is None:
+                    # No manager installed — pass through unchecked.
+                    return await func(*args, **kwargs)
                 lease = manager.admit(agent_id)
                 try:
                     return await func(*args, **kwargs)
                 finally:
                     lease.release()
 
-            setattr(async_wrapper, _ENFORCED_MARKER, True)
+            async_wrapper._shieldops_enforced = True  # type: ignore[attr-defined]
             return async_wrapper  # type: ignore[return-value]
 
         @functools.wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
-            manager = get_license_manager()
+            manager = _try_get_manager()
+            if manager is None:
+                return func(*args, **kwargs)
             lease = manager.admit(agent_id)
             try:
                 return func(*args, **kwargs)
             finally:
                 lease.release()
 
-        setattr(sync_wrapper, _ENFORCED_MARKER, True)
+        sync_wrapper._shieldops_enforced = True  # type: ignore[attr-defined]
         return sync_wrapper  # type: ignore[return-value]
 
     return decorator

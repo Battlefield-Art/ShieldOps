@@ -123,6 +123,7 @@ def define_agent(
     toolkit_type: type,
     nodes: list[str | tuple[str, Callable[..., Any]]],
     edges: list[Edge] | None = None,
+    license_enforced: bool = True,
 ) -> type:
     """Define a complete LangGraph agent from its essential parts.
 
@@ -135,6 +136,14 @@ def define_agent(
                (name, callable) use the provided function directly.
         edges: Optional conditional routing edges. If None, nodes execute
                in linear order with the last node connecting to END.
+        license_enforced: If True (the default), the generated runner's
+            ``run()`` method is automatically wrapped with the RFC #244
+            ``@enforced(name)`` decorator so license limits are checked
+            before every run. This is PR-2 of RFC #244 — the single
+            framework patch that propagates license enforcement to all
+            114 ``define_agent``-built runners. Set to False to opt out
+            during migration; a warning is logged if no LicenseManager
+            is installed (enforcement becomes a no-op in that case).
 
     Returns:
         A Runner class with __init__, run, get_result, list_results.
@@ -319,5 +328,22 @@ def define_agent(
     AgentRunner.__name__ = f"{name.title().replace('_', '')}Runner"
     AgentRunner.__qualname__ = AgentRunner.__name__
     AgentRunner.__doc__ = f"Auto-generated runner for the {name} agent."
+
+    # ------------------------------------------------------------------
+    # RFC #244 PR-2: auto-apply @enforced to the generated run method so
+    # license limits are checked on every invocation. The decorator is
+    # idempotent (via the _shieldops_enforced marker) so re-applying it
+    # to an already-decorated class is safe. When license_enforced=False
+    # is passed explicitly, this step is skipped (opt-out for migration).
+    #
+    # When no LicenseManager is installed at call time, the decorator
+    # logs a warning once and passes through — this keeps existing test
+    # suites green while production deployments opt in by calling
+    # set_license_manager() during app.py lifespan.
+    # ------------------------------------------------------------------
+    if license_enforced:
+        from shieldops.licensing.enforce import enforced as _enforced
+
+        AgentRunner.run = _enforced(name)(AgentRunner.run)  # type: ignore[method-assign]
 
     return AgentRunner
