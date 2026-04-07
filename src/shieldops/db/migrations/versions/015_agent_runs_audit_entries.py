@@ -35,8 +35,11 @@ def upgrade() -> None:
             "token_usage",
             JSONB,
             nullable=False,
+            # NOTE: colons inside the JSON literal must be escaped as `\:`
+            # otherwise SQLAlchemy's text() treats them as bind parameters
+            # and compiles the default as `{"prompt_tokens"NULL,...}`.
             server_default=sa.text(
-                '\'{"prompt_tokens":0,"completion_tokens":0,"total_tokens":0}\'::jsonb'
+                '\'{"prompt_tokens"\\:0,"completion_tokens"\\:0,"total_tokens"\\:0}\'::jsonb'
             ),
         ),
         sa.Column("org_id", sa.String(64), nullable=False),
