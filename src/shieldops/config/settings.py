@@ -1,5 +1,6 @@
 """Application configuration via environment variables."""
 
+import os
 from typing import Any
 
 from pydantic import model_validator
@@ -2868,8 +2869,21 @@ class Settings(BaseSettings):
     @model_validator(mode="before")
     @classmethod
     def _route_flat_to_nested(cls, values: dict) -> dict:  # type: ignore[type-arg]
-        """Route flat env vars (e.g. SHIELDOPS_APP_NAME) into nested sub-configs."""
+        """Route flat env vars (e.g. SHIELDOPS_APP_NAME) into nested sub-configs.
+
+        Because the sub-configs are plain ``BaseModel`` (not ``BaseSettings``),
+        ``SHIELDOPS_DATABASE_URL`` and friends do NOT reach pydantic-settings
+        field mapping — they get dropped by ``extra="ignore"`` before this
+        validator runs. Pull them in explicitly from the process environment
+        using the same ``SHIELDOPS_`` prefix that ``BaseSettings`` expects.
+        """
+        if not isinstance(values, dict):
+            return values
         for flat_name, (sub, field) in _FLAT_TO_NESTED.items():
+            if flat_name not in values:
+                env_key = f"SHIELDOPS_{flat_name.upper()}"
+                if env_key in os.environ:
+                    values[flat_name] = os.environ[env_key]
             if flat_name in values:
                 values.setdefault(sub, {})
                 if isinstance(values[sub], dict):
