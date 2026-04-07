@@ -6,9 +6,11 @@ TTL window.  Duplicate requests within the window receive the cached response.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import time
+from collections.abc import Awaitable, Callable
 from typing import Any, Protocol, runtime_checkable
 
 import structlog
@@ -38,6 +40,8 @@ class InMemoryIdempotencyStore:
     def __init__(self, ttl: int = DEFAULT_TTL) -> None:
         self._store: dict[str, tuple[dict[str, Any], float]] = {}
         self._ttl = ttl
+        self._key_locks: dict[str, asyncio.Lock] = {}
+        self._locks_guard = asyncio.Lock()
 
     async def get(self, key: str) -> dict[str, Any] | None:
         self._cleanup()
@@ -56,6 +60,38 @@ class InMemoryIdempotencyStore:
 
     async def delete(self, key: str) -> None:
         self._store.pop(key, None)
+
+    async def get_or_set(
+        self,
+        key: str,
+        *,
+        ttl: int,
+        factory: Callable[[], Awaitable[dict[str, Any]]],
+    ) -> dict[str, Any]:
+        """Atomically return cached value or compute via ``factory``.
+
+        Concurrent callers for the same ``key`` are serialized through a
+        per-key :class:`asyncio.Lock`, so the factory runs at most once per
+        key (until TTL expiry). If the factory raises, the lock is released
+        and the cache is left empty so retries can succeed — failures are
+        never cached.
+        """
+        # Fast path — value already cached.
+        cached = await self.get(key)
+        if cached is not None:
+            return cached
+
+        async with self._locks_guard:
+            lock = self._key_locks.setdefault(key, asyncio.Lock())
+
+        async with lock:
+            # Re-check inside the lock so the second waiter doesn't re-run.
+            cached = await self.get(key)
+            if cached is not None:
+                return cached
+            value = await factory()
+            await self.set(key, value, ttl=ttl)
+            return value
 
     def _cleanup(self) -> None:
         now = time.monotonic()
