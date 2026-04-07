@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Blocks, Code, Play, CheckCircle, Rocket, Zap } from "lucide-react";
+import { Blocks, Code, CheckCircle, Rocket, Zap } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trophy, Users, Target, Activity, Award, Zap } from "lucide-react";
+import { Trophy, Users, Target, Activity, Award } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

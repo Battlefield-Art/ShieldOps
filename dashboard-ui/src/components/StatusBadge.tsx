@@ -55,13 +55,16 @@ const ANIMATED_STATUSES = new Set(["running", "active", "executing", "in_progres
 
 interface StatusBadgeProps {
   status: string;
+  /** Optional override label; falls back to humanized `status` */
+  label?: string;
   size?: "sm" | "md";
   variant?: keyof typeof VARIANT_CLASSES;
 }
 
-export default function StatusBadge({ status, size = "sm", variant }: StatusBadgeProps) {
+export default function StatusBadge({ status, label, size = "sm", variant }: StatusBadgeProps) {
   const v = variant ?? STATUS_MAP[status.toLowerCase()] ?? "neutral";
   const showDot = ANIMATED_STATUSES.has(status.toLowerCase());
+  const displayLabel = label ?? status.replace(/_/g, " ");
 
   return (
     <span
@@ -92,7 +95,7 @@ export default function StatusBadge({ status, size = "sm", variant }: StatusBadg
           />
         </span>
       )}
-      {status.replace(/_/g, " ")}
+      {displayLabel}
     </span>
   );
 }

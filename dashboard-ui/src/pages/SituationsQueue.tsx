@@ -24,7 +24,6 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import useSituations, {
   useSituationMetrics,
   type Situation,
-  type SituationSeverity,
   type TimeRange,
 } from "../hooks/useSituations";
 

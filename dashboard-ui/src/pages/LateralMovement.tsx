@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Shield, AlertTriangle, GitBranch, Target, Zap } from "lucide-react";
+import { ArrowRight, Shield, AlertTriangle, GitBranch, Zap } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

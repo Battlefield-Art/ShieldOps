@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Users, Target, BarChart3, CheckCircle, AlertTriangle } from "lucide-react";
+import { Play, Target, BarChart3, CheckCircle, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

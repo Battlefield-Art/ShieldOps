@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container, Shield, AlertTriangle, Bug, Activity, Lock } from "lucide-react";
+import { Container, AlertTriangle, Bug, Lock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

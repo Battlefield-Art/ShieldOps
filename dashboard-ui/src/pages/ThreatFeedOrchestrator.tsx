@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Radio, Shield, Filter, Zap, BarChart3, RefreshCw } from "lucide-react";
+import { Radio, Shield, Filter, Zap, RefreshCw } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

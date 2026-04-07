@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Search, Target, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+import { FileText, Search, TrendingUp, CheckCircle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, BarChart3, AlertTriangle, Zap, Layers, TrendingUp } from "lucide-react";
+import { Filter, AlertTriangle, Zap, Layers, TrendingUp } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

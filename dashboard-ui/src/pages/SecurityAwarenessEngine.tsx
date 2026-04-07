@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Users, AlertTriangle, CheckCircle, Target, BarChart3 } from "lucide-react";
+import { BookOpen, Users, CheckCircle, Target, BarChart3 } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

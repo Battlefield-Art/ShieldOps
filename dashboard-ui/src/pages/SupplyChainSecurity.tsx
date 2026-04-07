@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package, AlertTriangle, Shield, FileCheck, GitBranch, Lock } from "lucide-react";
+import { Package, AlertTriangle, GitBranch, Lock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

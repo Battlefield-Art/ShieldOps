@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Workflow, Zap, Shield, CheckCircle, AlertTriangle, BarChart3 } from "lucide-react";
+import { Workflow, Zap, Shield, CheckCircle, BarChart3 } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

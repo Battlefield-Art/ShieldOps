@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Fingerprint, Shield, Users, Bot, Monitor, Lock } from "lucide-react";
+import { Fingerprint, Shield, Users, Bot, Lock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

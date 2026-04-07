@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package, AlertTriangle, Shield, Search, BarChart3, CheckCircle } from "lucide-react";
+import { Package, AlertTriangle, Shield, Search, CheckCircle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Database, HardDrive, Activity, ArrowRightLeft, TrendingUp, DollarSign } from "lucide-react";
+import { Database, Activity, ArrowRightLeft, TrendingUp, DollarSign } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

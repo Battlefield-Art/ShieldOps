@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Scale, DollarSign, Shield, AlertTriangle, TrendingUp, FileText } from "lucide-react";
+import { Scale, DollarSign, Shield, AlertTriangle, TrendingUp } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

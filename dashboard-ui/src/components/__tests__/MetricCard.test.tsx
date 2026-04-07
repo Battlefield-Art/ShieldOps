@@ -16,7 +16,7 @@ describe("MetricCard", () => {
   it("shows green TrendingUp icon for positive change", () => {
     const { container } = render(<MetricCard label="Rate" value="80%" change={12.5} />);
     expect(screen.getByText("+12.5%")).toBeInTheDocument();
-    const trendDiv = container.querySelector(".text-green-400");
+    const trendDiv = container.querySelector(".text-emerald-400");
     expect(trendDiv).toBeInTheDocument();
   });
 
@@ -36,9 +36,11 @@ describe("MetricCard", () => {
 
   it("does not render trend section when no change prop", () => {
     const { container } = render(<MetricCard label="Simple" value={100} />);
-    expect(container.querySelector(".text-green-400")).not.toBeInTheDocument();
+    // Trend pill uses these specific text colors only when `change` is set.
+    expect(container.querySelector(".text-emerald-400")).not.toBeInTheDocument();
     expect(container.querySelector(".text-red-400")).not.toBeInTheDocument();
-    expect(container.querySelector(".text-gray-500")).not.toBeInTheDocument();
+    // No trend percentage shown
+    expect(container.textContent).not.toMatch(/%/);
   });
 
   it("renders icon when provided", () => {

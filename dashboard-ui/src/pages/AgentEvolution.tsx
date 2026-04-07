@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dna, Activity, TrendingUp, Brain, Zap, GitBranch, BarChart3, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { Dna, Activity, Brain, Zap, GitBranch, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -2,14 +2,28 @@ import clsx from "clsx";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface MetricCardProps {
-  label: string;
+  label?: string;
+  /** @deprecated use `label` */
+  title?: string;
   value: string | number;
   change?: number;
   icon?: React.ReactNode;
   description?: string;
+  /** @deprecated use `description` */
+  subtitle?: string;
 }
 
-export default function MetricCard({ label, value, change, icon, description }: MetricCardProps) {
+export default function MetricCard({
+  label,
+  title,
+  value,
+  change,
+  icon,
+  description,
+  subtitle,
+}: MetricCardProps) {
+  const resolvedLabel = label ?? title ?? "";
+  const resolvedDescription = description ?? subtitle;
   const trend =
     change === undefined || change === 0
       ? "neutral"
@@ -38,7 +52,7 @@ export default function MetricCard({ label, value, change, icon, description }: 
       />
 
       <div className="flex items-start justify-between">
-        <p className="text-[13px] font-medium text-gray-500">{label}</p>
+        <p className="text-[13px] font-medium text-gray-500">{resolvedLabel}</p>
         {icon && (
           <div className="rounded-lg bg-white/[0.03] p-1.5 text-gray-600 transition-colors duration-200 group-hover:text-gray-500">
             {icon}
@@ -50,8 +64,8 @@ export default function MetricCard({ label, value, change, icon, description }: 
         {value}
       </p>
 
-      {description && (
-        <p className="mt-1.5 text-xs text-gray-600">{description}</p>
+      {resolvedDescription && (
+        <p className="mt-1.5 text-xs text-gray-600">{resolvedDescription}</p>
       )}
 
       {change !== undefined && (

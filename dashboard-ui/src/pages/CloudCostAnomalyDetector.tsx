@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign, TrendingUp, AlertTriangle, Activity, BarChart3, Zap } from "lucide-react";
+import { DollarSign, TrendingUp, AlertTriangle, Zap } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

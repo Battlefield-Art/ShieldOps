@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, Activity, GitBranch, AlertTriangle, BarChart3 } from "lucide-react";
+import { Zap, Activity, GitBranch, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

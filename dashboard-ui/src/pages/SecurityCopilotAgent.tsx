@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, MessageSquare, Shield, Zap, BarChart3, CheckCircle } from "lucide-react";
+import { Bot, MessageSquare, Shield, Zap, CheckCircle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Ticket, CheckCircle, Clock, AlertTriangle, Users, Zap } from "lucide-react";
+import { Ticket, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

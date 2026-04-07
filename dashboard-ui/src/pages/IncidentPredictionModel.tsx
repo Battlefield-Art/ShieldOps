@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TrendingUp, AlertTriangle, Activity, Brain, Gauge, Zap } from "lucide-react";
+import { TrendingUp, AlertTriangle, Activity, Brain, Gauge } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

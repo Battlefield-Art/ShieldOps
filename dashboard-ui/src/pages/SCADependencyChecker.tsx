@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package, Shield, AlertTriangle, Bug, Scale, RefreshCw } from "lucide-react";
+import { Package, Bug, Scale, RefreshCw } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

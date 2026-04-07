@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, TrendingUp, Clock, Zap, BarChart3, Users } from "lucide-react";
+import { Brain, TrendingUp, Clock, Zap } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

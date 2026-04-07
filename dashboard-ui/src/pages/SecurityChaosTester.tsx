@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, TestTube2, Shield, AlertTriangle, Activity, FileText } from "lucide-react";
+import { Zap, TestTube2, Shield, AlertTriangle, Activity } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

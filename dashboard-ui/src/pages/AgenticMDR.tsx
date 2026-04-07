@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Zap, Clock, Target, Shield, TrendingUp } from "lucide-react";
+import { Bot, Zap, Clock, Target, TrendingUp } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

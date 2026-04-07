@@ -5,7 +5,7 @@
  * When offline, shows demo data so the dashboard is always usable.
  */
 
-import { useState, useEffect, useCallback } from "react";
+
 import { useAPI } from "./useAPI";
 
 export type SituationSeverity = "critical" | "high" | "medium" | "low" | "info";

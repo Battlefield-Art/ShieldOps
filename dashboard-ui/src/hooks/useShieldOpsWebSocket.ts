@@ -165,7 +165,7 @@ export function useShieldOpsWebSocket(
         setState("closed");
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [enabled, token, baseUrl, clearReconnectTimer]);
 
   const scheduleReconnect = useCallback(() => {

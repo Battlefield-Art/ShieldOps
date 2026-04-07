@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, Shield, CheckCircle, AlertTriangle, Play, RotateCcw } from "lucide-react";
+import { Flame, Shield, CheckCircle, Play, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

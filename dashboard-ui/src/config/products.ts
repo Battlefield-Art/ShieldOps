@@ -1,4 +1,7 @@
 import {
+  AlertTriangle,
+  Bell,
+  Clock,
   LayoutDashboard,
   Search,
   Wrench,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Bell, CheckCircle, Clock, Users, AlertTriangle } from "lucide-react";
+import { MessageSquare, Bell, CheckCircle, Clock, Users } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

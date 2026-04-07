@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Workflow, Play, GitBranch, RefreshCw, CheckCircle, Zap } from "lucide-react";
+import { Workflow, Play, GitBranch, CheckCircle, Zap } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

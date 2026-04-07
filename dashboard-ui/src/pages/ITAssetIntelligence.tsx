@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Server, Shield, AlertTriangle, BarChart3, Database, Target } from "lucide-react";
+import { Server, Shield, AlertTriangle, Database, Target } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

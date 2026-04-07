@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Database, Layers, Activity, Shield, BarChart3, Search } from "lucide-react";
+import { Database, Layers, BarChart3, Search } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

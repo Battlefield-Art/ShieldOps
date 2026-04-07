@@ -1,16 +1,8 @@
 import { useState } from "react";
-import {
-  Layers,
-  ArrowRightLeft,
-  CheckCircle,
-  AlertTriangle,
-  BarChart3,
-  Globe,
-} from "lucide-react";
+import { Layers, ArrowRightLeft, AlertTriangle, BarChart3, Globe } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
-import StatusBadge from "../components/StatusBadge";
 
 // ── Types ────────────────────────────────────────────────────────────
 type TabId = "overview" | "vendors" | "mappings" | "quality";

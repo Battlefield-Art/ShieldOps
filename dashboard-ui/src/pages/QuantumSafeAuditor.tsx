@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Lock, AlertTriangle, RefreshCw, BarChart3, Dna } from "lucide-react";
+import { Shield, Lock, AlertTriangle, RefreshCw, Dna } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

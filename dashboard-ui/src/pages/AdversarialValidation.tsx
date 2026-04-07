@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RefreshCw, Shield, AlertTriangle, CheckCircle, XCircle, TrendingUp } from "lucide-react";
+import { RefreshCw, Shield, AlertTriangle, TrendingUp } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

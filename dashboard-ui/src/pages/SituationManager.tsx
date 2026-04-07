@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutList, Zap, Clock, CheckCircle, AlertTriangle, Target } from "lucide-react";
+import { LayoutList, Zap, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

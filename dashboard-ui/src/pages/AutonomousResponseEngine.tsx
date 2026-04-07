@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Siren, Shield, Zap, CheckCircle, Clock } from "lucide-react";
+import { Bot, Siren, Shield, CheckCircle, Clock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

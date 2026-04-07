@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RefreshCw, Calendar, Activity, Shield, Clock, Target } from "lucide-react";
+import { RefreshCw, Activity, Shield, Clock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

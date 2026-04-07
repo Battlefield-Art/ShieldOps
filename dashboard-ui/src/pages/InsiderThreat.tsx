@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserX, Eye, AlertTriangle, Shield, TrendingUp, Users } from "lucide-react";
+import { UserX, Eye, AlertTriangle, TrendingUp, Users } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

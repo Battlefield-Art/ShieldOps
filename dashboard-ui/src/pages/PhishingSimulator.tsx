@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Users, AlertTriangle, Target, BarChart3, Shield } from "lucide-react";
+import { Mail, Users, Target, Shield } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

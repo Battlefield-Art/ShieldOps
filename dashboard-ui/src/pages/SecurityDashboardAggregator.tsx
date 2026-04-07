@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutDashboard, Activity, Shield, BarChart3, Zap, Clock } from "lucide-react";
+import { LayoutDashboard, Activity, Shield, Zap, Clock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

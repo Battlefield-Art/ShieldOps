@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyRound, Shield, AlertTriangle, RefreshCw, Eye, BarChart3 } from "lucide-react";
+import { KeyRound, AlertTriangle, RefreshCw, Eye } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

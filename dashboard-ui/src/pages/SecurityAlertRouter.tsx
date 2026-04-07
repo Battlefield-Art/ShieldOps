@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, GitBranch, Shield, Clock, Users, AlertTriangle } from "lucide-react";
+import { Bell, GitBranch, Shield, Clock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Fingerprint, Shield, AlertTriangle, Eye, UserX, BarChart3 } from "lucide-react";
+import { Fingerprint, Shield, AlertTriangle, Eye, UserX } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

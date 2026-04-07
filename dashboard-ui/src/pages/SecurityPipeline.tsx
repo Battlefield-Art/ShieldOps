@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Workflow, Zap, CheckCircle, RefreshCw, Activity, Target } from "lucide-react";
+import { Workflow, Zap, CheckCircle, RefreshCw, Activity } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

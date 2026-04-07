@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Shield, CheckCircle, AlertTriangle, Globe, Lock } from "lucide-react";
+import { Mail, Shield, CheckCircle, AlertTriangle, Globe } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

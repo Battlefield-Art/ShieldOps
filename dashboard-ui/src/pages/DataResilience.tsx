@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HardDrive, Lock, Shield, AlertTriangle, CheckCircle, Database } from "lucide-react";
+import { HardDrive, Lock, Shield, AlertTriangle, Database } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

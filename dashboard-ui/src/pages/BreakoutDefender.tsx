@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Timer, Shield, AlertTriangle, Activity, Crosshair, Ban } from "lucide-react";
+import { Timer, Shield, AlertTriangle, Crosshair } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Gauge, AlertTriangle, TrendingUp, CheckCircle, Clock, Activity } from "lucide-react";
+import { Gauge, AlertTriangle, TrendingUp, Activity } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

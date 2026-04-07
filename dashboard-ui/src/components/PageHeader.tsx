@@ -11,6 +11,10 @@ const BADGE_VARIANTS = {
 interface PageHeaderProps {
   title: string;
   description?: string;
+  /** @deprecated use `description` */
+  subtitle?: string;
+  /** Optional leading icon (decorative) */
+  icon?: React.ReactNode;
   action?: {
     label: string;
     onClick: () => void;
@@ -23,11 +27,20 @@ interface PageHeaderProps {
   };
 }
 
-export default function PageHeader({ title, description, action, badge }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  description,
+  subtitle,
+  icon,
+  action,
+  badge,
+}: PageHeaderProps) {
+  const resolvedDescription = description ?? subtitle;
   return (
     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="flex items-center gap-3">
+          {icon && <span className="text-gray-400">{icon}</span>}
           <h1 className="text-xl font-bold tracking-tight text-gray-50 sm:text-2xl">{title}</h1>
           {badge && (
             <span
@@ -40,8 +53,8 @@ export default function PageHeader({ title, description, action, badge }: PageHe
             </span>
           )}
         </div>
-        {description && (
-          <p className="mt-1 text-[13px] text-gray-600">{description}</p>
+        {resolvedDescription && (
+          <p className="mt-1 text-[13px] text-gray-600">{resolvedDescription}</p>
         )}
       </div>
 

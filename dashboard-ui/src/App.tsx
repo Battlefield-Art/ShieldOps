@@ -484,19 +484,13 @@ const FinopsForecaster = lazy(() => import("./pages/FinopsForecaster"));
 
 // ── Phase AF ──────────────────────────────────────────────────────
 const PredictiveScaler = lazy(() => import("./pages/PredictiveScaler"));
-const ComplianceWorkflow = lazy(() => import("./pages/ComplianceWorkflow"));
 const ServiceHealthMonitor = lazy(() => import("./pages/ServiceHealthMonitor"));
-const CloudWorkloadProtector = lazy(() => import("./pages/CloudWorkloadProtector"));
 
 // ── Phase AG ──────────────────────────────────────────────────────
-const ComplianceGapAnalyzer = lazy(() => import("./pages/ComplianceGapAnalyzer"));
-const NetworkTrafficAnalyzer = lazy(() => import("./pages/NetworkTrafficAnalyzer"));
 const SecretRotationManager = lazy(() => import("./pages/SecretRotationManager"));
 const IncidentPlaybookEngine = lazy(() => import("./pages/IncidentPlaybookEngine"));
-const CloudStorageScanner = lazy(() => import("./pages/CloudStorageScanner"));
 
 // ── Phase AH ──────────────────────────────────────────────────────
-const ThreatFeedAggregator = lazy(() => import("./pages/ThreatFeedAggregator"));
 const IAMPolicyAnalyzer = lazy(() => import("./pages/IAMPolicyAnalyzer"));
 const ObservabilityPipelineOptimizer = lazy(() => import("./pages/ObservabilityPipelineOptimizer"));
 const DatabaseSecurityScanner = lazy(() => import("./pages/DatabaseSecurityScanner"));

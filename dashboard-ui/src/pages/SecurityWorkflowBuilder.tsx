@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Workflow, Play, Shield, Activity, CheckCircle, AlertTriangle } from "lucide-react";
+import { Workflow, Play, Activity, CheckCircle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

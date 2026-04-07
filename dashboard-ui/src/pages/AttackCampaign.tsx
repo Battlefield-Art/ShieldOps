@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  Crosshair,
-  Target,
-  Shield,
-  AlertTriangle,
-  Play,
-  CheckCircle,
-  XCircle,
-  BarChart3,
-} from "lucide-react";
+import { Crosshair, Target, Shield, AlertTriangle, Play, CheckCircle } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

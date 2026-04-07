@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Database, Eye, Shield, AlertTriangle, Lock, FileText } from "lucide-react";
+import { Database, Eye, Shield, AlertTriangle, Lock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

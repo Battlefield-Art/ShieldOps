@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Puzzle,
-  AlertTriangle,
-  Link2,
-  FileText,
-  Zap,
-  Clock,
-  ArrowRight,
-} from "lucide-react";
+import { Puzzle, AlertTriangle, Link2, Zap, Clock, ArrowRight } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

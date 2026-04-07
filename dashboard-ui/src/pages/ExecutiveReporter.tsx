@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, TrendingUp, Shield, BarChart3, Calendar, Download } from "lucide-react";
+import { FileText, TrendingUp, Shield, Calendar, Download } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

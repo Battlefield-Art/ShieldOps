@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, AlertTriangle, Activity, Layers, BarChart3, Search } from "lucide-react";
+import { FileText, AlertTriangle, Activity, Layers, Search } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Play, CheckCircle, AlertTriangle, Clock, RotateCcw } from "lucide-react";
+import { BookOpen, Play, CheckCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

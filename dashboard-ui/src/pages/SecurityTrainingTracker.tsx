@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GraduationCap, CheckCircle, AlertTriangle, TrendingUp, Users, Target } from "lucide-react";
+import { GraduationCap, CheckCircle, AlertTriangle, TrendingUp, Target } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

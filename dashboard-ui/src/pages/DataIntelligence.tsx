@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Database, Brain, Shield, Eye, BarChart3, GitBranch } from "lucide-react";
+import { Database, Brain, Shield, GitBranch } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

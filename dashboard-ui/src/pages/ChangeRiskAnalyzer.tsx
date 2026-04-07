@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GitPullRequest, AlertTriangle, Shield, CheckCircle, Clock, BarChart3 } from "lucide-react";
+import { GitPullRequest, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import clsx from "clsx";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";

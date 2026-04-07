@@ -10,7 +10,7 @@ describe("StatusBadge", () => {
   it("maps 'healthy' to success variant (green)", () => {
     const { container } = render(<StatusBadge status="healthy" />);
     const badge = container.querySelector("span")!;
-    expect(badge.className).toContain("text-green-400");
+    expect(badge.className).toContain("text-emerald-400");
   });
 
   it("maps 'critical' to error variant (red)", () => {
@@ -22,7 +22,7 @@ describe("StatusBadge", () => {
   it("maps 'in_progress' to warning variant (yellow)", () => {
     const { container } = render(<StatusBadge status="in_progress" />);
     const badge = container.querySelector("span")!;
-    expect(badge.className).toContain("text-yellow-400");
+    expect(badge.className).toContain("text-amber-400");
   });
 
   it("formats underscore statuses to spaces", () => {
