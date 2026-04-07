@@ -23,6 +23,10 @@ jobs:
     name: Deploy to Railway
     runs-on: ubuntu-latest
     environment: production
+    # Skip deploy if RAILWAY_TOKEN is not configured (e.g. on forks or before
+    # Railway secrets are wired up). Otherwise this job fails on every push
+    # with a confusing "Invalid RAILWAY_TOKEN" error.
+    if: ${{ vars.RAILWAY_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v6
 
