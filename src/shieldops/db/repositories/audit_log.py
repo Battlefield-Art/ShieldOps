@@ -6,11 +6,13 @@ no update or delete methods are exposed on the public interface.
 
 from __future__ import annotations
 
+import base64
+import json
 from datetime import datetime
 from typing import Any
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shieldops.db.models_audit_log import AuditLogRecord
@@ -93,3 +95,62 @@ class AuditLogRepository:
         )
         rows = list((await self._session.execute(stmt)).scalars().all())
         return rows, total
+
+    async def list_entries_cursor(
+        self,
+        org_id: str,
+        *,
+        limit: int = 50,
+        after_cursor: str | None = None,
+    ) -> tuple[list[AuditLogRecord], str | None]:
+        """Keyset cursor pagination, newest-first by ``(created_at, id)``.
+
+        Returns ``(rows, next_cursor)``. ``next_cursor`` is ``None`` when the
+        result set has been fully drained. The cursor is opaque and tied to
+        ``org_id`` so it cannot leak rows across tenants.
+        """
+        conditions = [AuditLogRecord.org_id == org_id]
+
+        if after_cursor is not None:
+            try:
+                payload = json.loads(
+                    base64.urlsafe_b64decode(after_cursor.encode("ascii")).decode("utf-8")
+                )
+                last_created = datetime.fromisoformat(payload["c"])
+                last_id = payload["i"]
+            except (ValueError, KeyError, json.JSONDecodeError) as exc:
+                raise ValueError(f"invalid cursor: {after_cursor!r}") from exc
+
+            # Strict less-than on (created_at, id) — newest-first ordering.
+            conditions.append(
+                or_(
+                    AuditLogRecord.created_at < last_created,
+                    and_(
+                        AuditLogRecord.created_at == last_created,
+                        AuditLogRecord.id < last_id,
+                    ),
+                )
+            )
+
+        stmt = (
+            select(AuditLogRecord)
+            .where(*conditions)
+            .order_by(
+                AuditLogRecord.created_at.desc(),
+                AuditLogRecord.id.desc(),
+            )
+            .limit(limit + 1)
+        )
+        rows = list((await self._session.execute(stmt)).scalars().all())
+
+        if len(rows) > limit:
+            rows = rows[:limit]
+            tail = rows[-1]
+            payload = {"c": tail.created_at.isoformat(), "i": tail.id}
+            next_cursor = base64.urlsafe_b64encode(json.dumps(payload).encode("utf-8")).decode(
+                "ascii"
+            )
+        else:
+            next_cursor = None
+
+        return rows, next_cursor

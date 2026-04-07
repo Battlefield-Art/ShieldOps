@@ -148,3 +148,53 @@ class TestAuditLogDateFilter:
         rows, total = await repo.list_entries("org-a", since=cutoff)
         assert total == 1
         assert rows[0].action == "recent"
+
+
+class TestAuditLogCursorPagination:
+    """Keyset cursor pagination — TDD #3 (Round 3)."""
+
+    @pytest.mark.asyncio
+    async def test_first_page_returns_newest_first_with_cursor(
+        self, repo: AuditLogRepository
+    ) -> None:
+        for i in range(5):
+            await repo.append(org_id="org-a", action=f"a{i}", actor="u", target="", result="ok")
+        rows, cursor = await repo.list_entries_cursor("org-a", limit=2)
+        assert len(rows) == 2
+        assert rows[0].action == "a4"
+        assert rows[1].action == "a3"
+        assert cursor is not None
+
+    @pytest.mark.asyncio
+    async def test_second_page_continues_from_cursor(self, repo: AuditLogRepository) -> None:
+        for i in range(5):
+            await repo.append(org_id="org-a", action=f"a{i}", actor="u", target="", result="ok")
+        page1, cursor1 = await repo.list_entries_cursor("org-a", limit=2)
+        page2, cursor2 = await repo.list_entries_cursor("org-a", limit=2, after_cursor=cursor1)
+        assert [r.action for r in page2] == ["a2", "a1"]
+        assert cursor2 is not None
+
+    @pytest.mark.asyncio
+    async def test_exhausted_pages_return_none_cursor(self, repo: AuditLogRepository) -> None:
+        for i in range(3):
+            await repo.append(org_id="org-a", action=f"a{i}", actor="u", target="", result="ok")
+        rows, cursor = await repo.list_entries_cursor("org-a", limit=10)
+        assert len(rows) == 3
+        assert cursor is None
+
+    @pytest.mark.asyncio
+    async def test_cursor_preserves_tenant_isolation(self, repo: AuditLogRepository) -> None:
+        for i in range(3):
+            await repo.append(org_id="org-a", action=f"a{i}", actor="u", target="", result="ok")
+            await repo.append(org_id="org-b", action=f"b{i}", actor="u", target="", result="ok")
+        rows_a, cursor_a = await repo.list_entries_cursor("org-a", limit=2)
+        rows_b, _ = await repo.list_entries_cursor("org-b", limit=2, after_cursor=cursor_a)
+        assert all(r.org_id == "org-a" for r in rows_a)
+        # Cursor from org-a must NOT leak rows from org-b's perspective
+        assert all(r.org_id == "org-b" for r in rows_b)
+        assert {r.action for r in rows_b}.issubset({"b0", "b1", "b2"})
+
+    @pytest.mark.asyncio
+    async def test_invalid_cursor_raises_value_error(self, repo: AuditLogRepository) -> None:
+        with pytest.raises(ValueError, match="cursor"):
+            await repo.list_entries_cursor("org-a", after_cursor="not-a-real-cursor")
