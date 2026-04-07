@@ -8,6 +8,9 @@ the test adapters so the contract tests can land immediately.
 from __future__ import annotations
 
 from shieldops.utils.llm_core.adapters.capturing_logger import CapturingLogger
+from shieldops.utils.llm_core.adapters.evolution_fitness import (
+    EvolutionFitnessRecorder,
+)
 from shieldops.utils.llm_core.adapters.fake_provider import (
     FakeLLMProvider,
     ScriptedLLMProvider,
@@ -29,6 +32,7 @@ from shieldops.utils.llm_core.adapters.static_context_retriever import (
 
 __all__ = [
     "CapturingLogger",
+    "EvolutionFitnessRecorder",
     "FakeLLMProvider",
     "FixedClassifier",
     "InMemoryFitnessRecorder",
