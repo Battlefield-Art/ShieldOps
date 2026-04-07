@@ -35,6 +35,19 @@ k8s_pod_actions := {
     "rollback_deployment",
 }
 
+# Read-only actions never mutate infrastructure state. Used by SOC2-CC8.1
+# (change-management) to distinguish observational queries from changes.
+read_only_actions := {
+    "get_health",
+    "query_metrics",
+    "query_logs",
+    "detect_anomalies",
+    "list_resources",
+    "describe_resource",
+    "get_configuration",
+    "fetch_audit_log",
+}
+
 # --- Rule 1: compliance_controls ---
 # Set of control IDs relevant to the current action.
 
