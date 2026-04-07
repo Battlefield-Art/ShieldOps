@@ -170,7 +170,8 @@ class ContainerSecurityToolkit:
             for pod_info in pods:
                 image = pod_info["image"]
                 # Deterministic vulnerability assignment based on image hash
-                img_hash = hashlib.md5(image.encode()).hexdigest()  # noqa: S324
+                # Not security-sensitive — deterministic seeding for sample CVE distribution.
+                img_hash = hashlib.md5(image.encode(), usedforsecurity=False).hexdigest()
                 seed = int(img_hash[:8], 16)
 
                 cve_list = list(KNOWN_CVES.items())
@@ -332,7 +333,8 @@ class ContainerSecurityToolkit:
             if violations and len(violations) == 1 and "trusted-registries-only" in violations:
                 decision = "warn"
 
-            img_hash = hashlib.md5(img.encode()).hexdigest()[:8]  # noqa: S324
+            # Not security-sensitive — short deterministic ID for admission decisions.
+            img_hash = hashlib.md5(img.encode(), usedforsecurity=False).hexdigest()[:8]
             decisions.append(
                 AdmissionDecision(
                     id=f"adm-{img_hash}",
