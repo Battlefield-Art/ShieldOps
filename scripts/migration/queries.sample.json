@@ -1,0 +1,52 @@
+[
+  {
+    "name": "auth_failures_by_user",
+    "description": "Count of authentication failures grouped by user (used in phase 1 ingestion parity).",
+    "splunk_spl": "search index=auth action=failure | stats count by user",
+    "shieldops_nl": "Show count of authentication failures grouped by user in the time window",
+    "compare": "top_values",
+    "key_field": "user",
+    "value_field": "count",
+    "tolerance_pct": 5.0
+  },
+  {
+    "name": "cloudtrail_event_count",
+    "description": "Total CloudTrail event count for the window.",
+    "splunk_spl": "search index=aws sourcetype=aws:cloudtrail | stats count",
+    "shieldops_nl": "Total count of CloudTrail events in the time window",
+    "compare": "count",
+    "key_field": "sourcetype",
+    "value_field": "count",
+    "tolerance_pct": 2.0
+  },
+  {
+    "name": "crowdstrike_detections_hourly",
+    "description": "CrowdStrike detections bucketed per hour (validates streaming connector parity).",
+    "splunk_spl": "search index=crowdstrike sourcetype=crowdstrike:detection | bucket _time span=1h | stats count by _time",
+    "shieldops_nl": "Show CrowdStrike detections grouped by hour in the time window",
+    "compare": "time_bucket",
+    "key_field": "_time",
+    "value_field": "count",
+    "tolerance_pct": 5.0
+  },
+  {
+    "name": "okta_admin_signins",
+    "description": "Successful admin sign-ins from Okta (high-value identity event).",
+    "splunk_spl": "search index=okta eventType=user.session.start outcome.result=SUCCESS actor.alternateId=*admin* | stats count by actor.alternateId",
+    "shieldops_nl": "Show successful Okta admin sign-ins grouped by actor",
+    "compare": "top_values",
+    "key_field": "actor.alternateId",
+    "value_field": "count",
+    "tolerance_pct": 5.0
+  },
+  {
+    "name": "k8s_audit_privileged_exec",
+    "description": "Privileged container exec calls from Kubernetes audit logs.",
+    "splunk_spl": "search index=k8s sourcetype=kube:apiserver:audit verb=create objectRef.subresource=exec | stats count by user.username",
+    "shieldops_nl": "Show Kubernetes privileged exec actions grouped by user",
+    "compare": "top_values",
+    "key_field": "user.username",
+    "value_field": "count",
+    "tolerance_pct": 5.0
+  }
+]
