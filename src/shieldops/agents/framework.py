@@ -124,6 +124,7 @@ def define_agent(
     nodes: list[str | tuple[str, Callable[..., Any]]],
     edges: list[Edge] | None = None,
     license_enforced: bool = True,
+    evolution_tracked: bool = True,
 ) -> type:
     """Define a complete LangGraph agent from its essential parts.
 
@@ -144,6 +145,12 @@ def define_agent(
             114 ``define_agent``-built runners. Set to False to opt out
             during migration; a warning is logged if no LicenseManager
             is installed (enforcement becomes a no-op in that case).
+        evolution_tracked: If True (the default), the generated runner's
+            ``run()`` method is wrapped with the RFC #246 ``tracked_run``
+            decorator so every invocation feeds a ``RunOutcome`` into the
+            installed ``EvolutionStore``. Set to False to opt out. If no
+            store is installed, the wrapper logs once and passes through
+            (same compatibility guarantee as the license hook).
 
     Returns:
         A Runner class with __init__, run, get_result, list_results.
@@ -345,5 +352,17 @@ def define_agent(
         from shieldops.licensing.enforce import enforced as _enforced
 
         AgentRunner.run = _enforced(name)(AgentRunner.run)  # type: ignore[method-assign]
+
+    # ------------------------------------------------------------------
+    # RFC #246 PR-2: auto-apply evolution tracking so every run feeds a
+    # RunOutcome into the installed EvolutionStore. The decorator is
+    # idempotent (via the _shieldops_evolution_tracked marker) and
+    # tolerates a missing store (logs once, passes through) — same
+    # compatibility guarantee as the @enforced wrap above.
+    # ------------------------------------------------------------------
+    if evolution_tracked:
+        from shieldops.utils.evolution.framework_integration import tracked_run
+
+        AgentRunner.run = tracked_run(name)(AgentRunner.run)  # type: ignore[method-assign]
 
     return AgentRunner
