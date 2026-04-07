@@ -1,8 +1,8 @@
 """End-to-end request lifecycle integration test (#10 Round 3).
 
 Wires the real production classes from TDD rounds 1-3 — TenantRateLimiter,
-LicenseGuard + AgentRegistryCounter, AuditLogRepository, EventBuffer — and
-exercises the full chain in a single in-process test:
+LicenseManager (RFC #244), AuditLogRepository, EventBuffer — and exercises
+the full chain in a single in-process test:
 
     request → rate-limit → license-gate → agent-run → audit-log → ws-replay
 
@@ -24,12 +24,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from shieldops.api.middleware.tenant_rate_limiter import TenantRateLimiter
 from shieldops.api.ws.event_buffer import EventBuffer
 from shieldops.db.repositories.audit_log import AuditLogRepository
-from shieldops.licensing.guard import LicenseExceededError, LicenseGuard
+from shieldops.licensing.manager import LicenseLimitError, LicenseManager
 from shieldops.licensing.models import License, LicenseTier
-from shieldops.licensing.registry_counter import (
-    InMemoryAgentRegistry,
-    install_registry_counter,
-)
 
 
 class _TestBase(DeclarativeBase):
@@ -84,8 +80,7 @@ async def test_full_request_lifecycle_e2e(session: AsyncSession) -> None:
         tier_for_org=lambda _org: "starter",
     )
 
-    # --- Layer 2: license guard wired to a real registry --------------------
-    registry = InMemoryAgentRegistry()
+    # --- Layer 2: license manager (RFC #244 — replaces guard + registry) ----
     license = License(
         org_id=org_id,
         tier=LicenseTier.STARTER,
@@ -94,8 +89,11 @@ async def test_full_request_lifecycle_e2e(session: AsyncSession) -> None:
         expires_at=datetime.now(UTC) + timedelta(days=30),
         signature="test-sig",
     )
-    guard = LicenseGuard(license=license)
-    install_registry_counter(guard=guard, registry=registry)
+    license_manager = LicenseManager(license=license)
+    # Each successful admit() returns a lease that is stored so we can
+    # release it on shutdown — but the test runs synchronously, so we
+    # simply track the leases in a list and let the test scope hold them.
+    live_leases: list[object] = []
 
     # --- Layer 3: persistence + audit log ------------------------------------
     audit_repo = AuditLogRepository(session)
@@ -117,11 +115,11 @@ async def test_full_request_lifecycle_e2e(session: AsyncSession) -> None:
             rate_limited += 1
             continue
 
-        # 2. License gate — try to start a new agent
+        # 2. License gate — try to admit a new agent (holds a lease)
         agent_name = f"agent-{i}"
         try:
-            guard.check_can_start(agent_name)
-        except LicenseExceededError:
+            lease = license_manager.admit(agent_name)
+        except LicenseLimitError:
             license_blocked += 1
             await audit_repo.append(
                 org_id=org_id,
@@ -133,8 +131,9 @@ async def test_full_request_lifecycle_e2e(session: AsyncSession) -> None:
             event_buffer.append(org_id, {"type": "agent_blocked", "agent": agent_name})
             continue
 
-        # 3. Mark started in registry — feeds back into the counter callback
-        registry.set_status(agent_name, "started")
+        # 3. Hold the lease for the duration of the test — AgentLease
+        # decrements on __exit__, so keeping it live keeps the slot held.
+        live_leases.append(lease)
 
         # 4. Audit + event for the successful start
         await audit_repo.append(
@@ -152,7 +151,7 @@ async def test_full_request_lifecycle_e2e(session: AsyncSession) -> None:
     assert rate_limited == 1
 
     # 5 requests passed rate-limit. License limit = 2 → first 2 succeed,
-    # remaining 3 hit the LicenseExceededError branch.
+    # remaining 3 hit the LicenseLimitError branch.
     assert len(successful_runs) == 2
     assert license_blocked == 3
 
@@ -184,6 +183,5 @@ async def test_full_request_lifecycle_e2e(session: AsyncSession) -> None:
     tail = event_buffer.replay_since(org_id, since_id=first_id)
     assert len(tail) == 4
 
-    # And the registry counter (which the LicenseGuard called) saw both
-    # started agents.
-    assert guard.current_agent_count() == 2
+    # And the LicenseManager holds both started agents via live leases.
+    assert license_manager.running_count == 2
