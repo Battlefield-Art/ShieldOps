@@ -26,7 +26,9 @@ from shieldops.utils.evolution_enums import (
     MutationType,
     PropagationScope,
 )
-from shieldops.utils.evolution_service import EvolutionService
+from shieldops.utils.fitness_tracker import get_fitness_tracker
+from shieldops.utils.learning_bus import get_learning_bus
+from shieldops.utils.prompt_evolution import get_prompt_store
 
 logger = structlog.get_logger()
 
@@ -35,10 +37,11 @@ class EvolutionToolkit:
     """Business logic for the evolution engine agent."""
 
     def __init__(self) -> None:
-        self._evo = EvolutionService()
-        self._fitness = self._evo.fitness
-        self._prompts = self._evo.prompts
-        self._bus = self._evo.learning
+        # RFC #246 PR-3: collaborators are read directly. The
+        # EvolutionService lazy facade was deleted as dead indirection.
+        self._fitness = get_fitness_tracker()
+        self._prompts = get_prompt_store()
+        self._bus = get_learning_bus()
 
     # ----- Fitness Measurement -----
 
