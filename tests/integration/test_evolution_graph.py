@@ -12,7 +12,6 @@ from shieldops.agents.evolution.models import (
     EvolutionStrategy,
 )
 from shieldops.agents.evolution.tools import EvolutionToolkit
-from shieldops.utils.deep_agent import DeepAgentMixin, ExecutionOutcome
 from shieldops.utils.fitness_tracker import (
     EvolutionReadiness,
     FitnessDimension,
@@ -429,91 +428,6 @@ class TestLearningBus:
         self.bus.subscribe("agent_2", "soc_analyst")
         assert self.bus.unsubscribe("agent_2")
         assert not self.bus.unsubscribe("nonexistent")
-
-
-# =====================================================================
-# Deep Agent Mixin Tests
-# =====================================================================
-
-
-class MockRunner(DeepAgentMixin):
-    agent_type = "test_agent"
-    enable_memory_enrichment = False  # Disable for unit tests
-
-
-class TestDeepAgentMixin:
-    """Tests for the deep agent lifecycle mixin."""
-
-    def test_initialization(self) -> None:
-        runner = MockRunner(agent_id="test_01")
-        assert runner.agent_id == "test_01"
-        assert runner.agent_type == "test_agent"
-
-    def test_auto_generated_id(self) -> None:
-        runner = MockRunner()
-        assert runner.agent_id.startswith("test_agent_")
-
-    @pytest.mark.asyncio
-    async def test_pre_execute(self) -> None:
-        runner = MockRunner(agent_id="test_01")
-        ctx = await runner.pre_execute({"target": "192.168.1.1"})
-        assert ctx.agent_id == "test_01"
-        assert ctx.started_at > 0
-
-    @pytest.mark.asyncio
-    async def test_post_execute_records_fitness(self) -> None:
-        runner = MockRunner(agent_id="test_fitness")
-        ctx = await runner.pre_execute({})
-        outcome = ExecutionOutcome(
-            success=True,
-            accuracy_signal=0.85,
-            duration_ms=2000,
-            cost_tokens=500,
-        )
-        result = await runner.post_execute(ctx, outcome)
-        assert "fitness" in result
-        assert result["fitness"] >= 0
-
-    @pytest.mark.asyncio
-    async def test_post_execute_publishes_learnings(self) -> None:
-        runner = MockRunner(agent_id="test_publish")
-        ctx = await runner.pre_execute({})
-        outcome = ExecutionOutcome(
-            success=True,
-            accuracy_signal=0.9,
-            learnings=[
-                {
-                    "type": "false_positive_discovered",
-                    "title": "Test FP pattern",
-                    "description": "Benign activity flagged",
-                    "confidence": 0.85,
-                    "scope": "same_type",
-                }
-            ],
-        )
-        result = await runner.post_execute(ctx, outcome)
-        assert result.get("learnings_published", 0) == 1
-
-    @pytest.mark.asyncio
-    async def test_evolution_status(self) -> None:
-        runner = MockRunner(agent_id="test_status")
-        status = runner.get_evolution_status()
-        assert status["agent_type"] == "test_agent"
-        assert status["generation"] == 0
-
-    @pytest.mark.asyncio
-    async def test_fitness_tracking_over_executions(self) -> None:
-        runner = MockRunner(agent_id="test_multi")
-        for i in range(5):
-            ctx = await runner.pre_execute({})
-            outcome = ExecutionOutcome(
-                success=True,
-                accuracy_signal=0.7 + i * 0.05,
-            )
-            await runner.post_execute(ctx, outcome)
-
-        fitness = runner.get_fitness()
-        assert fitness["composite_score"] > 0
 
 
 # =====================================================================

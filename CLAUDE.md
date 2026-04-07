@@ -119,7 +119,7 @@ The bulk of the codebase (~1,780+ modules) are analytics/intelligence engines ac
 
 ### Self-Evolution Framework
 Agents can self-improve via a closed-loop evolution system in `src/shieldops/utils/`:
-- **`deep_agent.py`** — `DeepAgentMixin` gives any agent self-evolving capabilities (pre/post-execute hooks, fitness tracking, prompt mutation)
+- **`evolution/store.py`** — `EvolutionStore` is the deep module that orchestrates fitness, learning, and prompt subsystems via `record_run(agent_id, RunOutcome)`. Auto-applied to every `@define_agent` runner; replaces the deleted `DeepAgentMixin` (RFC #246).
 - **`fitness_tracker.py`** — Multi-dimensional fitness scoring (accuracy 0.30, safety 0.30, speed 0.15, learning_rate 0.15, cost 0.10) with rolling windows and trend detection
 - **`prompt_evolution.py`** — Prompt versioning, A/B testing (champion vs challenger), automatic promotion/demotion, lineage tracking
 - **`learning_bus.py`** — Cross-agent pub/sub learning propagation with 10 event types and 4 scopes (SELF_ONLY → FLEET_WIDE)

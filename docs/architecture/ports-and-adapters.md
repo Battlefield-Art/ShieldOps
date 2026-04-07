@@ -23,10 +23,10 @@ fitness tracker). The pattern has three predictable failure modes:
 2. **Multi-tenant is structurally impossible** because the "global"
    is per-process.
 3. **"Built but unwired" subsystems accumulate** — `tenant_rate_limiter.py`,
-   `DeepAgentMixin`, `llm_router.py`, both middleware stack builders.
-   Each was built in isolation, none was wired into the production path,
-   and the test suite never caught it because the tests ran the
-   "collaborator" in isolation.
+   `DeepAgentMixin` (deleted in RFC #246 PR-3), `llm_router.py`, both
+   middleware stack builders. Each was built in isolation, none was wired
+   into the production path, and the test suite never caught it because
+   the tests ran the "collaborator" in isolation.
 
 The ports & adapters pattern fixes all three by making the cross-boundary
 dependencies explicit at the type level and cheap to swap at construction.
