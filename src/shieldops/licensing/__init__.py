@@ -6,11 +6,15 @@ enforcement, grace-period handling, and optional anonymous usage telemetry.
 
 from __future__ import annotations
 
+from shieldops.licensing.manager import (
+    LicenseExpiredError,
+    LicenseLimitError,
+    LicenseManager,
+)
 from shieldops.licensing.models import License, LicenseStatus, LicenseTier
 from shieldops.licensing.validator import (
     GRACE_PERIOD_DAYS,
     LicenseError,
-    LicenseExpiredError,
     LicenseSignatureError,
     LicenseValidator,
 )
@@ -20,6 +24,8 @@ __all__ = [
     "License",
     "LicenseError",
     "LicenseExpiredError",
+    "LicenseLimitError",
+    "LicenseManager",
     "LicenseSignatureError",
     "LicenseStatus",
     "LicenseTier",

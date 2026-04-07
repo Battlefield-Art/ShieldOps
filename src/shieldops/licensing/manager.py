@@ -24,17 +24,22 @@ import structlog
 
 from shieldops.licensing.models import License
 
+# RFC #244 acceptance: exactly one LicenseError base class. We import
+# validator's ``LicenseError`` (the published one in ``__init__.py``) so
+# both the JWT-validation path and the enforcement path share a single
+# exception hierarchy. See test_licensing.py + test_license_manager.py
+# — they now catch the same class.
+from shieldops.licensing.validator import LicenseError
+
 logger = structlog.get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
 # Errors — collapse the guard.LicenseExpiredError / validator.LicenseExpiredError
-# duplication into one class. RFC #244 PR-4 deletes guard.LicenseExpiredError.
+# duplication into one class hierarchy rooted at validator.LicenseError.
+# RFC #244 PR-3 deleted guard.LicenseExpiredError; this commit deletes
+# validator.LicenseExpiredError so only one class remains.
 # ---------------------------------------------------------------------------
-
-
-class LicenseError(Exception):
-    """Base class for license enforcement failures."""
 
 
 class LicenseLimitError(LicenseError):

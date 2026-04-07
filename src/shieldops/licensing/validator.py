@@ -21,15 +21,17 @@ EXPIRING_SOON_DAYS = 30
 
 
 class LicenseError(Exception):
-    """Base licensing error."""
+    """Base licensing error.
+
+    Single root for the licensing exception hierarchy — see RFC #244.
+    ``LicenseSignatureError`` (JWT tamper) and
+    ``LicenseLimitError`` / ``LicenseExpiredError`` (enforcement, in
+    ``manager.py``) both subclass this single base.
+    """
 
 
 class LicenseSignatureError(LicenseError):
     """Raised when the JWT signature is invalid or tampered."""
-
-
-class LicenseExpiredError(LicenseError):
-    """Raised when the license has expired beyond the grace period."""
 
 
 class LicenseValidator:
