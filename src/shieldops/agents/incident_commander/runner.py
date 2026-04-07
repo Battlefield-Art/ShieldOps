@@ -17,6 +17,7 @@ from shieldops.agents.incident_commander.models import (
 )
 from shieldops.agents.incident_commander.nodes import set_toolkit
 from shieldops.agents.incident_commander.tools import IncidentCommanderToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -63,6 +64,7 @@ class IncidentCommanderRunner:
         # In-memory store of completed runs (fallback when no DB)
         self._results: dict[str, IncidentCommanderState] = {}
 
+    @enforced("incident_commander")
     async def run(
         self,
         incident_context: IncidentContext,

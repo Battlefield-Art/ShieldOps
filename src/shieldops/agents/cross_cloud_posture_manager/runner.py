@@ -19,6 +19,7 @@ from shieldops.agents.cross_cloud_posture_manager.nodes import (
 from shieldops.agents.cross_cloud_posture_manager.tools import (
     CrossCloudPostureManagerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class CrossCloudPostureManagerRunner:
         self._results: dict[str, CrossCloudPostureManagerState] = {}
         logger.info("ccpm_runner.initialized")
 
+    @enforced("cross_cloud_posture_manager")
     async def run(
         self,
         request_id: str,

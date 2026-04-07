@@ -14,6 +14,7 @@ from shieldops.agents.telemetry_optimizer.models import TelemetryOptimizerState
 from shieldops.agents.telemetry_optimizer.nodes import set_toolkit
 from shieldops.agents.telemetry_optimizer.tools import TelemetryOptimizerToolkit
 from shieldops.connectors.base import ConnectorRouter
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -51,6 +52,7 @@ class TelemetryOptimizerRunner:
         # In-memory store of completed runs
         self._runs: dict[str, TelemetryOptimizerState] = {}
 
+    @enforced("telemetry_optimizer")
     async def run(
         self,
         namespace: str,

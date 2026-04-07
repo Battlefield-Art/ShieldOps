@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .models import DeployStage, RolloutStrategy
 from .tools import OTelDeployerToolkit
@@ -30,6 +32,7 @@ class OTelDeployerRunner:
         self._app = self._graph.compile()
         logger.info("otel_deployer_runner.init")
 
+    @enforced("otel_deployer")
     async def run(
         self,
         namespace: str = "default",

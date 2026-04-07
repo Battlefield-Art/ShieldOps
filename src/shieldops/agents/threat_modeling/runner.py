@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import ThreatModelingToolkit
 
@@ -32,6 +34,7 @@ class ThreatModelingRunner:
         self._app = self._graph.compile()
         logger.info("threat_modeling_runner.init")
 
+    @enforced("threat_modeling")
     async def run(
         self,
         request_id: str = "",

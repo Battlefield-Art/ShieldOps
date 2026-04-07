@@ -17,6 +17,7 @@ from shieldops.agents.nl_query.models import (
     QueryType,
 )
 from shieldops.agents.nl_query.tools import NLQueryToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -32,6 +33,7 @@ class NLQueryRunner:
         self._history: dict[str, NLQueryResponse] = {}
         logger.info("nl_query_runner.initialized")
 
+    @enforced("nl_query")
     async def run(
         self,
         request: NLQueryRequest,

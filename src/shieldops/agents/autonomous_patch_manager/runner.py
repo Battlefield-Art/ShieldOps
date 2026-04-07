@@ -17,6 +17,7 @@ from shieldops.agents.autonomous_patch_manager.nodes import set_toolkit
 from shieldops.agents.autonomous_patch_manager.tools import (
     AutonomousPatchManagerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -41,6 +42,7 @@ class AutonomousPatchManagerRunner:
         self._results: dict[str, AutonomousPatchManagerState] = {}
         logger.info("apm_runner.initialized")
 
+    @enforced("autonomous_patch_manager")
     async def run(
         self,
         request_id: str | None = None,

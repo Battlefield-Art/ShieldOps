@@ -19,6 +19,7 @@ from shieldops.agents.security_chaos_orchestrator.nodes import (
 from shieldops.agents.security_chaos_orchestrator.tools import (
     SecurityChaosOrchestratorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -44,6 +45,7 @@ class SecurityChaosOrchestratorRunner:
         self._results: dict[str, SecurityChaosOrchestratorState] = {}
         logger.info("sco_runner.initialized")
 
+    @enforced("security_chaos_orchestrator")
     async def run(
         self,
         request_id: str,

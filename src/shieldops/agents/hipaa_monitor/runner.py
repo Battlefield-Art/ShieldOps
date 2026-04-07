@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_hipaa_monitor_graph
 from .tools import HIPAAMonitorToolkit
 
@@ -30,6 +32,7 @@ class HIPAAMonitorRunner:
         self._app = self._graph.compile()
         logger.info("hipaa_monitor_runner.init")
 
+    @enforced("hipaa_monitor")
     async def run(
         self,
         tenant_id: str = "",

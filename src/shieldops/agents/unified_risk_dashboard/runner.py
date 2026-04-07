@@ -24,6 +24,7 @@ from shieldops.agents.unified_risk_dashboard.nodes import (
 from shieldops.agents.unified_risk_dashboard.tools import (
     UnifiedRiskDashboardToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class UnifiedRiskDashboardRunner:
         # In-memory store of completed runs
         self._results: dict[str, UnifiedRiskDashboardState] = {}
 
+    @enforced("unified_risk_dashboard")
     async def run(
         self,
         tenant_id: str = "",

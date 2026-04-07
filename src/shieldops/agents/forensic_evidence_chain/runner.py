@@ -19,6 +19,7 @@ from shieldops.agents.forensic_evidence_chain.nodes import (
 from shieldops.agents.forensic_evidence_chain.tools import (
     ForensicEvidenceChainToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class ForensicEvidenceChainRunner:
         self._results: dict[str, ForensicEvidenceChainState] = {}
         logger.info("fec_runner.initialized")
 
+    @enforced("forensic_evidence_chain")
     async def run(
         self,
         request_id: str,

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import EndpointBehaviorMonitorToolkit
 
@@ -30,6 +32,7 @@ class EndpointBehaviorMonitorRunner:
         self._app = self._graph.compile()
         logger.info("endpoint_behavior_monitor_runner.init")
 
+    @enforced("endpoint_behavior_monitor")
     async def run(
         self,
         tenant_id: str,

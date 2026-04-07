@@ -19,6 +19,7 @@ from shieldops.agents.compliance_evidence_generator.nodes import (
 from shieldops.agents.compliance_evidence_generator.tools import (
     ComplianceEvidenceGeneratorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class ComplianceEvidenceGeneratorRunner:
         self._results: dict[str, ComplianceEvidenceGeneratorState] = {}
         logger.info("ceg_runner.initialized")
 
+    @enforced("compliance_evidence_generator")
     async def run(
         self,
         request_id: str,

@@ -19,6 +19,7 @@ from shieldops.agents.security_policy_optimizer.nodes import (
 from shieldops.agents.security_policy_optimizer.tools import (
     SecurityPolicyOptimizerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class SecurityPolicyOptimizerRunner:
         self._results: dict[str, SecurityPolicyOptimizerState] = {}
         logger.info("spo_runner.initialized")
 
+    @enforced("security_policy_optimizer")
     async def run(
         self,
         request_id: str,

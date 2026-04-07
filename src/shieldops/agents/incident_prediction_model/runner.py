@@ -19,6 +19,7 @@ from shieldops.agents.incident_prediction_model.nodes import (
 from shieldops.agents.incident_prediction_model.tools import (
     IncidentPredictionModelToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class IncidentPredictionModelRunner:
         self._results: dict[str, IncidentPredictionModelState] = {}
         logger.info("ipm_runner.initialized")
 
+    @enforced("incident_prediction_model")
     async def run(
         self,
         request_id: str,

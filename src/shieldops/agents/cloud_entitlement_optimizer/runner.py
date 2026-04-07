@@ -19,6 +19,7 @@ from shieldops.agents.cloud_entitlement_optimizer.nodes import (
 from shieldops.agents.cloud_entitlement_optimizer.tools import (
     CloudEntitlementOptimizerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class CloudEntitlementOptimizerRunner:
         self._results: dict[str, CloudEntitlementOptimizerState] = {}
         logger.info("ceo_runner.initialized")
 
+    @enforced("cloud_entitlement_optimizer")
     async def run(
         self,
         request_id: str,

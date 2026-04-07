@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import MobileDeviceManagerToolkit
 
@@ -30,6 +32,7 @@ class MobileDeviceManagerRunner:
         self._app = self._graph.compile()
         logger.info("mobile_device_manager_runner.init")
 
+    @enforced("mobile_device_manager")
     async def run(
         self,
         tenant_id: str,

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import PatchComplianceCheckerToolkit
 
@@ -30,6 +32,7 @@ class PatchComplianceCheckerRunner:
         self._app = self._graph.compile()
         logger.info("patch_compliance_checker_runner.init")
 
+    @enforced("patch_compliance_checker")
     async def run(
         self,
         tenant_id: str,

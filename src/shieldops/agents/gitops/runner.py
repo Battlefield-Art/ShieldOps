@@ -15,6 +15,7 @@ from shieldops.agents.gitops.models import GitOpsState
 from shieldops.agents.gitops.nodes import set_toolkit
 from shieldops.agents.gitops.tools import GitOpsToolkit
 from shieldops.connectors.base import ConnectorRouter
+from shieldops.licensing.enforce import enforced
 
 if __import__("typing").TYPE_CHECKING:
     from shieldops.db.repository import Repository
@@ -55,6 +56,7 @@ class GitOpsRunner:
         self._reconciliations: dict[str, GitOpsState] = {}
         self._repository = repository
 
+    @enforced("gitops")
     async def run(
         self,
         repo_url: str,

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import AgentGovernanceToolkit
 
@@ -32,6 +34,7 @@ class AgentGovernanceRunner:
         self._app = self._graph.compile()
         logger.info("agent_governance_runner.init")
 
+    @enforced("agent_governance")
     async def run(
         self,
         tenant_id: str,

@@ -19,6 +19,7 @@ from shieldops.agents.fleet_coordination_engine.nodes import (
 from shieldops.agents.fleet_coordination_engine.tools import (
     FleetCoordinationEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -51,6 +52,7 @@ class FleetCoordinationEngineRunner:
         self._results: dict[str, FleetCoordinationEngineState] = {}
         logger.info("fce_runner.initialized")
 
+    @enforced("fleet_coordination_engine")
     async def run(
         self,
         tenant_id: str,

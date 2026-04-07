@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_compliance_workflow_graph
 from .tools import ComplianceWorkflowToolkit
 
@@ -33,6 +35,7 @@ class ComplianceWorkflowRunner:
         self._app = self._graph.compile()
         logger.info("compliance_workflow_runner.init")
 
+    @enforced("compliance_workflow")
     async def run(
         self,
         tenant_id: str = "default",

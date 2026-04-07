@@ -24,6 +24,7 @@ from shieldops.agents.autonomous_ops_controller.nodes import (
 from shieldops.agents.autonomous_ops_controller.tools import (
     AutonomousOpsControllerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class AutonomousOpsControllerRunner:
         # In-memory store of completed runs
         self._results: dict[str, AutonomousOpsControllerState] = {}
 
+    @enforced("autonomous_ops_controller")
     async def run(
         self,
         tenant_id: str = "",

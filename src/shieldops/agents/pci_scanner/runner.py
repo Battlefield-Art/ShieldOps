@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_pci_scanner_graph
 from .tools import PCIScannerToolkit
 
@@ -30,6 +32,7 @@ class PCIScannerRunner:
         self._app = self._graph.compile()
         logger.info("pci_scanner_runner.init")
 
+    @enforced("pci_scanner")
     async def run(
         self,
         tenant_id: str = "",

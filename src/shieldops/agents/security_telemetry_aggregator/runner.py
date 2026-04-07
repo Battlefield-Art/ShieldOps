@@ -19,6 +19,7 @@ from shieldops.agents.security_telemetry_aggregator.nodes import (
 from shieldops.agents.security_telemetry_aggregator.tools import (
     SecurityTelemetryAggregatorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class SecurityTelemetryAggregatorRunner:
         self._results: dict[str, SecurityTelemetryAggregatorState] = {}
         logger.info("sta_runner.initialized")
 
+    @enforced("security_telemetry_aggregator")
     async def run(
         self,
         request_id: str,

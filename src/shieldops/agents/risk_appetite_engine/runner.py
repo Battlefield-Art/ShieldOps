@@ -19,6 +19,7 @@ from shieldops.agents.risk_appetite_engine.nodes import (
 from shieldops.agents.risk_appetite_engine.tools import (
     RiskAppetiteEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class RiskAppetiteEngineRunner:
         self._results: dict[str, RiskAppetiteEngineState] = {}
         logger.info("rae_runner.initialized")
 
+    @enforced("risk_appetite_engine")
     async def run(
         self,
         request_id: str,

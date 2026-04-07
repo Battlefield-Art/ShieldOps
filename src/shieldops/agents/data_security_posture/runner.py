@@ -19,6 +19,7 @@ from shieldops.agents.data_security_posture.nodes import (
 from shieldops.agents.data_security_posture.tools import (
     DataSecurityPostureToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -51,6 +52,7 @@ class DataSecurityPostureRunner:
         self._results: dict[str, DataSecurityPostureState] = {}
         logger.info("dsp_runner.initialized")
 
+    @enforced("data_security_posture")
     async def run(
         self,
         tenant_id: str,

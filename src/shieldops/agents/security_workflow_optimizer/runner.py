@@ -19,6 +19,7 @@ from shieldops.agents.security_workflow_optimizer.nodes import (
 from shieldops.agents.security_workflow_optimizer.tools import (
     SecurityWorkflowOptimizerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class SecurityWorkflowOptimizerRunner:
         self._results: dict[str, SecurityWorkflowOptimizerState] = {}
         logger.info("swo_runner.initialized")
 
+    @enforced("security_workflow_optimizer")
     async def run(
         self,
         request_id: str,

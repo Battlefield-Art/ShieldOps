@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityAwarenessEngineToolkit
 
@@ -32,6 +34,7 @@ class SecurityAwarenessEngineRunner:
         self._app = self._graph.compile()
         logger.info("security_awareness_engine_runner.init")
 
+    @enforced("security_awareness_engine")
     async def run(
         self,
         tenant_id: str,

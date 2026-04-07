@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import USBDeviceControllerToolkit
 
@@ -30,6 +32,7 @@ class USBDeviceControllerRunner:
         self._app = self._graph.compile()
         logger.info("usb_device_controller_runner.init")
 
+    @enforced("usb_device_controller")
     async def run(
         self,
         tenant_id: str,

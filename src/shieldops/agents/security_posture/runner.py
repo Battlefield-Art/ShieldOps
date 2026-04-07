@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityPostureToolkit
 
@@ -34,6 +36,7 @@ class SecurityPostureRunner:
         self._app = self._graph.compile()
         logger.info("security_posture_runner.init")
 
+    @enforced("security_posture")
     async def run(
         self,
         request_id: str = "",

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import RiskScoringToolkit
 
@@ -32,6 +34,7 @@ class RiskScoringRunner:
         self._app = self._graph.compile()
         logger.info("risk_scoring_runner.init")
 
+    @enforced("risk_scoring")
     async def run(
         self,
         observations: list[dict[str, Any]] | None = None,

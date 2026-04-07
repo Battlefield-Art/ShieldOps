@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import OTelMetricsPipelineToolkit
 
@@ -29,6 +31,7 @@ class OTelMetricsPipelineRunner:
         self._app = self._graph.compile()
         logger.info("otel_metrics_pipeline_runner.init")
 
+    @enforced("otel_metrics_pipeline")
     async def run(
         self,
         namespace: str = "default",

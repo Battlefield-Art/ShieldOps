@@ -19,6 +19,7 @@ from shieldops.agents.security_knowledge_graph.nodes import (
 from shieldops.agents.security_knowledge_graph.tools import (
     SecurityKnowledgeGraphToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class SecurityKnowledgeGraphRunner:
         self._results: dict[str, SecurityKnowledgeGraphState] = {}
         logger.info("skg_runner.initialized")
 
+    @enforced("security_knowledge_graph")
     async def run(
         self,
         request_id: str,

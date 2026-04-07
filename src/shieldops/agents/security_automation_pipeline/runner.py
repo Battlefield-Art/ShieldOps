@@ -19,6 +19,7 @@ from shieldops.agents.security_automation_pipeline.nodes import (
 from shieldops.agents.security_automation_pipeline.tools import (
     SecurityAutomationPipelineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -49,6 +50,7 @@ class SecurityAutomationPipelineRunner:
         self._results: dict[str, SecurityAutomationPipelineState] = {}
         logger.info("sap_runner.initialized")
 
+    @enforced("security_automation_pipeline")
     async def run(
         self,
         request_id: str,

@@ -19,6 +19,7 @@ from shieldops.agents.incident_playbook_engine.nodes import (
 from shieldops.agents.incident_playbook_engine.tools import (
     IncidentPlaybookEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -44,6 +45,7 @@ class IncidentPlaybookEngineRunner:
         self._results: dict[str, IncidentPlaybookEngineState] = {}
         logger.info("ipe_runner.initialized")
 
+    @enforced("incident_playbook_engine")
     async def run(
         self,
         tenant_id: str,

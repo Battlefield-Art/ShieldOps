@@ -19,6 +19,7 @@ from shieldops.agents.agent_trust_broker.nodes import (
 from shieldops.agents.agent_trust_broker.tools import (
     AgentTrustBrokerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class AgentTrustBrokerRunner:
         self._results: dict[str, AgentTrustBrokerState] = {}
         logger.info("atb_runner.initialized")
 
+    @enforced("agent_trust_broker")
     async def run(
         self,
         request_id: str,

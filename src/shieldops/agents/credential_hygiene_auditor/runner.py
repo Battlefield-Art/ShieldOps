@@ -24,6 +24,7 @@ from shieldops.agents.credential_hygiene_auditor.nodes import (
 from shieldops.agents.credential_hygiene_auditor.tools import (
     CredentialHygieneAuditorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class CredentialHygieneAuditorRunner:
         # In-memory store of completed runs
         self._results: dict[str, CredentialHygieneAuditorState] = {}
 
+    @enforced("credential_hygiene_auditor")
     async def run(
         self,
         tenant_id: str = "",

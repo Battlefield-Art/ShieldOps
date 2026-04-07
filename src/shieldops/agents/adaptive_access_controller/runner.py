@@ -19,6 +19,7 @@ from shieldops.agents.adaptive_access_controller.nodes import (
 from shieldops.agents.adaptive_access_controller.tools import (
     AdaptiveAccessControllerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class AdaptiveAccessControllerRunner:
         self._results: dict[str, AdaptiveAccessControllerState] = {}
         logger.info("aac_runner.initialized")
 
+    @enforced("adaptive_access_controller")
     async def run(
         self,
         request_id: str,

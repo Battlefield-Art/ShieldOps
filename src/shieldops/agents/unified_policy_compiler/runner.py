@@ -19,6 +19,7 @@ from shieldops.agents.unified_policy_compiler.nodes import (
 from shieldops.agents.unified_policy_compiler.tools import (
     UnifiedPolicyCompilerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class UnifiedPolicyCompilerRunner:
         self._results: dict[str, UnifiedPolicyCompilerState] = {}
         logger.info("upc_runner.initialized")
 
+    @enforced("unified_policy_compiler")
     async def run(
         self,
         request_id: str,

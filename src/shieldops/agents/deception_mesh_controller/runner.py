@@ -19,6 +19,7 @@ from shieldops.agents.deception_mesh_controller.nodes import (
 from shieldops.agents.deception_mesh_controller.tools import (
     DeceptionMeshControllerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class DeceptionMeshControllerRunner:
         self._results: dict[str, DeceptionMeshControllerState] = {}
         logger.info("dmc_runner.initialized")
 
+    @enforced("deception_mesh_controller")
     async def run(
         self,
         request_id: str,

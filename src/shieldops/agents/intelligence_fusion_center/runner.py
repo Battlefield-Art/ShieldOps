@@ -24,6 +24,7 @@ from shieldops.agents.intelligence_fusion_center.nodes import (
 from shieldops.agents.intelligence_fusion_center.tools import (
     IntelligenceFusionCenterToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -69,6 +70,7 @@ class IntelligenceFusionCenterRunner:
         # In-memory store of completed runs
         self._results: dict[str, IntelligenceFusionCenterState] = {}
 
+    @enforced("intelligence_fusion_center")
     async def run(
         self,
         tenant_id: str = "",

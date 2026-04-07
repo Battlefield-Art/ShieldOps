@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .models import CollectorAction
 from .tools import OTelCollectorManagerToolkit
@@ -30,6 +32,7 @@ class OTelCollectorManagerRunner:
         self._app = self._graph.compile()
         logger.info("otel_collector_manager_runner.init")
 
+    @enforced("otel_collector_manager")
     async def run(
         self,
         namespace: str = "default",

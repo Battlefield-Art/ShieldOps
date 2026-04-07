@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import DetectionEngineeringToolkit
 
@@ -32,6 +34,7 @@ class DetectionEngineeringRunner:
         self._app = self._graph.compile()
         logger.info("detection_engineering_runner.init")
 
+    @enforced("detection_engineering")
     async def run(
         self,
         request_id: str = "",

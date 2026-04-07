@@ -24,6 +24,7 @@ from shieldops.agents.threat_surface_analyzer.nodes import (
 from shieldops.agents.threat_surface_analyzer.tools import (
     ThreatSurfaceAnalyzerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class ThreatSurfaceAnalyzerRunner:
         # In-memory store of completed runs
         self._results: dict[str, ThreatSurfaceAnalyzerState] = {}
 
+    @enforced("threat_surface_analyzer")
     async def run(
         self,
         tenant_id: str = "",

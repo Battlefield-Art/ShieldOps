@@ -24,6 +24,7 @@ from shieldops.agents.supply_chain_risk_engine.nodes import (
 from shieldops.agents.supply_chain_risk_engine.tools import (
     SupplyChainRiskEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class SupplyChainRiskEngineRunner:
         # In-memory store of completed runs
         self._results: dict[str, SupplyChainRiskEngineState] = {}
 
+    @enforced("supply_chain_risk_engine")
     async def run(
         self,
         tenant_id: str = "",

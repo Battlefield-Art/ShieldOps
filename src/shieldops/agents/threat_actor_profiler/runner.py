@@ -19,6 +19,7 @@ from shieldops.agents.threat_actor_profiler.nodes import (
 from shieldops.agents.threat_actor_profiler.tools import (
     ThreatActorProfilerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -44,6 +45,7 @@ class ThreatActorProfilerRunner:
         self._results: dict[str, ThreatActorProfilerState] = {}
         logger.info("tap_runner.initialized")
 
+    @enforced("threat_actor_profiler")
     async def run(
         self,
         request_id: str,

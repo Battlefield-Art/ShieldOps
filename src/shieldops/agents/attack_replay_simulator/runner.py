@@ -24,6 +24,7 @@ from shieldops.agents.attack_replay_simulator.nodes import (
 from shieldops.agents.attack_replay_simulator.tools import (
     AttackReplaySimulatorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class AttackReplaySimulatorRunner:
         # In-memory store of completed runs
         self._results: dict[str, AttackReplaySimulatorState] = {}
 
+    @enforced("attack_replay_simulator")
     async def run(
         self,
         tenant_id: str = "",

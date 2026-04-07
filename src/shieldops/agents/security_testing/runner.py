@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityTestingToolkit
 
@@ -32,6 +34,7 @@ class SecurityTestingRunner:
         self._app = self._graph.compile()
         logger.info("security_testing_runner.init")
 
+    @enforced("security_testing")
     async def run(
         self,
         request_id: str = "",

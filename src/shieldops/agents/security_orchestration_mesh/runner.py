@@ -19,6 +19,7 @@ from shieldops.agents.security_orchestration_mesh.nodes import (
 from shieldops.agents.security_orchestration_mesh.tools import (
     SecurityOrchestrationMeshToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class SecurityOrchestrationMeshRunner:
         self._results: dict[str, SecurityOrchestrationMeshState] = {}
         logger.info("som_runner.initialized")
 
+    @enforced("security_orchestration_mesh")
     async def run(
         self,
         request_id: str,

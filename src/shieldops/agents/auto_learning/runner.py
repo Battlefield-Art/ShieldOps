@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import AutoLearningToolkit
 
@@ -32,6 +34,7 @@ class AutoLearningRunner:
         self._app = self._graph.compile()
         logger.info("auto_learning_runner.init")
 
+    @enforced("auto_learning")
     async def run(
         self,
         max_iterations: int = 10,

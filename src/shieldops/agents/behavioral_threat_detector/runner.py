@@ -24,6 +24,7 @@ from shieldops.agents.behavioral_threat_detector.nodes import (
 from shieldops.agents.behavioral_threat_detector.tools import (
     BehavioralThreatDetectorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class BehavioralThreatDetectorRunner:
         # In-memory store of completed runs
         self._results: dict[str, BehavioralThreatDetectorState] = {}
 
+    @enforced("behavioral_threat_detector")
     async def run(
         self,
         tenant_id: str = "",

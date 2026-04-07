@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SOARWorkflowToolkit
 
@@ -34,6 +36,7 @@ class SOARWorkflowRunner:
         self._app = self._graph.compile()
         logger.info("soar_workflow_runner.init")
 
+    @enforced("soar_workflow")
     async def run(
         self,
         request_id: str = "",

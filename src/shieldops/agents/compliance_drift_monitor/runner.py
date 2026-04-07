@@ -19,6 +19,7 @@ from shieldops.agents.compliance_drift_monitor.nodes import (
 from shieldops.agents.compliance_drift_monitor.tools import (
     ComplianceDriftMonitorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class ComplianceDriftMonitorRunner:
         self._results: dict[str, ComplianceDriftMonitorState] = {}
         logger.info("cdm_runner.initialized")
 
+    @enforced("compliance_drift_monitor")
     async def run(
         self,
         request_id: str,

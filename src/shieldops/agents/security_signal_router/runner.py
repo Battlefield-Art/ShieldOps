@@ -19,6 +19,7 @@ from shieldops.agents.security_signal_router.nodes import (
 from shieldops.agents.security_signal_router.tools import (
     SecuritySignalRouterToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class SecuritySignalRouterRunner:
         self._results: dict[str, SecuritySignalRouterState] = {}
         logger.info("ssr_runner.initialized")
 
+    @enforced("security_signal_router")
     async def run(
         self,
         request_id: str,

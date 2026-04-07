@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .models import ThreatContext
 from .tools import AdaptiveSecurityToolkit
@@ -33,6 +35,7 @@ class AdaptiveSecurityRunner:
         self._app = self._graph.compile()
         logger.info("adaptive_security_runner.init")
 
+    @enforced("adaptive_security")
     async def run(
         self,
         threat_context: ThreatContext | str = ThreatContext.NORMAL,

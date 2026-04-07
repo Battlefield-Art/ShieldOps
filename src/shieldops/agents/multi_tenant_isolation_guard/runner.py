@@ -19,6 +19,7 @@ from shieldops.agents.multi_tenant_isolation_guard.nodes import (
 from shieldops.agents.multi_tenant_isolation_guard.tools import (
     MultiTenantIsolationGuardToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class MultiTenantIsolationGuardRunner:
         self._results: dict[str, MultiTenantIsolationGuardState] = {}
         logger.info("mtig_runner.initialized")
 
+    @enforced("multi_tenant_isolation_guard")
     async def run(
         self,
         request_id: str,

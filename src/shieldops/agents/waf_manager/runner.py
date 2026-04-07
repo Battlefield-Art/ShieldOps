@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import WAFManagerToolkit
 
@@ -32,6 +34,7 @@ class WAFManagerRunner:
         self._app = self._graph.compile()
         logger.info("waf_manager_runner.init")
 
+    @enforced("waf_manager")
     async def run(
         self,
         tenant_id: str = "",

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_compliance_gap_analyzer_graph
 from .tools import ComplianceGapAnalyzerToolkit
 
@@ -32,6 +34,7 @@ class ComplianceGapAnalyzerRunner:
         self._app = self._graph.compile()
         logger.info("cga_runner.init")
 
+    @enforced("compliance_gap_analyzer")
     async def run(
         self,
         domains: list[str] | None = None,

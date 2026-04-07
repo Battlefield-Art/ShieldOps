@@ -24,6 +24,7 @@ from shieldops.agents.runtime_protection_engine.nodes import (
 from shieldops.agents.runtime_protection_engine.tools import (
     RuntimeProtectionEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -66,6 +67,7 @@ class RuntimeProtectionEngineRunner:
         # In-memory store of completed runs
         self._results: dict[str, RuntimeProtectionEngineState] = {}
 
+    @enforced("runtime_protection_engine")
     async def run(
         self,
         tenant_id: str = "",

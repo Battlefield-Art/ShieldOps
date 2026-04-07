@@ -18,6 +18,7 @@ from shieldops.agents.attack_narrative_builder.nodes import set_toolkit
 from shieldops.agents.attack_narrative_builder.tools import (
     AttackNarrativeBuilderToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -54,6 +55,7 @@ class AttackNarrativeBuilderRunner:
         self._results: dict[str, AttackNarrativeBuilderState] = {}
         logger.info("anb_runner.initialized")
 
+    @enforced("attack_narrative_builder")
     async def run(
         self,
         sources: list[str] | None = None,

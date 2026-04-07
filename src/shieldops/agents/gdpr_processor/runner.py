@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_gdpr_processor_graph
 from .tools import GDPRProcessorToolkit
 
@@ -30,6 +32,7 @@ class GDPRProcessorRunner:
         self._app = self._graph.compile()
         logger.info("gdpr_processor_runner.init")
 
+    @enforced("gdpr_processor")
     async def run(
         self,
         tenant_id: str = "",

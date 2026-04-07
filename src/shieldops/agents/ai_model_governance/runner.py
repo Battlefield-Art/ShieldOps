@@ -19,6 +19,7 @@ from shieldops.agents.ai_model_governance.nodes import (
 from shieldops.agents.ai_model_governance.tools import (
     AIModelGovernanceToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -49,6 +50,7 @@ class AIModelGovernanceRunner:
         self._results: dict[str, AIModelGovernanceState] = {}
         logger.info("amg_runner.initialized")
 
+    @enforced("ai_model_governance")
     async def run(
         self,
         request_id: str,

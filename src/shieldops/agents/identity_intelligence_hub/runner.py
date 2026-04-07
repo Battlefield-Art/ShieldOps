@@ -19,6 +19,7 @@ from shieldops.agents.identity_intelligence_hub.nodes import (
 from shieldops.agents.identity_intelligence_hub.tools import (
     IdentityIntelligenceHubToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -51,6 +52,7 @@ class IdentityIntelligenceHubRunner:
         self._results: dict[str, IdentityIntelligenceHubState] = {}
         logger.info("iih_runner.initialized")
 
+    @enforced("identity_intelligence_hub")
     async def run(
         self,
         tenant_id: str,

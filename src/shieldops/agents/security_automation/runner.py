@@ -20,6 +20,7 @@ from shieldops.agents.security_automation.nodes import set_toolkit
 from shieldops.agents.security_automation.tools import (
     SecurityAutomationToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -53,6 +54,7 @@ class SecurityAutomationRunner:
         # In-memory store of completed runs
         self._runs: dict[str, SecurityAutomationState] = {}
 
+    @enforced("security_automation")
     async def run(
         self,
         alerts: list[RiskAlert],

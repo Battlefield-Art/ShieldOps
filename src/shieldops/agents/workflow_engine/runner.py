@@ -9,6 +9,7 @@ from shieldops.agents.workflow_engine.graph import create_workflow_engine_graph
 from shieldops.agents.workflow_engine.models import WorkflowEngineState
 from shieldops.agents.workflow_engine.nodes import set_toolkit
 from shieldops.agents.workflow_engine.tools import WorkflowEngineToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -29,6 +30,7 @@ class WorkflowEngineRunner:
         self._results: dict[str, WorkflowEngineState] = {}
         logger.info("workflow_engine_runner.initialized")
 
+    @enforced("workflow_engine")
     async def run(
         self,
         tenant_id: str,

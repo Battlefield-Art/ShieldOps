@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_compliance_auditor_graph
 from .tools import ComplianceAuditorToolkit
 
@@ -30,6 +32,7 @@ class ComplianceAuditorRunner:
         self._app = self._graph.compile()
         logger.info("compliance_auditor_runner.init")
 
+    @enforced("compliance_auditor")
     async def run(
         self,
         frameworks: list[str] | None = None,

@@ -19,6 +19,7 @@ from shieldops.agents.incident_replay_analyzer.nodes import (
 from shieldops.agents.incident_replay_analyzer.tools import (
     IncidentReplayAnalyzerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class IncidentReplayAnalyzerRunner:
         self._results: dict[str, IncidentReplayAnalyzerState] = {}
         logger.info("ira_runner.initialized")
 
+    @enforced("incident_replay_analyzer")
     async def run(
         self,
         request_id: str,

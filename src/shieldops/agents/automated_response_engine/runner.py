@@ -19,6 +19,7 @@ from shieldops.agents.automated_response_engine.nodes import (
 from shieldops.agents.automated_response_engine.tools import (
     AutomatedResponseEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -45,6 +46,7 @@ class AutomatedResponseEngineRunner:
         self._results: dict[str, AutomatedResponseEngineState] = {}
         logger.info("are_runner.initialized")
 
+    @enforced("automated_response_engine")
     async def run(
         self,
         request_id: str,

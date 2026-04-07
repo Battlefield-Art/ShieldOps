@@ -17,6 +17,7 @@ from shieldops.agents.threat_intel.models import (
 )
 from shieldops.agents.threat_intel.nodes import set_toolkit
 from shieldops.agents.threat_intel.tools import ThreatIntelToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -57,6 +58,7 @@ class ThreatIntelRunner:
         # In-memory store of completed runs (fallback when no DB)
         self._results: dict[str, ThreatIntelState] = {}
 
+    @enforced("threat_intel")
     async def run(
         self,
         sources: list[IntelSource] | None = None,

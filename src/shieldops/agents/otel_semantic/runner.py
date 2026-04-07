@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import OTelSemanticToolkit
 
@@ -29,6 +31,7 @@ class OTelSemanticRunner:
         self._app = self._graph.compile()
         logger.info("otel_semantic_runner.init")
 
+    @enforced("otel_semantic")
     async def run(
         self,
         services: list[str] | None = None,
