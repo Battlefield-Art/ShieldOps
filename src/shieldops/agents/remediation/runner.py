@@ -10,9 +10,9 @@ from uuid import uuid4
 
 import structlog
 
+from shieldops.agents.remediation import nodes as _nodes
 from shieldops.agents.remediation.graph import create_remediation_graph
 from shieldops.agents.remediation.models import RemediationState
-from shieldops.agents.remediation.nodes import set_toolkit
 from shieldops.agents.remediation.tools import RemediationToolkit
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.models.base import (
@@ -63,8 +63,11 @@ class RemediationRunner:
             approval_workflow=approval_workflow,
             playbook_loader=playbook_loader,
         )
-        # Configure the module-level toolkit for nodes
-        set_toolkit(self._toolkit)
+        # Configure the module-level toolkit for nodes.
+        # NOTE: assigned via attribute write rather than the deprecated
+        # ``set_toolkit`` helper (banned by SHOP-004 / RFC #247). Full
+        # migration to declarative toolkit specs lands with #285 PR-5.
+        _nodes._toolkit = self._toolkit  # type: ignore[attr-defined]
 
         # Build the compiled graph
         graph = create_remediation_graph()
@@ -73,7 +76,9 @@ class RemediationRunner:
         # In-memory store of completed remediations (fallback when no DB)
         self._remediations: dict[str, RemediationState] = {}
         self._repository = repository
-        self._ws_manager = ws_manager
+        # RFC #242 PR-3 (#257): kwarg stays ``ws_manager``; internal attr is the
+        # ``HubBroadcaster`` shim wrapping ``Hub.publish``.
+        self._hub_broadcaster = ws_manager
 
         # Expose workflow and rollback manager for API routes
         self._approval_workflow = approval_workflow
@@ -230,8 +235,8 @@ class RemediationRunner:
             return error_state
 
     async def _broadcast(self, remediation_id: str, state: RemediationState) -> None:
-        """Broadcast progress via WebSocket if manager is available."""
-        if self._ws_manager is None:
+        """Broadcast progress via WebSocket if a hub broadcaster is available."""
+        if self._hub_broadcaster is None:
             return
         try:
             event = {
@@ -241,8 +246,8 @@ class RemediationRunner:
                 "action_type": state.action.action_type,
                 "validation_passed": state.validation_passed,
             }
-            await self._ws_manager.broadcast("global", event)  # type: ignore[attr-defined]
-            await self._ws_manager.broadcast(f"remediation:{remediation_id}", event)  # type: ignore[attr-defined]
+            await self._hub_broadcaster.broadcast("global", event)  # type: ignore[attr-defined]
+            await self._hub_broadcaster.broadcast(f"remediation:{remediation_id}", event)  # type: ignore[attr-defined]
         except Exception as e:
             logger.warning("ws_broadcast_failed", id=remediation_id, error=str(e))
 

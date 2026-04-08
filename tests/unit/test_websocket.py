@@ -5,7 +5,19 @@ from starlette.testclient import TestClient
 
 from shieldops.api.app import app
 from shieldops.api.auth.service import create_access_token
+from shieldops.api.ws.composition import build_in_memory_hub, set_ws_hub
 from shieldops.api.ws.manager import ConnectionManager
+
+
+@pytest.fixture(autouse=True)
+def _install_hub_for_route_tests():
+    """RFC #242 PR-3 (#257): the WS routes now require an installed Hub
+    via ``Depends(get_ws_hub)``. The lifespan installs one in production;
+    these route tests use ``TestClient(app)`` directly so we install an
+    in-memory hub here for the duration of each test."""
+    set_ws_hub(build_in_memory_hub())
+    yield
+    set_ws_hub(None)
 
 
 class TestConnectionManager:

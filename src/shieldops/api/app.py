@@ -400,10 +400,21 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         analytics.set_engine(analytics_engine)
         logger.info("analytics_engine_initialized")
 
-    # ── WebSocket manager (singleton shared with routes) ──────
-    from shieldops.api.ws.manager import get_ws_manager
+    # ── WebSocket Hub (RFC #242 PR-3 / #257) ──────────────────
+    # PR-1 shipped the Hub core, PR-2 shipped the composition root, and
+    # PR-3 (this) migrates routes + broadcast call sites onto the Hub.
+    # The legacy ``ConnectionManager`` is no longer constructed here —
+    # producer-side fan-out goes through ``HubBroadcaster`` (a thin shim
+    # that adapts the legacy ``broadcast(channel, dict)`` call shape onto
+    # ``Hub.publish``). Routes use ``Depends(get_ws_hub)``.
+    from shieldops.api.ws.composition import build_in_memory_hub, set_ws_hub
+    from shieldops.api.ws.hub_broadcaster import HubBroadcaster
 
-    ws_manager = get_ws_manager()
+    ws_hub = build_in_memory_hub()
+    set_ws_hub(ws_hub)
+    ws_manager = HubBroadcaster(ws_hub)
+    app.state.ws_hub_installed = True
+    logger.info("ws_hub_installed", adapter="in_memory")
 
     # ── Infrastructure layer ────────────────────────────────────
     obs_sources = create_observability_sources(settings)
@@ -13925,6 +13936,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         set_llm_orchestrator(None)
     except Exception as exc:
         logger.debug("llm_orchestrator_teardown_error", error=str(exc))
+
+    # ── WebSocket Hub teardown (RFC #242 PR-3) ─────────────────
+    try:
+        from shieldops.api.ws.composition import set_ws_hub
+
+        set_ws_hub(None)
+    except Exception as exc:
+        logger.debug("ws_hub_teardown_error", error=str(exc))
 
     # Plugin teardown
     if plugin_registry:

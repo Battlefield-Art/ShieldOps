@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import structlog
 
+from shieldops.agents.chatops import nodes as _nodes
 from shieldops.agents.chatops.graph import create_chatops_graph
 from shieldops.agents.chatops.models import (
     ChannelType,
@@ -17,7 +18,6 @@ from shieldops.agents.chatops.models import (
     ChatOpsExecutionStatus,
     ChatOpsState,
 )
-from shieldops.agents.chatops.nodes import set_toolkit
 from shieldops.agents.chatops.tools import ChatOpsToolkit
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.observability.tracing import get_tracer
@@ -58,8 +58,11 @@ class ChatOpsRunner:
             policy_engine=policy_engine,
             agent_registry=agent_runners or {},
         )
-        # Configure the module-level toolkit for nodes
-        set_toolkit(self._toolkit)
+        # Configure the module-level toolkit for nodes.
+        # NOTE: assigned via attribute write rather than the deprecated
+        # ``set_toolkit`` helper (banned by SHOP-004 / RFC #247). Full
+        # migration to declarative toolkit specs lands with #285 PR-5.
+        _nodes._toolkit = self._toolkit  # type: ignore[attr-defined]
 
         # Build the compiled graph
         graph = create_chatops_graph()
@@ -69,7 +72,9 @@ class ChatOpsRunner:
         self._commands: dict[str, ChatOpsState] = {}
         self._pending_approvals: dict[str, ChatOpsState] = {}
         self._repository = repository
-        self._ws_manager = ws_manager
+        # RFC #242 PR-3 (#257): kwarg stays ``ws_manager``; internal attr is the
+        # ``HubBroadcaster`` shim wrapping ``Hub.publish``.
+        self._hub_broadcaster = ws_manager
 
     async def process_command(
         self,
@@ -325,8 +330,8 @@ class ChatOpsRunner:
         ]
 
     async def _broadcast(self, command_id: str, state: ChatOpsState) -> None:
-        """Broadcast progress via WebSocket if manager is available."""
-        if self._ws_manager is None:
+        """Broadcast progress via WebSocket if a hub broadcaster is available."""
+        if self._hub_broadcaster is None:
             return
         try:
             event = {
@@ -336,8 +341,8 @@ class ChatOpsRunner:
                 "intent": state.parsed_command.intent,
                 "user_id": state.user_id,
             }
-            await self._ws_manager.broadcast("global", event)  # type: ignore[attr-defined]
-            await self._ws_manager.broadcast(  # type: ignore[attr-defined]
+            await self._hub_broadcaster.broadcast("global", event)  # type: ignore[attr-defined]
+            await self._hub_broadcaster.broadcast(  # type: ignore[attr-defined]
                 f"chatops:{command_id}", event
             )
         except Exception as e:

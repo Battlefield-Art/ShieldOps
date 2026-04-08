@@ -334,7 +334,14 @@ class TestRemediationRunnerBroadcast:
 class TestLifespanWsWiring:
     @pytest.mark.asyncio
     async def test_investigation_runner_receives_ws_manager(self) -> None:
-        """InvestigationRunner in lifespan must get ws_manager kwarg."""
+        """InvestigationRunner in lifespan must get a HubBroadcaster as ws_manager.
+
+        RFC #242 PR-3 (#257): the legacy ``get_ws_manager()`` is gone — the
+        lifespan now builds an in-memory Hub via ``set_ws_hub`` and wraps it
+        in a ``HubBroadcaster`` that is passed to runners under the same
+        ``ws_manager`` kwarg name (preserved for backwards compatibility).
+        """
+        from shieldops.api.ws.hub_broadcaster import HubBroadcaster
         from shieldops.connectors.base import ConnectorRouter
         from shieldops.observability.factory import ObservabilitySources
 
@@ -346,7 +353,6 @@ class TestLifespanWsWiring:
         mock_router = MagicMock(spec=ConnectorRouter)
         mock_policy = MagicMock()
         mock_policy.close = AsyncMock()
-        mock_ws_mgr = MagicMock(spec=ConnectionManager)
 
         with (
             patch(
@@ -364,10 +370,6 @@ class TestLifespanWsWiring:
             ),
             patch("shieldops.api.app.ApprovalWorkflow"),
             patch("shieldops.api.app.RemediationRunner"),
-            patch(
-                "shieldops.api.ws.manager.get_ws_manager",
-                return_value=mock_ws_mgr,
-            ),
         ):
             from shieldops.api.app import create_app
 
@@ -376,11 +378,12 @@ class TestLifespanWsWiring:
             async with test_app.router.lifespan_context(test_app):
                 mock_inv_cls.assert_called_once()
                 inv_kwargs = mock_inv_cls.call_args.kwargs
-                assert inv_kwargs["ws_manager"] is mock_ws_mgr
+                assert isinstance(inv_kwargs["ws_manager"], HubBroadcaster)
 
     @pytest.mark.asyncio
     async def test_remediation_runner_receives_ws_manager(self) -> None:
-        """RemediationRunner in lifespan must get ws_manager kwarg."""
+        """RemediationRunner in lifespan must get a HubBroadcaster as ws_manager."""
+        from shieldops.api.ws.hub_broadcaster import HubBroadcaster
         from shieldops.connectors.base import ConnectorRouter
         from shieldops.observability.factory import ObservabilitySources
 
@@ -392,7 +395,6 @@ class TestLifespanWsWiring:
         mock_router = MagicMock(spec=ConnectorRouter)
         mock_policy = MagicMock()
         mock_policy.close = AsyncMock()
-        mock_ws_mgr = MagicMock(spec=ConnectionManager)
 
         with (
             patch(
@@ -410,10 +412,6 @@ class TestLifespanWsWiring:
             ),
             patch("shieldops.api.app.ApprovalWorkflow"),
             patch("shieldops.api.app.RemediationRunner") as mock_rem_cls,
-            patch(
-                "shieldops.api.ws.manager.get_ws_manager",
-                return_value=mock_ws_mgr,
-            ),
         ):
             from shieldops.api.app import create_app
 
@@ -422,4 +420,4 @@ class TestLifespanWsWiring:
             async with test_app.router.lifespan_context(test_app):
                 mock_rem_cls.assert_called_once()
                 rem_kwargs = mock_rem_cls.call_args.kwargs
-                assert rem_kwargs["ws_manager"] is mock_ws_mgr
+                assert isinstance(rem_kwargs["ws_manager"], HubBroadcaster)

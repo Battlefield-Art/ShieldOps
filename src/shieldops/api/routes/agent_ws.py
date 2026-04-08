@@ -1,79 +1,37 @@
-"""WebSocket handler for real-time agent task step updates."""
+"""WebSocket handler for real-time agent task step updates.
+
+RFC #242 PR-3 (#257) — migrated off the local ``ConnectionManager`` and
+onto :class:`shieldops.api.ws.core.Hub`.  Routes now reach the installed
+hub via ``Depends(get_ws_hub)``; producers (notify_step_update) publish
+via the hub by topic ``agent_task:<task_id>``.
+
+NOTE: full Starlette transport wiring (so live events fan out to the
+attached websocket sockets through the Hub's drain task) is RFC #242
+PR-5 (#259).  Until that lands the route still keeps the connection
+alive via a local receive-loop and the producer-side path is the
+critical migration target this PR ships.
+"""
 
 from __future__ import annotations
 
-import asyncio
-from collections import defaultdict
 from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 
 from shieldops.api.auth.service import decode_token
+from shieldops.api.ws.composition import get_ws_hub
+from shieldops.api.ws.core import Event, Hub
 
 logger = structlog.get_logger()
 
 router = APIRouter()
 
 
-class ConnectionManager:
-    """Tracks active WebSocket connections per task_id.
-
-    Provides methods to connect, disconnect, and broadcast JSON messages
-    to all clients subscribed to a specific agent task.
-    """
-
-    def __init__(self) -> None:
-        self._connections: dict[str, set[WebSocket]] = defaultdict(set)
-
-    async def connect(self, task_id: str, websocket: WebSocket) -> None:
-        """Accept and register a WebSocket connection for a task."""
-        await websocket.accept()
-        self._connections[task_id].add(websocket)
-        logger.info("agent_ws_connected", task_id=task_id)
-
-    def disconnect(self, task_id: str, websocket: WebSocket) -> None:
-        """Remove a WebSocket connection from a task's subscriber set."""
-        self._connections[task_id].discard(websocket)
-        if not self._connections[task_id]:
-            del self._connections[task_id]
-        logger.info("agent_ws_disconnected", task_id=task_id)
-
-    async def broadcast(self, task_id: str, message: dict[str, Any]) -> None:
-        """Send a JSON message to all connections subscribed to a task.
-
-        Dead connections are cleaned up automatically.
-        """
-        subscribers = list(self._connections.get(task_id, set()))
-        if not subscribers:
-            return
-
-        async def _safe_send(ws: WebSocket) -> WebSocket | None:
-            try:
-                await ws.send_json(message)
-            except Exception:
-                return ws
-            return None
-
-        results = await asyncio.gather(*[_safe_send(ws) for ws in subscribers])
-        for dead_ws in results:
-            if dead_ws is not None:
-                self._connections[task_id].discard(dead_ws)
-
-    @property
-    def active_tasks(self) -> int:
-        """Return the number of tasks with active connections."""
-        return len(self._connections)
-
-    @property
-    def active_connections(self) -> int:
-        """Return the total number of active WebSocket connections."""
-        return sum(len(subs) for subs in self._connections.values())
-
-
-# Module-level singleton — importable by other routes (e.g. agent_tasks.py)
-manager = ConnectionManager()
+def _agent_task_topic(task_id: str) -> str:
+    """Stable topic naming for agent task updates."""
+    return f"agent_task:{task_id}"
 
 
 async def notify_step_update(
@@ -83,10 +41,12 @@ async def notify_step_update(
     result: dict[str, Any] | None = None,
     error: str | None = None,
 ) -> None:
-    """Broadcast a step update to all clients connected for a given task.
+    """Publish an agent step update via the WebSocket Hub.
 
-    Constructs the appropriate event type based on the status and broadcasts
-    a JSON message matching the agent task step update schema.
+    Background task helper — there is no FastAPI request context here,
+    so we reach the installed hub via :func:`get_ws_hub` directly. The
+    Hub raises ``RuntimeError`` if no hub is installed (e.g. when called
+    outside an app lifespan), which is the right failure mode.
     """
     event_type = "step_update"
     if status == "complete":
@@ -111,10 +71,17 @@ async def notify_step_update(
         "agent_step_update",
         task_id=task_id,
         step_id=step_id,
-        event=event_type,
+        event_kind=event_type,
         status=status,
     )
-    await manager.broadcast(task_id, message)
+    try:
+        hub = get_ws_hub()
+    except RuntimeError:
+        # Hub not installed (e.g. tests / out-of-app callers). Step
+        # updates are best-effort — log and move on.
+        logger.debug("agent_step_update_no_hub", task_id=task_id)
+        return
+    await hub.publish(_agent_task_topic(task_id), Event(kind=event_type, data=message))
 
 
 async def _authenticate_ws(websocket: WebSocket, token: str | None) -> dict[str, Any] | None:
@@ -129,8 +96,15 @@ async def ws_agent_task(
     websocket: WebSocket,
     task_id: str,
     token: str | None = Query(default=None),
+    hub: Hub = Depends(get_ws_hub),
 ) -> None:
     """Stream real-time step updates for an agent task execution.
+
+    The hub dependency is wired so this route claims the standard
+    ``Depends(get_ws_hub)`` contract. Live forwarding from the hub's
+    drain task into this websocket happens once the StarletteTransport
+    adapter lands in PR-5 (#259); until then the route keeps the
+    connection alive and producers can still publish to the topic.
 
     Sends JSON messages with the schema::
 
@@ -148,10 +122,14 @@ async def ws_agent_task(
         await websocket.close(code=4001, reason="Authentication required")
         return
 
-    await manager.connect(task_id, websocket)
+    # TODO(RFC #242 PR-5 / #259): replace this local accept+receive loop
+    # with hub.attach() once StarletteTransport lands. The producer-side
+    # is already migrated; only the wire-side needs the transport adapter.
+    _ = hub  # explicitly retain the dependency for clarity
+    await websocket.accept()
+    logger.info("agent_ws_connected", task_id=task_id)
     try:
         while True:
-            # Keep connection alive — handles client pings and any incoming text
             await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(task_id, websocket)
+        logger.info("agent_ws_disconnected", task_id=task_id)
