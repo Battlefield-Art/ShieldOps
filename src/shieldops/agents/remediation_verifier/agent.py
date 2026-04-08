@@ -49,3 +49,9 @@ class RemediationVerifierAgent(Agent):
     ]
 
     entry = "collect_remediations"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RemediationVerifierRunner`` keep working via this alias; new code
+# should use ``RemediationVerifierAgent`` directly through AgentRuntime.
+RemediationVerifierRunner = RemediationVerifierAgent

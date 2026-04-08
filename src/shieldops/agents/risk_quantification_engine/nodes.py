@@ -16,14 +16,6 @@ logger = structlog.get_logger()
 _toolkit: RiskQuantificationEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: RiskQuantificationEngineToolkit,
-) -> None:
-    """Configure the toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> RiskQuantificationEngineToolkit:
     if _toolkit is None:
         return RiskQuantificationEngineToolkit()

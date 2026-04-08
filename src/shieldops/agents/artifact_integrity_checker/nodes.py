@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: ArtifactIntegrityCheckerToolkit | None = None
 
 
-def set_toolkit(toolkit: ArtifactIntegrityCheckerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ArtifactIntegrityCheckerToolkit:
     if _toolkit is None:
         return ArtifactIntegrityCheckerToolkit()

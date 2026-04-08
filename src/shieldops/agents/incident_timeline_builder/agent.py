@@ -48,3 +48,9 @@ class IncidentTimelineBuilderAgent(Agent):
     ]
 
     entry = "collect_events"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IncidentTimelineBuilderRunner`` keep working via this alias; new code
+# should use ``IncidentTimelineBuilderAgent`` directly through AgentRuntime.
+IncidentTimelineBuilderRunner = IncidentTimelineBuilderAgent

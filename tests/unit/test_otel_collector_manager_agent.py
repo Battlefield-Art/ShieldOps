@@ -6,6 +6,7 @@ import pytest
 import yaml
 
 from shieldops.agents.otel_collector_manager import create_otel_collector_manager_graph
+from shieldops.agents.otel_collector_manager.agent import OTelCollectorManagerRunner
 from shieldops.agents.otel_collector_manager.models import (
     CollectorAction,
     CollectorConfig,
@@ -30,7 +31,6 @@ from shieldops.agents.otel_collector_manager.prompts import (
     SYSTEM_GENERATE,
     SYSTEM_MONITOR,
 )
-from shieldops.agents.otel_collector_manager.runner import OTelCollectorManagerRunner
 from shieldops.agents.otel_collector_manager.tools import OTelCollectorManagerToolkit
 
 # ---------------------------------------------------------------------------

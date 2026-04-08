@@ -19,13 +19,6 @@ logger = structlog.get_logger()
 _toolkit: SessionManagerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SessionManagerToolkit,
-) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SessionManagerToolkit:
     if _toolkit is None:
         return SessionManagerToolkit()

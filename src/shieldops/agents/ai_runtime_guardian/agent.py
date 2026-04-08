@@ -48,3 +48,9 @@ class AiRuntimeGuardianAgent(Agent):
     ]
 
     entry = "monitor_ai_runtime"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AIRuntimeGuardianRunner`` keep working via this alias; new code
+# should use ``AiRuntimeGuardianAgent`` directly through AgentRuntime.
+AIRuntimeGuardianRunner = AiRuntimeGuardianAgent

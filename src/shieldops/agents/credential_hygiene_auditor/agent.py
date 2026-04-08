@@ -48,3 +48,9 @@ class CredentialHygieneAuditorAgent(Agent):
     ]
 
     entry = "inventory_credentials"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CredentialHygieneAuditorRunner`` keep working via this alias; new code
+# should use ``CredentialHygieneAuditorAgent`` directly through AgentRuntime.
+CredentialHygieneAuditorRunner = CredentialHygieneAuditorAgent

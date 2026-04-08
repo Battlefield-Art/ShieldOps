@@ -14,14 +14,6 @@ logger = structlog.get_logger()
 _toolkit: MultiCloudOrchestratorToolkit | None = None
 
 
-def set_toolkit(
-    tk: MultiCloudOrchestratorToolkit,
-) -> None:
-    """Set module-level toolkit for all nodes."""
-    global _toolkit
-    _toolkit = tk
-
-
 def _get_toolkit() -> MultiCloudOrchestratorToolkit:
     if _toolkit is None:
         return MultiCloudOrchestratorToolkit()

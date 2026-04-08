@@ -49,3 +49,9 @@ class DataSovereigntyEnforcerAgent(Agent):
     ]
 
     entry = "discover_data_flows"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataSovereigntyEnforcerRunner`` keep working via this alias; new code
+# should use ``DataSovereigntyEnforcerAgent`` directly through AgentRuntime.
+DataSovereigntyEnforcerRunner = DataSovereigntyEnforcerAgent

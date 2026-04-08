@@ -48,3 +48,9 @@ class CredentialExposureScannerAgent(Agent):
     ]
 
     entry = "scan_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CredentialExposureScannerRunner`` keep working via this alias; new code
+# should use ``CredentialExposureScannerAgent`` directly through AgentRuntime.
+CredentialExposureScannerRunner = CredentialExposureScannerAgent

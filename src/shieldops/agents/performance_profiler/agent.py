@@ -49,3 +49,9 @@ class PerformanceProfilerAgent(Agent):
     ]
 
     entry = "collect_traces"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PerformanceProfilerRunner`` keep working via this alias; new code
+# should use ``PerformanceProfilerAgent`` directly through AgentRuntime.
+PerformanceProfilerRunner = PerformanceProfilerAgent

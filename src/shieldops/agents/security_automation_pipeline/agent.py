@@ -48,3 +48,9 @@ class SecurityAutomationPipelineAgent(Agent):
     ]
 
     entry = "scan_pipeline"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityAutomationPipelineRunner`` keep working via this alias; new code
+# should use ``SecurityAutomationPipelineAgent`` directly through AgentRuntime.
+SecurityAutomationPipelineRunner = SecurityAutomationPipelineAgent

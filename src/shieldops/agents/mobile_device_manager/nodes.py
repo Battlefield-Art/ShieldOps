@@ -23,11 +23,6 @@ logger = structlog.get_logger()
 _toolkit: MobileDeviceManagerToolkit | None = None
 
 
-def set_toolkit(tk: MobileDeviceManagerToolkit) -> None:
-    global _toolkit
-    _toolkit = tk
-
-
 async def discover_devices(
     state: dict[str, Any], toolkit: MobileDeviceManagerToolkit
 ) -> dict[str, Any]:

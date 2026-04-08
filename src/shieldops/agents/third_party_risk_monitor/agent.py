@@ -49,3 +49,9 @@ class ThirdPartyRiskMonitorAgent(Agent):
     ]
 
     entry = "inventory_vendors"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThirdPartyRiskMonitorRunner`` keep working via this alias; new code
+# should use ``ThirdPartyRiskMonitorAgent`` directly through AgentRuntime.
+ThirdPartyRiskMonitorRunner = ThirdPartyRiskMonitorAgent

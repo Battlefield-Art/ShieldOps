@@ -52,3 +52,9 @@ class ObservabilityPipelineOptimizerAgent(Agent):
     ]
 
     entry = "audit_pipelines"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ObservabilityPipelineOptimizerRunner`` keep working via this alias; new code
+# should use ``ObservabilityPipelineOptimizerAgent`` directly through AgentRuntime.
+ObservabilityPipelineOptimizerRunner = ObservabilityPipelineOptimizerAgent

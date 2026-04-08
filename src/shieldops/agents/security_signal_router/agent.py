@@ -48,3 +48,9 @@ class SecuritySignalRouterAgent(Agent):
     ]
 
     entry = "ingest_signals"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecuritySignalRouterRunner`` keep working via this alias; new code
+# should use ``SecuritySignalRouterAgent`` directly through AgentRuntime.
+SecuritySignalRouterRunner = SecuritySignalRouterAgent

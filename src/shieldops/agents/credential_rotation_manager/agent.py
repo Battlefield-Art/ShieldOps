@@ -48,3 +48,9 @@ class CredentialRotationManagerAgent(Agent):
     ]
 
     entry = "discover_credentials"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CredentialRotationManagerRunner`` keep working via this alias; new code
+# should use ``CredentialRotationManagerAgent`` directly through AgentRuntime.
+CredentialRotationManagerRunner = CredentialRotationManagerAgent

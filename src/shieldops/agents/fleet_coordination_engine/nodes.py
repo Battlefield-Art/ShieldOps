@@ -39,14 +39,6 @@ logger = structlog.get_logger()
 _toolkit: FleetCoordinationEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: FleetCoordinationEngineToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> FleetCoordinationEngineToolkit:
     if _toolkit is None:
         return FleetCoordinationEngineToolkit()

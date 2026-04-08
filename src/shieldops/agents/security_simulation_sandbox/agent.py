@@ -49,3 +49,9 @@ class SecuritySimulationSandboxAgent(Agent):
     ]
 
     entry = "provision_sandbox"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecuritySimulationSandboxRunner`` keep working via this alias; new code
+# should use ``SecuritySimulationSandboxAgent`` directly through AgentRuntime.
+SecuritySimulationSandboxRunner = SecuritySimulationSandboxAgent

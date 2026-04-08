@@ -47,14 +47,6 @@ logger = structlog.get_logger()
 _toolkit: AttackReplaySimulatorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AttackReplaySimulatorToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AttackReplaySimulatorToolkit:
     if _toolkit is None:
         return AttackReplaySimulatorToolkit()

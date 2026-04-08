@@ -46,14 +46,6 @@ logger = structlog.get_logger()
 _toolkit: BehavioralThreatDetectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: BehavioralThreatDetectorToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> BehavioralThreatDetectorToolkit:
     if _toolkit is None:
         return BehavioralThreatDetectorToolkit()

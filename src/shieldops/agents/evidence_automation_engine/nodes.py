@@ -17,14 +17,6 @@ logger = structlog.get_logger()
 _toolkit: EvidenceAutomationEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: EvidenceAutomationEngineToolkit,
-) -> None:
-    """Configure the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> EvidenceAutomationEngineToolkit:
     if _toolkit is None:
         return EvidenceAutomationEngineToolkit()

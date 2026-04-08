@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: UnifiedThreatModelToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: UnifiedThreatModelToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> UnifiedThreatModelToolkit:
     if _toolkit is None:
         return UnifiedThreatModelToolkit()

@@ -50,3 +50,9 @@ class ApiAbuseDetectorAgent(Agent):
     ]
 
     entry = "collect_traffic"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ApiAbuseDetectorRunner`` keep working via this alias; new code
+# should use ``ApiAbuseDetectorAgent`` directly through AgentRuntime.
+ApiAbuseDetectorRunner = ApiAbuseDetectorAgent

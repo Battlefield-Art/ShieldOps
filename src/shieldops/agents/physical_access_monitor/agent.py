@@ -49,3 +49,9 @@ class PhysicalAccessMonitorAgent(Agent):
     ]
 
     entry = "ingest_events"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PhysicalAccessMonitorRunner`` keep working via this alias; new code
+# should use ``PhysicalAccessMonitorAgent`` directly through AgentRuntime.
+PhysicalAccessMonitorRunner = PhysicalAccessMonitorAgent

@@ -28,12 +28,6 @@ logger = structlog.get_logger()
 _toolkit: AccessRemediationToolkit | None = None
 
 
-def set_toolkit(tk: AccessRemediationToolkit) -> None:
-    """Set module-level toolkit for all nodes."""
-    global _toolkit
-    _toolkit = tk
-
-
 def _get_toolkit() -> AccessRemediationToolkit:
     if _toolkit is None:
         return AccessRemediationToolkit()

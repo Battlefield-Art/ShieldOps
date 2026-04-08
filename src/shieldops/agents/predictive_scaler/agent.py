@@ -48,3 +48,9 @@ class PredictiveScalerAgent(Agent):
     ]
 
     entry = "collect_metrics"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PredictiveScalerRunner`` keep working via this alias; new code
+# should use ``PredictiveScalerAgent`` directly through AgentRuntime.
+PredictiveScalerRunner = PredictiveScalerAgent

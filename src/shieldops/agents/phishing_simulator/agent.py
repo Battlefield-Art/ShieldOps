@@ -49,3 +49,9 @@ class PhishingSimulatorAgent(Agent):
     ]
 
     entry = "design_campaign"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PhishingSimulatorRunner`` keep working via this alias; new code
+# should use ``PhishingSimulatorAgent`` directly through AgentRuntime.
+PhishingSimulatorRunner = PhishingSimulatorAgent

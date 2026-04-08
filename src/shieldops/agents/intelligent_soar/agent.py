@@ -50,3 +50,9 @@ class IntelligentSoarAgent(Agent):
     ]
 
     entry = "receive_trigger"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IntelligentSOARRunner`` keep working via this alias; new code
+# should use ``IntelligentSoarAgent`` directly through AgentRuntime.
+IntelligentSOARRunner = IntelligentSoarAgent

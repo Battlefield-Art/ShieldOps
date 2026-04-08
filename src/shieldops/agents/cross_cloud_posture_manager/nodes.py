@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: CrossCloudPostureManagerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CrossCloudPostureManagerToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CrossCloudPostureManagerToolkit:
     if _toolkit is None:
         return CrossCloudPostureManagerToolkit()

@@ -33,12 +33,6 @@ logger = structlog.get_logger()
 _toolkit: DataThreatHuntingToolkit | None = None
 
 
-def set_toolkit(toolkit: DataThreatHuntingToolkit) -> None:
-    """Set the shared toolkit instance for all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DataThreatHuntingToolkit:
     if _toolkit is None:
         return DataThreatHuntingToolkit()

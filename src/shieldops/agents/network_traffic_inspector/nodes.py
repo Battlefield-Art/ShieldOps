@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: NetworkTrafficInspectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: NetworkTrafficInspectorToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> NetworkTrafficInspectorToolkit:
     if _toolkit is None:
         return NetworkTrafficInspectorToolkit()

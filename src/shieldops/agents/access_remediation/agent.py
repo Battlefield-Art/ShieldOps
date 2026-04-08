@@ -48,3 +48,9 @@ class AccessRemediationAgent(Agent):
     ]
 
     entry = "audit_access"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AccessRemediationRunner`` keep working via this alias; new code
+# should use ``AccessRemediationAgent`` directly through AgentRuntime.
+AccessRemediationRunner = AccessRemediationAgent

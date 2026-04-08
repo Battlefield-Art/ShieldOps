@@ -42,3 +42,9 @@ class OtelSemanticAgent(Agent):
     ]
 
     entry = "load_rules"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``OTelSemanticRunner`` keep working via this alias; new code
+# should use ``OtelSemanticAgent`` directly through AgentRuntime.
+OTelSemanticRunner = OtelSemanticAgent

@@ -48,3 +48,9 @@ class SecretsInCodeDetectorAgent(Agent):
     ]
 
     entry = "discover_repositories"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecretsInCodeDetectorRunner`` keep working via this alias; new code
+# should use ``SecretsInCodeDetectorAgent`` directly through AgentRuntime.
+SecretsInCodeDetectorRunner = SecretsInCodeDetectorAgent

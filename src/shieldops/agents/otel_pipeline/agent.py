@@ -43,3 +43,9 @@ class OtelPipelineAgent(Agent):
     ]
 
     entry = "discover"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``OTelPipelineRunner`` keep working via this alias; new code
+# should use ``OtelPipelineAgent`` directly through AgentRuntime.
+OTelPipelineRunner = OtelPipelineAgent

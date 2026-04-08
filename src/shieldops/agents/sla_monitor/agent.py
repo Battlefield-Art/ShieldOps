@@ -49,3 +49,9 @@ class SlaMonitorAgent(Agent):
     ]
 
     entry = "collect_slis"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SLAMonitorRunner`` keep working via this alias; new code
+# should use ``SlaMonitorAgent`` directly through AgentRuntime.
+SLAMonitorRunner = SlaMonitorAgent

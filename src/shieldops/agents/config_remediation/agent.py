@@ -48,3 +48,9 @@ class ConfigRemediationAgent(Agent):
     ]
 
     entry = "scan_configurations"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ConfigRemediationRunner`` keep working via this alias; new code
+# should use ``ConfigRemediationAgent`` directly through AgentRuntime.
+ConfigRemediationRunner = ConfigRemediationAgent

@@ -48,3 +48,9 @@ class ThreatResponseAgent(Agent):
     ]
 
     entry = "classify_threat"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatResponseRunner`` keep working via this alias; new code
+# should use ``ThreatResponseAgent`` directly through AgentRuntime.
+ThreatResponseRunner = ThreatResponseAgent

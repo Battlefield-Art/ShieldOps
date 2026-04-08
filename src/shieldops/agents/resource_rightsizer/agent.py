@@ -48,3 +48,9 @@ class ResourceRightsizerAgent(Agent):
     ]
 
     entry = "collect_utilization"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ResourceRightsizerRunner`` keep working via this alias; new code
+# should use ``ResourceRightsizerAgent`` directly through AgentRuntime.
+ResourceRightsizerRunner = ResourceRightsizerAgent

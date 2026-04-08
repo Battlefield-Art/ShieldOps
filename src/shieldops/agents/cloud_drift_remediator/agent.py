@@ -50,3 +50,9 @@ class CloudDriftRemediatorAgent(Agent):
     ]
 
     entry = "scan_baseline"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudDriftRemediatorRunner`` keep working via this alias; new code
+# should use ``CloudDriftRemediatorAgent`` directly through AgentRuntime.
+CloudDriftRemediatorRunner = CloudDriftRemediatorAgent

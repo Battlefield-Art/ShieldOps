@@ -34,12 +34,6 @@ logger = structlog.get_logger()
 _toolkit: ConfigValidatorToolkit | None = None
 
 
-def set_toolkit(toolkit: ConfigValidatorToolkit) -> None:
-    """Configure the toolkit used by all nodes. Called once at startup."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ConfigValidatorToolkit:
     if _toolkit is None:
         return ConfigValidatorToolkit()

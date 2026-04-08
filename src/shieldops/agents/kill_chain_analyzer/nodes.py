@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: KillChainAnalyzerToolkit | None = None
 
 
-def set_toolkit(toolkit: KillChainAnalyzerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> KillChainAnalyzerToolkit:
     if _toolkit is None:
         return KillChainAnalyzerToolkit()

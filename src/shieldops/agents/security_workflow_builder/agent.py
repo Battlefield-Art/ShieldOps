@@ -48,3 +48,9 @@ class SecurityWorkflowBuilderAgent(Agent):
     ]
 
     entry = "define_trigger"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityWorkflowBuilderRunner`` keep working via this alias; new code
+# should use ``SecurityWorkflowBuilderAgent`` directly through AgentRuntime.
+SecurityWorkflowBuilderRunner = SecurityWorkflowBuilderAgent

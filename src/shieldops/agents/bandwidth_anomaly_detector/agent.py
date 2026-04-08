@@ -48,3 +48,9 @@ class BandwidthAnomalyDetectorAgent(Agent):
     ]
 
     entry = "collect_samples"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BandwidthAnomalyDetectorRunner`` keep working via this alias; new code
+# should use ``BandwidthAnomalyDetectorAgent`` directly through AgentRuntime.
+BandwidthAnomalyDetectorRunner = BandwidthAnomalyDetectorAgent

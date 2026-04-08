@@ -49,3 +49,9 @@ class CapacityPlannerAgent(Agent):
     ]
 
     entry = "collect_metrics"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CapacityPlannerRunner`` keep working via this alias; new code
+# should use ``CapacityPlannerAgent`` directly through AgentRuntime.
+CapacityPlannerRunner = CapacityPlannerAgent

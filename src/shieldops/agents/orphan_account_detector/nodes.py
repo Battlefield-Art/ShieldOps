@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: OrphanAccountDetectorToolkit | None = None
 
 
-def set_toolkit(toolkit: OrphanAccountDetectorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> OrphanAccountDetectorToolkit:
     if _toolkit is None:
         return OrphanAccountDetectorToolkit()

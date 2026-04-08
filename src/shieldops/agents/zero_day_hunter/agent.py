@@ -49,3 +49,9 @@ class ZeroDayHunterAgent(Agent):
     ]
 
     entry = "monitor_feeds"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ZeroDayHunterRunner`` keep working via this alias; new code
+# should use ``ZeroDayHunterAgent`` directly through AgentRuntime.
+ZeroDayHunterRunner = ZeroDayHunterAgent

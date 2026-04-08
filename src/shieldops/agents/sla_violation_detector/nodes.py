@@ -24,14 +24,6 @@ logger = structlog.get_logger()
 _toolkit: SLAViolationDetectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SLAViolationDetectorToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SLAViolationDetectorToolkit:
     if _toolkit is None:
         return SLAViolationDetectorToolkit()

@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: AutoRemediationToolkit | None = None
 
 
-def set_toolkit(toolkit: AutoRemediationToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AutoRemediationToolkit:
     if _toolkit is None:
         return AutoRemediationToolkit()

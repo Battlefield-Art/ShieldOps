@@ -43,3 +43,9 @@ class CloudAuditLoggerAgent(Agent):
     ]
 
     entry = "ingest_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudAuditLoggerRunner`` keep working via this alias; new code
+# should use ``CloudAuditLoggerAgent`` directly through AgentRuntime.
+CloudAuditLoggerRunner = CloudAuditLoggerAgent

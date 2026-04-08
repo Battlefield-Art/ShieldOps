@@ -49,3 +49,9 @@ class CloudNetworkFirewallAgent(Agent):
     ]
 
     entry = "collect_rules"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudNetworkFirewallRunner`` keep working via this alias; new code
+# should use ``CloudNetworkFirewallAgent`` directly through AgentRuntime.
+CloudNetworkFirewallRunner = CloudNetworkFirewallAgent

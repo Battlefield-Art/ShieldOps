@@ -48,3 +48,9 @@ class MultiCloudOrchestratorAgent(Agent):
     ]
 
     entry = "discover_resources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MultiCloudOrchestratorRunner`` keep working via this alias; new code
+# should use ``MultiCloudOrchestratorAgent`` directly through AgentRuntime.
+MultiCloudOrchestratorRunner = MultiCloudOrchestratorAgent

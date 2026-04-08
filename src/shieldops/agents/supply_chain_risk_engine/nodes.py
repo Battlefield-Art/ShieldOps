@@ -47,14 +47,6 @@ logger = structlog.get_logger()
 _toolkit: SupplyChainRiskEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SupplyChainRiskEngineToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SupplyChainRiskEngineToolkit:
     if _toolkit is None:
         return SupplyChainRiskEngineToolkit()

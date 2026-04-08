@@ -48,3 +48,9 @@ class WarGamingSimulatorAgent(Agent):
     ]
 
     entry = "design_scenario"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``WarGamingSimulatorRunner`` keep working via this alias; new code
+# should use ``WarGamingSimulatorAgent`` directly through AgentRuntime.
+WarGamingSimulatorRunner = WarGamingSimulatorAgent

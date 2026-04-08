@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: IdentityProtectionToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: IdentityProtectionToolkit,
-) -> None:
-    """Configure the toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IdentityProtectionToolkit:
     if _toolkit is None:
         return IdentityProtectionToolkit()

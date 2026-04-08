@@ -48,3 +48,9 @@ class ThreatSurfaceAnalyzerAgent(Agent):
     ]
 
     entry = "discover_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatSurfaceAnalyzerRunner`` keep working via this alias; new code
+# should use ``ThreatSurfaceAnalyzerAgent`` directly through AgentRuntime.
+ThreatSurfaceAnalyzerRunner = ThreatSurfaceAnalyzerAgent

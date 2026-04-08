@@ -48,3 +48,9 @@ class WorkflowEngineAgent(Agent):
     ]
 
     entry = "load_workflow"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``WorkflowEngineRunner`` keep working via this alias; new code
+# should use ``WorkflowEngineAgent`` directly through AgentRuntime.
+WorkflowEngineRunner = WorkflowEngineAgent

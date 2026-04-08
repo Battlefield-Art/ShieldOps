@@ -17,14 +17,6 @@ logger = structlog.get_logger()
 _toolkit: DataRetentionEnforcerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: DataRetentionEnforcerToolkit,
-) -> None:
-    """Configure the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DataRetentionEnforcerToolkit:
     if _toolkit is None:
         return DataRetentionEnforcerToolkit()

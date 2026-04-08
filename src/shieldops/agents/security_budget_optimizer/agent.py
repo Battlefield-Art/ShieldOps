@@ -50,3 +50,9 @@ class SecurityBudgetOptimizerAgent(Agent):
     ]
 
     entry = "inventory_tools"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityBudgetOptimizerRunner`` keep working via this alias; new code
+# should use ``SecurityBudgetOptimizerAgent`` directly through AgentRuntime.
+SecurityBudgetOptimizerRunner = SecurityBudgetOptimizerAgent

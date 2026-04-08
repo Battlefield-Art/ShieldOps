@@ -49,3 +49,9 @@ class SupplyChainRiskMonitorAgent(Agent):
     ]
 
     entry = "scan_supply_chain"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SupplyChainRiskMonitorRunner`` keep working via this alias; new code
+# should use ``SupplyChainRiskMonitorAgent`` directly through AgentRuntime.
+SupplyChainRiskMonitorRunner = SupplyChainRiskMonitorAgent

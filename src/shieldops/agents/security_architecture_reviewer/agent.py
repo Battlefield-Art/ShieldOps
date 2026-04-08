@@ -50,3 +50,9 @@ class SecurityArchitectureReviewerAgent(Agent):
     ]
 
     entry = "collect_design"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityArchitectureReviewerRunner`` keep working via this alias; new code
+# should use ``SecurityArchitectureReviewerAgent`` directly through AgentRuntime.
+SecurityArchitectureReviewerRunner = SecurityArchitectureReviewerAgent

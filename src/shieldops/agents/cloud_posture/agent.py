@@ -49,3 +49,9 @@ class CloudPostureAgent(Agent):
     ]
 
     entry = "scan_cloud"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudPostureRunner`` keep working via this alias; new code
+# should use ``CloudPostureAgent`` directly through AgentRuntime.
+CloudPostureRunner = CloudPostureAgent

@@ -48,3 +48,9 @@ class ComplianceScannerAgent(Agent):
     ]
 
     entry = "select_frameworks"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ComplianceScannerRunner`` keep working via this alias; new code
+# should use ``ComplianceScannerAgent`` directly through AgentRuntime.
+ComplianceScannerRunner = ComplianceScannerAgent

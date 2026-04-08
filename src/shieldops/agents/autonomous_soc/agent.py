@@ -54,3 +54,9 @@ class AutonomousSocAgent(Agent):
     ]
 
     entry = "ingest_events"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AutonomousSOCRunner`` keep working via this alias; new code
+# should use ``AutonomousSocAgent`` directly through AgentRuntime.
+AutonomousSOCRunner = AutonomousSocAgent

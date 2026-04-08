@@ -50,3 +50,9 @@ class SessionHijackDetectorAgent(Agent):
     ]
 
     entry = "collect_sessions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SessionHijackDetectorRunner`` keep working via this alias; new code
+# should use ``SessionHijackDetectorAgent`` directly through AgentRuntime.
+SessionHijackDetectorRunner = SessionHijackDetectorAgent

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from shieldops.agents.threat_scenario_runner.agent import (
+    ThreatScenarioRunnerRunner,
+)
 from shieldops.agents.threat_scenario_runner.graph import (
     create_threat_scenario_runner_graph,
-)
-from shieldops.agents.threat_scenario_runner.runner import (
-    ThreatScenarioRunnerRunner,
 )
 
 __all__ = [

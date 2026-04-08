@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.agents.detection_engineering.runner import DetectionEngineeringRunner
+from shieldops.agents.detection_engineering.agent import DetectionEngineeringRunner
 
 # ── Full Pipeline ─────────────────────────────────────────────────────
 

@@ -48,3 +48,9 @@ class IncidentTriageAgent(Agent):
     ]
 
     entry = "ingest"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IncidentTriageRunner`` keep working via this alias; new code
+# should use ``IncidentTriageAgent`` directly through AgentRuntime.
+IncidentTriageRunner = IncidentTriageAgent

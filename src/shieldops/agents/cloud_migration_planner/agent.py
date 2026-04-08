@@ -48,3 +48,9 @@ class CloudMigrationPlannerAgent(Agent):
     ]
 
     entry = "discover_workloads"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudMigrationPlannerRunner`` keep working via this alias; new code
+# should use ``CloudMigrationPlannerAgent`` directly through AgentRuntime.
+CloudMigrationPlannerRunner = CloudMigrationPlannerAgent

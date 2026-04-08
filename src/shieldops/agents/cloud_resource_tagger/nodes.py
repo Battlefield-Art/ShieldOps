@@ -33,14 +33,6 @@ logger = structlog.get_logger()
 _toolkit: CloudResourceTaggerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CloudResourceTaggerToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CloudResourceTaggerToolkit:
     if _toolkit is None:
         return CloudResourceTaggerToolkit()

@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: PrivacyImpactAssessorToolkit | None = None
 
 
-def set_toolkit(toolkit: PrivacyImpactAssessorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PrivacyImpactAssessorToolkit:
     if _toolkit is None:
         return PrivacyImpactAssessorToolkit()

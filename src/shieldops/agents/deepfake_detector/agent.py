@@ -50,3 +50,9 @@ class DeepfakeDetectorAgent(Agent):
     ]
 
     entry = "ingest_media"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DeepfakeDetectorRunner`` keep working via this alias; new code
+# should use ``DeepfakeDetectorAgent`` directly through AgentRuntime.
+DeepfakeDetectorRunner = DeepfakeDetectorAgent

@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: MicroSegmentationPlannerToolkit | None = None
 
 
-def set_toolkit(toolkit: MicroSegmentationPlannerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> MicroSegmentationPlannerToolkit:
     if _toolkit is None:
         return MicroSegmentationPlannerToolkit()

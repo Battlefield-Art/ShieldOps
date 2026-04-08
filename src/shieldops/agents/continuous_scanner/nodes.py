@@ -29,14 +29,6 @@ logger = structlog.get_logger()
 _toolkit: ContinuousScannerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: ContinuousScannerToolkit,
-) -> None:
-    """Set the global toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ContinuousScannerToolkit:
     if _toolkit is None:
         return ContinuousScannerToolkit()

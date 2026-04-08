@@ -50,3 +50,9 @@ class LogIntelligenceAgent(Agent):
     ]
 
     entry = "ingest_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``LogIntelligenceRunner`` keep working via this alias; new code
+# should use ``LogIntelligenceAgent`` directly through AgentRuntime.
+LogIntelligenceRunner = LogIntelligenceAgent

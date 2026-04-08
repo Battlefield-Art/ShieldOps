@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: ModelExplainabilityAuditorToolkit | None = None
 
 
-def set_toolkit(toolkit: ModelExplainabilityAuditorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ModelExplainabilityAuditorToolkit:
     if _toolkit is None:
         return ModelExplainabilityAuditorToolkit()

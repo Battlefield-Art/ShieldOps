@@ -33,12 +33,6 @@ logger = structlog.get_logger()
 _toolkit: ChaosEngineeringToolkit | None = None
 
 
-def set_toolkit(toolkit: ChaosEngineeringToolkit) -> None:
-    """Configure the toolkit used by all nodes. Called once at startup."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ChaosEngineeringToolkit:
     if _toolkit is None:
         return ChaosEngineeringToolkit()

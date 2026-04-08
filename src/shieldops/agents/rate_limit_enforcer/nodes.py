@@ -19,13 +19,6 @@ logger = structlog.get_logger()
 _toolkit: RateLimitEnforcerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: RateLimitEnforcerToolkit,
-) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> RateLimitEnforcerToolkit:
     if _toolkit is None:
         return RateLimitEnforcerToolkit()

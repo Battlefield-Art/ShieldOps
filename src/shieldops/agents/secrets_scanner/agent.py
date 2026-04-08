@@ -49,3 +49,9 @@ class SecretsScannerAgent(Agent):
     ]
 
     entry = "scan_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecretsScannerRunner`` keep working via this alias; new code
+# should use ``SecretsScannerAgent`` directly through AgentRuntime.
+SecretsScannerRunner = SecretsScannerAgent

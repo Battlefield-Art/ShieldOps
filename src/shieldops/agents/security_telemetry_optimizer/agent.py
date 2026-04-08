@@ -49,3 +49,9 @@ class SecurityTelemetryOptimizerAgent(Agent):
     ]
 
     entry = "inventory_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityTelemetryOptimizerRunner`` keep working via this alias; new code
+# should use ``SecurityTelemetryOptimizerAgent`` directly through AgentRuntime.
+SecurityTelemetryOptimizerRunner = SecurityTelemetryOptimizerAgent

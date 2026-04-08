@@ -48,3 +48,9 @@ class SecurityChangeManagerAgent(Agent):
     ]
 
     entry = "receive_change"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityChangeManagerRunner`` keep working via this alias; new code
+# should use ``SecurityChangeManagerAgent`` directly through AgentRuntime.
+SecurityChangeManagerRunner = SecurityChangeManagerAgent

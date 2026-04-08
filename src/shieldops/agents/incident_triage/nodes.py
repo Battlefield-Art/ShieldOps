@@ -32,12 +32,6 @@ logger = structlog.get_logger()
 _toolkit: IncidentTriageToolkit | None = None
 
 
-def set_toolkit(toolkit: IncidentTriageToolkit) -> None:
-    """Set the shared toolkit instance for all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IncidentTriageToolkit:
     if _toolkit is None:
         return IncidentTriageToolkit()

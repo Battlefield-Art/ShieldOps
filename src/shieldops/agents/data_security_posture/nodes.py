@@ -37,14 +37,6 @@ logger = structlog.get_logger()
 _toolkit: DataSecurityPostureToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: DataSecurityPostureToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DataSecurityPostureToolkit:
     if _toolkit is None:
         return DataSecurityPostureToolkit()

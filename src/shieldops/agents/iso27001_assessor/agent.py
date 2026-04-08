@@ -48,3 +48,9 @@ class Iso27001AssessorAgent(Agent):
     ]
 
     entry = "scope_isms"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ISO27001AssessorRunner`` keep working via this alias; new code
+# should use ``Iso27001AssessorAgent`` directly through AgentRuntime.
+ISO27001AssessorRunner = Iso27001AssessorAgent

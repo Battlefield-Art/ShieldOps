@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: CommunicationAuditorToolkit | None = None
 
 
-def set_toolkit(toolkit: CommunicationAuditorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CommunicationAuditorToolkit:
     if _toolkit is None:
         return CommunicationAuditorToolkit()

@@ -48,3 +48,9 @@ class HuntHypothesisGeneratorAgent(Agent):
     ]
 
     entry = "analyze_intel"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``HuntHypothesisGeneratorRunner`` keep working via this alias; new code
+# should use ``HuntHypothesisGeneratorAgent`` directly through AgentRuntime.
+HuntHypothesisGeneratorRunner = HuntHypothesisGeneratorAgent

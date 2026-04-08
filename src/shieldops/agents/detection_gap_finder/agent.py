@@ -49,3 +49,9 @@ class DetectionGapFinderAgent(Agent):
     ]
 
     entry = "select_techniques"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DetectionGapFinderRunner`` keep working via this alias; new code
+# should use ``DetectionGapFinderAgent`` directly through AgentRuntime.
+DetectionGapFinderRunner = DetectionGapFinderAgent

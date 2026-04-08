@@ -37,14 +37,6 @@ logger = structlog.get_logger()
 _toolkit: IncidentCostTrackerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: IncidentCostTrackerToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IncidentCostTrackerToolkit:
     if _toolkit is None:
         return IncidentCostTrackerToolkit()

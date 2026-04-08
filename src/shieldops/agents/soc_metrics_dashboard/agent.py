@@ -48,3 +48,9 @@ class SocMetricsDashboardAgent(Agent):
     ]
 
     entry = "collect_data"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SocMetricsDashboardRunner`` keep working via this alias; new code
+# should use ``SocMetricsDashboardAgent`` directly through AgentRuntime.
+SocMetricsDashboardRunner = SocMetricsDashboardAgent

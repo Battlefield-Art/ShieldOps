@@ -17,14 +17,6 @@ logger = structlog.get_logger()
 _toolkit: VendorComplianceAssessorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: VendorComplianceAssessorToolkit,
-) -> None:
-    """Configure the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> VendorComplianceAssessorToolkit:
     if _toolkit is None:
         return VendorComplianceAssessorToolkit()

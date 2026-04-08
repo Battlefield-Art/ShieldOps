@@ -42,3 +42,9 @@ class ThreatModelingAgent(Agent):
     ]
 
     entry = "discover_architecture"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatModelingRunner`` keep working via this alias; new code
+# should use ``ThreatModelingAgent`` directly through AgentRuntime.
+ThreatModelingRunner = ThreatModelingAgent

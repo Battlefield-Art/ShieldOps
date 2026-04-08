@@ -33,14 +33,6 @@ logger = structlog.get_logger()
 _toolkit: CustomAgentFactoryToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CustomAgentFactoryToolkit,
-) -> None:
-    """Inject the toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CustomAgentFactoryToolkit:
     if _toolkit is None:
         return CustomAgentFactoryToolkit()

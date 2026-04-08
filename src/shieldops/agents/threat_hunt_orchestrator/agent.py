@@ -49,3 +49,9 @@ class ThreatHuntOrchestratorAgent(Agent):
     ]
 
     entry = "generate_hypothesis"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatHuntOrchestratorRunner`` keep working via this alias; new code
+# should use ``ThreatHuntOrchestratorAgent`` directly through AgentRuntime.
+ThreatHuntOrchestratorRunner = ThreatHuntOrchestratorAgent

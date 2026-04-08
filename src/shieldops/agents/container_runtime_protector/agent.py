@@ -50,3 +50,9 @@ class ContainerRuntimeProtectorAgent(Agent):
     ]
 
     entry = "profile_workload"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ContainerRuntimeProtectorRunner`` keep working via this alias; new code
+# should use ``ContainerRuntimeProtectorAgent`` directly through AgentRuntime.
+ContainerRuntimeProtectorRunner = ContainerRuntimeProtectorAgent

@@ -48,3 +48,9 @@ class ThreatActorProfilerAgent(Agent):
     ]
 
     entry = "collect_indicators"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatActorProfilerRunner`` keep working via this alias; new code
+# should use ``ThreatActorProfilerAgent`` directly through AgentRuntime.
+ThreatActorProfilerRunner = ThreatActorProfilerAgent

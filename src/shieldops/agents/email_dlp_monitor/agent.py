@@ -48,3 +48,9 @@ class EmailDlpMonitorAgent(Agent):
     ]
 
     entry = "scan_outbound"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EmailDLPMonitorRunner`` keep working via this alias; new code
+# should use ``EmailDlpMonitorAgent`` directly through AgentRuntime.
+EmailDLPMonitorRunner = EmailDlpMonitorAgent

@@ -48,3 +48,9 @@ class PostmortemGeneratorAgent(Agent):
     ]
 
     entry = "collect_timeline"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PostmortemGeneratorRunner`` keep working via this alias; new code
+# should use ``PostmortemGeneratorAgent`` directly through AgentRuntime.
+PostmortemGeneratorRunner = PostmortemGeneratorAgent

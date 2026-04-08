@@ -48,3 +48,9 @@ class TrainingDataValidatorAgent(Agent):
     ]
 
     entry = "profile_data"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``TrainingDataValidatorRunner`` keep working via this alias; new code
+# should use ``TrainingDataValidatorAgent`` directly through AgentRuntime.
+TrainingDataValidatorRunner = TrainingDataValidatorAgent

@@ -46,3 +46,9 @@ class ServerlessSecurityAgent(Agent):
     ]
 
     entry = "discover_functions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ServerlessSecurityRunner`` keep working via this alias; new code
+# should use ``ServerlessSecurityAgent`` directly through AgentRuntime.
+ServerlessSecurityRunner = ServerlessSecurityAgent

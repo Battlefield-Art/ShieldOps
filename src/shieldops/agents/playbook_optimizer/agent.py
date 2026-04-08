@@ -48,3 +48,9 @@ class PlaybookOptimizerAgent(Agent):
     ]
 
     entry = "analyze_executions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PlaybookOptimizerRunner`` keep working via this alias; new code
+# should use ``PlaybookOptimizerAgent`` directly through AgentRuntime.
+PlaybookOptimizerRunner = PlaybookOptimizerAgent

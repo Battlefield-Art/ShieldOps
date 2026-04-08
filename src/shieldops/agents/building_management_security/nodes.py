@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: BuildingManagementSecurityToolkit | None = None
 
 
-def set_toolkit(toolkit: BuildingManagementSecurityToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> BuildingManagementSecurityToolkit:
     if _toolkit is None:
         return BuildingManagementSecurityToolkit()

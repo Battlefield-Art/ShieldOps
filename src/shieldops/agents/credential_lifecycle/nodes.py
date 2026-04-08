@@ -24,12 +24,6 @@ logger = structlog.get_logger()
 _toolkit: CredentialLifecycleToolkit | None = None
 
 
-def set_toolkit(toolkit: CredentialLifecycleToolkit) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CredentialLifecycleToolkit:
     """Get the module-level toolkit, creating a default if needed."""
     global _toolkit

@@ -49,3 +49,9 @@ class PatchOrchestratorAgent(Agent):
     ]
 
     entry = "inventory_systems"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PatchOrchestratorRunner`` keep working via this alias; new code
+# should use ``PatchOrchestratorAgent`` directly through AgentRuntime.
+PatchOrchestratorRunner = PatchOrchestratorAgent

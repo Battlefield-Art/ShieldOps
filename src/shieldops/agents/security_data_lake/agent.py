@@ -48,3 +48,9 @@ class SecurityDataLakeAgent(Agent):
     ]
 
     entry = "parse_query"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityDataLakeRunner`` keep working via this alias; new code
+# should use ``SecurityDataLakeAgent`` directly through AgentRuntime.
+SecurityDataLakeRunner = SecurityDataLakeAgent

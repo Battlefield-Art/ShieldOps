@@ -49,3 +49,9 @@ class CredentialLifecycleAgent(Agent):
     ]
 
     entry = "discover_credentials"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CredentialLifecycleRunner`` keep working via this alias; new code
+# should use ``CredentialLifecycleAgent`` directly through AgentRuntime.
+CredentialLifecycleRunner = CredentialLifecycleAgent

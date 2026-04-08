@@ -48,3 +48,9 @@ class ScaDependencyCheckerAgent(Agent):
     ]
 
     entry = "discover_manifests"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SCADependencyCheckerRunner`` keep working via this alias; new code
+# should use ``ScaDependencyCheckerAgent`` directly through AgentRuntime.
+SCADependencyCheckerRunner = ScaDependencyCheckerAgent

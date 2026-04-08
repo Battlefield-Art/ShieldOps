@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: ManagedThreatHuntingToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: ManagedThreatHuntingToolkit,
-) -> None:
-    """Set the global toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ManagedThreatHuntingToolkit:
     if _toolkit is None:
         return ManagedThreatHuntingToolkit()

@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: MultiTenantIsolationGuardToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: MultiTenantIsolationGuardToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> MultiTenantIsolationGuardToolkit:
     if _toolkit is None:
         return MultiTenantIsolationGuardToolkit()

@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: AttackPathAnalyzerToolkit | None = None
 
 
-def set_toolkit(toolkit: AttackPathAnalyzerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AttackPathAnalyzerToolkit:
     if _toolkit is None:
         return AttackPathAnalyzerToolkit()

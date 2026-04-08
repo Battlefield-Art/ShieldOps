@@ -50,3 +50,9 @@ class SecurityTrainingPlatformAgent(Agent):
     ]
 
     entry = "assess_baseline"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityTrainingPlatformRunner`` keep working via this alias; new code
+# should use ``SecurityTrainingPlatformAgent`` directly through AgentRuntime.
+SecurityTrainingPlatformRunner = SecurityTrainingPlatformAgent

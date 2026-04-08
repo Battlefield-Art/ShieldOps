@@ -48,3 +48,9 @@ class AttackPathAnalyzerAgent(Agent):
     ]
 
     entry = "discover_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AttackPathAnalyzerRunner`` keep working via this alias; new code
+# should use ``AttackPathAnalyzerAgent`` directly through AgentRuntime.
+AttackPathAnalyzerRunner = AttackPathAnalyzerAgent

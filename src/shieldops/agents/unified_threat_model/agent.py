@@ -50,3 +50,9 @@ class UnifiedThreatModelAgent(Agent):
     ]
 
     entry = "define_scope"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``UnifiedThreatModelRunner`` keep working via this alias; new code
+# should use ``UnifiedThreatModelAgent`` directly through AgentRuntime.
+UnifiedThreatModelRunner = UnifiedThreatModelAgent

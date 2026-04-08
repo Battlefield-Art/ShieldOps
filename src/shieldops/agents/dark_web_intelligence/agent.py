@@ -49,3 +49,9 @@ class DarkWebIntelligenceAgent(Agent):
     ]
 
     entry = "monitor_forums"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DarkWebIntelligenceRunner`` keep working via this alias; new code
+# should use ``DarkWebIntelligenceAgent`` directly through AgentRuntime.
+DarkWebIntelligenceRunner = DarkWebIntelligenceAgent

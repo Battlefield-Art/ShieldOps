@@ -48,3 +48,9 @@ class CertificateManagerAgent(Agent):
     ]
 
     entry = "discover_certs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CertificateManagerRunner`` keep working via this alias; new code
+# should use ``CertificateManagerAgent`` directly through AgentRuntime.
+CertificateManagerRunner = CertificateManagerAgent

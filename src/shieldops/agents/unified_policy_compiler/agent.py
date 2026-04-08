@@ -48,3 +48,9 @@ class UnifiedPolicyCompilerAgent(Agent):
     ]
 
     entry = "ingest_policies"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``UnifiedPolicyCompilerRunner`` keep working via this alias; new code
+# should use ``UnifiedPolicyCompilerAgent`` directly through AgentRuntime.
+UnifiedPolicyCompilerRunner = UnifiedPolicyCompilerAgent

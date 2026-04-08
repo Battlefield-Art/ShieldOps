@@ -48,3 +48,9 @@ class AdaptiveAccessControllerAgent(Agent):
     ]
 
     entry = "assess_context"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AdaptiveAccessControllerRunner`` keep working via this alias; new code
+# should use ``AdaptiveAccessControllerAgent`` directly through AgentRuntime.
+AdaptiveAccessControllerRunner = AdaptiveAccessControllerAgent

@@ -16,14 +16,6 @@ logger = structlog.get_logger()
 _toolkit: ResponseAutomationEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: ResponseAutomationEngineToolkit,
-) -> None:
-    """Configure the toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ResponseAutomationEngineToolkit:
     if _toolkit is None:
         return ResponseAutomationEngineToolkit()

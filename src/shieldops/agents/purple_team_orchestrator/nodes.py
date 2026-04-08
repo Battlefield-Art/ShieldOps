@@ -30,14 +30,6 @@ logger = structlog.get_logger()
 _toolkit: PurpleTeamOrchestratorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: PurpleTeamOrchestratorToolkit,
-) -> None:
-    """Inject the toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PurpleTeamOrchestratorToolkit:
     if _toolkit is None:
         return PurpleTeamOrchestratorToolkit()

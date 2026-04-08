@@ -50,3 +50,9 @@ class EventStreamProcessorAgent(Agent):
     ]
 
     entry = "connect_streams"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EventStreamProcessorRunner`` keep working via this alias; new code
+# should use ``EventStreamProcessorAgent`` directly through AgentRuntime.
+EventStreamProcessorRunner = EventStreamProcessorAgent

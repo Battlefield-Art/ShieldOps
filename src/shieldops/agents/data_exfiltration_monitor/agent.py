@@ -50,3 +50,9 @@ class DataExfiltrationMonitorAgent(Agent):
     ]
 
     entry = "monitor_channels"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataExfiltrationMonitorRunner`` keep working via this alias; new code
+# should use ``DataExfiltrationMonitorAgent`` directly through AgentRuntime.
+DataExfiltrationMonitorRunner = DataExfiltrationMonitorAgent

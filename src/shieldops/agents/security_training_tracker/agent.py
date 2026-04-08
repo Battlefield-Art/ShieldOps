@@ -49,3 +49,9 @@ class SecurityTrainingTrackerAgent(Agent):
     ]
 
     entry = "assess_requirements"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityTrainingTrackerRunner`` keep working via this alias; new code
+# should use ``SecurityTrainingTrackerAgent`` directly through AgentRuntime.
+SecurityTrainingTrackerRunner = SecurityTrainingTrackerAgent

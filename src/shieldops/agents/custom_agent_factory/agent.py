@@ -48,3 +48,9 @@ class CustomAgentFactoryAgent(Agent):
     ]
 
     entry = "parse_requirements"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CustomAgentFactoryRunner`` keep working via this alias; new code
+# should use ``CustomAgentFactoryAgent`` directly through AgentRuntime.
+CustomAgentFactoryRunner = CustomAgentFactoryAgent

@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: ModelDriftDetectorToolkit | None = None
 
 
-def set_toolkit(toolkit: ModelDriftDetectorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ModelDriftDetectorToolkit:
     if _toolkit is None:
         return ModelDriftDetectorToolkit()

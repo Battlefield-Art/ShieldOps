@@ -49,3 +49,9 @@ class DataResilienceAgent(Agent):
     ]
 
     entry = "inventory_data_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataResilienceRunner`` keep working via this alias; new code
+# should use ``DataResilienceAgent`` directly through AgentRuntime.
+DataResilienceRunner = DataResilienceAgent

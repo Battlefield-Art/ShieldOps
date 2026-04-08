@@ -29,14 +29,6 @@ logger = structlog.get_logger()
 _toolkit: AgentFleetOptimizerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AgentFleetOptimizerToolkit,
-) -> None:
-    """Inject the toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AgentFleetOptimizerToolkit:
     if _toolkit is None:
         return AgentFleetOptimizerToolkit()

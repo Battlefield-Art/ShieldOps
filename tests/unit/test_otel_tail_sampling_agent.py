@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 import yaml
 
+from shieldops.agents.otel_tail_sampling.agent import OTelTailSamplingRunner
 from shieldops.agents.otel_tail_sampling.graph import (
     _should_apply,
     build_graph,
@@ -25,7 +26,6 @@ from shieldops.agents.otel_tail_sampling.nodes import (
     design_policies,
     simulate_impact,
 )
-from shieldops.agents.otel_tail_sampling.runner import OTelTailSamplingRunner
 from shieldops.agents.otel_tail_sampling.tools import OTelTailSamplingToolkit
 
 # ---------------------------------------------------------------------------

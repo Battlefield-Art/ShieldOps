@@ -48,3 +48,9 @@ class SupplyChainScannerAgent(Agent):
     ]
 
     entry = "inventory_ai_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SupplyChainScannerRunner`` keep working via this alias; new code
+# should use ``SupplyChainScannerAgent`` directly through AgentRuntime.
+SupplyChainScannerRunner = SupplyChainScannerAgent

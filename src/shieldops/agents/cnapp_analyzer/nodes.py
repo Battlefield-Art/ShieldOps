@@ -27,14 +27,6 @@ logger = structlog.get_logger()
 _toolkit: CNAPPAnalyzerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CNAPPAnalyzerToolkit,
-) -> None:
-    """Set the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CNAPPAnalyzerToolkit:
     """Get the module-level toolkit."""
     global _toolkit

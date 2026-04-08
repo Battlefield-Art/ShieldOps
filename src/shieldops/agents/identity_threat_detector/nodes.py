@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: IdentityThreatDetectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: IdentityThreatDetectorToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IdentityThreatDetectorToolkit:
     if _toolkit is None:
         return IdentityThreatDetectorToolkit()

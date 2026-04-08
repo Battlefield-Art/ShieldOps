@@ -49,3 +49,9 @@ class CloudNetworkAnalyzerAgent(Agent):
     ]
 
     entry = "discover_topology"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudNetworkAnalyzerRunner`` keep working via this alias; new code
+# should use ``CloudNetworkAnalyzerAgent`` directly through AgentRuntime.
+CloudNetworkAnalyzerRunner = CloudNetworkAnalyzerAgent

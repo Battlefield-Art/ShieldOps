@@ -49,3 +49,9 @@ class ContinuousScannerAgent(Agent):
     ]
 
     entry = "load_schedule"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ContinuousScannerRunner`` keep working via this alias; new code
+# should use ``ContinuousScannerAgent`` directly through AgentRuntime.
+ContinuousScannerRunner = ContinuousScannerAgent

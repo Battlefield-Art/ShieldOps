@@ -48,3 +48,9 @@ class VendorRiskAssessorAgent(Agent):
     ]
 
     entry = "collect_data"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``VendorRiskAssessorRunner`` keep working via this alias; new code
+# should use ``VendorRiskAssessorAgent`` directly through AgentRuntime.
+VendorRiskAssessorRunner = VendorRiskAssessorAgent

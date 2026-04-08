@@ -48,3 +48,9 @@ class PrivacyImpactAssessorAgent(Agent):
     ]
 
     entry = "identify_processing"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PrivacyImpactAssessorRunner`` keep working via this alias; new code
+# should use ``PrivacyImpactAssessorAgent`` directly through AgentRuntime.
+PrivacyImpactAssessorRunner = PrivacyImpactAssessorAgent

@@ -48,3 +48,9 @@ class DependencyGraphAnalyzerAgent(Agent):
     ]
 
     entry = "build_graph"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DependencyGraphAnalyzerRunner`` keep working via this alias; new code
+# should use ``DependencyGraphAnalyzerAgent`` directly through AgentRuntime.
+DependencyGraphAnalyzerRunner = DependencyGraphAnalyzerAgent

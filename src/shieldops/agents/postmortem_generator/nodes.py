@@ -24,14 +24,6 @@ logger = structlog.get_logger()
 _toolkit: PostmortemGeneratorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: PostmortemGeneratorToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PostmortemGeneratorToolkit:
     if _toolkit is None:
         return PostmortemGeneratorToolkit()

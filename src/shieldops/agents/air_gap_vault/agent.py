@@ -49,3 +49,9 @@ class AirGapVaultAgent(Agent):
     ]
 
     entry = "inventory_vault_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AirGapVaultRunner`` keep working via this alias; new code
+# should use ``AirGapVaultAgent`` directly through AgentRuntime.
+AirGapVaultRunner = AirGapVaultAgent

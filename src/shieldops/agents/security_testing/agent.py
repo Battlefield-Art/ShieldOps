@@ -42,3 +42,9 @@ class SecurityTestingAgent(Agent):
     ]
 
     entry = "define_scope"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityTestingRunner`` keep working via this alias; new code
+# should use ``SecurityTestingAgent`` directly through AgentRuntime.
+SecurityTestingRunner = SecurityTestingAgent

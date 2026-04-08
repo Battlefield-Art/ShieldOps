@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: CloudDatabaseProtectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CloudDatabaseProtectorToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CloudDatabaseProtectorToolkit:
     if _toolkit is None:
         return CloudDatabaseProtectorToolkit()

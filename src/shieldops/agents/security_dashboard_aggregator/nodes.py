@@ -29,14 +29,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityDashboardAggregatorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SecurityDashboardAggregatorToolkit,
-) -> None:
-    """Set the global toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityDashboardAggregatorToolkit:
     if _toolkit is None:
         return SecurityDashboardAggregatorToolkit()

@@ -46,14 +46,6 @@ logger = structlog.get_logger()
 _toolkit: AutonomousOpsControllerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AutonomousOpsControllerToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AutonomousOpsControllerToolkit:
     if _toolkit is None:
         return AutonomousOpsControllerToolkit()

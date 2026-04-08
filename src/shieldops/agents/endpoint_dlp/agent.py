@@ -48,3 +48,9 @@ class EndpointDlpAgent(Agent):
     ]
 
     entry = "monitor_endpoints"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EndpointDLPRunner`` keep working via this alias; new code
+# should use ``EndpointDlpAgent`` directly through AgentRuntime.
+EndpointDLPRunner = EndpointDlpAgent

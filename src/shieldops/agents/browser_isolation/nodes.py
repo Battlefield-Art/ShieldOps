@@ -23,11 +23,6 @@ logger = structlog.get_logger()
 _toolkit: BrowserIsolationToolkit | None = None
 
 
-def set_toolkit(tk: BrowserIsolationToolkit) -> None:
-    global _toolkit
-    _toolkit = tk
-
-
 async def collect_sessions(
     state: dict[str, Any], toolkit: BrowserIsolationToolkit
 ) -> dict[str, Any]:

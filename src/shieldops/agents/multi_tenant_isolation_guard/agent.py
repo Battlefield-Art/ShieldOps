@@ -48,3 +48,9 @@ class MultiTenantIsolationGuardAgent(Agent):
     ]
 
     entry = "map_tenants"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MultiTenantIsolationGuardRunner`` keep working via this alias; new code
+# should use ``MultiTenantIsolationGuardAgent`` directly through AgentRuntime.
+MultiTenantIsolationGuardRunner = MultiTenantIsolationGuardAgent

@@ -30,14 +30,6 @@ logger = structlog.get_logger()
 _toolkit: AutoTicketManagerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AutoTicketManagerToolkit,
-) -> None:
-    """Set the global toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AutoTicketManagerToolkit:
     if _toolkit is None:
         return AutoTicketManagerToolkit()

@@ -46,3 +46,9 @@ class MultiCloudComplianceAgent(Agent):
     ]
 
     entry = "collect_configs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MultiCloudComplianceRunner`` keep working via this alias; new code
+# should use ``MultiCloudComplianceAgent`` directly through AgentRuntime.
+MultiCloudComplianceRunner = MultiCloudComplianceAgent

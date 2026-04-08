@@ -49,3 +49,9 @@ class ContainerSecurityAgent(Agent):
     ]
 
     entry = "scan_images"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ContainerSecurityRunner`` keep working via this alias; new code
+# should use ``ContainerSecurityAgent`` directly through AgentRuntime.
+ContainerSecurityRunner = ContainerSecurityAgent

@@ -49,3 +49,9 @@ class AttackEmulationFrameworkAgent(Agent):
     ]
 
     entry = "select_adversary"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AttackEmulationFrameworkRunner`` keep working via this alias; new code
+# should use ``AttackEmulationFrameworkAgent`` directly through AgentRuntime.
+AttackEmulationFrameworkRunner = AttackEmulationFrameworkAgent

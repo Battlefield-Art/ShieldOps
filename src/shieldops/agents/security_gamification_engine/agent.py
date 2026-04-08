@@ -49,3 +49,9 @@ class SecurityGamificationEngineAgent(Agent):
     ]
 
     entry = "define_challenges"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityGamificationEngineRunner`` keep working via this alias; new code
+# should use ``SecurityGamificationEngineAgent`` directly through AgentRuntime.
+SecurityGamificationEngineRunner = SecurityGamificationEngineAgent

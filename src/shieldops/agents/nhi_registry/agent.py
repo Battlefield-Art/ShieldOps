@@ -54,3 +54,9 @@ class NhiRegistryAgent(Agent):
     ]
 
     entry = "scan_cloud_iam"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``NHIRegistryRunner`` keep working via this alias; new code
+# should use ``NhiRegistryAgent`` directly through AgentRuntime.
+NHIRegistryRunner = NhiRegistryAgent

@@ -48,3 +48,9 @@ class OnCallOptimizerAgent(Agent):
     ]
 
     entry = "analyze_schedules"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``OnCallOptimizerRunner`` keep working via this alias; new code
+# should use ``OnCallOptimizerAgent`` directly through AgentRuntime.
+OnCallOptimizerRunner = OnCallOptimizerAgent

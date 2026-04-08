@@ -49,3 +49,9 @@ class DataClassificationAgent(Agent):
     ]
 
     entry = "scan_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataClassificationRunner`` keep working via this alias; new code
+# should use ``DataClassificationAgent`` directly through AgentRuntime.
+DataClassificationRunner = DataClassificationAgent

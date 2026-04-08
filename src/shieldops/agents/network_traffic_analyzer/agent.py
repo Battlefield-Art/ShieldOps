@@ -49,3 +49,9 @@ class NetworkTrafficAnalyzerAgent(Agent):
     ]
 
     entry = "capture_flows"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``NetworkTrafficAnalyzerRunner`` keep working via this alias; new code
+# should use ``NetworkTrafficAnalyzerAgent`` directly through AgentRuntime.
+NetworkTrafficAnalyzerRunner = NetworkTrafficAnalyzerAgent

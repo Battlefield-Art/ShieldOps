@@ -33,14 +33,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityDataLakeToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SecurityDataLakeToolkit,
-) -> None:
-    """Inject the toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityDataLakeToolkit:
     if _toolkit is None:
         return SecurityDataLakeToolkit()

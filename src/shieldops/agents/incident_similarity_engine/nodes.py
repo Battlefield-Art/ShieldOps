@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: IncidentSimilarityEngineToolkit | None = None
 
 
-def set_toolkit(toolkit: IncidentSimilarityEngineToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IncidentSimilarityEngineToolkit:
     if _toolkit is None:
         return IncidentSimilarityEngineToolkit()

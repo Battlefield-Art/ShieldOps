@@ -48,3 +48,9 @@ class SecurityChaosOrchestratorAgent(Agent):
     ]
 
     entry = "plan_experiments"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityChaosOrchestratorRunner`` keep working via this alias; new code
+# should use ``SecurityChaosOrchestratorAgent`` directly through AgentRuntime.
+SecurityChaosOrchestratorRunner = SecurityChaosOrchestratorAgent

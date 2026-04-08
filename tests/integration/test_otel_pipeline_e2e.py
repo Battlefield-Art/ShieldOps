@@ -9,8 +9,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from shieldops.agents.otel_pipeline.agent import OTelPipelineRunner
 from shieldops.agents.otel_pipeline.nodes import _ValidationLLMResult
-from shieldops.agents.otel_pipeline.runner import OTelPipelineRunner
 
 # ── Fixtures ──────────────────────────────────────────────────────────
 

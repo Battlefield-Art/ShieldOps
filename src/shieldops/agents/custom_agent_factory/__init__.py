@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from shieldops.agents.custom_agent_factory.agent import (
+    CustomAgentFactoryRunner,
+)
 from shieldops.agents.custom_agent_factory.graph import (
     create_custom_agent_factory_graph,
-)
-from shieldops.agents.custom_agent_factory.runner import (
-    CustomAgentFactoryRunner,
 )
 
 __all__ = [

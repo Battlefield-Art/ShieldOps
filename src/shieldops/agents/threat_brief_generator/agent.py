@@ -48,3 +48,9 @@ class ThreatBriefGeneratorAgent(Agent):
     ]
 
     entry = "collect_intel"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatBriefGeneratorRunner`` keep working via this alias; new code
+# should use ``ThreatBriefGeneratorAgent`` directly through AgentRuntime.
+ThreatBriefGeneratorRunner = ThreatBriefGeneratorAgent

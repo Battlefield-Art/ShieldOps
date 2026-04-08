@@ -49,3 +49,9 @@ class CloudResourceTaggerAgent(Agent):
     ]
 
     entry = "scan_resources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudResourceTaggerRunner`` keep working via this alias; new code
+# should use ``CloudResourceTaggerAgent`` directly through AgentRuntime.
+CloudResourceTaggerRunner = CloudResourceTaggerAgent

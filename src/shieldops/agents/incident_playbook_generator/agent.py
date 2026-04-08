@@ -48,3 +48,9 @@ class IncidentPlaybookGeneratorAgent(Agent):
     ]
 
     entry = "analyze_threat"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IncidentPlaybookGeneratorRunner`` keep working via this alias; new code
+# should use ``IncidentPlaybookGeneratorAgent`` directly through AgentRuntime.
+IncidentPlaybookGeneratorRunner = IncidentPlaybookGeneratorAgent

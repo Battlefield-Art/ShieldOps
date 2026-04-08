@@ -43,3 +43,9 @@ class AdaptiveSecurityAgent(Agent):
     ]
 
     entry = "baseline"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AdaptiveSecurityRunner`` keep working via this alias; new code
+# should use ``AdaptiveSecurityAgent`` directly through AgentRuntime.
+AdaptiveSecurityRunner = AdaptiveSecurityAgent

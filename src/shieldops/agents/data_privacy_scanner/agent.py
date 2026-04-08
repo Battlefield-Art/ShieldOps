@@ -49,3 +49,9 @@ class DataPrivacyScannerAgent(Agent):
     ]
 
     entry = "scan_datastores"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataPrivacyScannerRunner`` keep working via this alias; new code
+# should use ``DataPrivacyScannerAgent`` directly through AgentRuntime.
+DataPrivacyScannerRunner = DataPrivacyScannerAgent

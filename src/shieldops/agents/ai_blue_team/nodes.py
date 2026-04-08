@@ -29,11 +29,6 @@ logger = structlog.get_logger()
 _toolkit: AIBlueTeamToolkit | None = None
 
 
-def set_toolkit(toolkit: AIBlueTeamToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AIBlueTeamToolkit:
     if _toolkit is None:
         return AIBlueTeamToolkit()

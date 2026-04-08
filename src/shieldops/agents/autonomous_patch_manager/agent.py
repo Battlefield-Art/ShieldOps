@@ -48,3 +48,9 @@ class AutonomousPatchManagerAgent(Agent):
     ]
 
     entry = "scan_inventory"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AutonomousPatchManagerRunner`` keep working via this alias; new code
+# should use ``AutonomousPatchManagerAgent`` directly through AgentRuntime.
+AutonomousPatchManagerRunner = AutonomousPatchManagerAgent

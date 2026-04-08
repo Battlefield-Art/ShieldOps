@@ -42,3 +42,9 @@ class OtelCollectorManagerAgent(Agent):
     ]
 
     entry = "assess"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``OTelCollectorManagerRunner`` keep working via this alias; new code
+# should use ``OtelCollectorManagerAgent`` directly through AgentRuntime.
+OTelCollectorManagerRunner = OtelCollectorManagerAgent

@@ -48,3 +48,9 @@ class DataLineageTrackerAgent(Agent):
     ]
 
     entry = "discover_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataLineageTrackerRunner`` keep working via this alias; new code
+# should use ``DataLineageTrackerAgent`` directly through AgentRuntime.
+DataLineageTrackerRunner = DataLineageTrackerAgent

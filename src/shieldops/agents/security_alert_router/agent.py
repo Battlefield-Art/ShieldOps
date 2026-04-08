@@ -49,3 +49,9 @@ class SecurityAlertRouterAgent(Agent):
     ]
 
     entry = "receive_alerts"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityAlertRouterRunner`` keep working via this alias; new code
+# should use ``SecurityAlertRouterAgent`` directly through AgentRuntime.
+SecurityAlertRouterRunner = SecurityAlertRouterAgent

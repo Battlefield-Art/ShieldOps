@@ -36,12 +36,6 @@ logger = structlog.get_logger()
 _toolkit: MCPSecurityToolkit | None = None
 
 
-def set_toolkit(toolkit: MCPSecurityToolkit) -> None:
-    """Configure the toolkit used by all nodes. Called once at startup."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> MCPSecurityToolkit:
     if _toolkit is None:
         return MCPSecurityToolkit()

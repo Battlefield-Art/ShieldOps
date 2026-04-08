@@ -37,12 +37,6 @@ logger = structlog.get_logger()
 _toolkit: AgenticMDRToolkit | None = None
 
 
-def set_toolkit(toolkit: AgenticMDRToolkit) -> None:
-    """Inject the toolkit instance used by nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AgenticMDRToolkit:
     if _toolkit is None:
         return AgenticMDRToolkit()

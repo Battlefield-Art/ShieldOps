@@ -48,3 +48,9 @@ class ModelExplainabilityAuditorAgent(Agent):
     ]
 
     entry = "collect_predictions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ModelExplainabilityAuditorRunner`` keep working via this alias; new code
+# should use ``ModelExplainabilityAuditorAgent`` directly through AgentRuntime.
+ModelExplainabilityAuditorRunner = ModelExplainabilityAuditorAgent

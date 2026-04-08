@@ -48,3 +48,9 @@ class SocialEngineeringDetectorAgent(Agent):
     ]
 
     entry = "collect_signals"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SocialEngineeringDetectorRunner`` keep working via this alias; new code
+# should use ``SocialEngineeringDetectorAgent`` directly through AgentRuntime.
+SocialEngineeringDetectorRunner = SocialEngineeringDetectorAgent

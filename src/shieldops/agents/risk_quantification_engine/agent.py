@@ -48,3 +48,9 @@ class RiskQuantificationEngineAgent(Agent):
     ]
 
     entry = "identify_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RiskQuantificationEngineRunner`` keep working via this alias; new code
+# should use ``RiskQuantificationEngineAgent`` directly through AgentRuntime.
+RiskQuantificationEngineRunner = RiskQuantificationEngineAgent

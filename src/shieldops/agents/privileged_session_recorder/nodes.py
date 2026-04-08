@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: PrivilegedSessionRecorderToolkit | None = None
 
 
-def set_toolkit(toolkit: PrivilegedSessionRecorderToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PrivilegedSessionRecorderToolkit:
     if _toolkit is None:
         return PrivilegedSessionRecorderToolkit()

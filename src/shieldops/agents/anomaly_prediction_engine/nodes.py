@@ -19,13 +19,6 @@ logger = structlog.get_logger()
 _toolkit: AnomalyPredictionEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AnomalyPredictionEngineToolkit,
-) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AnomalyPredictionEngineToolkit:
     if _toolkit is None:
         return AnomalyPredictionEngineToolkit()

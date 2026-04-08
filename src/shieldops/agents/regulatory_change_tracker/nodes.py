@@ -17,14 +17,6 @@ logger = structlog.get_logger()
 _toolkit: RegulatoryChangeTrackerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: RegulatoryChangeTrackerToolkit,
-) -> None:
-    """Configure the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> RegulatoryChangeTrackerToolkit:
     if _toolkit is None:
         return RegulatoryChangeTrackerToolkit()

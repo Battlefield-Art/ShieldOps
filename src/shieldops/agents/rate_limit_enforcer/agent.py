@@ -48,3 +48,9 @@ class RateLimitEnforcerAgent(Agent):
     ]
 
     entry = "monitor_traffic"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RateLimitEnforcerRunner`` keep working via this alias; new code
+# should use ``RateLimitEnforcerAgent`` directly through AgentRuntime.
+RateLimitEnforcerRunner = RateLimitEnforcerAgent

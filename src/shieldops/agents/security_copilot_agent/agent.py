@@ -49,3 +49,9 @@ class SecurityCopilotAgentAgent(Agent):
     ]
 
     entry = "receive_query"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityCopilotAgentRunner`` keep working via this alias; new code
+# should use ``SecurityCopilotAgentAgent`` directly through AgentRuntime.
+SecurityCopilotAgentRunner = SecurityCopilotAgentAgent

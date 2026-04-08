@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: AgentMemoryStoreToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AgentMemoryStoreToolkit,
-) -> None:
-    """Configure the toolkit for all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AgentMemoryStoreToolkit:
     if _toolkit is None:
         return AgentMemoryStoreToolkit()

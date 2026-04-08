@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock
 import pytest
 import yaml
 
+from shieldops.agents.otel_collector_manager.agent import OTelCollectorManagerRunner
 from shieldops.agents.otel_collector_manager.models import CollectorAction
-from shieldops.agents.otel_collector_manager.runner import OTelCollectorManagerRunner
 
 # ── Full Pipeline ─────────────────────────────────────────────────────
 

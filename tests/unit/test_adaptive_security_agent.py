@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from shieldops.agents.adaptive_security import create_adaptive_security_graph
+from shieldops.agents.adaptive_security.agent import AdaptiveSecurityRunner
 from shieldops.agents.adaptive_security.models import (
     AdaptationResult,
     AdaptationStage,
@@ -27,7 +28,6 @@ from shieldops.agents.adaptive_security.prompts import (
     SYSTEM_DETECT_PROPOSE,
     SYSTEM_EVALUATE,
 )
-from shieldops.agents.adaptive_security.runner import AdaptiveSecurityRunner
 from shieldops.agents.adaptive_security.tools import AdaptiveSecurityToolkit
 
 # ---------------------------------------------------------------------------

@@ -42,14 +42,6 @@ logger = structlog.get_logger()
 _toolkit: IntelligenceFusionCenterToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: IntelligenceFusionCenterToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IntelligenceFusionCenterToolkit:
     if _toolkit is None:
         return IntelligenceFusionCenterToolkit()

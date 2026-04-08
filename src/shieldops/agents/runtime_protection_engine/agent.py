@@ -48,3 +48,9 @@ class RuntimeProtectionEngineAgent(Agent):
     ]
 
     entry = "collect_telemetry"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RuntimeProtectionEngineRunner`` keep working via this alias; new code
+# should use ``RuntimeProtectionEngineAgent`` directly through AgentRuntime.
+RuntimeProtectionEngineRunner = RuntimeProtectionEngineAgent

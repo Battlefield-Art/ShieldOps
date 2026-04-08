@@ -49,3 +49,9 @@ class EmailAuthenticationAuditorAgent(Agent):
     ]
 
     entry = "scan_domains"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EmailAuthenticationAuditorRunner`` keep working via this alias; new code
+# should use ``EmailAuthenticationAuditorAgent`` directly through AgentRuntime.
+EmailAuthenticationAuditorRunner = EmailAuthenticationAuditorAgent

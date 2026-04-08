@@ -48,3 +48,9 @@ class SoxAuditorAgent(Agent):
     ]
 
     entry = "identify_controls"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SOXAuditorRunner`` keep working via this alias; new code
+# should use ``SoxAuditorAgent`` directly through AgentRuntime.
+SOXAuditorRunner = SoxAuditorAgent

@@ -48,3 +48,9 @@ class SecurityPolicyOptimizerAgent(Agent):
     ]
 
     entry = "collect_policies"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityPolicyOptimizerRunner`` keep working via this alias; new code
+# should use ``SecurityPolicyOptimizerAgent`` directly through AgentRuntime.
+SecurityPolicyOptimizerRunner = SecurityPolicyOptimizerAgent

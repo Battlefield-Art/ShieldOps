@@ -48,3 +48,9 @@ class DeceptionMeshControllerAgent(Agent):
     ]
 
     entry = "plan_deployment"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DeceptionMeshControllerRunner`` keep working via this alias; new code
+# should use ``DeceptionMeshControllerAgent`` directly through AgentRuntime.
+DeceptionMeshControllerRunner = DeceptionMeshControllerAgent

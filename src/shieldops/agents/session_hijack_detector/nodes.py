@@ -34,12 +34,6 @@ logger = structlog.get_logger()
 _toolkit: SessionHijackDetectorToolkit | None = None
 
 
-def set_toolkit(toolkit: SessionHijackDetectorToolkit) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SessionHijackDetectorToolkit:
     if _toolkit is None:
         return SessionHijackDetectorToolkit()

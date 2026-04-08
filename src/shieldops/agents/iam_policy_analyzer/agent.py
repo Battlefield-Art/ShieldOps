@@ -49,3 +49,9 @@ class IamPolicyAnalyzerAgent(Agent):
     ]
 
     entry = "collect_policies"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IAMPolicyAnalyzerRunner`` keep working via this alias; new code
+# should use ``IamPolicyAnalyzerAgent`` directly through AgentRuntime.
+IAMPolicyAnalyzerRunner = IamPolicyAnalyzerAgent

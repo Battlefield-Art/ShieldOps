@@ -48,3 +48,9 @@ class ForensicEvidenceChainAgent(Agent):
     ]
 
     entry = "collect_evidence"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ForensicEvidenceChainRunner`` keep working via this alias; new code
+# should use ``ForensicEvidenceChainAgent`` directly through AgentRuntime.
+ForensicEvidenceChainRunner = ForensicEvidenceChainAgent

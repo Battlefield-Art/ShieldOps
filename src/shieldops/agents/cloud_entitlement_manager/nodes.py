@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: CloudEntitlementManagerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CloudEntitlementManagerToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CloudEntitlementManagerToolkit:
     if _toolkit is None:
         return CloudEntitlementManagerToolkit()

@@ -16,14 +16,6 @@ logger = structlog.get_logger()
 _toolkit: ThreatHuntAutomationToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: ThreatHuntAutomationToolkit,
-) -> None:
-    """Configure the toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ThreatHuntAutomationToolkit:
     if _toolkit is None:
         return ThreatHuntAutomationToolkit()

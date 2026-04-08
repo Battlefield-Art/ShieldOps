@@ -48,3 +48,9 @@ class SecurityOrchestrationMeshAgent(Agent):
     ]
 
     entry = "discover_regions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityOrchestrationMeshRunner`` keep working via this alias; new code
+# should use ``SecurityOrchestrationMeshAgent`` directly through AgentRuntime.
+SecurityOrchestrationMeshRunner = SecurityOrchestrationMeshAgent

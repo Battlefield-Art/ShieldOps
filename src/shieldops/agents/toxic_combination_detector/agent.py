@@ -49,3 +49,9 @@ class ToxicCombinationDetectorAgent(Agent):
     ]
 
     entry = "collect_permissions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ToxicCombinationDetectorRunner`` keep working via this alias; new code
+# should use ``ToxicCombinationDetectorAgent`` directly through AgentRuntime.
+ToxicCombinationDetectorRunner = ToxicCombinationDetectorAgent

@@ -33,11 +33,6 @@ logger = structlog.get_logger()
 _toolkit: RunbookAutomationToolkit | None = None
 
 
-def set_toolkit(toolkit: RunbookAutomationToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> RunbookAutomationToolkit:
     if _toolkit is None:
         return RunbookAutomationToolkit()

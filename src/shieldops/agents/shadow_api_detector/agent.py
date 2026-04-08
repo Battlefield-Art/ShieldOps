@@ -48,3 +48,9 @@ class ShadowApiDetectorAgent(Agent):
     ]
 
     entry = "discover_traffic"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ShadowAPIDetectorRunner`` keep working via this alias; new code
+# should use ``ShadowApiDetectorAgent`` directly through AgentRuntime.
+ShadowAPIDetectorRunner = ShadowApiDetectorAgent

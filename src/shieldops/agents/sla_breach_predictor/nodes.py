@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: SlaBreachPredictorToolkit | None = None
 
 
-def set_toolkit(toolkit: SlaBreachPredictorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SlaBreachPredictorToolkit:
     if _toolkit is None:
         return SlaBreachPredictorToolkit()

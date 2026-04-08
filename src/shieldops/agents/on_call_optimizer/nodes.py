@@ -24,14 +24,6 @@ logger = structlog.get_logger()
 _toolkit: OnCallOptimizerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: OnCallOptimizerToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> OnCallOptimizerToolkit:
     if _toolkit is None:
         return OnCallOptimizerToolkit()

@@ -48,3 +48,9 @@ class ResponseAutomationEngineAgent(Agent):
     ]
 
     entry = "detect_trigger"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ResponseAutomationEngineRunner`` keep working via this alias; new code
+# should use ``ResponseAutomationEngineAgent`` directly through AgentRuntime.
+ResponseAutomationEngineRunner = ResponseAutomationEngineAgent

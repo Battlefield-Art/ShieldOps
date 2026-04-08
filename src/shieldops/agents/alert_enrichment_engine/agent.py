@@ -48,3 +48,9 @@ class AlertEnrichmentEngineAgent(Agent):
     ]
 
     entry = "ingest_alert"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AlertEnrichmentEngineRunner`` keep working via this alias; new code
+# should use ``AlertEnrichmentEngineAgent`` directly through AgentRuntime.
+AlertEnrichmentEngineRunner = AlertEnrichmentEngineAgent

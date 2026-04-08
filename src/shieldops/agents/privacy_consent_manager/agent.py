@@ -48,3 +48,9 @@ class PrivacyConsentManagerAgent(Agent):
     ]
 
     entry = "discover_consents"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PrivacyConsentManagerRunner`` keep working via this alias; new code
+# should use ``PrivacyConsentManagerAgent`` directly through AgentRuntime.
+PrivacyConsentManagerRunner = PrivacyConsentManagerAgent

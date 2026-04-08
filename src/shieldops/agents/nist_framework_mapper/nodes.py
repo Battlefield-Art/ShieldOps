@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: NISTFrameworkMapperToolkit | None = None
 
 
-def set_toolkit(toolkit: NISTFrameworkMapperToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> NISTFrameworkMapperToolkit:
     if _toolkit is None:
         return NISTFrameworkMapperToolkit()

@@ -49,3 +49,9 @@ class SecurityMetricDashboardAgent(Agent):
     ]
 
     entry = "collect_metrics"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityMetricDashboardRunner`` keep working via this alias; new code
+# should use ``SecurityMetricDashboardAgent`` directly through AgentRuntime.
+SecurityMetricDashboardRunner = SecurityMetricDashboardAgent

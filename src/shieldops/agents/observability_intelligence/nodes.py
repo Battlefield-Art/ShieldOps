@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: ObservabilityIntelligenceToolkit | None = None
 
 
-def set_toolkit(toolkit: ObservabilityIntelligenceToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ObservabilityIntelligenceToolkit:
     if _toolkit is None:
         return ObservabilityIntelligenceToolkit()

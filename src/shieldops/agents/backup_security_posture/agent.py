@@ -48,3 +48,9 @@ class BackupSecurityPostureAgent(Agent):
     ]
 
     entry = "inventory_backup_infra"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BackupSecurityPostureRunner`` keep working via this alias; new code
+# should use ``BackupSecurityPostureAgent`` directly through AgentRuntime.
+BackupSecurityPostureRunner = BackupSecurityPostureAgent

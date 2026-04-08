@@ -48,3 +48,9 @@ class CodeSecurityScannerAgent(Agent):
     ]
 
     entry = "discover_repositories"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CodeSecurityScannerRunner`` keep working via this alias; new code
+# should use ``CodeSecurityScannerAgent`` directly through AgentRuntime.
+CodeSecurityScannerRunner = CodeSecurityScannerAgent

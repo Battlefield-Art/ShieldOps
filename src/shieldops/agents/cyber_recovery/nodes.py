@@ -36,12 +36,6 @@ logger = structlog.get_logger()
 _toolkit: CyberRecoveryToolkit | None = None
 
 
-def set_toolkit(toolkit: CyberRecoveryToolkit) -> None:
-    """Set the toolkit instance for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CyberRecoveryToolkit:
     if _toolkit is None:
         return CyberRecoveryToolkit()

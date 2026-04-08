@@ -42,3 +42,9 @@ class RiskScoringAgent(Agent):
     ]
 
     entry = "collect"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RiskScoringRunner`` keep working via this alias; new code
+# should use ``RiskScoringAgent`` directly through AgentRuntime.
+RiskScoringRunner = RiskScoringAgent

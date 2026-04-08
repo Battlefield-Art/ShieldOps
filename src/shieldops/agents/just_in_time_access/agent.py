@@ -48,3 +48,9 @@ class JustInTimeAccessAgent(Agent):
     ]
 
     entry = "receive_request"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``JustInTimeAccessRunner`` keep working via this alias; new code
+# should use ``JustInTimeAccessAgent`` directly through AgentRuntime.
+JustInTimeAccessRunner = JustInTimeAccessAgent

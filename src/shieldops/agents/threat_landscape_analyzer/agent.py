@@ -49,3 +49,9 @@ class ThreatLandscapeAnalyzerAgent(Agent):
     ]
 
     entry = "collect_intel"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatLandscapeAnalyzerRunner`` keep working via this alias; new code
+# should use ``ThreatLandscapeAnalyzerAgent`` directly through AgentRuntime.
+ThreatLandscapeAnalyzerRunner = ThreatLandscapeAnalyzerAgent

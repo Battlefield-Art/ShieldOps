@@ -52,3 +52,9 @@ class WafManagerAgent(Agent):
     ]
 
     entry = "ingest_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``WAFManagerRunner`` keep working via this alias; new code
+# should use ``WafManagerAgent`` directly through AgentRuntime.
+WAFManagerRunner = WafManagerAgent

@@ -49,3 +49,9 @@ class ThreatIntelligencePlatformAgent(Agent):
     ]
 
     entry = "collect_intelligence"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatIntelligencePlatformRunner`` keep working via this alias; new code
+# should use ``ThreatIntelligencePlatformAgent`` directly through AgentRuntime.
+ThreatIntelligencePlatformRunner = ThreatIntelligencePlatformAgent

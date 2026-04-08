@@ -49,3 +49,9 @@ class InsiderThreatAgent(Agent):
     ]
 
     entry = "collect_user_signals"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``InsiderThreatRunner`` keep working via this alias; new code
+# should use ``InsiderThreatAgent`` directly through AgentRuntime.
+InsiderThreatRunner = InsiderThreatAgent

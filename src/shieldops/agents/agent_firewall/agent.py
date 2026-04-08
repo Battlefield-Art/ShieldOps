@@ -52,3 +52,9 @@ class AgentFirewallAgent(Agent):
     ]
 
     entry = "ingest_calls"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AgentFirewallRunner`` keep working via this alias; new code
+# should use ``AgentFirewallAgent`` directly through AgentRuntime.
+AgentFirewallRunner = AgentFirewallAgent

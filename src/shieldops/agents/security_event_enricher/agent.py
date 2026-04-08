@@ -49,3 +49,9 @@ class SecurityEventEnricherAgent(Agent):
     ]
 
     entry = "receive_events"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityEventEnricherRunner`` keep working via this alias; new code
+# should use ``SecurityEventEnricherAgent`` directly through AgentRuntime.
+SecurityEventEnricherRunner = SecurityEventEnricherAgent

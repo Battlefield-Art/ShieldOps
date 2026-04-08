@@ -48,3 +48,9 @@ class ThreatSurfaceMinimizerAgent(Agent):
     ]
 
     entry = "discover_surface"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatSurfaceMinimizerRunner`` keep working via this alias; new code
+# should use ``ThreatSurfaceMinimizerAgent`` directly through AgentRuntime.
+ThreatSurfaceMinimizerRunner = ThreatSurfaceMinimizerAgent

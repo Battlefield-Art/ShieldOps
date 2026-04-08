@@ -43,3 +43,9 @@ class DetectionEngineeringAgent(Agent):
     ]
 
     entry = "assess_coverage"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DetectionEngineeringRunner`` keep working via this alias; new code
+# should use ``DetectionEngineeringAgent`` directly through AgentRuntime.
+DetectionEngineeringRunner = DetectionEngineeringAgent

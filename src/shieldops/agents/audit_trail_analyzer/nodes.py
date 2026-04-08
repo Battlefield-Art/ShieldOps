@@ -17,14 +17,6 @@ logger = structlog.get_logger()
 _toolkit: AuditTrailAnalyzerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AuditTrailAnalyzerToolkit,
-) -> None:
-    """Configure the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AuditTrailAnalyzerToolkit:
     if _toolkit is None:
         return AuditTrailAnalyzerToolkit()

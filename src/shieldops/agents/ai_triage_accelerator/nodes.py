@@ -37,14 +37,6 @@ logger = structlog.get_logger()
 _toolkit: AITriageAcceleratorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AITriageAcceleratorToolkit,
-) -> None:
-    """Set the shared toolkit instance for all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AITriageAcceleratorToolkit:
     if _toolkit is None:
         return AITriageAcceleratorToolkit()

@@ -49,3 +49,9 @@ class ManagedThreatHuntingAgent(Agent):
     ]
 
     entry = "generate_hunt_leads"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ManagedThreatHuntingRunner`` keep working via this alias; new code
+# should use ``ManagedThreatHuntingAgent`` directly through AgentRuntime.
+ManagedThreatHuntingRunner = ManagedThreatHuntingAgent

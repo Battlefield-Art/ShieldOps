@@ -49,3 +49,9 @@ class GdprProcessorAgent(Agent):
     ]
 
     entry = "intake"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``GDPRProcessorRunner`` keep working via this alias; new code
+# should use ``GdprProcessorAgent`` directly through AgentRuntime.
+GDPRProcessorRunner = GdprProcessorAgent

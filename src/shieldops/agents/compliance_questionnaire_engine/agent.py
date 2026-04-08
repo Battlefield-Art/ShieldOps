@@ -53,3 +53,9 @@ class ComplianceQuestionnaireEngineAgent(Agent):
     ]
 
     entry = "receive_questionnaire"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ComplianceQuestionnaireEngineRunner`` keep working via this alias; new code
+# should use ``ComplianceQuestionnaireEngineAgent`` directly through AgentRuntime.
+ComplianceQuestionnaireEngineRunner = ComplianceQuestionnaireEngineAgent

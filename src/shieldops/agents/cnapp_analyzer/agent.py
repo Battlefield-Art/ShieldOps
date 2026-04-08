@@ -48,3 +48,9 @@ class CnappAnalyzerAgent(Agent):
     ]
 
     entry = "scan_cloud_posture"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CNAPPAnalyzerRunner`` keep working via this alias; new code
+# should use ``CnappAnalyzerAgent`` directly through AgentRuntime.
+CNAPPAnalyzerRunner = CnappAnalyzerAgent

@@ -50,3 +50,9 @@ class AccessReviewAgent(Agent):
     ]
 
     entry = "collect_entitlements"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AccessReviewRunner`` keep working via this alias; new code
+# should use ``AccessReviewAgent`` directly through AgentRuntime.
+AccessReviewRunner = AccessReviewAgent

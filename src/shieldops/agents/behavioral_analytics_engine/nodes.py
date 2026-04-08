@@ -19,13 +19,6 @@ logger = structlog.get_logger()
 _toolkit: BehavioralAnalyticsEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: BehavioralAnalyticsEngineToolkit,
-) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> BehavioralAnalyticsEngineToolkit:
     if _toolkit is None:
         return BehavioralAnalyticsEngineToolkit()

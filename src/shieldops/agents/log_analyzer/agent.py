@@ -50,3 +50,9 @@ class LogAnalyzerAgent(Agent):
     ]
 
     entry = "collect_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``LogAnalyzerRunner`` keep working via this alias; new code
+# should use ``LogAnalyzerAgent`` directly through AgentRuntime.
+LogAnalyzerRunner = LogAnalyzerAgent

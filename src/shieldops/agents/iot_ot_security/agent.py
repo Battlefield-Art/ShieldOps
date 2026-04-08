@@ -49,3 +49,9 @@ class IotOtSecurityAgent(Agent):
     ]
 
     entry = "discover_devices"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IoTOTSecurityRunner`` keep working via this alias; new code
+# should use ``IotOtSecurityAgent`` directly through AgentRuntime.
+IoTOTSecurityRunner = IotOtSecurityAgent

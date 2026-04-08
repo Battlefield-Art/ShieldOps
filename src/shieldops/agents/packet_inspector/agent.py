@@ -46,3 +46,9 @@ class PacketInspectorAgent(Agent):
     ]
 
     entry = "capture_packets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PacketInspectorRunner`` keep working via this alias; new code
+# should use ``PacketInspectorAgent`` directly through AgentRuntime.
+PacketInspectorRunner = PacketInspectorAgent

@@ -50,3 +50,9 @@ class SocTransformationAgent(Agent):
     ]
 
     entry = "assess_current_soc"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SOCTransformationRunner`` keep working via this alias; new code
+# should use ``SocTransformationAgent`` directly through AgentRuntime.
+SOCTransformationRunner = SocTransformationAgent

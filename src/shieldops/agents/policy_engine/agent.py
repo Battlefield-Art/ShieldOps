@@ -49,3 +49,9 @@ class PolicyEngineAgent(Agent):
     ]
 
     entry = "collect_requirements"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PolicyEngineRunner`` keep working via this alias; new code
+# should use ``PolicyEngineAgent`` directly through AgentRuntime.
+PolicyEngineRunner = PolicyEngineAgent

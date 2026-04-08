@@ -48,3 +48,9 @@ class ComplianceEvidenceGeneratorAgent(Agent):
     ]
 
     entry = "identify_controls"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ComplianceEvidenceGeneratorRunner`` keep working via this alias; new code
+# should use ``ComplianceEvidenceGeneratorAgent`` directly through AgentRuntime.
+ComplianceEvidenceGeneratorRunner = ComplianceEvidenceGeneratorAgent

@@ -48,3 +48,9 @@ class KeyLifecycleManagerAgent(Agent):
     ]
 
     entry = "discover_keys"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``KeyLifecycleManagerRunner`` keep working via this alias; new code
+# should use ``KeyLifecycleManagerAgent`` directly through AgentRuntime.
+KeyLifecycleManagerRunner = KeyLifecycleManagerAgent

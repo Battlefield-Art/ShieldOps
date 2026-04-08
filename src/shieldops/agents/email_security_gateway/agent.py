@@ -50,3 +50,9 @@ class EmailSecurityGatewayAgent(Agent):
     ]
 
     entry = "ingest_email"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EmailSecurityGatewayRunner`` keep working via this alias; new code
+# should use ``EmailSecurityGatewayAgent`` directly through AgentRuntime.
+EmailSecurityGatewayRunner = EmailSecurityGatewayAgent

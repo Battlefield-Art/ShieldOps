@@ -48,3 +48,9 @@ class SpamFilterManagerAgent(Agent):
     ]
 
     entry = "collect_rules"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SpamFilterManagerRunner`` keep working via this alias; new code
+# should use ``SpamFilterManagerAgent`` directly through AgentRuntime.
+SpamFilterManagerRunner = SpamFilterManagerAgent

@@ -49,3 +49,9 @@ class AiRedTeamAgent(Agent):
     ]
 
     entry = "generate_scenarios"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AIRedTeamRunner`` keep working via this alias; new code
+# should use ``AiRedTeamAgent`` directly through AgentRuntime.
+AIRedTeamRunner = AiRedTeamAgent

@@ -19,14 +19,6 @@ logger = structlog.get_logger()
 _toolkit: DataPipelineProtectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: DataPipelineProtectorToolkit,
-) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DataPipelineProtectorToolkit:
     """Get the module-level toolkit, creating default if needed."""
     global _toolkit

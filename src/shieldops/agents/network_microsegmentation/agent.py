@@ -49,3 +49,9 @@ class NetworkMicrosegmentationAgent(Agent):
     ]
 
     entry = "map_topology"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``NetworkMicrosegmentationRunner`` keep working via this alias; new code
+# should use ``NetworkMicrosegmentationAgent`` directly through AgentRuntime.
+NetworkMicrosegmentationRunner = NetworkMicrosegmentationAgent

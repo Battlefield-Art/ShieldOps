@@ -31,11 +31,6 @@ logger = structlog.get_logger()
 _toolkit: WorkflowEngineToolkit | None = None
 
 
-def set_toolkit(toolkit: WorkflowEngineToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> WorkflowEngineToolkit:
     if _toolkit is None:
         return WorkflowEngineToolkit()

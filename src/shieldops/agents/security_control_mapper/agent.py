@@ -48,3 +48,9 @@ class SecurityControlMapperAgent(Agent):
     ]
 
     entry = "collect_controls"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityControlMapperRunner`` keep working via this alias; new code
+# should use ``SecurityControlMapperAgent`` directly through AgentRuntime.
+SecurityControlMapperRunner = SecurityControlMapperAgent

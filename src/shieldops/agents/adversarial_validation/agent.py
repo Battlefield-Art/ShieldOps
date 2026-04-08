@@ -49,3 +49,9 @@ class AdversarialValidationAgent(Agent):
     ]
 
     entry = "collect_findings"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AdversarialValidationRunner`` keep working via this alias; new code
+# should use ``AdversarialValidationAgent`` directly through AgentRuntime.
+AdversarialValidationRunner = AdversarialValidationAgent

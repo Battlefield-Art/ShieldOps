@@ -49,3 +49,9 @@ class SecurityTicketAutomatorAgent(Agent):
     ]
 
     entry = "detect_issue"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityTicketAutomatorRunner`` keep working via this alias; new code
+# should use ``SecurityTicketAutomatorAgent`` directly through AgentRuntime.
+SecurityTicketAutomatorRunner = SecurityTicketAutomatorAgent

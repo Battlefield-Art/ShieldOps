@@ -49,3 +49,9 @@ class DataLossPreventionAgent(Agent):
     ]
 
     entry = "discover_data_flows"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataLossPreventionRunner`` keep working via this alias; new code
+# should use ``DataLossPreventionAgent`` directly through AgentRuntime.
+DataLossPreventionRunner = DataLossPreventionAgent

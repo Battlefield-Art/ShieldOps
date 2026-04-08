@@ -43,3 +43,9 @@ class OtelTailSamplingAgent(Agent):
     ]
 
     entry = "analyze"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``OTelTailSamplingRunner`` keep working via this alias; new code
+# should use ``OtelTailSamplingAgent`` directly through AgentRuntime.
+OTelTailSamplingRunner = OtelTailSamplingAgent

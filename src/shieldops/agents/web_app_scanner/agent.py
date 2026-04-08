@@ -49,3 +49,9 @@ class WebAppScannerAgent(Agent):
     ]
 
     entry = "discover_endpoints"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``WebAppScannerRunner`` keep working via this alias; new code
+# should use ``WebAppScannerAgent`` directly through AgentRuntime.
+WebAppScannerRunner = WebAppScannerAgent

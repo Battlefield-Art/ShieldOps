@@ -24,14 +24,6 @@ logger = structlog.get_logger()
 _toolkit: CloudIdentityFederationToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CloudIdentityFederationToolkit,
-) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CloudIdentityFederationToolkit:
     global _toolkit
     if _toolkit is None:

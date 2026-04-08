@@ -49,3 +49,9 @@ class PromptShieldAgent(Agent):
     ]
 
     entry = "ingest_prompts"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PromptShieldRunner`` keep working via this alias; new code
+# should use ``PromptShieldAgent`` directly through AgentRuntime.
+PromptShieldRunner = PromptShieldAgent

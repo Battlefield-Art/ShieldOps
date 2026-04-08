@@ -48,3 +48,9 @@ class CommunicationAuditorAgent(Agent):
     ]
 
     entry = "collect_messages"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CommunicationAuditorRunner`` keep working via this alias; new code
+# should use ``CommunicationAuditorAgent`` directly through AgentRuntime.
+CommunicationAuditorRunner = CommunicationAuditorAgent

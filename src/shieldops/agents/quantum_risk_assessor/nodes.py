@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: QuantumRiskAssessorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: QuantumRiskAssessorToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> QuantumRiskAssessorToolkit:
     if _toolkit is None:
         return QuantumRiskAssessorToolkit()

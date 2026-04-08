@@ -48,3 +48,9 @@ class NistFrameworkMapperAgent(Agent):
     ]
 
     entry = "map_functions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``NISTFrameworkMapperRunner`` keep working via this alias; new code
+# should use ``NistFrameworkMapperAgent`` directly through AgentRuntime.
+NISTFrameworkMapperRunner = NistFrameworkMapperAgent

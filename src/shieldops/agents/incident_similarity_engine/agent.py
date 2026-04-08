@@ -48,3 +48,9 @@ class IncidentSimilarityEngineAgent(Agent):
     ]
 
     entry = "ingest_incident"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IncidentSimilarityEngineRunner`` keep working via this alias; new code
+# should use ``IncidentSimilarityEngineAgent`` directly through AgentRuntime.
+IncidentSimilarityEngineRunner = IncidentSimilarityEngineAgent

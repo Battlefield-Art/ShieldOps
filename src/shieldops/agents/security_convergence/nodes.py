@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityConvergenceToolkit | None = None
 
 
-def set_toolkit(toolkit: SecurityConvergenceToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityConvergenceToolkit:
     if _toolkit is None:
         return SecurityConvergenceToolkit()

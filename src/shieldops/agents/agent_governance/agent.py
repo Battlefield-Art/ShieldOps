@@ -48,3 +48,9 @@ class AgentGovernanceAgent(Agent):
     ]
 
     entry = "discover_agents"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AgentGovernanceRunner`` keep working via this alias; new code
+# should use ``AgentGovernanceAgent`` directly through AgentRuntime.
+AgentGovernanceRunner = AgentGovernanceAgent

@@ -50,3 +50,9 @@ class BrowserThreatProtectorAgent(Agent):
     ]
 
     entry = "analyze_request"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BrowserThreatProtectorRunner`` keep working via this alias; new code
+# should use ``BrowserThreatProtectorAgent`` directly through AgentRuntime.
+BrowserThreatProtectorRunner = BrowserThreatProtectorAgent

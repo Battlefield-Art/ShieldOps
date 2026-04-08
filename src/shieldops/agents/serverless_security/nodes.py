@@ -23,12 +23,6 @@ logger = structlog.get_logger()
 _toolkit: ServerlessSecurityToolkit | None = None
 
 
-def set_toolkit(toolkit: ServerlessSecurityToolkit) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ServerlessSecurityToolkit:
     global _toolkit
     if _toolkit is None:

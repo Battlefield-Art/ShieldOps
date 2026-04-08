@@ -10,7 +10,7 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from shieldops.agents.mcp_security.runner import MCPSecurityRunner
+from shieldops.agents.mcp_security.agent import MCPSecurityRunner
 from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 

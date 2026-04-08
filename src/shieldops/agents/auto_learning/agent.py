@@ -43,3 +43,9 @@ class AutoLearningAgent(Agent):
     ]
 
     entry = "assess"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AutoLearningRunner`` keep working via this alias; new code
+# should use ``AutoLearningAgent`` directly through AgentRuntime.
+AutoLearningRunner = AutoLearningAgent

@@ -49,3 +49,9 @@ class SecurityOrchestrationHubAgent(Agent):
     ]
 
     entry = "ingest_event"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityOrchestrationHubRunner`` keep working via this alias; new code
+# should use ``SecurityOrchestrationHubAgent`` directly through AgentRuntime.
+SecurityOrchestrationHubRunner = SecurityOrchestrationHubAgent

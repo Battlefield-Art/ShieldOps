@@ -49,3 +49,9 @@ class DataPipelineProtectorAgent(Agent):
     ]
 
     entry = "discover_pipelines"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataPipelineProtectorRunner`` keep working via this alias; new code
+# should use ``DataPipelineProtectorAgent`` directly through AgentRuntime.
+DataPipelineProtectorRunner = DataPipelineProtectorAgent

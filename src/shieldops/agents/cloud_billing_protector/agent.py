@@ -48,3 +48,9 @@ class CloudBillingProtectorAgent(Agent):
     ]
 
     entry = "collect_billing"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudBillingProtectorRunner`` keep working via this alias; new code
+# should use ``CloudBillingProtectorAgent`` directly through AgentRuntime.
+CloudBillingProtectorRunner = CloudBillingProtectorAgent

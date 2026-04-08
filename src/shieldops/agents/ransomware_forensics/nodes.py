@@ -33,14 +33,6 @@ logger = structlog.get_logger()
 _toolkit: RansomwareForensicsToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: RansomwareForensicsToolkit,
-) -> None:
-    """Set the toolkit instance for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> RansomwareForensicsToolkit:
     if _toolkit is None:
         return RansomwareForensicsToolkit()

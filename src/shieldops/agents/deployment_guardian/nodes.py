@@ -19,13 +19,6 @@ logger = structlog.get_logger()
 _toolkit: DeploymentGuardianToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: DeploymentGuardianToolkit,
-) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DeploymentGuardianToolkit:
     if _toolkit is None:
         return DeploymentGuardianToolkit()

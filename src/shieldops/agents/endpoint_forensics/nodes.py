@@ -23,11 +23,6 @@ logger = structlog.get_logger()
 _toolkit: EndpointForensicsToolkit | None = None
 
 
-def set_toolkit(tk: EndpointForensicsToolkit) -> None:
-    global _toolkit
-    _toolkit = tk
-
-
 async def collect_artifacts(
     state: dict[str, Any], toolkit: EndpointForensicsToolkit
 ) -> dict[str, Any]:

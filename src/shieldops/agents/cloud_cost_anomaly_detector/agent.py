@@ -48,3 +48,9 @@ class CloudCostAnomalyDetectorAgent(Agent):
     ]
 
     entry = "collect_billing"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudCostAnomalyDetectorRunner`` keep working via this alias; new code
+# should use ``CloudCostAnomalyDetectorAgent`` directly through AgentRuntime.
+CloudCostAnomalyDetectorRunner = CloudCostAnomalyDetectorAgent

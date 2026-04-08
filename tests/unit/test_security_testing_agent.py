@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from shieldops.agents.security_testing.agent import SecurityTestingRunner
 from shieldops.agents.security_testing.graph import (
     build_graph,
     create_security_testing_graph,
@@ -29,7 +30,6 @@ from shieldops.agents.security_testing.prompts import (
     SYSTEM_EXECUTE_SCANS,
     SYSTEM_GENERATE_REPORT,
 )
-from shieldops.agents.security_testing.runner import SecurityTestingRunner
 from shieldops.agents.security_testing.tools import SecurityTestingToolkit
 
 # =====================================================================

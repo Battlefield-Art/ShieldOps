@@ -50,3 +50,9 @@ class AgentMemoryStoreAgent(Agent):
     ]
 
     entry = "receive_memory"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AgentMemoryStoreRunner`` keep working via this alias; new code
+# should use ``AgentMemoryStoreAgent`` directly through AgentRuntime.
+AgentMemoryStoreRunner = AgentMemoryStoreAgent

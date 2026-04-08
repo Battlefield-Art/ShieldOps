@@ -48,3 +48,9 @@ class RunbookKnowledgeBaseAgent(Agent):
     ]
 
     entry = "index_runbooks"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RunbookKnowledgeBaseRunner`` keep working via this alias; new code
+# should use ``RunbookKnowledgeBaseAgent`` directly through AgentRuntime.
+RunbookKnowledgeBaseRunner = RunbookKnowledgeBaseAgent

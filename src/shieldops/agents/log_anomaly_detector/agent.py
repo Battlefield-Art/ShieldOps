@@ -50,3 +50,9 @@ class LogAnomalyDetectorAgent(Agent):
     ]
 
     entry = "ingest_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``LogAnomalyDetectorRunner`` keep working via this alias; new code
+# should use ``LogAnomalyDetectorAgent`` directly through AgentRuntime.
+LogAnomalyDetectorRunner = LogAnomalyDetectorAgent

@@ -53,3 +53,9 @@ class CertificateTransparencyMonitorAgent(Agent):
     ]
 
     entry = "monitor_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CertificateTransparencyMonitorRunner`` keep working via this alias; new code
+# should use ``CertificateTransparencyMonitorAgent`` directly through AgentRuntime.
+CertificateTransparencyMonitorRunner = CertificateTransparencyMonitorAgent

@@ -48,3 +48,9 @@ class UsbDeviceControllerAgent(Agent):
     ]
 
     entry = "scan_devices"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``USBDeviceControllerRunner`` keep working via this alias; new code
+# should use ``UsbDeviceControllerAgent`` directly through AgentRuntime.
+USBDeviceControllerRunner = UsbDeviceControllerAgent

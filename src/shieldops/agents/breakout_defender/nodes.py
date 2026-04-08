@@ -32,12 +32,6 @@ logger = structlog.get_logger()
 _toolkit: BreakoutDefenderToolkit | None = None
 
 
-def set_toolkit(toolkit: BreakoutDefenderToolkit) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> BreakoutDefenderToolkit:
     if _toolkit is None:
         return BreakoutDefenderToolkit()

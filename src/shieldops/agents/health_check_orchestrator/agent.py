@@ -48,3 +48,9 @@ class HealthCheckOrchestratorAgent(Agent):
     ]
 
     entry = "discover_services"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``HealthCheckOrchestratorRunner`` keep working via this alias; new code
+# should use ``HealthCheckOrchestratorAgent`` directly through AgentRuntime.
+HealthCheckOrchestratorRunner = HealthCheckOrchestratorAgent

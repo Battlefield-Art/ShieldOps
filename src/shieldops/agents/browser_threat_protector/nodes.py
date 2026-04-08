@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: BrowserThreatProtectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: BrowserThreatProtectorToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> BrowserThreatProtectorToolkit:
     if _toolkit is None:
         return BrowserThreatProtectorToolkit()

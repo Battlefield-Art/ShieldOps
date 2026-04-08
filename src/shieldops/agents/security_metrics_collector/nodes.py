@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityMetricsCollectorToolkit | None = None
 
 
-def set_toolkit(toolkit: SecurityMetricsCollectorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityMetricsCollectorToolkit:
     if _toolkit is None:
         return SecurityMetricsCollectorToolkit()

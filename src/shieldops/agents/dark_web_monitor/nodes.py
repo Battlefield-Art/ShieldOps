@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: DarkWebMonitorToolkit | None = None
 
 
-def set_toolkit(toolkit: DarkWebMonitorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DarkWebMonitorToolkit:
     if _toolkit is None:
         return DarkWebMonitorToolkit()

@@ -48,3 +48,9 @@ class DeploymentGuardianAgent(Agent):
     ]
 
     entry = "analyze_changes"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DeploymentGuardianRunner`` keep working via this alias; new code
+# should use ``DeploymentGuardianAgent`` directly through AgentRuntime.
+DeploymentGuardianRunner = DeploymentGuardianAgent

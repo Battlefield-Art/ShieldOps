@@ -42,14 +42,6 @@ logger = structlog.get_logger()
 _toolkit: ThreatIntelligencePlatformToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: ThreatIntelligencePlatformToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ThreatIntelligencePlatformToolkit:
     if _toolkit is None:
         return ThreatIntelligencePlatformToolkit()

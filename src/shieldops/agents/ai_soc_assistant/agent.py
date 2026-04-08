@@ -49,3 +49,9 @@ class AiSocAssistantAgent(Agent):
     ]
 
     entry = "parse_query"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AISOCAssistantRunner`` keep working via this alias; new code
+# should use ``AiSocAssistantAgent`` directly through AgentRuntime.
+AISOCAssistantRunner = AiSocAssistantAgent

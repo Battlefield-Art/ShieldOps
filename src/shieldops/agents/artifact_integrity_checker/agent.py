@@ -48,3 +48,9 @@ class ArtifactIntegrityCheckerAgent(Agent):
     ]
 
     entry = "collect_artifacts"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ArtifactIntegrityCheckerRunner`` keep working via this alias; new code
+# should use ``ArtifactIntegrityCheckerAgent`` directly through AgentRuntime.
+ArtifactIntegrityCheckerRunner = ArtifactIntegrityCheckerAgent

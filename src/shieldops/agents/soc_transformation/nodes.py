@@ -39,11 +39,6 @@ logger = structlog.get_logger()
 _toolkit: SOCTransformationToolkit | None = None
 
 
-def set_toolkit(toolkit: SOCTransformationToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SOCTransformationToolkit:
     if _toolkit is None:
         return SOCTransformationToolkit()

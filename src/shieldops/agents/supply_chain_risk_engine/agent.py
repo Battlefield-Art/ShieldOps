@@ -48,3 +48,9 @@ class SupplyChainRiskEngineAgent(Agent):
     ]
 
     entry = "inventory_dependencies"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SupplyChainRiskEngineRunner`` keep working via this alias; new code
+# should use ``SupplyChainRiskEngineAgent`` directly through AgentRuntime.
+SupplyChainRiskEngineRunner = SupplyChainRiskEngineAgent

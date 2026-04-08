@@ -48,3 +48,9 @@ class BrowserIsolationAgent(Agent):
     ]
 
     entry = "collect_sessions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BrowserIsolationRunner`` keep working via this alias; new code
+# should use ``BrowserIsolationAgent`` directly through AgentRuntime.
+BrowserIsolationRunner = BrowserIsolationAgent

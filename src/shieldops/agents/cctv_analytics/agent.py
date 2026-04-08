@@ -48,3 +48,9 @@ class CctvAnalyticsAgent(Agent):
     ]
 
     entry = "collect_feeds"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CCTVAnalyticsRunner`` keep working via this alias; new code
+# should use ``CctvAnalyticsAgent`` directly through AgentRuntime.
+CCTVAnalyticsRunner = CctvAnalyticsAgent

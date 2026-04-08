@@ -46,3 +46,9 @@ class ObservabilityIntelligenceAgent(Agent):
     ]
 
     entry = "collect_signals"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ObservabilityIntelligenceRunner`` keep working via this alias; new code
+# should use ``ObservabilityIntelligenceAgent`` directly through AgentRuntime.
+ObservabilityIntelligenceRunner = ObservabilityIntelligenceAgent

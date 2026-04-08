@@ -49,3 +49,9 @@ class RuntimeApplicationProtectorAgent(Agent):
     ]
 
     entry = "instrument_app"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RuntimeApplicationProtectorRunner`` keep working via this alias; new code
+# should use ``RuntimeApplicationProtectorAgent`` directly through AgentRuntime.
+RuntimeApplicationProtectorRunner = RuntimeApplicationProtectorAgent

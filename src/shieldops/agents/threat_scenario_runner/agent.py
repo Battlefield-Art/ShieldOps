@@ -48,3 +48,9 @@ class ThreatScenarioRunnerAgent(Agent):
     ]
 
     entry = "load_scenario"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatScenarioRunnerRunner`` keep working via this alias; new code
+# should use ``ThreatScenarioRunnerAgent`` directly through AgentRuntime.
+ThreatScenarioRunnerRunner = ThreatScenarioRunnerAgent

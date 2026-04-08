@@ -33,14 +33,6 @@ logger = structlog.get_logger()
 _toolkit: EmailAuthenticationAuditorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: EmailAuthenticationAuditorToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> EmailAuthenticationAuditorToolkit:
     if _toolkit is None:
         return EmailAuthenticationAuditorToolkit()

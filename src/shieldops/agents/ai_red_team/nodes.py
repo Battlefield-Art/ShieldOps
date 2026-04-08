@@ -29,11 +29,6 @@ logger = structlog.get_logger()
 _toolkit: AIRedTeamToolkit | None = None
 
 
-def set_toolkit(toolkit: AIRedTeamToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AIRedTeamToolkit:
     if _toolkit is None:
         return AIRedTeamToolkit()

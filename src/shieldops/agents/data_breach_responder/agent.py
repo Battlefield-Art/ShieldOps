@@ -48,3 +48,9 @@ class DataBreachResponderAgent(Agent):
     ]
 
     entry = "detect_breach"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataBreachResponderRunner`` keep working via this alias; new code
+# should use ``DataBreachResponderAgent`` directly through AgentRuntime.
+DataBreachResponderRunner = DataBreachResponderAgent

@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityTrainingTrackerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SecurityTrainingTrackerToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityTrainingTrackerToolkit:
     if _toolkit is None:
         return SecurityTrainingTrackerToolkit()

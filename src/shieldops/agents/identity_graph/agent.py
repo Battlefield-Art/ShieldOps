@@ -49,3 +49,9 @@ class IdentityGraphAgent(Agent):
     ]
 
     entry = "discover_identities"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IdentityGraphRunner`` keep working via this alias; new code
+# should use ``IdentityGraphAgent`` directly through AgentRuntime.
+IdentityGraphRunner = IdentityGraphAgent

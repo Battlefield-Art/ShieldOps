@@ -48,3 +48,9 @@ class BuildingManagementSecurityAgent(Agent):
     ]
 
     entry = "discover_systems"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BuildingManagementSecurityRunner`` keep working via this alias; new code
+# should use ``BuildingManagementSecurityAgent`` directly through AgentRuntime.
+BuildingManagementSecurityRunner = BuildingManagementSecurityAgent

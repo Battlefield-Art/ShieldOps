@@ -49,3 +49,9 @@ class SensitiveDataMonitorAgent(Agent):
     ]
 
     entry = "discover_data_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SensitiveDataMonitorRunner`` keep working via this alias; new code
+# should use ``SensitiveDataMonitorAgent`` directly through AgentRuntime.
+SensitiveDataMonitorRunner = SensitiveDataMonitorAgent

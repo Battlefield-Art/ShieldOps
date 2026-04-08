@@ -23,11 +23,6 @@ logger = structlog.get_logger()
 _toolkit: EndpointBehaviorMonitorToolkit | None = None
 
 
-def set_toolkit(tk: EndpointBehaviorMonitorToolkit) -> None:
-    global _toolkit
-    _toolkit = tk
-
-
 def _tk() -> EndpointBehaviorMonitorToolkit:
     assert _toolkit is not None
     return _toolkit

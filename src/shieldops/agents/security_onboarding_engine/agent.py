@@ -49,3 +49,9 @@ class SecurityOnboardingEngineAgent(Agent):
     ]
 
     entry = "intake_service"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityOnboardingEngineRunner`` keep working via this alias; new code
+# should use ``SecurityOnboardingEngineAgent`` directly through AgentRuntime.
+SecurityOnboardingEngineRunner = SecurityOnboardingEngineAgent

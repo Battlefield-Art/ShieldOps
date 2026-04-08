@@ -18,11 +18,6 @@ logger = structlog.get_logger()
 _toolkit: ITDRToolkit | None = None
 
 
-def set_toolkit(toolkit: ITDRToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ITDRToolkit:
     if _toolkit is None:
         return ITDRToolkit()

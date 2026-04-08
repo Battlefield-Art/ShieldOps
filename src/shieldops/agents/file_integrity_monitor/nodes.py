@@ -38,14 +38,6 @@ logger = structlog.get_logger()
 _toolkit: FileIntegrityMonitorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: FileIntegrityMonitorToolkit,
-) -> None:
-    """Configure the toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> FileIntegrityMonitorToolkit:
     if _toolkit is None:
         return FileIntegrityMonitorToolkit()

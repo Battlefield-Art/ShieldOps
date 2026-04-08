@@ -29,11 +29,6 @@ logger = structlog.get_logger()
 _toolkit: DisasterRecoveryToolkit | None = None
 
 
-def set_toolkit(toolkit: DisasterRecoveryToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DisasterRecoveryToolkit:
     if _toolkit is None:
         return DisasterRecoveryToolkit()

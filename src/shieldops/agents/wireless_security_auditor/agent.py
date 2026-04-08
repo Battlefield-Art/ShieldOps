@@ -49,3 +49,9 @@ class WirelessSecurityAuditorAgent(Agent):
     ]
 
     entry = "discover_networks"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``WirelessSecurityAuditorRunner`` keep working via this alias; new code
+# should use ``WirelessSecurityAuditorAgent`` directly through AgentRuntime.
+WirelessSecurityAuditorRunner = WirelessSecurityAuditorAgent

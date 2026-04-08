@@ -49,3 +49,9 @@ class FindingCorrelatorAgent(Agent):
     ]
 
     entry = "collect_findings"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``FindingCorrelatorRunner`` keep working via this alias; new code
+# should use ``FindingCorrelatorAgent`` directly through AgentRuntime.
+FindingCorrelatorRunner = FindingCorrelatorAgent

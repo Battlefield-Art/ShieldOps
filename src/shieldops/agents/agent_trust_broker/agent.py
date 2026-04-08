@@ -48,3 +48,9 @@ class AgentTrustBrokerAgent(Agent):
     ]
 
     entry = "register_agents"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AgentTrustBrokerRunner`` keep working via this alias; new code
+# should use ``AgentTrustBrokerAgent`` directly through AgentRuntime.
+AgentTrustBrokerRunner = AgentTrustBrokerAgent

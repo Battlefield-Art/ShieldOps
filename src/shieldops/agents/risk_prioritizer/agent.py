@@ -49,3 +49,9 @@ class RiskPrioritizerAgent(Agent):
     ]
 
     entry = "collect_findings"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RiskPrioritizerRunner`` keep working via this alias; new code
+# should use ``RiskPrioritizerAgent`` directly through AgentRuntime.
+RiskPrioritizerRunner = RiskPrioritizerAgent

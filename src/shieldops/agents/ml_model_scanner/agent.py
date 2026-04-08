@@ -49,3 +49,9 @@ class MlModelScannerAgent(Agent):
     ]
 
     entry = "discover_models"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MLModelScannerRunner`` keep working via this alias; new code
+# should use ``MlModelScannerAgent`` directly through AgentRuntime.
+MLModelScannerRunner = MlModelScannerAgent

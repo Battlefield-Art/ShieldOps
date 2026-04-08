@@ -48,3 +48,9 @@ class ComplianceAutomationEngineAgent(Agent):
     ]
 
     entry = "discover_controls"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ComplianceAutomationEngineRunner`` keep working via this alias; new code
+# should use ``ComplianceAutomationEngineAgent`` directly through AgentRuntime.
+ComplianceAutomationEngineRunner = ComplianceAutomationEngineAgent

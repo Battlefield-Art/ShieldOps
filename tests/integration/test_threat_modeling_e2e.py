@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from shieldops.agents.threat_modeling.runner import ThreatModelingRunner
+from shieldops.agents.threat_modeling.agent import ThreatModelingRunner
 
 # ── Full Pipeline ─────────────────────────────────────────────────────
 

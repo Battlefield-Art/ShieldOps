@@ -48,3 +48,9 @@ class ComplianceGapAnalyzerAgent(Agent):
     ]
 
     entry = "scan_posture"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ComplianceGapAnalyzerRunner`` keep working via this alias; new code
+# should use ``ComplianceGapAnalyzerAgent`` directly through AgentRuntime.
+ComplianceGapAnalyzerRunner = ComplianceGapAnalyzerAgent

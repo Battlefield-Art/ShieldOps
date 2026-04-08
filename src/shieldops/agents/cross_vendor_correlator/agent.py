@@ -50,3 +50,9 @@ class CrossVendorCorrelatorAgent(Agent):
     ]
 
     entry = "ingest_vendor_alerts"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CrossVendorCorrelatorRunner`` keep working via this alias; new code
+# should use ``CrossVendorCorrelatorAgent`` directly through AgentRuntime.
+CrossVendorCorrelatorRunner = CrossVendorCorrelatorAgent

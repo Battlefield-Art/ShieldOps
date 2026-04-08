@@ -48,3 +48,9 @@ class ServiceDependencyMapperAgent(Agent):
     ]
 
     entry = "discover_services"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ServiceDependencyMapperRunner`` keep working via this alias; new code
+# should use ``ServiceDependencyMapperAgent`` directly through AgentRuntime.
+ServiceDependencyMapperRunner = ServiceDependencyMapperAgent

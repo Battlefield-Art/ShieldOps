@@ -51,3 +51,9 @@ class ExposureManagementAgent(Agent):
     ]
 
     entry = "discover_attack_surface"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ExposureManagementRunner`` keep working via this alias; new code
+# should use ``ExposureManagementAgent`` directly through AgentRuntime.
+ExposureManagementRunner = ExposureManagementAgent

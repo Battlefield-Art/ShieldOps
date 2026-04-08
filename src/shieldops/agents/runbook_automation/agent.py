@@ -48,3 +48,9 @@ class RunbookAutomationAgent(Agent):
     ]
 
     entry = "select_runbook"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RunbookAutomationRunner`` keep working via this alias; new code
+# should use ``RunbookAutomationAgent`` directly through AgentRuntime.
+RunbookAutomationRunner = RunbookAutomationAgent

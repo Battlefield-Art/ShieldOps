@@ -48,3 +48,9 @@ class EndpointHardeningAgentAgent(Agent):
     ]
 
     entry = "scan_endpoints"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EndpointHardeningAgentRunner`` keep working via this alias; new code
+# should use ``EndpointHardeningAgentAgent`` directly through AgentRuntime.
+EndpointHardeningAgentRunner = EndpointHardeningAgentAgent

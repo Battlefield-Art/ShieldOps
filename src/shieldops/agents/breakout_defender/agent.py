@@ -50,3 +50,9 @@ class BreakoutDefenderAgent(Agent):
     ]
 
     entry = "detect_initial_access"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BreakoutDefenderRunner`` keep working via this alias; new code
+# should use ``BreakoutDefenderAgent`` directly through AgentRuntime.
+BreakoutDefenderRunner = BreakoutDefenderAgent

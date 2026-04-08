@@ -48,3 +48,9 @@ class PurpleTeamOrchestratorAgent(Agent):
     ]
 
     entry = "plan_exercise"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PurpleTeamOrchestratorRunner`` keep working via this alias; new code
+# should use ``PurpleTeamOrchestratorAgent`` directly through AgentRuntime.
+PurpleTeamOrchestratorRunner = PurpleTeamOrchestratorAgent

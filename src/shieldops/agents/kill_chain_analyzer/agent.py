@@ -48,3 +48,9 @@ class KillChainAnalyzerAgent(Agent):
     ]
 
     entry = "ingest_alerts"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``KillChainAnalyzerRunner`` keep working via this alias; new code
+# should use ``KillChainAnalyzerAgent`` directly through AgentRuntime.
+KillChainAnalyzerRunner = KillChainAnalyzerAgent

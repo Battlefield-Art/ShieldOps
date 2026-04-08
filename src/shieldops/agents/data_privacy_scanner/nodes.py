@@ -34,14 +34,6 @@ logger = structlog.get_logger()
 _toolkit: DataPrivacyScannerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: DataPrivacyScannerToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DataPrivacyScannerToolkit:
     if _toolkit is None:
         return DataPrivacyScannerToolkit()

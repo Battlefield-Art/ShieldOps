@@ -18,11 +18,6 @@ logger = structlog.get_logger()
 _toolkit: XDRToolkit | None = None
 
 
-def set_toolkit(toolkit: XDRToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> XDRToolkit:
     if _toolkit is None:
         return XDRToolkit()

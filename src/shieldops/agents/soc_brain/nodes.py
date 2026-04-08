@@ -34,11 +34,6 @@ logger = structlog.get_logger()
 _toolkit: SOCBrainToolkit | None = None
 
 
-def set_toolkit(toolkit: SOCBrainToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SOCBrainToolkit:
     if _toolkit is None:
         return SOCBrainToolkit()

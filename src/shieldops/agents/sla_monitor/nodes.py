@@ -21,11 +21,6 @@ logger = structlog.get_logger()
 _toolkit: SLAMonitorToolkit | None = None
 
 
-def set_toolkit(toolkit: SLAMonitorToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SLAMonitorToolkit:
     if _toolkit is None:
         return SLAMonitorToolkit()

@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: SocialEngineeringDetectorToolkit | None = None
 
 
-def set_toolkit(toolkit: SocialEngineeringDetectorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SocialEngineeringDetectorToolkit:
     if _toolkit is None:
         return SocialEngineeringDetectorToolkit()

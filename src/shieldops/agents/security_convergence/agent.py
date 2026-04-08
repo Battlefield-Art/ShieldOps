@@ -46,3 +46,9 @@ class SecurityConvergenceAgent(Agent):
     ]
 
     entry = "collect_posture"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityConvergenceRunner`` keep working via this alias; new code
+# should use ``SecurityConvergenceAgent`` directly through AgentRuntime.
+SecurityConvergenceRunner = SecurityConvergenceAgent

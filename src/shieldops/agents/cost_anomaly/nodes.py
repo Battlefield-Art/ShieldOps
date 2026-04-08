@@ -31,12 +31,6 @@ logger = structlog.get_logger()
 _toolkit: CostAnomalyToolkit | None = None
 
 
-def set_toolkit(toolkit: CostAnomalyToolkit) -> None:
-    """Set the shared toolkit instance for all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CostAnomalyToolkit:
     if _toolkit is None:
         return CostAnomalyToolkit()

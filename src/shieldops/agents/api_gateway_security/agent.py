@@ -49,3 +49,9 @@ class ApiGatewaySecurityAgent(Agent):
     ]
 
     entry = "discover_apis"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``APIGatewaySecurityRunner`` keep working via this alias; new code
+# should use ``ApiGatewaySecurityAgent`` directly through AgentRuntime.
+APIGatewaySecurityRunner = ApiGatewaySecurityAgent

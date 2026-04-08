@@ -48,3 +48,9 @@ class CapacityIntelligenceAgent(Agent):
     ]
 
     entry = "collect_utilization"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CapacityIntelligenceRunner`` keep working via this alias; new code
+# should use ``CapacityIntelligenceAgent`` directly through AgentRuntime.
+CapacityIntelligenceRunner = CapacityIntelligenceAgent

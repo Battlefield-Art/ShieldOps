@@ -45,3 +45,9 @@ class ComplianceAuditorAgent(Agent):
     ]
 
     entry = "scan"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ComplianceAuditorRunner`` keep working via this alias; new code
+# should use ``ComplianceAuditorAgent`` directly through AgentRuntime.
+ComplianceAuditorRunner = ComplianceAuditorAgent

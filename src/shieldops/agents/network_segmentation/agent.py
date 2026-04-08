@@ -49,3 +49,9 @@ class NetworkSegmentationAgent(Agent):
     ]
 
     entry = "discover_zones"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``NetworkSegmentationRunner`` keep working via this alias; new code
+# should use ``NetworkSegmentationAgent`` directly through AgentRuntime.
+NetworkSegmentationRunner = NetworkSegmentationAgent

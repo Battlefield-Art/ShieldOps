@@ -49,3 +49,9 @@ class IncidentCostTrackerAgent(Agent):
     ]
 
     entry = "identify_incident"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IncidentCostTrackerRunner`` keep working via this alias; new code
+# should use ``IncidentCostTrackerAgent`` directly through AgentRuntime.
+IncidentCostTrackerRunner = IncidentCostTrackerAgent

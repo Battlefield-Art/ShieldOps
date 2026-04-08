@@ -51,3 +51,9 @@ class AptEmulatorAgent(Agent):
     ]
 
     entry = "design_campaign"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``APTEmulatorRunner`` keep working via this alias; new code
+# should use ``AptEmulatorAgent`` directly through AgentRuntime.
+APTEmulatorRunner = AptEmulatorAgent

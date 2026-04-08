@@ -23,11 +23,6 @@ logger = structlog.get_logger()
 _toolkit: USBDeviceControllerToolkit | None = None
 
 
-def set_toolkit(tk: USBDeviceControllerToolkit) -> None:
-    global _toolkit
-    _toolkit = tk
-
-
 async def scan_devices(
     state: dict[str, Any], toolkit: USBDeviceControllerToolkit
 ) -> dict[str, Any]:

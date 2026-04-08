@@ -45,3 +45,9 @@ class SoarWorkflowAgent(Agent):
     ]
 
     entry = "intake_and_classify"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SOARWorkflowRunner`` keep working via this alias; new code
+# should use ``SoarWorkflowAgent`` directly through AgentRuntime.
+SOARWorkflowRunner = SoarWorkflowAgent

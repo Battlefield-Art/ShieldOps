@@ -150,7 +150,7 @@ def check_compliance(frameworks: str = "soc2") -> str:
         JSON summary of compliance audit results.
     """
     try:
-        from shieldops.agents.compliance_auditor.runner import ComplianceAuditorRunner
+        from shieldops.agents.compliance_auditor.agent import ComplianceAuditorRunner
 
         framework_list = [f.strip() for f in frameworks.split(",")]
         runner = ComplianceAuditorRunner()
@@ -217,7 +217,7 @@ def assess_threat_model(service: str) -> str:
         JSON summary of STRIDE threat model findings.
     """
     try:
-        from shieldops.agents.threat_modeling.runner import ThreatModelingRunner
+        from shieldops.agents.threat_modeling.agent import ThreatModelingRunner
 
         runner = ThreatModelingRunner()
         result = _run_async(runner.run(target_service=service))

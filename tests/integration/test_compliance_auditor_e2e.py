@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from shieldops.agents.compliance_auditor.runner import ComplianceAuditorRunner
+from shieldops.agents.compliance_auditor.agent import ComplianceAuditorRunner
 
 # ── Helpers ───────────────────────────────────────────────────────────
 

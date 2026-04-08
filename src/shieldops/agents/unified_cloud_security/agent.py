@@ -48,3 +48,9 @@ class UnifiedCloudSecurityAgent(Agent):
     ]
 
     entry = "collect_cloud_state"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``UnifiedCloudSecurityRunner`` keep working via this alias; new code
+# should use ``UnifiedCloudSecurityAgent`` directly through AgentRuntime.
+UnifiedCloudSecurityRunner = UnifiedCloudSecurityAgent

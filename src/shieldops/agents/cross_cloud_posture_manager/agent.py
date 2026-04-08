@@ -48,3 +48,9 @@ class CrossCloudPostureManagerAgent(Agent):
     ]
 
     entry = "scan_posture"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CrossCloudPostureManagerRunner`` keep working via this alias; new code
+# should use ``CrossCloudPostureManagerAgent`` directly through AgentRuntime.
+CrossCloudPostureManagerRunner = CrossCloudPostureManagerAgent

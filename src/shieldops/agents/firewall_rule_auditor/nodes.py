@@ -24,12 +24,6 @@ logger = structlog.get_logger()
 _toolkit: FirewallAuditToolkit | None = None
 
 
-def set_toolkit(toolkit: FirewallAuditToolkit) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> FirewallAuditToolkit:
     global _toolkit
     if _toolkit is None:

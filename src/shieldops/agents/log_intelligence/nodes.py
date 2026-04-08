@@ -37,11 +37,6 @@ logger = structlog.get_logger()
 _toolkit: LogIntelligenceToolkit | None = None
 
 
-def set_toolkit(toolkit: LogIntelligenceToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> LogIntelligenceToolkit:
     if _toolkit is None:
         return LogIntelligenceToolkit()

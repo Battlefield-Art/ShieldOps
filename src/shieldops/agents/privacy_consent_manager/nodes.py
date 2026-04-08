@@ -17,14 +17,6 @@ logger = structlog.get_logger()
 _toolkit: PrivacyConsentManagerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: PrivacyConsentManagerToolkit,
-) -> None:
-    """Configure the module-level toolkit."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PrivacyConsentManagerToolkit:
     if _toolkit is None:
         return PrivacyConsentManagerToolkit()

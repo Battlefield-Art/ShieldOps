@@ -48,3 +48,9 @@ class AnomalyPredictionEngineAgent(Agent):
     ]
 
     entry = "ingest_metrics"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AnomalyPredictionEngineRunner`` keep working via this alias; new code
+# should use ``AnomalyPredictionEngineAgent`` directly through AgentRuntime.
+AnomalyPredictionEngineRunner = AnomalyPredictionEngineAgent

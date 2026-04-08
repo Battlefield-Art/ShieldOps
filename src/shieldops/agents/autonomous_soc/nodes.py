@@ -41,13 +41,6 @@ logger = structlog.get_logger()
 _toolkit: AutonomousSOCToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: AutonomousSOCToolkit,
-) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AutonomousSOCToolkit:
     if _toolkit is None:
         return AutonomousSOCToolkit()

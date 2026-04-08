@@ -49,3 +49,9 @@ class CredentialTesterAgent(Agent):
     ]
 
     entry = "audit_password_policies"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CredentialTesterRunner`` keep working via this alias; new code
+# should use ``CredentialTesterAgent`` directly through AgentRuntime.
+CredentialTesterRunner = CredentialTesterAgent

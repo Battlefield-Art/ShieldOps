@@ -31,14 +31,6 @@ logger = structlog.get_logger()
 _toolkit: TrustRelationshipMapperToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: TrustRelationshipMapperToolkit,
-) -> None:
-    """Set the global toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> TrustRelationshipMapperToolkit:
     if _toolkit is None:
         return TrustRelationshipMapperToolkit()

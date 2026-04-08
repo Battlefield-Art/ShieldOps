@@ -48,3 +48,9 @@ class AiModelGovernanceAgent(Agent):
     ]
 
     entry = "inventory_models"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AIModelGovernanceRunner`` keep working via this alias; new code
+# should use ``AiModelGovernanceAgent`` directly through AgentRuntime.
+AIModelGovernanceRunner = AiModelGovernanceAgent

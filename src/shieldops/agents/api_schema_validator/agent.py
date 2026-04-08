@@ -50,3 +50,9 @@ class ApiSchemaValidatorAgent(Agent):
     ]
 
     entry = "discover_schemas"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``APISchemaValidatorRunner`` keep working via this alias; new code
+# should use ``ApiSchemaValidatorAgent`` directly through AgentRuntime.
+APISchemaValidatorRunner = ApiSchemaValidatorAgent

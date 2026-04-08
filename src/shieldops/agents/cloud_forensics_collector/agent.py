@@ -49,3 +49,9 @@ class CloudForensicsCollectorAgent(Agent):
     ]
 
     entry = "identify_scope"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudForensicsCollectorRunner`` keep working via this alias; new code
+# should use ``CloudForensicsCollectorAgent`` directly through AgentRuntime.
+CloudForensicsCollectorRunner = CloudForensicsCollectorAgent

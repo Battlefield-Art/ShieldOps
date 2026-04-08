@@ -25,12 +25,6 @@ logger = structlog.get_logger()
 _toolkit: PolicyEngineToolkit | None = None
 
 
-def set_toolkit(toolkit: PolicyEngineToolkit) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PolicyEngineToolkit:
     """Get the module-level toolkit, creating a default if needed."""
     global _toolkit

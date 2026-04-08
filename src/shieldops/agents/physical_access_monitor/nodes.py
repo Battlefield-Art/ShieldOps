@@ -19,12 +19,6 @@ logger = structlog.get_logger()
 _toolkit: PhysicalAccessMonitorToolkit | None = None
 
 
-def set_toolkit(tk: PhysicalAccessMonitorToolkit) -> None:
-    """Set module-level toolkit singleton."""
-    global _toolkit
-    _toolkit = tk
-
-
 def _get_toolkit() -> PhysicalAccessMonitorToolkit:
     """Return the module-level toolkit."""
     if _toolkit is None:

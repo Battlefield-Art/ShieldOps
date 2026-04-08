@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from shieldops.agents.detection_engineering.agent import DetectionEngineeringRunner
 from shieldops.agents.detection_engineering.graph import (
     _should_deploy,
     build_graph,
@@ -30,7 +31,6 @@ from shieldops.agents.detection_engineering.prompts import (
     SYSTEM_DEPLOY,
     SYSTEM_TEST_AND_TUNE,
 )
-from shieldops.agents.detection_engineering.runner import DetectionEngineeringRunner
 from shieldops.agents.detection_engineering.tools import DetectionEngineeringToolkit
 
 # =====================================================================

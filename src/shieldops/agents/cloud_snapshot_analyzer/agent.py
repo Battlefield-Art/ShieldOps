@@ -49,3 +49,9 @@ class CloudSnapshotAnalyzerAgent(Agent):
     ]
 
     entry = "discover_snapshots"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudSnapshotAnalyzerRunner`` keep working via this alias; new code
+# should use ``CloudSnapshotAnalyzerAgent`` directly through AgentRuntime.
+CloudSnapshotAnalyzerRunner = CloudSnapshotAnalyzerAgent

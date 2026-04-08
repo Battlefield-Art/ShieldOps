@@ -50,3 +50,9 @@ class CyberRecoveryAgent(Agent):
     ]
 
     entry = "assess_damage"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CyberRecoveryRunner`` keep working via this alias; new code
+# should use ``CyberRecoveryAgent`` directly through AgentRuntime.
+CyberRecoveryRunner = CyberRecoveryAgent

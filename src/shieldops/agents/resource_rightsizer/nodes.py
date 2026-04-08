@@ -14,14 +14,6 @@ logger = structlog.get_logger()
 _toolkit: ResourceRightsizerToolkit | None = None
 
 
-def set_toolkit(
-    tk: ResourceRightsizerToolkit,
-) -> None:
-    """Set module-level toolkit for all nodes."""
-    global _toolkit
-    _toolkit = tk
-
-
 def _get_toolkit() -> ResourceRightsizerToolkit:
     if _toolkit is None:
         return ResourceRightsizerToolkit()

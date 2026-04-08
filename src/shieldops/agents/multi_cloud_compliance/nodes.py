@@ -25,14 +25,6 @@ logger = structlog.get_logger()
 _toolkit: MultiCloudComplianceToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: MultiCloudComplianceToolkit,
-) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> MultiCloudComplianceToolkit:
     global _toolkit
     if _toolkit is None:

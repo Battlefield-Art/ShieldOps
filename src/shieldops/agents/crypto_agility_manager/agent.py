@@ -49,3 +49,9 @@ class CryptoAgilityManagerAgent(Agent):
     ]
 
     entry = "discover_algorithms"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CryptoAgilityManagerRunner`` keep working via this alias; new code
+# should use ``CryptoAgilityManagerAgent`` directly through AgentRuntime.
+CryptoAgilityManagerRunner = CryptoAgilityManagerAgent

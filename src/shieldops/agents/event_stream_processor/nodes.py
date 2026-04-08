@@ -23,12 +23,6 @@ logger = structlog.get_logger()
 _toolkit: EventStreamProcessorToolkit | None = None
 
 
-def set_toolkit(toolkit: EventStreamProcessorToolkit) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> EventStreamProcessorToolkit:
     if _toolkit is None:
         return EventStreamProcessorToolkit()

@@ -49,3 +49,9 @@ class CloudIamAnalyzerAgent(Agent):
     ]
 
     entry = "collect_policies"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudIAMAnalyzerRunner`` keep working via this alias; new code
+# should use ``CloudIamAnalyzerAgent`` directly through AgentRuntime.
+CloudIAMAnalyzerRunner = CloudIamAnalyzerAgent

@@ -48,3 +48,9 @@ class SecuritySignalCorrelatorAgent(Agent):
     ]
 
     entry = "collect_signals"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecuritySignalCorrelatorRunner`` keep working via this alias; new code
+# should use ``SecuritySignalCorrelatorAgent`` directly through AgentRuntime.
+SecuritySignalCorrelatorRunner = SecuritySignalCorrelatorAgent

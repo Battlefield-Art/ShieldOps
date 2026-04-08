@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: ComplianceAutomationEngineToolkit | None = None
 
 
-def set_toolkit(toolkit: ComplianceAutomationEngineToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ComplianceAutomationEngineToolkit:
     if _toolkit is None:
         return ComplianceAutomationEngineToolkit()

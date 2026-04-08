@@ -48,3 +48,9 @@ class InferenceAttackDetectorAgent(Agent):
     ]
 
     entry = "collect_queries"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``InferenceAttackDetectorRunner`` keep working via this alias; new code
+# should use ``InferenceAttackDetectorAgent`` directly through AgentRuntime.
+InferenceAttackDetectorRunner = InferenceAttackDetectorAgent

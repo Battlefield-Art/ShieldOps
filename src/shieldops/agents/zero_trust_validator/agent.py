@@ -48,3 +48,9 @@ class ZeroTrustValidatorAgent(Agent):
     ]
 
     entry = "inventory_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ZeroTrustValidatorRunner`` keep working via this alias; new code
+# should use ``ZeroTrustValidatorAgent`` directly through AgentRuntime.
+ZeroTrustValidatorRunner = ZeroTrustValidatorAgent

@@ -49,3 +49,9 @@ class ThreatFeedOrchestratorAgent(Agent):
     ]
 
     entry = "connect_feeds"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatFeedOrchestratorRunner`` keep working via this alias; new code
+# should use ``ThreatFeedOrchestratorAgent`` directly through AgentRuntime.
+ThreatFeedOrchestratorRunner = ThreatFeedOrchestratorAgent

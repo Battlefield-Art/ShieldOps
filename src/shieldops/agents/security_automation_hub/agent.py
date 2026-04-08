@@ -48,3 +48,9 @@ class SecurityAutomationHubAgent(Agent):
     ]
 
     entry = "ingest_triggers"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityAutomationHubRunner`` keep working via this alias; new code
+# should use ``SecurityAutomationHubAgent`` directly through AgentRuntime.
+SecurityAutomationHubRunner = SecurityAutomationHubAgent

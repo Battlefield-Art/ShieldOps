@@ -48,3 +48,9 @@ class FirewallRuleAuditorAgent(Agent):
     ]
 
     entry = "collect_rules"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``FirewallRuleAuditorRunner`` keep working via this alias; new code
+# should use ``FirewallRuleAuditorAgent`` directly through AgentRuntime.
+FirewallRuleAuditorRunner = FirewallRuleAuditorAgent

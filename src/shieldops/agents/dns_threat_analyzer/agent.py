@@ -48,3 +48,9 @@ class DnsThreatAnalyzerAgent(Agent):
     ]
 
     entry = "collect_dns_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DNSThreatAnalyzerRunner`` keep working via this alias; new code
+# should use ``DnsThreatAnalyzerAgent`` directly through AgentRuntime.
+DNSThreatAnalyzerRunner = DnsThreatAnalyzerAgent

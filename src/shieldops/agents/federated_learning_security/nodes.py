@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: FederatedLearningSecurityToolkit | None = None
 
 
-def set_toolkit(toolkit: FederatedLearningSecurityToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> FederatedLearningSecurityToolkit:
     if _toolkit is None:
         return FederatedLearningSecurityToolkit()

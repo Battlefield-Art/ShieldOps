@@ -24,14 +24,6 @@ logger = structlog.get_logger()
 _toolkit: StakeholderNotifierToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: StakeholderNotifierToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> StakeholderNotifierToolkit:
     if _toolkit is None:
         return StakeholderNotifierToolkit()

@@ -49,3 +49,9 @@ class SecurityAppBuilderAgent(Agent):
     ]
 
     entry = "parse_requirements"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityAppBuilderRunner`` keep working via this alias; new code
+# should use ``SecurityAppBuilderAgent`` directly through AgentRuntime.
+SecurityAppBuilderRunner = SecurityAppBuilderAgent

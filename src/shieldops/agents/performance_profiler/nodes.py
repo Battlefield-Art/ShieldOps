@@ -25,12 +25,6 @@ logger = structlog.get_logger()
 _toolkit: PerformanceProfilerToolkit | None = None
 
 
-def set_toolkit(toolkit: PerformanceProfilerToolkit) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PerformanceProfilerToolkit:
     """Get the module-level toolkit, creating a default if needed."""
     global _toolkit

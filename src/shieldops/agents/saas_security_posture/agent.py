@@ -48,3 +48,9 @@ class SaasSecurityPostureAgent(Agent):
     ]
 
     entry = "discover_apps"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SaaSSecurityPostureRunner`` keep working via this alias; new code
+# should use ``SaasSecurityPostureAgent`` directly through AgentRuntime.
+SaaSSecurityPostureRunner = SaasSecurityPostureAgent

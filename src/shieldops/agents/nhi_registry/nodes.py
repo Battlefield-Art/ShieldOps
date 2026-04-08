@@ -23,12 +23,6 @@ logger = structlog.get_logger()
 _toolkit: NHIRegistryToolkit | None = None
 
 
-def set_toolkit(toolkit: NHIRegistryToolkit) -> None:
-    """Set the module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> NHIRegistryToolkit:
     """Get the module-level toolkit, creating a default if needed."""
     global _toolkit

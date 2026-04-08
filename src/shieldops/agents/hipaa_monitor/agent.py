@@ -46,3 +46,9 @@ class HipaaMonitorAgent(Agent):
     ]
 
     entry = "audit_access"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``HIPAAMonitorRunner`` keep working via this alias; new code
+# should use ``HipaaMonitorAgent`` directly through AgentRuntime.
+HIPAAMonitorRunner = HipaaMonitorAgent

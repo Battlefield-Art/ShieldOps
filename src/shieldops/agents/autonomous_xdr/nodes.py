@@ -35,12 +35,6 @@ logger = structlog.get_logger()
 _toolkit: AutonomousXDRToolkit | None = None
 
 
-def set_toolkit(toolkit: AutonomousXDRToolkit) -> None:
-    """Inject toolkit for the module-level nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AutonomousXDRToolkit:
     if _toolkit is None:
         return AutonomousXDRToolkit()

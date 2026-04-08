@@ -48,3 +48,9 @@ class DefenseInDepthAuditorAgent(Agent):
     ]
 
     entry = "map_layers"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DefenseInDepthAuditorRunner`` keep working via this alias; new code
+# should use ``DefenseInDepthAuditorAgent`` directly through AgentRuntime.
+DefenseInDepthAuditorRunner = DefenseInDepthAuditorAgent

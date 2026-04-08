@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: WarGamingSimulatorToolkit | None = None
 
 
-def set_toolkit(toolkit: WarGamingSimulatorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> WarGamingSimulatorToolkit:
     if _toolkit is None:
         return WarGamingSimulatorToolkit()

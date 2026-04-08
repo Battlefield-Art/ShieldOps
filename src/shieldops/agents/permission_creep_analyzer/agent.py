@@ -48,3 +48,9 @@ class PermissionCreepAnalyzerAgent(Agent):
     ]
 
     entry = "collect_permissions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PermissionCreepAnalyzerRunner`` keep working via this alias; new code
+# should use ``PermissionCreepAnalyzerAgent`` directly through AgentRuntime.
+PermissionCreepAnalyzerRunner = PermissionCreepAnalyzerAgent

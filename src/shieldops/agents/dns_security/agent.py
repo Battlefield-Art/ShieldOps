@@ -48,3 +48,9 @@ class DnsSecurityAgent(Agent):
     ]
 
     entry = "collect_dns"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DNSSecurityRunner`` keep working via this alias; new code
+# should use ``DnsSecurityAgent`` directly through AgentRuntime.
+DNSSecurityRunner = DnsSecurityAgent

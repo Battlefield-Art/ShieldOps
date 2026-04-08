@@ -19,13 +19,6 @@ logger = structlog.get_logger()
 _toolkit: HealthCheckOrchestratorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: HealthCheckOrchestratorToolkit,
-) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> HealthCheckOrchestratorToolkit:
     if _toolkit is None:
         return HealthCheckOrchestratorToolkit()

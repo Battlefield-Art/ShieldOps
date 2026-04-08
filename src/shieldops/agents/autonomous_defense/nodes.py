@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: AutonomousDefenseToolkit | None = None
 
 
-def set_toolkit(toolkit: AutonomousDefenseToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AutonomousDefenseToolkit:
     if _toolkit is None:
         return AutonomousDefenseToolkit()

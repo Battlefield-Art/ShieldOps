@@ -49,3 +49,9 @@ class PrivilegeAccessMonitorAgent(Agent):
     ]
 
     entry = "discover_accounts"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PrivilegeAccessMonitorRunner`` keep working via this alias; new code
+# should use ``PrivilegeAccessMonitorAgent`` directly through AgentRuntime.
+PrivilegeAccessMonitorRunner = PrivilegeAccessMonitorAgent

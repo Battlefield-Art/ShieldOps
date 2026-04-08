@@ -48,3 +48,9 @@ class BackupValidatorAgent(Agent):
     ]
 
     entry = "inventory_backups"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BackupValidatorRunner`` keep working via this alias; new code
+# should use ``BackupValidatorAgent`` directly through AgentRuntime.
+BackupValidatorRunner = BackupValidatorAgent

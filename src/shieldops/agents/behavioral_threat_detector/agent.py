@@ -48,3 +48,9 @@ class BehavioralThreatDetectorAgent(Agent):
     ]
 
     entry = "collect_behaviors"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``BehavioralThreatDetectorRunner`` keep working via this alias; new code
+# should use ``BehavioralThreatDetectorAgent`` directly through AgentRuntime.
+BehavioralThreatDetectorRunner = BehavioralThreatDetectorAgent

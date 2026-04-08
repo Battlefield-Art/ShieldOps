@@ -16,14 +16,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityAwarenessTrainerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SecurityAwarenessTrainerToolkit,
-) -> None:
-    """Configure the toolkit used by all nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityAwarenessTrainerToolkit:
     if _toolkit is None:
         return SecurityAwarenessTrainerToolkit()

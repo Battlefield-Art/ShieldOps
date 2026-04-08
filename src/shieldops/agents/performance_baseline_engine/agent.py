@@ -48,3 +48,9 @@ class PerformanceBaselineEngineAgent(Agent):
     ]
 
     entry = "collect_metrics"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``PerformanceBaselineEngineRunner`` keep working via this alias; new code
+# should use ``PerformanceBaselineEngineAgent`` directly through AgentRuntime.
+PerformanceBaselineEngineRunner = PerformanceBaselineEngineAgent

@@ -49,3 +49,9 @@ class LlmPromptFirewallAgent(Agent):
     ]
 
     entry = "intercept_prompt"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``LLMPromptFirewallRunner`` keep working via this alias; new code
+# should use ``LlmPromptFirewallAgent`` directly through AgentRuntime.
+LLMPromptFirewallRunner = LlmPromptFirewallAgent

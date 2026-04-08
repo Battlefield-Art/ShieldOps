@@ -48,3 +48,9 @@ class DataRetentionEnforcerAgent(Agent):
     ]
 
     entry = "discover_data"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataRetentionEnforcerRunner`` keep working via this alias; new code
+# should use ``DataRetentionEnforcerAgent`` directly through AgentRuntime.
+DataRetentionEnforcerRunner = DataRetentionEnforcerAgent

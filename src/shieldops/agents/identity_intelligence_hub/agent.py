@@ -48,3 +48,9 @@ class IdentityIntelligenceHubAgent(Agent):
     ]
 
     entry = "collect_identity_signals"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IdentityIntelligenceHubRunner`` keep working via this alias; new code
+# should use ``IdentityIntelligenceHubAgent`` directly through AgentRuntime.
+IdentityIntelligenceHubRunner = IdentityIntelligenceHubAgent

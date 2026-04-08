@@ -50,3 +50,9 @@ class MobileThreatDefenderAgent(Agent):
     ]
 
     entry = "scan_device"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MobileThreatDefenderRunner`` keep working via this alias; new code
+# should use ``MobileThreatDefenderAgent`` directly through AgentRuntime.
+MobileThreatDefenderRunner = MobileThreatDefenderAgent

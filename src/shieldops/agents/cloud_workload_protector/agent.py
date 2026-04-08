@@ -49,3 +49,9 @@ class CloudWorkloadProtectorAgent(Agent):
     ]
 
     entry = "scan_workloads"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudWorkloadProtectorRunner`` keep working via this alias; new code
+# should use ``CloudWorkloadProtectorAgent`` directly through AgentRuntime.
+CloudWorkloadProtectorRunner = CloudWorkloadProtectorAgent

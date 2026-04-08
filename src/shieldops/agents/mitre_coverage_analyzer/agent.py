@@ -49,3 +49,9 @@ class MitreCoverageAnalyzerAgent(Agent):
     ]
 
     entry = "inventory_detections"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MITRECoverageAnalyzerRunner`` keep working via this alias; new code
+# should use ``MitreCoverageAnalyzerAgent`` directly through AgentRuntime.
+MITRECoverageAnalyzerRunner = MitreCoverageAnalyzerAgent

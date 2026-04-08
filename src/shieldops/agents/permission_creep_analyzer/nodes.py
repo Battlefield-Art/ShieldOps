@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: PermissionCreepAnalyzerToolkit | None = None
 
 
-def set_toolkit(toolkit: PermissionCreepAnalyzerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PermissionCreepAnalyzerToolkit:
     if _toolkit is None:
         return PermissionCreepAnalyzerToolkit()

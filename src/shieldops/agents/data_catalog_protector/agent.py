@@ -49,3 +49,9 @@ class DataCatalogProtectorAgent(Agent):
     ]
 
     entry = "scan_catalogs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataCatalogProtectorRunner`` keep working via this alias; new code
+# should use ``DataCatalogProtectorAgent`` directly through AgentRuntime.
+DataCatalogProtectorRunner = DataCatalogProtectorAgent

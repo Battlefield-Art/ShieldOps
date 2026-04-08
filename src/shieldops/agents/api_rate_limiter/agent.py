@@ -49,3 +49,9 @@ class ApiRateLimiterAgent(Agent):
     ]
 
     entry = "ingest_requests"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``APIRateLimiterRunner`` keep working via this alias; new code
+# should use ``ApiRateLimiterAgent`` directly through AgentRuntime.
+APIRateLimiterRunner = ApiRateLimiterAgent

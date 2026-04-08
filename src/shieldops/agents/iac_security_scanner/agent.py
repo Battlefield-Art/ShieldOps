@@ -48,3 +48,9 @@ class IacSecurityScannerAgent(Agent):
     ]
 
     entry = "discover_templates"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IACSecurityScannerRunner`` keep working via this alias; new code
+# should use ``IacSecurityScannerAgent`` directly through AgentRuntime.
+IACSecurityScannerRunner = IacSecurityScannerAgent

@@ -48,3 +48,9 @@ class AiBiasScannerAgent(Agent):
     ]
 
     entry = "collect_data"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AIBiasScannerRunner`` keep working via this alias; new code
+# should use ``AiBiasScannerAgent`` directly through AgentRuntime.
+AIBiasScannerRunner = AiBiasScannerAgent

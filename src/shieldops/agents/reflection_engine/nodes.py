@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: ReflectionEngineToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: ReflectionEngineToolkit,
-) -> None:
-    """Set the global toolkit instance for nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ReflectionEngineToolkit:
     if _toolkit is None:
         return ReflectionEngineToolkit()

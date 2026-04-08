@@ -35,14 +35,6 @@ logger = structlog.get_logger()
 _toolkit: CloudWorkloadInspectorToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: CloudWorkloadInspectorToolkit,
-) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CloudWorkloadInspectorToolkit:
     if _toolkit is None:
         return CloudWorkloadInspectorToolkit()

@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: AdversaryEmulatorToolkit | None = None
 
 
-def set_toolkit(toolkit: AdversaryEmulatorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AdversaryEmulatorToolkit:
     if _toolkit is None:
         return AdversaryEmulatorToolkit()

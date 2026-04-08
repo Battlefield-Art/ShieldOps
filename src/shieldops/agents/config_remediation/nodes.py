@@ -29,12 +29,6 @@ logger = structlog.get_logger()
 _toolkit: ConfigRemediationToolkit | None = None
 
 
-def set_toolkit(tk: ConfigRemediationToolkit) -> None:
-    """Set module-level toolkit for all nodes."""
-    global _toolkit
-    _toolkit = tk
-
-
 def _get_toolkit() -> ConfigRemediationToolkit:
     if _toolkit is None:
         return ConfigRemediationToolkit()

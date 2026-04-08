@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: KeyLifecycleManagerToolkit | None = None
 
 
-def set_toolkit(toolkit: KeyLifecycleManagerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> KeyLifecycleManagerToolkit:
     if _toolkit is None:
         return KeyLifecycleManagerToolkit()

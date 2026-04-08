@@ -48,3 +48,9 @@ class AuditTrailAnalyzerAgent(Agent):
     ]
 
     entry = "collect_logs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AuditTrailAnalyzerRunner`` keep working via this alias; new code
+# should use ``AuditTrailAnalyzerAgent`` directly through AgentRuntime.
+AuditTrailAnalyzerRunner = AuditTrailAnalyzerAgent

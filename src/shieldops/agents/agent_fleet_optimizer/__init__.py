@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from shieldops.agents.agent_fleet_optimizer.agent import (
+    AgentFleetOptimizerRunner,
+)
 from shieldops.agents.agent_fleet_optimizer.graph import (
     create_agent_fleet_optimizer_graph,
-)
-from shieldops.agents.agent_fleet_optimizer.runner import (
-    AgentFleetOptimizerRunner,
 )
 
 __all__ = [

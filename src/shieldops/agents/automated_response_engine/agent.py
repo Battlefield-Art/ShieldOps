@@ -48,3 +48,9 @@ class AutomatedResponseEngineAgent(Agent):
     ]
 
     entry = "assess_incident"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AutomatedResponseEngineRunner`` keep working via this alias; new code
+# should use ``AutomatedResponseEngineAgent`` directly through AgentRuntime.
+AutomatedResponseEngineRunner = AutomatedResponseEngineAgent

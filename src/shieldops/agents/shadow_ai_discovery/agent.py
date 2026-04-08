@@ -49,3 +49,9 @@ class ShadowAiDiscoveryAgent(Agent):
     ]
 
     entry = "scan_network"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ShadowAIDiscoveryRunner`` keep working via this alias; new code
+# should use ``ShadowAiDiscoveryAgent`` directly through AgentRuntime.
+ShadowAIDiscoveryRunner = ShadowAiDiscoveryAgent

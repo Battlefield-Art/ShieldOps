@@ -48,3 +48,9 @@ class CiCdSecurityAuditorAgent(Agent):
     ]
 
     entry = "map_pipelines"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CiCdSecurityAuditorRunner`` keep working via this alias; new code
+# should use ``CiCdSecurityAuditorAgent`` directly through AgentRuntime.
+CiCdSecurityAuditorRunner = CiCdSecurityAuditorAgent

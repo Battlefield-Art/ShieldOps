@@ -14,14 +14,6 @@ logger = structlog.get_logger()
 _toolkit: InfrastructureDriftDetectorToolkit | None = None
 
 
-def set_toolkit(
-    tk: InfrastructureDriftDetectorToolkit,
-) -> None:
-    """Set module-level toolkit for all nodes."""
-    global _toolkit
-    _toolkit = tk
-
-
 def _get_toolkit() -> InfrastructureDriftDetectorToolkit:
     if _toolkit is None:
         return InfrastructureDriftDetectorToolkit()

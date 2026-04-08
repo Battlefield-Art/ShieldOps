@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: CiCdSecurityAuditorToolkit | None = None
 
 
-def set_toolkit(toolkit: CiCdSecurityAuditorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> CiCdSecurityAuditorToolkit:
     if _toolkit is None:
         return CiCdSecurityAuditorToolkit()

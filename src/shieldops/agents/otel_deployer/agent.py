@@ -42,3 +42,9 @@ class OtelDeployerAgent(Agent):
     ]
 
     entry = "plan"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``OTelDeployerRunner`` keep working via this alias; new code
+# should use ``OtelDeployerAgent`` directly through AgentRuntime.
+OTelDeployerRunner = OtelDeployerAgent

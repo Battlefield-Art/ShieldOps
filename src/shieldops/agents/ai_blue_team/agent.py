@@ -48,3 +48,9 @@ class AiBlueTeamAgent(Agent):
     ]
 
     entry = "analyze_findings"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AIBlueTeamRunner`` keep working via this alias; new code
+# should use ``AiBlueTeamAgent`` directly through AgentRuntime.
+AIBlueTeamRunner = AiBlueTeamAgent

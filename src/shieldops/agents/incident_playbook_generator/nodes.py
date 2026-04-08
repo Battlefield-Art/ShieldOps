@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: IncidentPlaybookGeneratorToolkit | None = None
 
 
-def set_toolkit(toolkit: IncidentPlaybookGeneratorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IncidentPlaybookGeneratorToolkit:
     if _toolkit is None:
         return IncidentPlaybookGeneratorToolkit()

@@ -50,3 +50,9 @@ class ThreatIntelligenceFusionAgent(Agent):
     ]
 
     entry = "collect_feeds"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatIntelligenceFusionRunner`` keep working via this alias; new code
+# should use ``ThreatIntelligenceFusionAgent`` directly through AgentRuntime.
+ThreatIntelligenceFusionRunner = ThreatIntelligenceFusionAgent

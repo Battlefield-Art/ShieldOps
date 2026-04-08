@@ -45,3 +45,9 @@ class ModelSecurityAgent(Agent):
     ]
 
     entry = "scan_models"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ModelSecurityRunner`` keep working via this alias; new code
+# should use ``ModelSecurityAgent`` directly through AgentRuntime.
+ModelSecurityRunner = ModelSecurityAgent

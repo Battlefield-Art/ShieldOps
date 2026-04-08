@@ -49,3 +49,9 @@ class RegulatoryChangeMonitorAgent(Agent):
     ]
 
     entry = "monitor_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RegulatoryChangeMonitorRunner`` keep working via this alias; new code
+# should use ``RegulatoryChangeMonitorAgent`` directly through AgentRuntime.
+RegulatoryChangeMonitorRunner = RegulatoryChangeMonitorAgent

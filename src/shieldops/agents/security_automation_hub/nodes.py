@@ -46,14 +46,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityAutomationHubToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SecurityAutomationHubToolkit,
-) -> None:
-    """Configure toolkit used by all nodes."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SecurityAutomationHubToolkit:
     if _toolkit is None:
         return SecurityAutomationHubToolkit()

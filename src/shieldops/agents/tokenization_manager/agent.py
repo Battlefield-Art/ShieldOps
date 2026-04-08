@@ -48,3 +48,9 @@ class TokenizationManagerAgent(Agent):
     ]
 
     entry = "discover_fields"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``TokenizationManagerRunner`` keep working via this alias; new code
+# should use ``TokenizationManagerAgent`` directly through AgentRuntime.
+TokenizationManagerRunner = TokenizationManagerAgent

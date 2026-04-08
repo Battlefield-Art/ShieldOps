@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from shieldops.agents.soar_workflow.agent import SOARWorkflowRunner
 from shieldops.agents.soar_workflow.graph import build_graph, create_soar_workflow_graph
 from shieldops.agents.soar_workflow.models import (
     AlertIntake,
@@ -29,7 +30,6 @@ from shieldops.agents.soar_workflow.prompts import (
     SYSTEM_INTAKE,
     SYSTEM_RECOVER,
 )
-from shieldops.agents.soar_workflow.runner import SOARWorkflowRunner
 from shieldops.agents.soar_workflow.tools import SOARWorkflowToolkit, _classify_indicator
 
 # =====================================================================

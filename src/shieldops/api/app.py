@@ -10,30 +10,30 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from shieldops.agents.attack_surface.runner import AttackSurfaceRunner
-from shieldops.agents.auto_remediation.runner import AutoRemediationRunner
-from shieldops.agents.autonomous_defense.runner import AutonomousDefenseRunner
+from shieldops.agents.auto_remediation.agent import AutoRemediationRunner
+from shieldops.agents.autonomous_defense.agent import AutonomousDefenseRunner
 from shieldops.agents.cost.runner import CostRunner
 from shieldops.agents.finops_intelligence.runner import FinOpsIntelligenceRunner
 from shieldops.agents.incident_response.runner import IncidentResponseRunner
-from shieldops.agents.intelligent_automation.runner import (
+from shieldops.agents.intelligent_automation.agent import (
     IntelligentAutomationRunner,
 )
 from shieldops.agents.investigation.runner import InvestigationRunner
-from shieldops.agents.itdr.runner import ITDRRunner
+from shieldops.agents.itdr.agent import ITDRRunner
 from shieldops.agents.learning.runner import LearningRunner
 from shieldops.agents.ml_governance.runner import MLGovernanceRunner
-from shieldops.agents.observability_intelligence.runner import (
+from shieldops.agents.observability_intelligence.agent import (
     ObservabilityIntelligenceRunner,
 )
-from shieldops.agents.platform_intelligence.runner import PlatformIntelligenceRunner
+from shieldops.agents.platform_intelligence.agent import PlatformIntelligenceRunner
 from shieldops.agents.remediation.runner import RemediationRunner
 from shieldops.agents.security.runner import SecurityRunner
-from shieldops.agents.security_convergence.runner import SecurityConvergenceRunner
-from shieldops.agents.soar_orchestration.runner import SOAROrchestrationRunner
+from shieldops.agents.security_convergence.agent import SecurityConvergenceRunner
+from shieldops.agents.soar_orchestration.agent import SOAROrchestrationRunner
 from shieldops.agents.soc_analyst.runner import SOCAnalystRunner
 from shieldops.agents.supervisor.runner import SupervisorRunner
 from shieldops.agents.threat_automation.runner import ThreatAutomationRunner
-from shieldops.agents.xdr.runner import XDRRunner
+from shieldops.agents.xdr.agent import XDRRunner
 from shieldops.agents.zero_trust.runner import ZeroTrustRunner
 from shieldops.api.routes import (
     agent_firewall as agent_firewall_routes,
@@ -8645,7 +8645,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     if settings.compliance_auditor_enabled:
         try:
-            from shieldops.agents.compliance_auditor.runner import ComplianceAuditorRunner
+            from shieldops.agents.compliance_auditor.agent import ComplianceAuditorRunner
             from shieldops.api.routes import compliance_auditor as aca_mod
 
             aca_runner = ComplianceAuditorRunner()

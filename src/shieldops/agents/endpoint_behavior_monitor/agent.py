@@ -43,3 +43,9 @@ class EndpointBehaviorMonitorAgent(Agent):
     ]
 
     entry = "collect_telemetry"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``EndpointBehaviorMonitorRunner`` keep working via this alias; new code
+# should use ``EndpointBehaviorMonitorAgent`` directly through AgentRuntime.
+EndpointBehaviorMonitorRunner = EndpointBehaviorMonitorAgent

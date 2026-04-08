@@ -50,3 +50,9 @@ class TrustRelationshipMapperAgent(Agent):
     ]
 
     entry = "discover_trust_boundaries"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``TrustRelationshipMapperRunner`` keep working via this alias; new code
+# should use ``TrustRelationshipMapperAgent`` directly through AgentRuntime.
+TrustRelationshipMapperRunner = TrustRelationshipMapperAgent

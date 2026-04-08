@@ -19,11 +19,6 @@ logger = structlog.get_logger()
 _toolkit: IntelligentAutomationToolkit | None = None
 
 
-def set_toolkit(toolkit: IntelligentAutomationToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IntelligentAutomationToolkit:
     if _toolkit is None:
         return IntelligentAutomationToolkit()

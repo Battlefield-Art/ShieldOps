@@ -48,3 +48,9 @@ class FederatedLearningSecurityAgent(Agent):
     ]
 
     entry = "inspect_gradients"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``FederatedLearningSecurityRunner`` keep working via this alias; new code
+# should use ``FederatedLearningSecurityAgent`` directly through AgentRuntime.
+FederatedLearningSecurityRunner = FederatedLearningSecurityAgent

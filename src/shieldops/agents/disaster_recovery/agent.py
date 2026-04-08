@@ -49,3 +49,9 @@ class DisasterRecoveryAgent(Agent):
     ]
 
     entry = "assess_plans"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DisasterRecoveryRunner`` keep working via this alias; new code
+# should use ``DisasterRecoveryAgent`` directly through AgentRuntime.
+DisasterRecoveryRunner = DisasterRecoveryAgent

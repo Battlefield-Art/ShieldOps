@@ -48,3 +48,9 @@ class ConsentManagerAgent(Agent):
     ]
 
     entry = "collect_consents"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ConsentManagerRunner`` keep working via this alias; new code
+# should use ``ConsentManagerAgent`` directly through AgentRuntime.
+ConsentManagerRunner = ConsentManagerAgent

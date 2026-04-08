@@ -48,3 +48,9 @@ class SessionManagerAgent(Agent):
     ]
 
     entry = "discover_sessions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SessionManagerRunner`` keep working via this alias; new code
+# should use ``SessionManagerAgent`` directly through AgentRuntime.
+SessionManagerRunner = SessionManagerAgent

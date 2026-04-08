@@ -42,3 +42,9 @@ class SecurityPostureAgent(Agent):
     ]
 
     entry = "assess_domains"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityPostureRunner`` keep working via this alias; new code
+# should use ``SecurityPostureAgent`` directly through AgentRuntime.
+SecurityPostureRunner = SecurityPostureAgent

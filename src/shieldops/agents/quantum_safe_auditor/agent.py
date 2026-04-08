@@ -50,3 +50,9 @@ class QuantumSafeAuditorAgent(Agent):
     ]
 
     entry = "inventory_crypto"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``QuantumSafeAuditorRunner`` keep working via this alias; new code
+# should use ``QuantumSafeAuditorAgent`` directly through AgentRuntime.
+QuantumSafeAuditorRunner = QuantumSafeAuditorAgent

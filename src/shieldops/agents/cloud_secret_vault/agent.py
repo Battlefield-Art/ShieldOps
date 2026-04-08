@@ -50,3 +50,9 @@ class CloudSecretVaultAgent(Agent):
     ]
 
     entry = "discover_secrets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudSecretVaultRunner`` keep working via this alias; new code
+# should use ``CloudSecretVaultAgent`` directly through AgentRuntime.
+CloudSecretVaultRunner = CloudSecretVaultAgent

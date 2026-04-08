@@ -48,3 +48,9 @@ class CloudStorageScannerAgent(Agent):
     ]
 
     entry = "discover_buckets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudStorageScannerRunner`` keep working via this alias; new code
+# should use ``CloudStorageScannerAgent`` directly through AgentRuntime.
+CloudStorageScannerRunner = CloudStorageScannerAgent

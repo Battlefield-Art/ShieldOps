@@ -50,3 +50,9 @@ class AttackSurfaceMapperAgent(Agent):
     ]
 
     entry = "discover_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AttackSurfaceMapperRunner`` keep working via this alias; new code
+# should use ``AttackSurfaceMapperAgent`` directly through AgentRuntime.
+AttackSurfaceMapperRunner = AttackSurfaceMapperAgent

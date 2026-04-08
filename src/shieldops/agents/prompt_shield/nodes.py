@@ -28,11 +28,6 @@ logger = structlog.get_logger()
 _toolkit: PromptShieldToolkit | None = None
 
 
-def set_toolkit(toolkit: PromptShieldToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> PromptShieldToolkit:
     if _toolkit is None:
         return PromptShieldToolkit()

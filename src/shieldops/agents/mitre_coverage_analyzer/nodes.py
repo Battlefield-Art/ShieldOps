@@ -33,14 +33,6 @@ logger = structlog.get_logger()
 _toolkit: MITRECoverageAnalyzerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: MITRECoverageAnalyzerToolkit,
-) -> None:
-    """Set module-level toolkit for node functions."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> MITRECoverageAnalyzerToolkit:
     global _toolkit
     if _toolkit is None:

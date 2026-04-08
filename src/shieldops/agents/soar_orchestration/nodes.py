@@ -18,11 +18,6 @@ logger = structlog.get_logger()
 _toolkit: SOAROrchestrationToolkit | None = None
 
 
-def set_toolkit(toolkit: SOAROrchestrationToolkit) -> None:
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SOAROrchestrationToolkit:
     if _toolkit is None:
         return SOAROrchestrationToolkit()

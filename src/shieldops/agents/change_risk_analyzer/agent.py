@@ -48,3 +48,9 @@ class ChangeRiskAnalyzerAgent(Agent):
     ]
 
     entry = "collect_change"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ChangeRiskAnalyzerRunner`` keep working via this alias; new code
+# should use ``ChangeRiskAnalyzerAgent`` directly through AgentRuntime.
+ChangeRiskAnalyzerRunner = ChangeRiskAnalyzerAgent

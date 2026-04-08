@@ -52,3 +52,9 @@ class ChaosEngineeringAgent(Agent):
     ]
 
     entry = "plan_experiment"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ChaosEngineeringRunner`` keep working via this alias; new code
+# should use ``ChaosEngineeringAgent`` directly through AgentRuntime.
+ChaosEngineeringRunner = ChaosEngineeringAgent

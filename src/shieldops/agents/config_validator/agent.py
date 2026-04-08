@@ -49,3 +49,9 @@ class ConfigValidatorAgent(Agent):
     ]
 
     entry = "collect_configs"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ConfigValidatorRunner`` keep working via this alias; new code
+# should use ``ConfigValidatorAgent`` directly through AgentRuntime.
+ConfigValidatorRunner = ConfigValidatorAgent

@@ -48,3 +48,9 @@ class DataEncryptionMonitorAgent(Agent):
     ]
 
     entry = "scan_assets"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataEncryptionMonitorRunner`` keep working via this alias; new code
+# should use ``DataEncryptionMonitorAgent`` directly through AgentRuntime.
+DataEncryptionMonitorRunner = DataEncryptionMonitorAgent

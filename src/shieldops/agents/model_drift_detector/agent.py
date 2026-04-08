@@ -54,3 +54,9 @@ class ModelDriftDetectorAgent(Agent):
     ]
 
     entry = "collect"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ModelDriftDetectorRunner`` keep working via this alias; new code
+# should use ``ModelDriftDetectorAgent`` directly through AgentRuntime.
+ModelDriftDetectorRunner = ModelDriftDetectorAgent

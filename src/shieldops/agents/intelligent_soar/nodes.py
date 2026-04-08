@@ -39,14 +39,6 @@ logger = structlog.get_logger()
 _toolkit: IntelligentSOARToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: IntelligentSOARToolkit,
-) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> IntelligentSOARToolkit:
     if _toolkit is None:
         return IntelligentSOARToolkit()

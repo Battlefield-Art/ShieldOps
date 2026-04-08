@@ -48,3 +48,9 @@ class IndustrialProtocolAnalyzerAgent(Agent):
     ]
 
     entry = "capture_traffic"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``IndustrialProtocolAnalyzerRunner`` keep working via this alias; new code
+# should use ``IndustrialProtocolAnalyzerAgent`` directly through AgentRuntime.
+IndustrialProtocolAnalyzerRunner = IndustrialProtocolAnalyzerAgent

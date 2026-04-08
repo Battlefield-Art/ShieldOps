@@ -49,3 +49,9 @@ class SecurityChaosTesterAgent(Agent):
     ]
 
     entry = "define_experiment"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityChaosRunner`` keep working via this alias; new code
+# should use ``SecurityChaosTesterAgent`` directly through AgentRuntime.
+SecurityChaosRunner = SecurityChaosTesterAgent

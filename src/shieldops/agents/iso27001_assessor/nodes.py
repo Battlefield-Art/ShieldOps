@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: ISO27001AssessorToolkit | None = None
 
 
-def set_toolkit(toolkit: ISO27001AssessorToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> ISO27001AssessorToolkit:
     if _toolkit is None:
         return ISO27001AssessorToolkit()

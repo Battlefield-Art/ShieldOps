@@ -48,3 +48,9 @@ class DataSecurityPostureAgent(Agent):
     ]
 
     entry = "discover_data_stores"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``DataSecurityPostureRunner`` keep working via this alias; new code
+# should use ``DataSecurityPostureAgent`` directly through AgentRuntime.
+DataSecurityPostureRunner = DataSecurityPostureAgent

@@ -24,16 +24,10 @@ logger = structlog.get_logger()
 _toolkit: CloudKeyManagerToolkit | None = None  # noqa: PLW0603
 
 
-def set_toolkit(tk: CloudKeyManagerToolkit) -> None:
-    """Set the module-level toolkit."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = tk
-
-
 def _get_toolkit() -> CloudKeyManagerToolkit:
     """Get the module-level toolkit."""
     if _toolkit is None:
-        msg = "Toolkit not set — call set_toolkit first"
+        msg = "Toolkit not set — toolkit required"
         raise RuntimeError(msg)
     return _toolkit
 

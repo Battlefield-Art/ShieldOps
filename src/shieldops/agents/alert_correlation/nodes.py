@@ -29,12 +29,6 @@ logger = structlog.get_logger()
 _toolkit: AlertCorrelationToolkit | None = None
 
 
-def set_toolkit(toolkit: AlertCorrelationToolkit) -> None:
-    """Set the global toolkit instance for nodes."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AlertCorrelationToolkit:
     if _toolkit is None:
         return AlertCorrelationToolkit()

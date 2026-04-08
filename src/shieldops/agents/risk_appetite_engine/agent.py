@@ -48,3 +48,9 @@ class RiskAppetiteEngineAgent(Agent):
     ]
 
     entry = "define_appetite"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RiskAppetiteEngineRunner`` keep working via this alias; new code
+# should use ``RiskAppetiteEngineAgent`` directly through AgentRuntime.
+RiskAppetiteEngineRunner = RiskAppetiteEngineAgent

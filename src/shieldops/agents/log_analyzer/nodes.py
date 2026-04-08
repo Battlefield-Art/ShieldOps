@@ -31,11 +31,6 @@ logger = structlog.get_logger()
 _toolkit: LogAnalyzerToolkit | None = None
 
 
-def set_toolkit(toolkit: LogAnalyzerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> LogAnalyzerToolkit:
     if _toolkit is None:
         return LogAnalyzerToolkit()

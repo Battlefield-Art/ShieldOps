@@ -29,14 +29,6 @@ logger = structlog.get_logger()
 _toolkit: SituationManagerToolkit | None = None
 
 
-def set_toolkit(
-    toolkit: SituationManagerToolkit,
-) -> None:
-    """Set the global toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> SituationManagerToolkit:
     if _toolkit is None:
         return SituationManagerToolkit()

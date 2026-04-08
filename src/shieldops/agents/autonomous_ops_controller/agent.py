@@ -48,3 +48,9 @@ class AutonomousOpsControllerAgent(Agent):
     ]
 
     entry = "assess_fleet"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``AutonomousOpsControllerRunner`` keep working via this alias; new code
+# should use ``AutonomousOpsControllerAgent`` directly through AgentRuntime.
+AutonomousOpsControllerRunner = AutonomousOpsControllerAgent

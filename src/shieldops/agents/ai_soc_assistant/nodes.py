@@ -34,12 +34,6 @@ logger = structlog.get_logger()
 _toolkit: AISOCAssistantToolkit | None = None
 
 
-def set_toolkit(toolkit: AISOCAssistantToolkit) -> None:
-    """Set the shared toolkit instance."""
-    global _toolkit
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> AISOCAssistantToolkit:
     if _toolkit is None:
         return AISOCAssistantToolkit()

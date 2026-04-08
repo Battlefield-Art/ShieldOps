@@ -49,3 +49,9 @@ class CloudPermissionOptimizerAgent(Agent):
     ]
 
     entry = "collect_permissions"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudPermissionOptimizerRunner`` keep working via this alias; new code
+# should use ``CloudPermissionOptimizerAgent`` directly through AgentRuntime.
+CloudPermissionOptimizerRunner = CloudPermissionOptimizerAgent

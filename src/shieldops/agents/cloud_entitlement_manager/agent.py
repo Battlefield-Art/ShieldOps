@@ -49,3 +49,9 @@ class CloudEntitlementManagerAgent(Agent):
     ]
 
     entry = "discover_identities"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``CloudEntitlementManagerRunner`` keep working via this alias; new code
+# should use ``CloudEntitlementManagerAgent`` directly through AgentRuntime.
+CloudEntitlementManagerRunner = CloudEntitlementManagerAgent

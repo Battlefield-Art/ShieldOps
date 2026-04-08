@@ -48,3 +48,9 @@ class FinopsForecasterAgent(Agent):
     ]
 
     entry = "collect_history"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``FinopsForecasterRunner`` keep working via this alias; new code
+# should use ``FinopsForecasterAgent`` directly through AgentRuntime.
+FinopsForecasterRunner = FinopsForecasterAgent

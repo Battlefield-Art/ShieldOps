@@ -15,11 +15,6 @@ logger = structlog.get_logger()
 _toolkit: DataLineageTrackerToolkit | None = None
 
 
-def set_toolkit(toolkit: DataLineageTrackerToolkit) -> None:
-    global _toolkit  # noqa: PLW0603
-    _toolkit = toolkit
-
-
 def _get_toolkit() -> DataLineageTrackerToolkit:
     if _toolkit is None:
         return DataLineageTrackerToolkit()

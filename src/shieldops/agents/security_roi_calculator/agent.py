@@ -48,3 +48,9 @@ class SecurityRoiCalculatorAgent(Agent):
     ]
 
     entry = "collect_investments"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityROICalculatorRunner`` keep working via this alias; new code
+# should use ``SecurityRoiCalculatorAgent`` directly through AgentRuntime.
+SecurityROICalculatorRunner = SecurityRoiCalculatorAgent

@@ -48,3 +48,9 @@ class ThreatFeedAggregatorAgent(Agent):
     ]
 
     entry = "collect_feeds"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``ThreatFeedAggregatorRunner`` keep working via this alias; new code
+# should use ``ThreatFeedAggregatorAgent`` directly through AgentRuntime.
+ThreatFeedAggregatorRunner = ThreatFeedAggregatorAgent

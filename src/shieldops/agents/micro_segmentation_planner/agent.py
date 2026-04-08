@@ -48,3 +48,9 @@ class MicroSegmentationPlannerAgent(Agent):
     ]
 
     entry = "map_traffic"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``MicroSegmentationPlannerRunner`` keep working via this alias; new code
+# should use ``MicroSegmentationPlannerAgent`` directly through AgentRuntime.
+MicroSegmentationPlannerRunner = MicroSegmentationPlannerAgent

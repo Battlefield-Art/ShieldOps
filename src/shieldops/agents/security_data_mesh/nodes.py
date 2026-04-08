@@ -24,12 +24,6 @@ logger = structlog.get_logger()
 _toolkit: SecurityDataMeshToolkit | None = None  # noqa: PLW0603
 
 
-def set_toolkit(tk: SecurityDataMeshToolkit) -> None:
-    """Set the module-level toolkit instance."""
-    global _toolkit  # noqa: PLW0603
-    _toolkit = tk
-
-
 def _get_toolkit() -> SecurityDataMeshToolkit:
     assert _toolkit is not None, "Toolkit not initialised"
     return _toolkit

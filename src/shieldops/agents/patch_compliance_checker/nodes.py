@@ -23,11 +23,6 @@ logger = structlog.get_logger()
 _toolkit: PatchComplianceCheckerToolkit | None = None
 
 
-def set_toolkit(tk: PatchComplianceCheckerToolkit) -> None:
-    global _toolkit
-    _toolkit = tk
-
-
 async def inventory_systems(
     state: dict[str, Any], toolkit: PatchComplianceCheckerToolkit
 ) -> dict[str, Any]:

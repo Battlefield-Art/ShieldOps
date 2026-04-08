@@ -48,3 +48,9 @@ class RegulatoryChangeTrackerAgent(Agent):
     ]
 
     entry = "scan_sources"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``RegulatoryChangeTrackerRunner`` keep working via this alias; new code
+# should use ``RegulatoryChangeTrackerAgent`` directly through AgentRuntime.
+RegulatoryChangeTrackerRunner = RegulatoryChangeTrackerAgent

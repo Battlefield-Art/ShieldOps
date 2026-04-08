@@ -48,3 +48,9 @@ class SecurityScorecardAgent(Agent):
     ]
 
     entry = "collect_domain_scores"
+
+
+# RFC #247 PR-6 legacy alias — runner.py was deleted. Existing callers that
+# imported ``SecurityScorecardRunner`` keep working via this alias; new code
+# should use ``SecurityScorecardAgent`` directly through AgentRuntime.
+SecurityScorecardRunner = SecurityScorecardAgent
