@@ -1,10 +1,10 @@
 """Database persistence layer — SQLAlchemy 2.x async ORM.
 
-The legacy ``Repository`` god class has been demoted to an
-internal-only orphan in :mod:`shieldops.db.repository` and is no longer
-re-exported. New callers should import :mod:`shieldops.db.fetch`
-helpers (``fetch.get``, ``fetch.list_``, ``fetch.save``) or a per-entity
-repository from :mod:`shieldops.db.repositories`. See RFC #245.
+The legacy 2,005-LOC ``Repository`` god class was deleted in RFC #245
+PR-3. Callers should use :mod:`shieldops.db.fetch` helpers
+(``fetch.get``, ``fetch.list_``, ``fetch.save``) for the 99% path or a
+per-entity repository from :mod:`shieldops.db.repositories` for
+cross-entity queries.
 """
 
 from shieldops.db.models import AgentSession, AuditLog, InvestigationRecord, RemediationRecord
