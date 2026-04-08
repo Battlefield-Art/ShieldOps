@@ -354,16 +354,26 @@ def parse_graph(path: Path) -> tuple[GraphSpec | None, str]:
 def _extract_fn_name(expr: ast.expr) -> str | None:
     """Extract a reasonable "node function name" from the 2nd arg of
     ``add_node``. Handles plain ``ast.Name`` (``discover_sessions``),
-    ``traced_node(...)(fn)`` wrappers, and attribute lookups
-    (``mod.fn``)."""
+    ``traced_node(...)(fn)`` wrappers, ``traced_node(fn, toolkit)``
+    wrappers, and attribute lookups (``mod.fn``)."""
     if isinstance(expr, ast.Name):
         return expr.id
     if isinstance(expr, ast.Attribute):
         return expr.attr
     if isinstance(expr, ast.Call):
-        # traced_node("x", "agent")(node_fn)  →  Call(func=Call(...), args=[Name(node_fn)])
+        # Two wrapper styles:
+        #   1) traced_node("x", "agent")(node_fn) — outer call's only arg is the fn
+        #      → expr.func is itself a Call, expr.args = [Name(fn)]
+        #   2) _traced_node(node_fn, toolkit) — first positional arg is the fn
+        #      → expr.func is Name("_traced_node"), expr.args = [Name(fn), Name(toolkit)]
+        if isinstance(expr.func, ast.Call):
+            # Style 1: pick the wrapped fn from the outer args (last arg).
+            if expr.args:
+                return _extract_fn_name(expr.args[-1])
+            return _extract_fn_name(expr.func)
         if expr.args:
-            return _extract_fn_name(expr.args[-1])
+            # Style 2: pick the FIRST positional arg as the wrapped fn.
+            return _extract_fn_name(expr.args[0])
         return _extract_fn_name(expr.func)
     return None
 
