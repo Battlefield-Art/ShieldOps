@@ -1,8 +1,8 @@
 """Tests for ``api/routes/agent_promotion.py`` backed by ``EvolutionStore``.
 
-RFC #246 PR-5 (#278): verifies the route wires through
-``Depends(get_evolution_store)`` and no longer touches the legacy
-``fitness_aggregator`` / ``promotion_engine`` singletons.
+RFC #246 PR-5 (#278) / PR-6 (#279): verifies the route wires through
+``Depends(get_evolution_store)``. The legacy aggregator/promotion-engine
+wrapper modules have been deleted in PR-6.
 """
 
 from __future__ import annotations

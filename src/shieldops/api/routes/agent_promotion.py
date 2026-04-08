@@ -8,9 +8,9 @@ Endpoints:
 - ``GET  /api/v1/agents/leaderboard``                 — fitness leaderboard
 
 Backed by :class:`shieldops.utils.evolution.store.EvolutionStore` via
-``Depends(get_evolution_store)`` (RFC #246 PR-5). The legacy
-``fitness_aggregator``/``promotion_engine`` modules are no longer
-imported here; deletion lands in PR-6 (#279).
+``Depends(get_evolution_store)`` (RFC #246 PR-5/PR-6). The legacy
+``fitness_aggregator`` / ``promotion_engine`` wrapper modules have
+been deleted; this route is the canonical promotion read+write path.
 """
 
 from __future__ import annotations

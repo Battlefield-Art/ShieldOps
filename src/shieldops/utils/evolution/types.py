@@ -38,12 +38,11 @@ class FitnessDimension(StrEnum):
     :class:`EvolutionConfig`.
 
     ``LEARNING`` is the canonical member; ``LEARNING_RATE`` is a
-    StrEnum **alias** (same string value) kept for
-    ``fitness_tracker`` / ``fitness_aggregator`` compatibility while
-    PR-8 (#281) deletes those legacy modules. Because it is an alias
-    iteration over ``FitnessDimension`` still yields exactly five
-    canonical members, preserving the 5-dimension contract the legacy
-    tests assert on.
+    StrEnum **alias** (same string value) kept for ``fitness_tracker``
+    compatibility while PR-8 (#281) deletes that legacy module. Because
+    it is an alias, iteration over ``FitnessDimension`` still yields
+    exactly five canonical members, preserving the 5-dimension contract
+    the legacy tests assert on.
     """
 
     ACCURACY = "accuracy"

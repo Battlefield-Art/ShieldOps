@@ -112,9 +112,9 @@ class DailyFitnessPoint(BaseModel):
 class FitnessWindow(BaseModel):
     """Rolling-window view of an agent's composite fitness.
 
-    The mirror of :class:`shieldops.utils.fitness_aggregator.RollingFitnessWindow`
-    but lifted onto :class:`EvolutionStore` so the promotion route can
-    migrate off the legacy aggregator wrapper (RFC #246 PR-4).
+    Owned by :class:`EvolutionStore`; the deep module exposes this directly
+    so the promotion route never needs a separate aggregator wrapper
+    (RFC #246 PR-4 / PR-6).
     """
 
     agent_name: str
@@ -657,10 +657,8 @@ class EvolutionStore:
     ) -> FitnessWindow:
         """Return a per-day rolling window of composite fitness.
 
-        Mirrors
-        :meth:`shieldops.utils.fitness_aggregator.FitnessAggregator.rolling_window`
-        so the promotion route can migrate off the legacy wrapper in a
-        follow-up PR.
+        This is the canonical rolling-window read path for the promotion
+        route and dashboards (RFC #246 PR-4 / PR-6).
 
         Unknown agents yield a zero-valued window rather than raising —
         read paths should be tolerant so dashboards don't crash on fresh
@@ -736,11 +734,10 @@ class EvolutionStore:
     ) -> list[dict[str, Any]]:
         """Return a promotion-style leaderboard of agents.
 
-        Mirrors the legacy
-        :meth:`shieldops.utils.promotion_engine.PromotionEngine.leaderboard`
-        shape so ``api/routes/agent_promotion.py`` can render rows
-        without reaching into store internals. Union of agents that have
-        recorded fitness and agents with an explicit status snapshot.
+        Canonical leaderboard read path used by ``api/routes/agent_promotion.py``
+        so callers never reach into store internals. Returns the union of
+        agents that have recorded fitness and agents with an explicit
+        status snapshot (RFC #246 PR-4 / PR-6).
         """
         with self._lock:
             # Union of agents that have fitness observations (for this tenant)
