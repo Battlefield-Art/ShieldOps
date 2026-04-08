@@ -23,7 +23,6 @@ from typing import Any
 import pytest
 
 from shieldops.config.flat import DictSource, FlatSettings
-from shieldops.config.settings import settings as legacy_settings
 
 # ---------------------------------------------------------------------------
 # The list of flat fields that PR-1 guarantees parity for.
@@ -258,29 +257,12 @@ class TestDefaults:
 # ---------------------------------------------------------------------------
 
 
-class TestLegacyParity:
-    """Every flat field in ``FlatSettings`` must return the same value as
-    the legacy ``settings`` singleton for both defaults and env-set inputs.
-    This test is the gate for PR-2+ work — if it goes red, a sub-config
-    file got deleted before all its fields were ported to the flat class.
+class TestFlatSettingsEnvBinding:
+    """RFC #241 PR-5: legacy ``Settings`` is gone — these tests now lock
+    that pydantic-settings binds ``SHIELDOPS_<FIELD>`` env vars natively
+    on :class:`FlatSettings` (the 5fbeb149 bug class is structurally
+    impossible without a validator).
     """
-
-    @pytest.mark.parametrize("field,_override", PARITY_FIELDS)
-    def test_flat_default_matches_legacy_default(
-        self,
-        field: str,
-        _override: Any,
-    ) -> None:
-        """At default (no env), ``FlatSettings().X == settings.X``."""
-        flat = FlatSettings()
-        flat_value = getattr(flat, field)
-        legacy_value = getattr(legacy_settings, field)
-        # Compare as strings because the legacy settings may cast ints
-        # differently in its nested path. We lock the stringified form
-        # — any cast mismatch between flat + legacy is a real bug.
-        assert str(flat_value) == str(legacy_value), (
-            f"default drift on {field}: flat={flat_value!r} vs legacy={legacy_value!r}"
-        )
 
     @pytest.mark.parametrize("field,override", PARITY_FIELDS)
     def test_flat_env_set_matches_env(
@@ -289,13 +271,7 @@ class TestLegacyParity:
         override: Any,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        """When ``SHIELDOPS_<FIELD>`` is set, ``FlatSettings()`` reads it.
-
-        This is the test that structurally rules out the 5fbeb149 bug
-        class: pydantic-settings binds env vars natively in
-        :class:`FlatSettings`, so there is no validator that could drop
-        them on the way in.
-        """
+        """When ``SHIELDOPS_<FIELD>`` is set, ``FlatSettings()`` reads it."""
         env_key = f"SHIELDOPS_{field.upper()}"
         monkeypatch.setenv(env_key, str(override))
 

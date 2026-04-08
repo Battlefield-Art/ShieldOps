@@ -14,7 +14,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 if TYPE_CHECKING:
-    from shieldops.config.settings import Settings
+    from shieldops.config import Settings
 
 logger = structlog.get_logger()
 

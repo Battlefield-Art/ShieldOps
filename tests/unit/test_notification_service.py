@@ -548,7 +548,7 @@ class TestSettings:
     """Verify PagerDuty setting exists with correct default."""
 
     def test_pagerduty_routing_key_default_empty(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(
             _env_file=None,  # type: ignore[call-arg]
@@ -556,7 +556,7 @@ class TestSettings:
         assert s.pagerduty_routing_key == ""
 
     def test_pagerduty_routing_key_set(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(
             pagerduty_routing_key="PD-ROUTING-KEY-123",

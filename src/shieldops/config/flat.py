@@ -139,6 +139,9 @@ class FlatSettings(BaseSettings):
     rate_limit_default: int = 60
     rate_limit_auth_login: int = 10
     rate_limit_auth_register: int = 5
+    # Token-bucket middleware (PRD-6 / RFC #241 PR-5)
+    rate_limit_capacity: int = 1000
+    rate_limit_refill_per_sec: float = 50.0
     # RFC #243 PR-3: flip PolicyMiddleware from shadow to enforce mode.
     # Default False — shadow mode is the safe rollout posture.
     policy_enforce: bool = False

@@ -609,7 +609,7 @@ class TestSmtpSettings:
     """Verify SMTP settings exist with correct defaults."""
 
     def test_smtp_defaults(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(_env_file=None)  # type: ignore[call-arg]
         assert s.smtp_host == ""
@@ -621,7 +621,7 @@ class TestSmtpSettings:
         assert s.smtp_to_addresses == []
 
     def test_smtp_settings_override(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(
             smtp_host="mail.corp.com",

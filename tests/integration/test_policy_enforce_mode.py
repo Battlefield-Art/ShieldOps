@@ -124,7 +124,7 @@ class TestPolicyMiddlewareEnforceIntegration:
         it straight to ``PolicyMiddleware(enforce=...)`` — this test
         locks that contract by flowing the flag through the same path.
         """
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         # Default: shadow mode
         s_default = Settings()

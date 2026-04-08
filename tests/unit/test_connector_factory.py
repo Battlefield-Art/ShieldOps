@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from shieldops.config.settings import Settings
+from shieldops.config import Settings
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.connectors.factory import create_connector_router
 from shieldops.connectors.kubernetes.connector import KubernetesConnector

@@ -16,7 +16,7 @@ from typing import Any
 import structlog
 from kubernetes_asyncio import client, config
 
-from shieldops.config.settings import Settings
+from shieldops.config import Settings
 from shieldops.remediation.models import (
     K8sActionType,
     K8sRemediationRequest,

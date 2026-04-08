@@ -791,25 +791,25 @@ class TestWebhookSettings:
     """Verify webhook settings exist with correct defaults."""
 
     def test_webhook_url_default_empty(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(_env_file=None)  # type: ignore[call-arg]
         assert s.webhook_url == ""
 
     def test_webhook_secret_default_empty(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(_env_file=None)  # type: ignore[call-arg]
         assert s.webhook_secret == ""
 
     def test_webhook_timeout_default(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(_env_file=None)  # type: ignore[call-arg]
         assert s.webhook_timeout == 10.0
 
     def test_webhook_settings_configurable(self) -> None:
-        from shieldops.config.settings import Settings
+        from shieldops.config import Settings
 
         s = Settings(
             webhook_url="https://hooks.example.com/test",

@@ -82,7 +82,7 @@ class Hub:
         hub = Hub(
             transport=StarletteTransport(),
             buffer=InMemoryBuffer(),
-            auth=JwtAuthenticator(settings.jwt),
+            auth=JwtAuthenticator(settings),
             clock=SystemClock(),
             log=structlog.get_logger("ws"),
             tracer=OtelTracer(),

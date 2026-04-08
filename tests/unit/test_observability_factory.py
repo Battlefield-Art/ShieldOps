@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from shieldops.config.settings import Settings
+from shieldops.config import Settings
 from shieldops.observability.datadog.client import DatadogSource
 from shieldops.observability.factory import (
     ObservabilitySources,

@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from shieldops.config.settings import settings
+from shieldops.config import settings
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.observability.factory import ObservabilitySources
 

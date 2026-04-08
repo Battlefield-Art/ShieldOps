@@ -11,7 +11,7 @@ from typing import Any
 import structlog
 from httpx import AsyncClient, HTTPStatusError
 
-from shieldops.config.settings import Settings
+from shieldops.config import Settings
 from shieldops.remediation.models import (
     ApprovalRequirement,
     K8sActionType,

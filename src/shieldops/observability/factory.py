@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 
 import structlog
 
-from shieldops.config.settings import Settings
+from shieldops.config import Settings
 from shieldops.observability.base import LogSource, MetricSource, TraceSource
 from shieldops.observability.datadog import DatadogSource
 from shieldops.observability.otel import JaegerSource
