@@ -127,33 +127,7 @@ class TestRateLimiterIsolation:
             assert (await bucket.try_consume("org-b"))[0] is True
 
 
-class TestWebSocketBroadcastIsolation:
-    """Broadcaster events must not cross orgs."""
-
-    @pytest.mark.asyncio
-    async def test_broadcast_to_org_does_not_reach_others(self) -> None:
-        from unittest.mock import AsyncMock
-
-        from starlette.websockets import WebSocketState
-
-        from shieldops.api.ws.broadcaster import Broadcaster
-
-        bc = Broadcaster()
-
-        def _mock_ws() -> MagicMock:
-            ws = MagicMock()
-            ws.client_state = WebSocketState.CONNECTED
-            ws.close = AsyncMock()
-            ws.send_json = AsyncMock()
-            return ws
-
-        ws_a = _mock_ws()
-        ws_b = _mock_ws()
-        await bc.subscribe("org-a", ws_a)
-        await bc.subscribe("org-b", ws_b)
-
-        await bc.broadcast_to_org("org-a", "test_event", {"foo": "bar"})
-
-        # ws_a got the event, ws_b did NOT
-        assert ws_a.send_json.await_count == 1
-        ws_b.send_json.assert_not_called()
+# TestWebSocketBroadcastIsolation removed in RFC #242 PR-4 (#258): the legacy
+# ``Broadcaster`` was deleted. Hub-level per-topic isolation is covered by
+# ``tests/integration/test_ws_hub_publish_subscribe.py`` and the Hub contract
+# tests in ``tests/unit/api/ws/``.

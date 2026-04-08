@@ -6,7 +6,6 @@ from starlette.testclient import TestClient
 from shieldops.api.app import app
 from shieldops.api.auth.service import create_access_token
 from shieldops.api.ws.composition import build_in_memory_hub, set_ws_hub
-from shieldops.api.ws.manager import ConnectionManager
 
 
 @pytest.fixture(autouse=True)
@@ -18,19 +17,6 @@ def _install_hub_for_route_tests():
     set_ws_hub(build_in_memory_hub())
     yield
     set_ws_hub(None)
-
-
-class TestConnectionManager:
-    @pytest.mark.asyncio
-    async def test_initial_state(self):
-        mgr = ConnectionManager()
-        assert mgr.active_connections == 0
-
-    @pytest.mark.asyncio
-    async def test_broadcast_to_empty_channel(self):
-        """Broadcasting to a channel with no subscribers should not error."""
-        mgr = ConnectionManager()
-        await mgr.broadcast("nonexistent", {"type": "test"})
 
 
 class TestWebSocketRoutes:
