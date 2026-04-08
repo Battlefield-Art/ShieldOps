@@ -20,6 +20,7 @@ class _Call:
     prompt: str
     response_model_name: str
     tenant_id: str | None
+    system_prompt: str | None = None
 
 
 class FakeLLMProvider:
@@ -50,6 +51,7 @@ class FakeLLMProvider:
         response_model_name: str,
         *,
         tenant_id: str | None = None,
+        system_prompt: str | None = None,
     ) -> ProviderResult:
         self.calls.append(
             _Call(
@@ -57,6 +59,7 @@ class FakeLLMProvider:
                 prompt=prompt,
                 response_model_name=response_model_name,
                 tenant_id=tenant_id,
+                system_prompt=system_prompt,
             )
         )
         return ProviderResult(
@@ -90,6 +93,7 @@ class ScriptedLLMProvider:
         response_model_name: str,
         *,
         tenant_id: str | None = None,
+        system_prompt: str | None = None,
     ) -> ProviderResult:
         self.calls.append(
             _Call(
@@ -97,6 +101,7 @@ class ScriptedLLMProvider:
                 prompt=prompt,
                 response_model_name=response_model_name,
                 tenant_id=tenant_id,
+                system_prompt=system_prompt,
             )
         )
         if self._cursor >= len(self.script):

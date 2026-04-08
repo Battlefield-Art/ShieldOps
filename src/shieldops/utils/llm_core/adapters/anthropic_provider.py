@@ -103,13 +103,19 @@ class AnthropicProviderAdapter:
         response_model_name: str,
         *,
         tenant_id: str | None = None,
+        system_prompt: str | None = None,
     ) -> ProviderResult:
         schema = self._resolve_schema(response_model_name)
         llm = self._client_for(model)
         structured = llm.with_structured_output(schema, include_raw=True)
 
+        system_content = (
+            system_prompt
+            if system_prompt is not None
+            else "You are ShieldOps, an AI security analyst."
+        )
         messages = [
-            SystemMessage(content="You are ShieldOps, an AI security analyst."),
+            SystemMessage(content=system_content),
             HumanMessage(content=prompt),
         ]
 
@@ -143,6 +149,27 @@ class AnthropicProviderAdapter:
             tokens=tokens,
             latency_ms=latency_ms,
         )
+
+    def register_schema(self, name: str, cls: type[BaseModel]) -> None:
+        """Register a Pydantic response model by string name at runtime.
+
+        Added in RFC #248 PR-4 so the legacy
+        ``shieldops.utils.llm.llm_structured`` shim can delegate
+        ad-hoc schemas into the orchestrator without requiring the
+        composition root to pre-enumerate every agent's response
+        model. Idempotent — re-registering the same name with the
+        same class is a no-op; re-registering with a *different*
+        class raises to catch name collisions.
+        """
+        existing = self._response_models.get(name)
+        if existing is cls:
+            return
+        if existing is not None and existing is not cls:
+            raise ValueError(
+                f"AnthropicProviderAdapter.register_schema: collision on name={name!r}: "
+                f"existing={existing!r} new={cls!r}"
+            )
+        self._response_models[name] = cls
 
     # ------------------------------------------------------------------
     # Internals

@@ -71,6 +71,7 @@ class LLMOrchestrator:
                     prompt=enriched_prompt,
                     response_model_name=req.response_model_name,
                     tenant_id=req.tenant_id,
+                    system_prompt=req.system_prompt,
                 )
                 break  # success
             except Exception as exc:  # noqa: BLE001

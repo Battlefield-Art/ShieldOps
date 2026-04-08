@@ -34,6 +34,7 @@ class LLMProviderPort(Protocol):
         response_model_name: str,
         *,
         tenant_id: str | None = None,
+        system_prompt: str | None = None,
     ) -> ProviderResult: ...
 
 

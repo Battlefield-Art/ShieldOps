@@ -13904,9 +13904,61 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         except Exception as e:
             logger.warning("regulatory_impact_tracker_init_failed", error=str(e))
 
+    # ── LLM Orchestrator (RFC #248 PR-4) ────────────────────────
+    # Install the production LLMOrchestrator so ``llm_structured``
+    # delegates into it for the 1,851 legacy call sites. The shim
+    # in ``shieldops.utils.llm`` falls back to the direct
+    # ChatAnthropic path if install fails or raises.
+    try:
+        from shieldops.utils.llm_core.adapters.anthropic_provider import (
+            AnthropicProviderAdapter,
+        )
+        from shieldops.utils.llm_core.adapters.fixed_classifier import FixedClassifier
+        from shieldops.utils.llm_core.adapters.in_memory_fitness import (
+            InMemoryFitnessRecorder,
+        )
+        from shieldops.utils.llm_core.adapters.manual_clock import ManualClock
+        from shieldops.utils.llm_core.adapters.null_logger import NullLogger
+        from shieldops.utils.llm_core.adapters.retry_policies import NoRetry
+        from shieldops.utils.llm_core.adapters.static_context_retriever import (
+            NullContextRetriever,
+        )
+        from shieldops.utils.llm_core.composition import set_llm_orchestrator
+        from shieldops.utils.llm_core.deps import LLMDeps
+        from shieldops.utils.llm_core.orchestrator import LLMOrchestrator
+        from shieldops.utils.llm_core.types import Complexity
+
+        anthropic_adapter = AnthropicProviderAdapter(
+            api_key=settings.anthropic_api_key or "",
+            response_models={},  # populated on-demand by the legacy shim
+        )
+        llm_deps = LLMDeps(
+            provider=anthropic_adapter,
+            classifier=FixedClassifier(Complexity.MEDIUM),
+            context=NullContextRetriever(),
+            fitness=InMemoryFitnessRecorder(),
+            retry=NoRetry(),
+            clock=ManualClock(),
+            log=NullLogger(),
+        )
+        set_llm_orchestrator(LLMOrchestrator(llm_deps))
+        app.state.llm_orchestrator_installed = True
+        logger.info("llm_orchestrator_installed", provider="anthropic")
+    except Exception as exc:
+        app.state.llm_orchestrator_installed = False
+        logger.warning("llm_orchestrator_install_failed", error=str(exc))
+
     yield
 
     logger.info("shieldops_shutting_down")
+
+    # ── LLM Orchestrator teardown (RFC #248 PR-4) ──────────────
+    try:
+        from shieldops.utils.llm_core.composition import set_llm_orchestrator
+
+        set_llm_orchestrator(None)
+    except Exception as exc:
+        logger.debug("llm_orchestrator_teardown_error", error=str(exc))
 
     # Plugin teardown
     if plugin_registry:

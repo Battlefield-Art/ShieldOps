@@ -71,6 +71,14 @@ class LLMRequest:
     context_query: str | None = None
     fallback: Any = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    system_prompt: str | None = None
+    """Optional system-level instructions passed through to the
+    provider. Added in RFC #248 PR-4 so the legacy
+    ``shieldops.utils.llm.llm_structured`` shim can preserve the
+    split between its ``system_prompt`` and ``user_prompt`` positional
+    arguments. Adapters that do not distinguish system from user
+    content (or that want to hard-code their own) should simply
+    ignore this field."""
 
 
 @dataclass(frozen=True)
