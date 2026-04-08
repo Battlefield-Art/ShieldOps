@@ -36,3 +36,19 @@ repos:
         args: [--maxkb=500]
       - id: check-merge-conflict
       - id: detect-private-key
+
+  # SHOP-001 — RFC #244 licensing enforcement gate.
+  # Every agent runner with an async entry point (run/execute) must have
+  # @enforced(...) applied. Ruff has no native custom-rule plugin API,
+  # so this is a local pre-commit script instead. Scoped to runner.py
+  # files touched by the current commit so existing unenforced runners
+  # don't block unrelated work — PR-5 (#268) applies the codemod that
+  # clears the backlog, then this gate becomes full-repo mandatory.
+  - repo: local
+    hooks:
+      - id: shop-001-enforced-runners
+        name: SHOP-001 — agent runners must be @enforced (RFC #244)
+        entry: python3 scripts/lint/shop_001_enforced_runners.py --files
+        language: system
+        files: ^src/shieldops/agents/.*/runner\.py$
+        pass_filenames: true
