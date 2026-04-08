@@ -19,9 +19,12 @@ file are:
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 import pytest
 
 from shieldops.utils.evolution import (
+    AgentStatus,
     EvolutionConfig,
     EvolutionStore,
     FitnessDimension,
@@ -338,3 +341,101 @@ class TestLeaderboard:
     def test_empty_store_returns_empty_leaderboard(self) -> None:
         store = EvolutionStore.in_memory()
         assert store.leaderboard(dim=FitnessDimension.ACCURACY) == []
+
+
+# ---------------------------------------------------------------------------
+# 8. Promotion surface (RFC #246 PR-4)
+# ---------------------------------------------------------------------------
+
+
+class TestPromotionSurface:
+    def test_promote_agent_transitions_status(self) -> None:
+        store = EvolutionStore.in_memory()
+        store.record_run("soc_analyst", _successful_run())
+        snap = store.promote_agent("soc_analyst", reason="manual promotion")
+        assert snap.agent_name == "soc_analyst"
+        assert snap.org_id == "default"
+        assert snap.status == AgentStatus.PROMOTED
+        assert snap.current_fitness > 0.0
+        assert snap.promoted_at is not None
+        assert snap.reason == "manual promotion"
+
+        # A promotion learning event was emitted on the bus.
+        promoted = [
+            e
+            for e in store._learning
+            if e.event_type == LearningEventType.PROMPT_VARIANT_PROMOTED
+            and e.payload.get("manual") is True
+        ]
+        assert len(promoted) == 1
+
+    def test_promote_agent_raises_on_missing_agent(self) -> None:
+        store = EvolutionStore.in_memory()
+        with pytest.raises(KeyError, match="ghost"):
+            store.promote_agent("ghost")
+
+    def test_demote_agent_transitions_status(self) -> None:
+        store = EvolutionStore.in_memory()
+        store.record_run("soc_analyst", _failed_run())
+        snap = store.demote_agent("soc_analyst", reason="underperforming")
+        assert snap.status == AgentStatus.DEMOTED
+        assert snap.demoted_at is not None
+        assert snap.reason == "underperforming"
+
+        demoted = [
+            e for e in store._learning if e.event_type == LearningEventType.PROMPT_VARIANT_DEMOTED
+        ]
+        assert len(demoted) == 1
+        assert demoted[0].payload.get("disable") is False
+
+    def test_demote_agent_disable_sets_disabled_status(self) -> None:
+        store = EvolutionStore.in_memory()
+        store.record_run("bad_actor", _failed_run())
+        snap = store.demote_agent("bad_actor", disable=True, reason="safety violation")
+        assert snap.status == AgentStatus.DISABLED
+
+        demoted = [
+            e for e in store._learning if e.event_type == LearningEventType.PROMPT_VARIANT_DEMOTED
+        ]
+        assert demoted[0].payload.get("disable") is True
+
+    def test_rolling_window_returns_daily_points(self) -> None:
+        # Advance a synthetic clock across three days so the bucketing
+        # logic yields multiple daily points.
+        base = datetime(2026, 4, 1, 12, 0, 0, tzinfo=UTC)
+        offset = {"d": 0}
+
+        def _clock() -> datetime:
+            return base + timedelta(days=offset["d"])
+
+        store = EvolutionStore(clock=_clock)
+        for day in range(3):
+            offset["d"] = day
+            store.record_run("threat_hunter", _successful_run())
+
+        # Query with a now-clock positioned at day 3 so all records
+        # fall inside a 7-day window.
+        offset["d"] = 3
+        window = store.rolling_window("threat_hunter", window_days=7)
+        assert window.agent_name == "threat_hunter"
+        assert window.window_days == 7
+        assert window.sample_count == 3
+        assert len(window.daily_points) == 3
+        assert window.composite_current > 0.0
+        assert window.max_composite >= window.composite_avg >= window.min_composite
+        # Each bucket holds a single observation.
+        assert all(p.sample_count == 1 for p in window.daily_points)
+        # Dimensions are populated for each day.
+        assert "accuracy" in window.daily_points[0].dimensions
+
+    def test_rolling_window_empty_for_unknown_agent(self) -> None:
+        store = EvolutionStore.in_memory()
+        window = store.rolling_window("never_seen", window_days=7)
+        assert window.agent_name == "never_seen"
+        assert window.window_days == 7
+        assert window.sample_count == 0
+        assert window.daily_points == []
+        assert window.composite_current == 0.0
+        assert window.composite_avg == 0.0
+        assert window.min_composite == 0.0
+        assert window.max_composite == 0.0

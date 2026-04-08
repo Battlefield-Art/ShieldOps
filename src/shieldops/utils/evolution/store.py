@@ -25,7 +25,8 @@ import threading
 from collections import defaultdict, deque
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 
 import structlog
@@ -82,6 +83,62 @@ class PromptSelection(BaseModel):
     version_id: str
     template: str
     is_challenger: bool = False
+
+
+class AgentStatus(StrEnum):
+    """Lifecycle status for an agent tracked by :class:`EvolutionStore`.
+
+    Kept intentionally independent of
+    ``shieldops.db.models_agent_status.AgentLifecycleStatus`` so the store
+    has no DB import dependency. PR-5 is responsible for mapping between
+    the two at the repository boundary.
+    """
+
+    ACTIVE = "active"
+    PROMOTED = "promoted"
+    DEMOTED = "demoted"
+    DISABLED = "disabled"
+
+
+class DailyFitnessPoint(BaseModel):
+    """One day's aggregated composite fitness inside a rolling window."""
+
+    day_epoch: float
+    composite: float
+    dimensions: dict[str, float] = Field(default_factory=dict)
+    sample_count: int = 0
+
+
+class FitnessWindow(BaseModel):
+    """Rolling-window view of an agent's composite fitness.
+
+    The mirror of :class:`shieldops.utils.fitness_aggregator.RollingFitnessWindow`
+    but lifted onto :class:`EvolutionStore` so the promotion route can
+    migrate off the legacy aggregator wrapper (RFC #246 PR-4).
+    """
+
+    agent_name: str
+    window_days: int
+    composite_current: float = 0.0
+    composite_avg: float = 0.0
+    min_composite: float = 0.0
+    max_composite: float = 0.0
+    sample_count: int = 0
+    daily_points: list[DailyFitnessPoint] = Field(default_factory=list)
+
+
+class AgentStatusSnapshot(BaseModel):
+    """Per-agent lifecycle snapshot produced by
+    :meth:`EvolutionStore.promote_agent` and
+    :meth:`EvolutionStore.demote_agent`."""
+
+    agent_name: str
+    org_id: str = "default"
+    status: AgentStatus = AgentStatus.ACTIVE
+    current_fitness: float = 0.0
+    promoted_at: datetime | None = None
+    demoted_at: datetime | None = None
+    reason: str = ""
 
 
 @dataclass
@@ -163,9 +220,11 @@ class _FitnessState:
     """Rolling window of observations per (tenant, agent)."""
 
     observations: deque[FitnessObservation] = field(default_factory=lambda: deque(maxlen=50))
+    timestamps: deque[datetime] = field(default_factory=lambda: deque(maxlen=50))
 
-    def record(self, obs: FitnessObservation) -> None:
+    def record(self, obs: FitnessObservation, *, ts: datetime) -> None:
         self.observations.append(obs)
+        self.timestamps.append(ts)
 
     def score(self, config: EvolutionConfig) -> float:
         if not self.observations:
@@ -225,6 +284,11 @@ class EvolutionStore:
         self._fitness: dict[tuple[str, str], _FitnessState] = defaultdict(_FitnessState)
         self._prompts: dict[tuple[str, str], _PromptState] = defaultdict(_PromptState)
         self._learning: list[LearningEvent] = []
+        # Keyed by (org_id, agent_name) — lifecycle snapshots for
+        # promote_agent/demote_agent. Separate from tenant_id because the
+        # promotion surface uses org_id in its public API (matching the
+        # existing PromotionEngine contract).
+        self._statuses: dict[tuple[str, str], AgentStatusSnapshot] = {}
 
         # Prometheus-friendly failure counters.
         self._record_run_errors: int = 0
@@ -314,7 +378,7 @@ class EvolutionStore:
 
         # STEP 2: Record in the fitness window
         with self._lock:
-            self._fitness[key].record(obs)
+            self._fitness[key].record(obs, ts=self._clock())
             current_score = self._fitness[key].score(self._config)
 
         # STEP 3: Emit a FITNESS_OBSERVED learning event
@@ -469,3 +533,196 @@ class EvolutionStore:
                 )
         scores.sort(key=lambda s: s.value, reverse=True)
         return scores[:top]
+
+    # -- promotion surface (RFC #246 PR-4) ------------------------------
+
+    def _current_fitness(self, agent_name: str, *, tenant_id: str = "default") -> float | None:
+        """Return the current composite fitness for an agent, or None if
+        the agent has no recorded observations."""
+        key = (tenant_id, agent_name)
+        state = self._fitness.get(key)
+        if state is None or not state.observations:
+            return None
+        return state.score(self._config)
+
+    def promote_agent(
+        self,
+        agent_name: str,
+        *,
+        org_id: str = "default",
+        reason: str = "",
+    ) -> AgentStatusSnapshot:
+        """Promote an agent to :attr:`AgentStatus.PROMOTED`.
+
+        Raises :class:`KeyError` when the agent has no fitness records
+        yet — promotion without any observed fitness is a bug in the
+        caller, so we fail loudly instead of silently promoting a
+        phantom agent.
+        """
+        with self._lock:
+            fitness = self._current_fitness(agent_name)
+            if fitness is None:
+                raise KeyError(f"No fitness records for agent {agent_name!r}")
+            snap = AgentStatusSnapshot(
+                agent_name=agent_name,
+                org_id=org_id,
+                status=AgentStatus.PROMOTED,
+                current_fitness=fitness,
+                promoted_at=self._clock(),
+                reason=reason,
+            )
+            self._statuses[(org_id, agent_name)] = snap
+
+        try:
+            self._publish_learning(
+                LearningEvent(
+                    event_type=LearningEventType.PROMPT_VARIANT_PROMOTED,
+                    agent_id=agent_name,
+                    scope=PropagationScope.FLEET_WIDE,
+                    payload={
+                        "org_id": org_id,
+                        "fitness": fitness,
+                        "reason": reason,
+                        "manual": True,
+                    },
+                )
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "evolution.promote_agent.publish_failed",
+                agent_name=agent_name,
+                org_id=org_id,
+                error=str(exc),
+            )
+        return snap
+
+    def demote_agent(
+        self,
+        agent_name: str,
+        *,
+        org_id: str = "default",
+        reason: str = "",
+        disable: bool = False,
+    ) -> AgentStatusSnapshot:
+        """Demote an agent, optionally disabling it outright.
+
+        Symmetric to :meth:`promote_agent`. Raises :class:`KeyError`
+        when the agent has no recorded fitness.
+        """
+        with self._lock:
+            fitness = self._current_fitness(agent_name)
+            if fitness is None:
+                raise KeyError(f"No fitness records for agent {agent_name!r}")
+            status = AgentStatus.DISABLED if disable else AgentStatus.DEMOTED
+            snap = AgentStatusSnapshot(
+                agent_name=agent_name,
+                org_id=org_id,
+                status=status,
+                current_fitness=fitness,
+                demoted_at=self._clock(),
+                reason=reason,
+            )
+            self._statuses[(org_id, agent_name)] = snap
+
+        try:
+            self._publish_learning(
+                LearningEvent(
+                    event_type=LearningEventType.PROMPT_VARIANT_DEMOTED,
+                    agent_id=agent_name,
+                    scope=PropagationScope.FLEET_WIDE,
+                    payload={
+                        "org_id": org_id,
+                        "fitness": fitness,
+                        "reason": reason,
+                        "disable": disable,
+                        "manual": True,
+                    },
+                )
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "evolution.demote_agent.publish_failed",
+                agent_name=agent_name,
+                org_id=org_id,
+                error=str(exc),
+            )
+        return snap
+
+    def rolling_window(
+        self,
+        agent_name: str,
+        *,
+        window_days: int = 7,
+        tenant_id: str = "default",
+    ) -> FitnessWindow:
+        """Return a per-day rolling window of composite fitness.
+
+        Mirrors
+        :meth:`shieldops.utils.fitness_aggregator.FitnessAggregator.rolling_window`
+        so the promotion route can migrate off the legacy wrapper in a
+        follow-up PR.
+
+        Unknown agents yield a zero-valued window rather than raising —
+        read paths should be tolerant so dashboards don't crash on fresh
+        tenants.
+        """
+        key = (tenant_id, agent_name)
+        now = self._clock()
+        cutoff = now - timedelta(days=window_days)
+
+        with self._lock:
+            state = self._fitness.get(key)
+            if state is None or not state.observations:
+                return FitnessWindow(
+                    agent_name=agent_name,
+                    window_days=window_days,
+                )
+            # Snapshot under the lock so concurrent writers can't mutate
+            # the deques mid-iteration.
+            paired: list[tuple[datetime, FitnessObservation]] = [
+                (ts, obs)
+                for ts, obs in zip(state.timestamps, state.observations, strict=False)
+                if ts >= cutoff
+            ]
+
+        if not paired:
+            return FitnessWindow(
+                agent_name=agent_name,
+                window_days=window_days,
+            )
+
+        # Bucket by UTC day.
+        buckets: dict[int, list[FitnessObservation]] = defaultdict(list)
+        day_seconds = 86400
+        for ts, obs in paired:
+            day_key = int(ts.timestamp() // day_seconds)
+            buckets[day_key].append(obs)
+
+        daily: list[DailyFitnessPoint] = []
+        for day_key in sorted(buckets.keys()):
+            obs_list = buckets[day_key]
+            n = len(obs_list)
+            dim_avgs: dict[str, float] = {}
+            for dim in FitnessDimension:
+                dim_avgs[dim.value] = sum(getattr(o, dim.value) for o in obs_list) / n
+            composite = sum(o.score(self._config) for o in obs_list) / n
+            daily.append(
+                DailyFitnessPoint(
+                    day_epoch=float(day_key * day_seconds),
+                    composite=round(composite, 4),
+                    dimensions={k: round(v, 4) for k, v in dim_avgs.items()},
+                    sample_count=n,
+                )
+            )
+
+        composites = [p.composite for p in daily]
+        return FitnessWindow(
+            agent_name=agent_name,
+            window_days=window_days,
+            composite_current=daily[-1].composite,
+            composite_avg=round(sum(composites) / len(composites), 4),
+            min_composite=min(composites),
+            max_composite=max(composites),
+            sample_count=len(paired),
+            daily_points=daily,
+        )

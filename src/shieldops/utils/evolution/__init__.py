@@ -32,8 +32,12 @@ from shieldops.utils.evolution.composition import (
 )
 from shieldops.utils.evolution.store import (
     AgentScore,
+    AgentStatus,
+    AgentStatusSnapshot,
+    DailyFitnessPoint,
     Evolution,
     EvolutionStore,
+    FitnessWindow,
     LearningEvent,
     NullEvolution,
     PromptSelection,
@@ -50,11 +54,15 @@ from shieldops.utils.evolution.types import (
 
 __all__ = [
     "AgentScore",
+    "AgentStatus",
+    "AgentStatusSnapshot",
+    "DailyFitnessPoint",
     "Evolution",
     "EvolutionConfig",
     "EvolutionStore",
     "FitnessDimension",
     "FitnessObservation",
+    "FitnessWindow",
     "LearningEvent",
     "LearningEventType",
     "MutationType",
