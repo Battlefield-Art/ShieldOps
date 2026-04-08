@@ -14,7 +14,7 @@ from typing import Any
 import structlog
 from pydantic import BaseModel, Field
 
-from shieldops.utils.evolution_enums import EvolutionReadiness, FitnessDimension, FitnessTrend
+from shieldops.utils.evolution.types import EvolutionReadiness, FitnessDimension, FitnessTrend
 
 logger = structlog.get_logger()
 

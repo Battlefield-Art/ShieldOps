@@ -14,7 +14,7 @@ from typing import Any
 import structlog
 from pydantic import BaseModel, Field
 
-from shieldops.utils.evolution_enums import ABTestResult, MutationType, PromptStatus
+from shieldops.utils.evolution.types import ABTestResult, MutationType, PromptStatus
 
 logger = structlog.get_logger()
 

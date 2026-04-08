@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from shieldops.utils.evolution_enums import EvolutionReadiness, FitnessDimension, FitnessTrend
+from shieldops.utils.evolution.types import EvolutionReadiness, FitnessDimension, FitnessTrend
 from shieldops.utils.fitness_tracker import (
     DEFAULT_WEIGHTS,
     MIN_OBSERVATIONS,

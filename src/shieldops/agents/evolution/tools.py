@@ -18,7 +18,7 @@ from shieldops.agents.evolution.models import (
     PromptMutation,
     ValidationResult,
 )
-from shieldops.utils.evolution_enums import (
+from shieldops.utils.evolution.types import (
     FitnessDimension,
     FitnessTrend,
     LearningEventType,

@@ -12,7 +12,7 @@ from shieldops.api.auth.dependencies import get_current_user
 from shieldops.api.auth.models import UserResponse, UserRole
 from shieldops.api.routes import agent_promotion
 from shieldops.db.models_agent_status import AgentLifecycleStatus
-from shieldops.utils.evolution_enums import FitnessDimension
+from shieldops.utils.evolution.types import FitnessDimension
 from shieldops.utils.fitness_aggregator import FitnessAggregator
 from shieldops.utils.fitness_tracker import FitnessTracker
 from shieldops.utils.promotion_engine import PromotionEngine

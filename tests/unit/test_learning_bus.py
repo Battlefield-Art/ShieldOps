@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from shieldops.utils.evolution_enums import LearningEventType, LearningPriority, PropagationScope
+from shieldops.utils.evolution.types import LearningEventType, LearningPriority, PropagationScope
 from shieldops.utils.learning_bus import (
     AGENT_TYPE_RELATIONSHIPS,
     MAX_EVENTS,

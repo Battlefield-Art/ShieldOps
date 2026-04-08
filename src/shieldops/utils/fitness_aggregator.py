@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 import structlog
 
-from shieldops.utils.evolution_enums import FitnessDimension
+from shieldops.utils.evolution.types import FitnessDimension
 from shieldops.utils.fitness_tracker import FitnessTracker, get_fitness_tracker
 
 logger = structlog.get_logger()

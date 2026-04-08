@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from shieldops.utils.evolution_enums import ABTestResult, MutationType, PromptStatus
+from shieldops.utils.evolution.types import ABTestResult, MutationType, PromptStatus
 from shieldops.utils.prompt_evolution import (
     AB_SIGNIFICANCE_THRESHOLD,
     MAX_VERSIONS_PER_PROMPT,

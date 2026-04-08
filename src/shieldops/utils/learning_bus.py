@@ -16,7 +16,7 @@ from typing import Any
 import structlog
 from pydantic import BaseModel, Field
 
-from shieldops.utils.evolution_enums import LearningEventType, LearningPriority, PropagationScope
+from shieldops.utils.evolution.types import LearningEventType, LearningPriority, PropagationScope
 
 logger = structlog.get_logger()
 
