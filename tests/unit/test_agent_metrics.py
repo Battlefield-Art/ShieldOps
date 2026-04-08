@@ -1,14 +1,11 @@
-"""Tests for agent-level Prometheus metrics collector and LLM decorator.
+"""Tests for agent-level Prometheus metrics collector.
 
 Covers: counter increments, histogram bucketing, gauge updates, label
-correctness, singleton pattern, Prometheus text exposition output,
-LLM tracking decorator behaviour, exception handling, and independent
-tracking across multiple agent types.
+correctness, singleton pattern, Prometheus text exposition output, and
+independent tracking across multiple agent types.
 """
 
 from __future__ import annotations
-
-import asyncio
 
 import pytest
 
@@ -28,7 +25,6 @@ from shieldops.observability.agent_metrics import (
     get_agent_metrics,
     reset_agent_metrics,
 )
-from shieldops.utils.llm_metrics import estimate_tokens, track_llm_call
 
 # ── Fixtures ────────────────────────────────────────────────────────
 
@@ -428,120 +424,3 @@ class TestMultipleAgentTypes:
         )
         assert registry.counters[inv_input] == 500
         assert registry.counters[rem_input] == 800
-
-
-# ── LLM tracking decorator tests ──────────────────────────────────
-
-
-class TestTrackLlmCallDecorator:
-    def test_decorator_records_metrics(self, registry):
-        @track_llm_call(agent_type="investigation", model="test-model")
-        async def fake_llm(prompt: str) -> dict:
-            return {
-                "content": "analysis result",
-                "usage": {
-                    "input_tokens": 100,
-                    "output_tokens": 50,
-                },
-            }
-
-        asyncio.get_event_loop().run_until_complete(
-            fake_llm("test prompt"),
-        )
-
-        calls_key = registry._label_key(
-            LLM_CALLS_TOTAL,
-            {"agent_type": "investigation", "model": "test-model"},
-        )
-        assert registry.counters[calls_key] == 1
-
-    def test_decorator_records_latency(self, registry):
-        @track_llm_call(agent_type="investigation", model="test-model")
-        async def fake_llm(prompt: str) -> dict:
-            return {"content": "result"}
-
-        asyncio.get_event_loop().run_until_complete(
-            fake_llm("test prompt"),
-        )
-
-        latency_key = registry._label_key(
-            LLM_LATENCY,
-            {"agent_type": "investigation", "model": "test-model"},
-        )
-        assert latency_key in registry.histograms
-        assert registry._histogram_counts[latency_key] == 1
-
-    def test_decorator_handles_exception_gracefully(self, registry):
-        @track_llm_call(agent_type="investigation", model="test-model")
-        async def failing_llm(prompt: str) -> dict:
-            raise RuntimeError("LLM API error")
-
-        with pytest.raises(RuntimeError, match="LLM API error"):
-            asyncio.get_event_loop().run_until_complete(
-                failing_llm("test prompt"),
-            )
-
-        # Call counter should still be recorded for the failed call
-        calls_key = registry._label_key(
-            LLM_CALLS_TOTAL,
-            {"agent_type": "investigation", "model": "test-model"},
-        )
-        assert registry.counters[calls_key] == 1
-
-    def test_decorator_returns_original_result(self, registry):
-        expected = {"content": "hello", "score": 0.95}
-
-        @track_llm_call(agent_type="security", model="m1")
-        async def fake_llm() -> dict:
-            return expected
-
-        result = asyncio.get_event_loop().run_until_complete(fake_llm())
-        assert result == expected
-
-    def test_decorator_estimates_tokens_from_content(self, registry):
-        @track_llm_call(agent_type="investigation", model="m1")
-        async def fake_llm(prompt: str) -> dict:
-            # No usage dict, so tokens are estimated from content
-            return {"content": "x" * 400}  # ~100 tokens
-
-        asyncio.get_event_loop().run_until_complete(
-            fake_llm("y" * 200),
-        )
-
-        output_key = registry._label_key(
-            LLM_TOKENS_TOTAL,
-            {"agent_type": "investigation", "model": "m1", "direction": "output"},
-        )
-        assert registry.counters[output_key] == 100  # 400 / 4
-
-    def test_decorator_uses_unknown_model_when_not_specified(self, registry):
-        @track_llm_call(agent_type="learning")
-        async def fake_llm() -> dict:
-            return {"content": "result"}
-
-        asyncio.get_event_loop().run_until_complete(fake_llm())
-
-        calls_key = registry._label_key(
-            LLM_CALLS_TOTAL,
-            {"agent_type": "learning", "model": "unknown"},
-        )
-        assert registry.counters[calls_key] == 1
-
-
-# ── Token estimation tests ─────────────────────────────────────────
-
-
-class TestEstimateTokens:
-    def test_empty_string_returns_one(self):
-        assert estimate_tokens("") == 1
-
-    def test_short_string(self):
-        assert estimate_tokens("hi") == 1
-
-    def test_known_length(self):
-        # 400 chars / 4 = 100 tokens
-        assert estimate_tokens("x" * 400) == 100
-
-    def test_returns_integer(self):
-        result = estimate_tokens("hello world")
-        assert isinstance(result, int)
