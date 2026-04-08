@@ -1,8 +1,13 @@
-"""Tests for investigation timeline API endpoint.
+"""Tests for the GET /investigations/{id}/timeline endpoint.
 
-Tests cover:
-- GET /investigations/{id}/timeline (mixed events, empty, ordering,
-  404, event_type filter, auth, DB unavailable)
+After RFC #245 PR-4 (#273) the route is wired to
+``InvestigationTimelineService`` via ``Depends(get_service(...))``
+rather than the deleted ``Repository`` god object. These tests
+override the cached dependency to inject an ``AsyncMock`` service
+so we can exercise route behaviour without a real DB.
+
+Coverage: mixed events, empty timeline, ordering, 404, event_type
+filter, auth, DB unavailable, and the service-id pass-through.
 """
 
 from __future__ import annotations
@@ -15,43 +20,17 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from shieldops.api.routes import investigations
+from shieldops.db.services import get_service
+from shieldops.db.services.investigation_timeline import InvestigationTimelineService
 
 
 def _create_test_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(
-        investigations.router,
-        prefix="/api/v1",
-    )
+    app.include_router(investigations.router, prefix="/api/v1")
     return app
 
 
-def _make_investigation(
-    investigation_id: str = "inv-abc123",
-) -> dict[str, Any]:
-    return {
-        "investigation_id": investigation_id,
-        "alert_id": "alert-001",
-        "alert_name": "HighCPU",
-        "severity": "warning",
-        "status": "completed",
-        "confidence": 0.92,
-        "hypotheses_count": 3,
-        "hypotheses": [],
-        "reasoning_chain": [],
-        "alert_context": {},
-        "log_findings": [],
-        "metric_anomalies": [],
-        "recommended_action": None,
-        "duration_ms": 4500,
-        "error": None,
-        "created_at": "2026-02-19T10:00:00+00:00",
-        "updated_at": "2026-02-19T10:01:00+00:00",
-    }
-
-
 def _make_timeline_events() -> list[dict[str, Any]]:
-    """Return a mixed list of timeline events."""
     return [
         {
             "id": "inv-inv-abc123",
@@ -106,265 +85,38 @@ def _make_timeline_events() -> list[dict[str, Any]]:
     ]
 
 
-@pytest.fixture(autouse=True)
-def _reset_module_repo():
-    original = investigations._repository
-    investigations._repository = None
-    yield
-    investigations._repository = original
-
-
 @pytest.fixture
-def mock_repo() -> AsyncMock:
-    repo = AsyncMock()
-    repo.get_investigation = AsyncMock(
-        return_value=_make_investigation(),
+def mock_service() -> AsyncMock:
+    """An AsyncMock that quacks like ``InvestigationTimelineService``."""
+    svc = AsyncMock(spec=InvestigationTimelineService)
+    svc.build_timeline = AsyncMock(return_value=_make_timeline_events())
+    svc.filter_by_type = AsyncMock(
+        side_effect=lambda inv_id, et: [e for e in _make_timeline_events() if e["type"] == et]
     )
-    repo.get_investigation_timeline = AsyncMock(
-        return_value=_make_timeline_events(),
-    )
-    return repo
+    return svc
 
 
-def _build_client_with_viewer(
-    app: FastAPI,
-    mock_repo: AsyncMock | None = None,
+def _wire_app(
+    mock_service: AsyncMock | None,
+    *,
+    with_user: bool = True,
 ) -> TestClient:
-    """Wire dependency overrides for a viewer user."""
-    if mock_repo is not None:
-        investigations.set_repository(mock_repo)
+    """Build a TestClient with the timeline service + (optionally) auth wired."""
+    app = _create_test_app()
 
-    from shieldops.api.auth.dependencies import (
-        get_current_user,
-    )
-    from shieldops.api.auth.models import (
-        UserResponse,
-        UserRole,
-    )
+    if mock_service is not None:
+        # Override the cached dep so the route resolves to our mock.
+        dep = get_service(InvestigationTimelineService)
+        app.dependency_overrides[dep] = lambda: mock_service
 
-    user = UserResponse(
-        id="viewer-1",
-        email="viewer@test.com",
-        name="Viewer",
-        role=UserRole.VIEWER,
-        is_active=True,
-    )
-
-    async def _mock_user() -> UserResponse:
-        return user
-
-    app.dependency_overrides[get_current_user] = _mock_user
-    return TestClient(app, raise_server_exceptions=False)
-
-
-# ================================================================
-# Mixed event types
-# ================================================================
-
-
-class TestTimelineMixedEvents:
-    def test_returns_mixed_event_types(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline",
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-
-        assert data["investigation_id"] == "inv-abc123"
-        assert data["total"] == 3
-        assert len(data["events"]) == 3
-
-        event_types = {e["type"] for e in data["events"]}
-        assert event_types == {
-            "investigation",
-            "remediation",
-            "audit",
-        }
-
-    def test_event_shape(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline",
-        )
-        event = resp.json()["events"][0]
-
-        assert "id" in event
-        assert "timestamp" in event
-        assert "type" in event
-        assert "action" in event
-        assert "actor" in event
-        assert "details" in event
-
-
-# ================================================================
-# Empty timeline
-# ================================================================
-
-
-class TestTimelineEmpty:
-    def test_empty_timeline(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        mock_repo.get_investigation_timeline.return_value = []
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline",
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["events"] == []
-        assert data["total"] == 0
-
-
-# ================================================================
-# Chronological ordering
-# ================================================================
-
-
-class TestTimelineOrdering:
-    def test_events_chronologically_ordered(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline",
-        )
-        events = resp.json()["events"]
-        timestamps = [e["timestamp"] for e in events]
-
-        assert timestamps == sorted(timestamps)
-
-
-# ================================================================
-# Investigation not found (404)
-# ================================================================
-
-
-class TestTimelineNotFound:
-    def test_returns_404_for_unknown_investigation(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        mock_repo.get_investigation.return_value = None
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/nonexistent/timeline",
-        )
-        assert resp.status_code == 404
-        assert "not found" in resp.json()["detail"].lower()
-
-        # Verify timeline was never queried
-        mock_repo.get_investigation_timeline.assert_not_called()
-
-
-# ================================================================
-# Event type filtering
-# ================================================================
-
-
-class TestTimelineEventTypeFilter:
-    def test_filter_by_remediation_type(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline?event_type=remediation",
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-
-        # Only remediation events should be returned
-        assert data["total"] == 1
-        assert all(e["type"] == "remediation" for e in data["events"])
-
-    def test_filter_by_nonexistent_type_returns_empty(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline?event_type=security",
-        )
-        assert resp.status_code == 200
-        assert resp.json()["total"] == 0
-        assert resp.json()["events"] == []
-
-
-# ================================================================
-# Authentication required
-# ================================================================
-
-
-class TestTimelineAuth:
-    def test_unauthenticated_request_rejected(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        """Without auth the endpoint rejects the request."""
-        app = _create_test_app()
-        investigations.set_repository(mock_repo)
-
-        # No dependency overrides -- no valid bearer token
-        client = TestClient(
-            app,
-            raise_server_exceptions=False,
-        )
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline",
-        )
-        assert resp.status_code in (401, 403)
-
-        # Repo should not be called
-        mock_repo.get_investigation.assert_not_called()
-        mock_repo.get_investigation_timeline.assert_not_called()
-
-
-# ================================================================
-# DB unavailable (503)
-# ================================================================
-
-
-class TestTimelineDbUnavailable:
-    def test_returns_503_when_no_repository(self) -> None:
-        app = _create_test_app()
-        # No repository set at all
-
-        from shieldops.api.auth.dependencies import (
-            get_current_user,
-        )
-        from shieldops.api.auth.models import (
-            UserResponse,
-            UserRole,
-        )
+    if with_user:
+        from shieldops.api.auth.dependencies import get_current_user
+        from shieldops.api.auth.models import UserResponse, UserRole
 
         user = UserResponse(
-            id="v-1",
-            email="v@test.com",
-            name="V",
+            id="viewer-1",
+            email="viewer@test.com",
+            name="Viewer",
             role=UserRole.VIEWER,
             is_active=True,
         )
@@ -374,33 +126,134 @@ class TestTimelineDbUnavailable:
 
         app.dependency_overrides[get_current_user] = _mock_user
 
-        client = TestClient(
-            app,
-            raise_server_exceptions=False,
-        )
-        resp = client.get(
-            "/api/v1/investigations/inv-abc123/timeline",
-        )
+    return TestClient(app, raise_server_exceptions=False)
+
+
+# ================================================================
+# Mixed event types
+# ================================================================
+
+
+class TestTimelineMixedEvents:
+    def test_returns_mixed_event_types(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["investigation_id"] == "inv-abc123"
+        assert data["total"] == 3
+        assert {e["type"] for e in data["events"]} == {
+            "investigation",
+            "remediation",
+            "audit",
+        }
+
+    def test_event_shape(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline")
+        event = resp.json()["events"][0]
+        for key in ("id", "timestamp", "type", "action", "actor", "details"):
+            assert key in event
+
+
+# ================================================================
+# Empty timeline → 404 (the new contract)
+# ================================================================
+
+
+class TestTimelineEmpty:
+    def test_empty_timeline_returns_404(self, mock_service: AsyncMock) -> None:
+        mock_service.build_timeline.return_value = []
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline")
+        assert resp.status_code == 404
+
+
+# ================================================================
+# Chronological ordering
+# ================================================================
+
+
+class TestTimelineOrdering:
+    def test_events_chronologically_ordered(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline")
+        timestamps = [e["timestamp"] for e in resp.json()["events"]]
+        assert timestamps == sorted(timestamps)
+
+
+# ================================================================
+# Investigation not found (404)
+# ================================================================
+
+
+class TestTimelineNotFound:
+    def test_returns_404_for_unknown_investigation(self, mock_service: AsyncMock) -> None:
+        mock_service.build_timeline.return_value = []
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/nonexistent/timeline")
+        assert resp.status_code == 404
+        assert "not found" in resp.json()["detail"].lower()
+
+
+# ================================================================
+# Event type filtering
+# ================================================================
+
+
+class TestTimelineEventTypeFilter:
+    def test_filter_by_remediation_type(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline?event_type=remediation")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 1
+        assert all(e["type"] == "remediation" for e in data["events"])
+
+    def test_filter_by_nonexistent_type_returns_404(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline?event_type=security")
+        # No events match → 404 under the new "empty == not found" contract
+        assert resp.status_code == 404
+
+
+# ================================================================
+# Authentication required
+# ================================================================
+
+
+class TestTimelineAuth:
+    def test_unauthenticated_request_rejected(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service, with_user=False)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline")
+        assert resp.status_code in (401, 403)
+        # Service should not be called
+        mock_service.build_timeline.assert_not_called()
+        mock_service.filter_by_type.assert_not_called()
+
+
+# ================================================================
+# DB unavailable (503)
+# ================================================================
+
+
+class TestTimelineDbUnavailable:
+    def test_returns_503_when_session_factory_missing(self) -> None:
+        # Don't override the timeline service dep — let it fall through to
+        # the real ``get_service`` factory, which raises 503 because the
+        # bare TestClient app has no session_factory on app.state.
+        client = _wire_app(mock_service=None, with_user=True)
+        resp = client.get("/api/v1/investigations/inv-abc123/timeline")
         assert resp.status_code == 503
-        assert resp.json()["detail"] == "DB unavailable"
 
 
 # ================================================================
-# Repository called with correct investigation_id
+# Service called with correct investigation_id
 # ================================================================
 
 
-class TestTimelineRepoCall:
-    def test_passes_correct_id_to_repository(
-        self,
-        mock_repo: AsyncMock,
-    ) -> None:
-        app = _create_test_app()
-        client = _build_client_with_viewer(app, mock_repo)
-
-        client.get(
-            "/api/v1/investigations/inv-xyz/timeline",
-        )
-        mock_repo.get_investigation.assert_called_once_with(
-            "inv-xyz",
-        )
+class TestTimelineServiceCall:
+    def test_passes_correct_id_to_service(self, mock_service: AsyncMock) -> None:
+        client = _wire_app(mock_service)
+        client.get("/api/v1/investigations/inv-xyz/timeline")
+        mock_service.build_timeline.assert_called_once_with("inv-xyz")

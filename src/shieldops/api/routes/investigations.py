@@ -15,14 +15,14 @@ from fastapi import (
     Depends,
     HTTPException,
     Query,
-    Request,
-    status,
 )
 from pydantic import BaseModel, Field
 
 from shieldops.agents.investigation.runner import InvestigationRunner
 from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
+from shieldops.db.services import get_service
+from shieldops.db.services.investigation_timeline import InvestigationTimelineService
 from shieldops.models.base import AlertContext
 
 router = APIRouter()
@@ -202,11 +202,13 @@ async def get_investigation(
 
 @router.get("/investigations/{investigation_id}/timeline")
 async def get_investigation_timeline(
-    request: Request,
     investigation_id: str,
     event_type: str | None = Query(
         None,
         description="Filter by event type",
+    ),
+    timeline_svc: InvestigationTimelineService = Depends(  # noqa: B008
+        get_service(InvestigationTimelineService),
     ),
     _user: Any = Depends(
         require_role(UserRole.VIEWER, UserRole.OPERATOR, UserRole.ADMIN),
@@ -214,35 +216,25 @@ async def get_investigation_timeline(
 ) -> dict[str, Any]:
     """Get unified timeline for an investigation.
 
-    Merges investigation, remediation, and audit events
-    into a single chronological timeline.
+    Merges investigation, remediation, and audit events into a single
+    chronological timeline. Powered by ``InvestigationTimelineService``
+    (RFC #245 PR-4) — the named service that replaced the deleted
+    ``Repository.get_investigation_timeline``. Wired via FastAPI
+    ``Depends(get_service(...))`` rather than the old
+    ``app.state.repository`` god object.
     """
-    repo = _repository or getattr(
-        request.app.state,
-        "repository",
-        None,
-    )
-    if repo is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="DB unavailable",
-        )
+    if event_type:
+        events = await timeline_svc.filter_by_type(investigation_id, event_type)
+    else:
+        events = await timeline_svc.build_timeline(investigation_id)
 
-    # Verify the investigation exists
-    inv = await repo.get_investigation(investigation_id)
-    if inv is None:
+    if not events:
+        # Empty either because the investigation doesn't exist or has no events.
+        # Distinguish via a quick fetch; both cases now reach here.
         raise HTTPException(
             status_code=404,
-            detail="Investigation not found",
+            detail="Investigation not found or has no timeline events",
         )
-
-    events = await repo.get_investigation_timeline(
-        investigation_id,
-    )
-
-    # Optional event type filter
-    if event_type:
-        events = [e for e in events if e.get("type") == event_type]
 
     return {
         "investigation_id": investigation_id,
