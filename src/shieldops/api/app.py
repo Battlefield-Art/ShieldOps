@@ -407,14 +407,38 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # producer-side fan-out goes through ``HubBroadcaster`` (a thin shim
     # that adapts the legacy ``broadcast(channel, dict)`` call shape onto
     # ``Hub.publish``). Routes use ``Depends(get_ws_hub)``.
-    from shieldops.api.ws.composition import build_in_memory_hub, set_ws_hub
+    from shieldops.api.ws.composition import (
+        build_in_memory_hub,
+        build_redis_hub,
+        select_hub_backend,
+        set_ws_hub,
+    )
     from shieldops.api.ws.hub_broadcaster import HubBroadcaster
 
-    ws_hub = build_in_memory_hub()
+    _ws_backend = select_hub_backend(settings)
+    ws_hub = None
+    ws_bridge = None
+    if _ws_backend == "redis":
+        try:
+            from redis.asyncio import from_url as _redis_from_url
+
+            _ws_redis_client = _redis_from_url(settings.redis_url)
+            ws_hub, ws_bridge = await build_redis_hub(redis_client=_ws_redis_client)
+            app.state.ws_redis_client = _ws_redis_client
+            app.state.ws_bridge = ws_bridge
+            logger.info("ws_hub_installed", adapter="redis")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "ws_hub_redis_failed_falling_back_to_memory",
+                error=str(exc),
+            )
+            ws_hub = None
+    if ws_hub is None:
+        ws_hub = build_in_memory_hub()
+        logger.info("ws_hub_installed", adapter="in_memory")
     set_ws_hub(ws_hub)
     ws_manager = HubBroadcaster(ws_hub)
     app.state.ws_hub_installed = True
-    logger.info("ws_hub_installed", adapter="in_memory")
 
     # ── Infrastructure layer ────────────────────────────────────
     obs_sources = create_observability_sources(settings)

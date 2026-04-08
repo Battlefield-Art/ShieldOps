@@ -81,6 +81,11 @@ class FlatSettings(BaseSettings):
     # ── Redis ──────────────────────────────────────────────────────────
     redis_url: str = "redis://localhost:6379/0"
 
+    # ── WebSocket Hub backend (RFC #242 PR-5 / #259) ───────────────────
+    # "memory" → single-replica in-process hub (default)
+    # "redis"  → multi-replica, Redis Streams buffer + pub/sub bridge
+    ws_hub_backend: str = "memory"
+
     # ── Kafka ──────────────────────────────────────────────────────────
     kafka_brokers: str = "localhost:9092"
     kafka_consumer_group: str = "shieldops-agents"

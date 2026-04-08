@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import contextlib
 from collections.abc import Iterator
+from typing import TYPE_CHECKING, Any
 
 from shieldops.api.ws.adapters import (
     InMemoryBuffer,
@@ -37,13 +38,21 @@ from shieldops.api.ws.adapters import (
     ManualClock,
     NullLogger,
     NullTracer,
+    RedisBuffer,
+    RedisHubBridge,
     StaticTokenAuthenticator,
 )
 from shieldops.api.ws.core import Hub, HubConfig, Principal
+from shieldops.api.ws.core.events import Event
+
+if TYPE_CHECKING:
+    from redis.asyncio import Redis
 
 __all__ = [
     "build_in_memory_hub",
+    "build_redis_hub",
     "get_ws_hub",
+    "select_hub_backend",
     "set_ws_hub",
     "use_test_ws_hub",
 ]
@@ -101,6 +110,73 @@ def build_in_memory_hub(
         tracer=NullTracer(),
         config=config,
     )
+
+
+async def build_redis_hub(
+    *,
+    redis_client: Redis,
+    config: HubConfig | None = None,
+    start_ts: float = 0.0,
+    tokens: dict[str, Principal] | None = None,
+    max_per_channel: int = 1000,
+    replica_id: str | None = None,
+) -> tuple[Hub, RedisHubBridge]:
+    """Build a Hub wired with the Redis buffer + cross-replica pub/sub bridge.
+
+    Returns a ``(hub, bridge)`` tuple. The caller owns the bridge's
+    lifecycle and must ``await bridge.stop()`` during teardown.
+
+    The returned Hub's ``publish`` method is monkey-patched at the
+    instance level to tee every local publish onto the Redis bus via
+    ``bridge.publish_remote``. This is the minimum-intrusion way to
+    avoid modifying the Hub core (SHOP-003 / RFC #242 constraint).
+    """
+    hub = Hub(
+        transport=InMemoryTransport(),
+        buffer=RedisBuffer(redis_client, max_per_channel=max_per_channel),
+        auth=StaticTokenAuthenticator(tokens=tokens or {}),
+        clock=ManualClock(start=start_ts),
+        log=NullLogger(),
+        tracer=NullTracer(),
+        config=config,
+    )
+    bridge = RedisHubBridge(hub=hub, redis=redis_client, replica_id=replica_id)
+    await bridge.start()
+
+    # Tee local publishes onto Redis pub/sub so peer replicas see them.
+    original_publish = hub.publish
+
+    async def bridged_publish(channel: str, event: Event) -> str:
+        event_id = await original_publish(channel, event)
+        payload = Hub._encode(event, event_id)
+        ts = hub.clock.now().timestamp()
+        with contextlib.suppress(Exception):
+            await bridge.publish_remote(
+                channel,
+                event_id=event_id,
+                payload=payload,
+                kind=event.kind,
+                ts=ts,
+            )
+        return event_id
+
+    hub.publish = bridged_publish  # type: ignore[method-assign]
+    return hub, bridge
+
+
+def select_hub_backend(settings: Any) -> str:
+    """Return which hub backend to use: ``"redis"`` or ``"memory"``.
+
+    Selection rule: Redis is used when ``settings.ws_hub_backend == "redis"``
+    (explicit opt-in). This keeps single-replica deployments on the
+    in-memory hub by default — flipping to Redis without an explicit
+    config change would be a surprising behavioral shift for every
+    existing ShieldOps install.
+    """
+    backend = getattr(settings, "ws_hub_backend", "memory")
+    if backend not in {"memory", "redis"}:
+        return "memory"
+    return backend
 
 
 @contextlib.contextmanager

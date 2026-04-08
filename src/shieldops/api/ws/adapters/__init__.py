@@ -18,6 +18,8 @@ from shieldops.api.ws.adapters.inmemory_transport import InMemoryTransport
 from shieldops.api.ws.adapters.manual_clock import ManualClock
 from shieldops.api.ws.adapters.null_logger import NullLogger
 from shieldops.api.ws.adapters.null_tracer import NullTracer
+from shieldops.api.ws.adapters.redis_buffer import RedisBuffer
+from shieldops.api.ws.adapters.redis_hub_bridge import RedisHubBridge
 from shieldops.api.ws.adapters.static_token_authenticator import (
     StaticTokenAuthenticator,
 )
@@ -28,5 +30,7 @@ __all__ = [
     "ManualClock",
     "NullLogger",
     "NullTracer",
+    "RedisBuffer",
+    "RedisHubBridge",
     "StaticTokenAuthenticator",
 ]
