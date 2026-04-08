@@ -2126,43 +2126,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.warning("rag_knowledge_store_init_failed", error=str(e))
 
     # ── Phase 12: LLM Router ─────────────────────────────────
-    try:
-        from shieldops.api.routes import llm_usage as llm_usage_routes
-        from shieldops.utils.llm_router import LLMRouter, ModelTier, TaskComplexity
-
-        model_tiers = {
-            TaskComplexity.SIMPLE: ModelTier(
-                provider="anthropic",
-                model=settings.llm_simple_model,
-                cost_per_1k_input=0.001,
-                cost_per_1k_output=0.005,
-            ),
-            TaskComplexity.MODERATE: ModelTier(
-                provider="anthropic",
-                model=settings.llm_moderate_model,
-                cost_per_1k_input=0.003,
-                cost_per_1k_output=0.015,
-            ),
-            TaskComplexity.COMPLEX: ModelTier(
-                provider="anthropic",
-                model=settings.llm_complex_model,
-                cost_per_1k_input=0.015,
-                cost_per_1k_output=0.075,
-            ),
-        }
-        llm_router = LLMRouter(
-            model_tiers=model_tiers,
-            enabled=settings.llm_routing_enabled,
-        )
-        llm_usage_routes.set_llm_router(llm_router)
-        app.include_router(
-            llm_usage_routes.router,
-            prefix=settings.api_prefix,
-            tags=["LLM Usage"],
-        )
-        logger.info("llm_router_initialized")
-    except Exception as e:
-        logger.warning("llm_router_init_failed", error=str(e))
+    # Removed in RFC #248 PR-5 (#292): the legacy LLMRouter + llm_usage routes
+    # were superseded by LLMOrchestrator (wired via lifespan in PR-4 / #291).
+    # Token usage is now recorded by the orchestrator's TokenUsage path.
 
     # ── Phase 12: Capacity Planner ────────────────────────────
     try:

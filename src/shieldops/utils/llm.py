@@ -9,8 +9,9 @@ exception path — the shim falls back to the legacy direct
 ``ChatAnthropic`` call so 1,851 callers keep working unchanged.
 
 The positional signature ``(system_prompt, user_prompt, schema)``
-is preserved bit-for-bit. PR-5 will delete ``llm_router.py`` and
-``context_hub.py``; PR-6 will dedupe the metrics helpers.
+is preserved bit-for-bit. PR-5 (#292) deleted ``llm_router.py``,
+``context_hub.py``, and ``agent_context_mixin.py``; PR-6 will
+dedupe the metrics helpers.
 """
 
 from __future__ import annotations
