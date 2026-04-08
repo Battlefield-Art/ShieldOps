@@ -6,6 +6,11 @@ Endpoints:
 - ``POST /api/v1/agents/{name}/promote``              — manual promote (admin)
 - ``POST /api/v1/agents/{name}/demote``               — manual demote (admin)
 - ``GET  /api/v1/agents/leaderboard``                 — fitness leaderboard
+
+Backed by :class:`shieldops.utils.evolution.store.EvolutionStore` via
+``Depends(get_evolution_store)`` (RFC #246 PR-5). The legacy
+``fitness_aggregator``/``promotion_engine`` modules are no longer
+imported here; deletion lands in PR-6 (#279).
 """
 
 from __future__ import annotations
@@ -18,11 +23,8 @@ from pydantic import BaseModel, Field
 
 from shieldops.api.auth.dependencies import get_current_user
 from shieldops.api.auth.models import UserResponse, UserRole
-from shieldops.utils.fitness_aggregator import get_fitness_aggregator
-from shieldops.utils.promotion_engine import (
-    PromotionEngine,
-    get_promotion_engine,
-)
+from shieldops.utils.evolution.composition import get_evolution_store
+from shieldops.utils.evolution.store import EvolutionStore
 
 logger = structlog.get_logger()
 
@@ -81,11 +83,7 @@ class StatusChangeResponse(BaseModel):
     reason: str
 
 
-# ── Engine accessor (patchable in tests) ──────────────────────────────
-
-
-def _engine() -> PromotionEngine:
-    return get_promotion_engine()
+# ── Helpers ───────────────────────────────────────────────────────────
 
 
 def _require_admin(user: UserResponse) -> None:
@@ -100,10 +98,10 @@ def _require_admin(user: UserResponse) -> None:
 async def list_agent_fitness(
     org_id: str | None = Query(None, description="Filter to a single org"),
     user: UserResponse = Depends(get_current_user),
+    store: EvolutionStore = Depends(get_evolution_store),
 ) -> FitnessListResponse:
     """Return fitness scores + status for every tracked agent."""
-    engine = _engine()
-    rows = engine.leaderboard(org_id=org_id, top_n=10_000)
+    rows = store.leaderboard_rows(org_id=org_id, top_n=10_000)
     items = [AgentFitnessRow(**row) for row in rows]
     return FitnessListResponse(items=items, total=len(items))
 
@@ -113,10 +111,10 @@ async def fitness_leaderboard(
     org_id: str | None = Query(None),
     top_n: int = Query(50, ge=1, le=500),
     user: UserResponse = Depends(get_current_user),
+    store: EvolutionStore = Depends(get_evolution_store),
 ) -> FitnessListResponse:
     """Return agents sorted by composite fitness (descending)."""
-    engine = _engine()
-    rows = engine.leaderboard(org_id=org_id, top_n=top_n)
+    rows = store.leaderboard_rows(org_id=org_id, top_n=top_n)
     items = [AgentFitnessRow(**row) for row in rows]
     return FitnessListResponse(items=items, total=len(items))
 
@@ -126,10 +124,10 @@ async def agent_fitness_history(
     agent_name: str,
     window_days: int = Query(7, ge=1, le=90),
     user: UserResponse = Depends(get_current_user),
+    store: EvolutionStore = Depends(get_evolution_store),
 ) -> FitnessHistoryResponse:
     """Historical composite fitness trend for a single agent."""
-    aggregator = get_fitness_aggregator()
-    window = aggregator.rolling_window(agent_name, window_days=window_days)
+    window = store.rolling_window(agent_name, window_days=window_days)
     return FitnessHistoryResponse(
         agent_name=window.agent_name,
         window_days=window.window_days,
@@ -155,15 +153,18 @@ async def promote_agent(
     agent_name: str,
     body: StatusChangeRequest,
     user: UserResponse = Depends(get_current_user),
+    store: EvolutionStore = Depends(get_evolution_store),
 ) -> StatusChangeResponse:
     """Manually promote an agent to GA (admin only)."""
     _require_admin(user)
-    engine = _engine()
-    snap = engine.promote_agent(
-        agent_name,
-        org_id=body.org_id,
-        reason=body.reason or f"manual promotion by {user.email}",
-    )
+    try:
+        snap = store.promote_agent(
+            agent_name,
+            org_id=body.org_id,
+            reason=body.reason or f"manual promotion by {user.email}",
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return StatusChangeResponse(
         agent_name=snap.agent_name,
         org_id=snap.org_id,
@@ -179,16 +180,19 @@ async def demote_agent(
     agent_name: str,
     body: StatusChangeRequest,
     user: UserResponse = Depends(get_current_user),
+    store: EvolutionStore = Depends(get_evolution_store),
 ) -> StatusChangeResponse:
     """Manually demote an agent from GA (admin only)."""
     _require_admin(user)
-    engine = _engine()
-    snap = engine.demote_agent(
-        agent_name,
-        org_id=body.org_id,
-        reason=body.reason or f"manual demotion by {user.email}",
-        disable=body.disable,
-    )
+    try:
+        snap = store.demote_agent(
+            agent_name,
+            org_id=body.org_id,
+            reason=body.reason or f"manual demotion by {user.email}",
+            disable=body.disable,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return StatusChangeResponse(
         agent_name=snap.agent_name,
         org_id=snap.org_id,

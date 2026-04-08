@@ -726,3 +726,98 @@ class EvolutionStore:
             sample_count=len(paired),
             daily_points=daily,
         )
+
+    def leaderboard_rows(
+        self,
+        *,
+        org_id: str | None = None,
+        top_n: int = 50,
+        tenant_id: str = "default",
+    ) -> list[dict[str, Any]]:
+        """Return a promotion-style leaderboard of agents.
+
+        Mirrors the legacy
+        :meth:`shieldops.utils.promotion_engine.PromotionEngine.leaderboard`
+        shape so ``api/routes/agent_promotion.py`` can render rows
+        without reaching into store internals. Union of agents that have
+        recorded fitness and agents with an explicit status snapshot.
+        """
+        with self._lock:
+            # Union of agents that have fitness observations (for this tenant)
+            # and agents that have an explicit status snapshot.
+            fitness_agents: set[str] = {aid for (tid, aid) in self._fitness if tid == tenant_id}
+            status_agents: set[tuple[str, str]] = set(self._statuses.keys())
+
+            rows: list[dict[str, Any]] = []
+
+            seen: set[tuple[str, str]] = set()
+            # First, fitness-only agents default to org_id="default" unless
+            # a status snapshot exists under a different org_id.
+            for agent_name in fitness_agents:
+                matching_orgs = [oid for (oid, aname) in status_agents if aname == agent_name]
+                if not matching_orgs:
+                    matching_orgs = ["default"]
+                for oid in matching_orgs:
+                    seen.add((oid, agent_name))
+                    rows.append(
+                        self._row_for(
+                            agent_name=agent_name,
+                            org_id=oid,
+                            tenant_id=tenant_id,
+                        )
+                    )
+            # Then, pure status-only rows (demoted/disabled agents with no
+            # recent observations).
+            for oid, aname in status_agents:
+                if (oid, aname) in seen:
+                    continue
+                rows.append(
+                    self._row_for(
+                        agent_name=aname,
+                        org_id=oid,
+                        tenant_id=tenant_id,
+                    )
+                )
+
+        if org_id is not None:
+            rows = [r for r in rows if r["org_id"] == org_id]
+
+        rows.sort(key=lambda r: r["composite_fitness"], reverse=True)
+        trimmed = rows[:top_n]
+        for idx, row in enumerate(trimmed, start=1):
+            row["rank"] = idx
+        return trimmed
+
+    def _row_for(
+        self,
+        *,
+        agent_name: str,
+        org_id: str,
+        tenant_id: str,
+    ) -> dict[str, Any]:
+        """Build a single leaderboard row under the store lock's critical
+        section. Must be called with ``self._lock`` held."""
+        state = self._fitness.get((tenant_id, agent_name))
+        if state is not None and state.observations:
+            composite = state.score(self._config)
+        else:
+            composite = 0.0
+        snap = self._statuses.get((org_id, agent_name))
+        if snap is not None:
+            status = snap.status.value
+            promoted_at = snap.promoted_at.isoformat() if snap.promoted_at else None
+            demoted_at = snap.demoted_at.isoformat() if snap.demoted_at else None
+            if composite == 0.0 and snap.current_fitness:
+                composite = snap.current_fitness
+        else:
+            status = AgentStatus.ACTIVE.value
+            promoted_at = None
+            demoted_at = None
+        return {
+            "agent_name": agent_name,
+            "org_id": org_id,
+            "status": status,
+            "composite_fitness": composite,
+            "promoted_at": promoted_at,
+            "demoted_at": demoted_at,
+        }
