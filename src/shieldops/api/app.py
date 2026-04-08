@@ -157,13 +157,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             logger.warning("langsmith_init_failed", error=str(e))
 
     # ── Database layer ──────────────────────────────────────────
-    repository = None
+    # RFC #245 PR-2: the legacy ``Repository`` god class is no longer
+    # constructed at startup. Routes that need DB access take a
+    # session via ``app.state.session_factory`` and use
+    # ``shieldops.db.fetch`` helpers or per-entity repositories from
+    # ``shieldops.db.repositories``.  Legacy ``app.state.repository``
+    # is preserved as ``None`` for backwards-compat with routes whose
+    # PR-3 migration is still pending; those routes already fall back
+    # to in-memory paths when the repository is ``None``.
+    repository: Any | None = None
     session_factory = None
     engine = None
     try:
         from sqlalchemy import text
 
-        from shieldops.db.repository import Repository
         from shieldops.db.session import create_async_engine, get_session_factory
 
         engine = create_async_engine(settings.database_url, pool_size=settings.database_pool_size)
@@ -171,12 +178,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Verify DB connectivity with a test query
         async with session_factory() as session:
             await session.execute(text("SELECT 1"))
-        repository = Repository(session_factory)
         logger.info("database_initialized")
     except Exception as e:
         logger.warning("database_init_failed", error=str(e), detail="falling back to in-memory")
         session_factory = None
-        repository = None
         if engine:
             try:
                 await engine.dispose()

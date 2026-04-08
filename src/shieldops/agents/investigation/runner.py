@@ -32,7 +32,6 @@ from shieldops.observability.tracing import get_tracer
 from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
 if __import__("typing").TYPE_CHECKING:
-    from shieldops.db.repository import Repository
     from shieldops.policy.opa.client import PolicyEngine
 
 logger = structlog.get_logger()
@@ -61,7 +60,7 @@ class InvestigationRunner:
         log_sources: list[LogSource] | None = None,
         metric_sources: list[MetricSource] | None = None,
         trace_sources: list[TraceSource] | None = None,
-        repository: "Repository | None" = None,
+        repository: Any | None = None,
         ws_manager: "object | None" = None,
         policy_engine: "PolicyEngine | None" = None,
     ) -> None:

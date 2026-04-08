@@ -23,7 +23,6 @@ from shieldops.agents.learning.tools import (
 )
 
 if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
     from shieldops.playbooks.loader import PlaybookLoader
 
 logger = structlog.get_logger()
@@ -45,7 +44,7 @@ class LearningRunner:
         incident_store: Any | None = None,
         playbook_store: Any | None = None,
         alert_config_store: Any | None = None,
-        repository: Repository | None = None,
+        repository: Any | None = None,
         playbook_loader: PlaybookLoader | None = None,
     ) -> None:
         # Wire adapters when repository/loader are provided

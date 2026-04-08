@@ -8,7 +8,7 @@ parameterized ILIKE queries.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -16,14 +16,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from shieldops.api.auth.dependencies import require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 logger = structlog.get_logger()
 
 router = APIRouter()
 
-_repository: Repository | None = None
+_repository: Any | None = None
 
 VALID_ENTITY_TYPES = {
     "investigation",

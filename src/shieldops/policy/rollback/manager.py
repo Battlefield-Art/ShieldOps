@@ -5,7 +5,7 @@ returns FAILED ActionResult on error, writes audit trail best-effort.
 """
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import Any
 
 import structlog
 
@@ -18,9 +18,6 @@ from shieldops.models.base import (
     RiskLevel,
     Snapshot,
 )
-
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
 
 logger = structlog.get_logger()
 
@@ -36,7 +33,7 @@ class RollbackManager:
     def __init__(
         self,
         connector_router: ConnectorRouter | None = None,
-        repository: "Repository | None" = None,
+        repository: Any | None = None,
     ) -> None:
         self._router = connector_router
         self._repository = repository

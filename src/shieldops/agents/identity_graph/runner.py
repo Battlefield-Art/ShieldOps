@@ -12,9 +12,6 @@ from shieldops.agents.identity_graph.tools import IdentityGraphToolkit
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.observability.tracing import get_tracer
 
-if __import__("typing").TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 logger = structlog.get_logger()
 
 
@@ -29,7 +26,7 @@ class IdentityGraphRunner:
     def __init__(
         self,
         connector_router: ConnectorRouter | None = None,
-        repository: "Repository | None" = None,
+        repository: Any | None = None,
     ) -> None:
         self._toolkit = IdentityGraphToolkit(
             connector_router=connector_router,

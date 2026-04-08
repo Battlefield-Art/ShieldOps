@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from uuid import uuid4
 
 import structlog
@@ -19,14 +19,11 @@ from pydantic import BaseModel, Field, field_validator
 from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 logger = structlog.get_logger()
 
 router = APIRouter()
 
-_repository: Repository | None = None
+_repository: Any | None = None
 
 # In-memory job tracker with auto-expiry (1 hour)
 _batch_jobs: dict[str, BatchJobStatus] = {}
@@ -38,7 +35,7 @@ _VALID_ENTITY_TYPES = {"investigation", "remediation"}
 _VALID_OPERATIONS = {"create", "update_status"}
 
 
-def set_repository(repo: Repository | None) -> None:
+def set_repository(repo: Any | None) -> None:
     """Set the persistence repository for batch operations."""
     global _repository
     _repository = repo
@@ -123,7 +120,7 @@ def _cleanup_expired_jobs() -> None:
         logger.info("batch_jobs_expired", count=len(expired))
 
 
-async def _create_investigation(item: dict[str, Any], repository: Repository) -> None:
+async def _create_investigation(item: dict[str, Any], repository: Any) -> None:
     """Create a single investigation from batch item data."""
     from shieldops.models.base import AlertContext
 
@@ -153,7 +150,7 @@ async def _create_investigation(item: dict[str, Any], repository: Repository) ->
     )
 
 
-async def _create_remediation(item: dict[str, Any], repository: Repository) -> None:
+async def _create_remediation(item: dict[str, Any], repository: Any) -> None:
     """Create a single remediation from batch item data."""
     from shieldops.models.base import (
         Environment,
@@ -193,7 +190,7 @@ async def _create_remediation(item: dict[str, Any], repository: Repository) -> N
 async def _update_entity_status(
     entity_type: str,
     item: dict[str, Any],
-    repository: Repository,
+    repository: Any,
 ) -> None:
     """Update status on an investigation or remediation."""
     entity_id = item.get("id", "")
@@ -244,7 +241,7 @@ async def _update_entity_status(
 async def _process_batch(
     job_id: str,
     request: BatchRequest,
-    repository: Repository,
+    repository: Any,
 ) -> None:
     """Process batch items in background."""
     job = _batch_jobs.get(job_id)
@@ -400,7 +397,7 @@ async def get_batch_job_status(
 # --- Internal helpers ---
 
 
-def _enqueue_batch(request: BatchRequest, repository: Repository) -> BatchResponse:
+def _enqueue_batch(request: BatchRequest, repository: Any) -> BatchResponse:
     """Create a batch job and start background processing."""
     _cleanup_expired_jobs()
 

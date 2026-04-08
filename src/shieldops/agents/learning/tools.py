@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any
 import structlog
 
 if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
     from shieldops.playbooks.loader import PlaybookLoader
 
 logger = structlog.get_logger()
@@ -318,9 +317,9 @@ class LearningToolkit:
 
 
 class IncidentStoreAdapter:
-    """Adapts Repository into the incident_store interface LearningToolkit expects."""
+    """Adapts a repository into the incident_store interface LearningToolkit expects."""
 
-    def __init__(self, repository: Repository) -> None:
+    def __init__(self, repository: Any) -> None:
         self._repo = repository
 
     async def query(self, period: str = "30d") -> dict[str, Any]:
@@ -351,13 +350,13 @@ class PlaybookStoreAdapter:
 
 
 class AlertConfigStoreAdapter:
-    """Adapts Repository into the alert_config_store interface LearningToolkit expects.
+    """Adapts a repository into the alert_config_store interface LearningToolkit expects.
 
     Queries alert threshold configuration from the database so the learning
     agent can recommend threshold adjustments based on historical outcomes.
     """
 
-    def __init__(self, repository: Repository) -> None:
+    def __init__(self, repository: Any) -> None:
         self._repo = repository
 
     async def get_thresholds(self) -> dict[str, Any]:

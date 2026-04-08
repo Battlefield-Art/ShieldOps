@@ -6,7 +6,7 @@ and rolling back remediation agent workflows.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -16,14 +16,11 @@ from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 from shieldops.models.base import Environment, RemediationAction, RiskLevel
 
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 router = APIRouter()
 
 # Application-level runner instance
 _runner: RemediationRunner | None = None
-_repository: Repository | None = None
+_repository: Any | None = None
 
 
 def get_runner() -> RemediationRunner:
@@ -40,7 +37,7 @@ def set_runner(runner: RemediationRunner) -> None:
     _runner = runner
 
 
-def set_repository(repo: Repository | None) -> None:
+def set_repository(repo: Any | None) -> None:
     """Set the persistence repository for read queries."""
     global _repository
     _repository = repo

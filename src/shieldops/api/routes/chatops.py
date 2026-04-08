@@ -6,7 +6,7 @@ from enterprise communication tools (Slack, Teams, PagerDuty).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from fastapi import (
     APIRouter,
@@ -22,13 +22,10 @@ from shieldops.agents.chatops.runner import ChatOpsRunner
 from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 router = APIRouter()
 
 _runner: ChatOpsRunner | None = None
-_repository: Repository | None = None
+_repository: Any | None = None
 
 
 def get_runner() -> ChatOpsRunner:
@@ -45,7 +42,7 @@ def set_runner(runner: ChatOpsRunner) -> None:
     _runner = runner
 
 
-def set_repository(repo: Repository | None) -> None:
+def set_repository(repo: Any | None) -> None:
     """Set the persistence repository for read queries."""
     global _repository
     _repository = repo

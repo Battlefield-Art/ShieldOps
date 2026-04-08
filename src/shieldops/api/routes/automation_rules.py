@@ -7,7 +7,7 @@ automation rules that trigger agent actions based on incoming events.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from fastapi import (
     APIRouter,
@@ -23,14 +23,11 @@ from shieldops.agents.automation_orchestrator.runner import AutomationRunner
 from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 router = APIRouter()
 
 # Application-level runner instance (initialized on first use or at startup)
 _runner: AutomationRunner | None = None
-_repository: Repository | None = None
+_repository: Any | None = None
 
 
 def get_runner() -> AutomationRunner:
@@ -47,7 +44,7 @@ def set_runner(runner: AutomationRunner) -> None:
     _runner = runner
 
 
-def set_repository(repo: Repository | None) -> None:
+def set_repository(repo: Any | None) -> None:
     """Set the persistence repository for read queries."""
     global _repository
     _repository = repo

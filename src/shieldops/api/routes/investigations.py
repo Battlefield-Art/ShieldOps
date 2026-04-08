@@ -7,7 +7,7 @@ investigation agent workflows.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from fastapi import (
     APIRouter,
@@ -25,14 +25,11 @@ from shieldops.api.auth.dependencies import get_current_user, require_role
 from shieldops.api.auth.models import UserResponse, UserRole
 from shieldops.models.base import AlertContext
 
-if TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 router = APIRouter()
 
 # Application-level runner instance (initialized on first use or at startup)
 _runner: InvestigationRunner | None = None
-_repository: Repository | None = None
+_repository: Any | None = None
 
 
 def get_runner() -> InvestigationRunner:
@@ -49,7 +46,7 @@ def set_runner(runner: InvestigationRunner) -> None:
     _runner = runner
 
 
-def set_repository(repo: Repository | None) -> None:
+def set_repository(repo: Any | None) -> None:
     """Set the persistence repository for read queries."""
     global _repository
     _repository = repo

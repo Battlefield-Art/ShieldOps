@@ -17,9 +17,6 @@ from shieldops.agents.gitops.tools import GitOpsToolkit
 from shieldops.connectors.base import ConnectorRouter
 from shieldops.licensing.enforce import enforced
 
-if __import__("typing").TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 logger = structlog.get_logger()
 
 
@@ -39,7 +36,7 @@ class GitOpsRunner:
     def __init__(
         self,
         connector_router: ConnectorRouter | None = None,
-        repository: "Repository | None" = None,
+        repository: Any | None = None,
     ) -> None:
         self._toolkit = GitOpsToolkit(
             connector_router=connector_router,

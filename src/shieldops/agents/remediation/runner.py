@@ -30,9 +30,6 @@ from shieldops.policy.opa.client import PolicyEngine
 from shieldops.policy.rollback.manager import RollbackManager
 from shieldops.utils.persistence import persist_agent_run, write_audit_log
 
-if __import__("typing").TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 logger = structlog.get_logger()
 
 
@@ -53,7 +50,7 @@ class RemediationRunner:
         connector_router: ConnectorRouter | None = None,
         policy_engine: PolicyEngine | None = None,
         approval_workflow: ApprovalWorkflow | None = None,
-        repository: "Repository | None" = None,
+        repository: Any | None = None,
         ws_manager: "object | None" = None,
         playbook_loader: PlaybookLoader | None = None,
     ) -> None:

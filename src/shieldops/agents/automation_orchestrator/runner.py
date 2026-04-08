@@ -20,9 +20,6 @@ from shieldops.agents.automation_orchestrator.nodes import set_toolkit
 from shieldops.agents.automation_orchestrator.tools import AutomationToolkit
 from shieldops.observability.tracing import get_tracer
 
-if __import__("typing").TYPE_CHECKING:
-    from shieldops.db.repository import Repository
-
 logger = structlog.get_logger()
 
 
@@ -45,7 +42,7 @@ class AutomationRunner:
         policy_engine: Any = None,
         notification_dispatcher: Any = None,
         agent_runners: dict[str, Any] | None = None,
-        repository: "Repository | None" = None,
+        repository: Any | None = None,
         ws_manager: "object | None" = None,
     ) -> None:
         self._toolkit = AutomationToolkit(
