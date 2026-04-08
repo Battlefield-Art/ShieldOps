@@ -18,15 +18,12 @@ from starlette.middleware.cors import CORSMiddleware
 
 from shieldops.api.middleware import (
     APIVersionMiddleware,
-    BillingEnforcementMiddleware,
     ErrorHandlerMiddleware,
     GracefulShutdownMiddleware,
     MetricsMiddleware,
-    RateLimitMiddleware,
     RequestIDMiddleware,
     RequestLoggingMiddleware,
     SecurityHeadersMiddleware,
-    SlidingWindowRateLimiter,
     TenantMiddleware,
     UsageTrackerMiddleware,
 )
@@ -35,6 +32,8 @@ from shieldops.api.middleware.builder import (
     MiddlewareStackBuilder,
     Position,
 )
+from shieldops.api.policy.composition import get_policy_engine
+from shieldops.api.policy.middleware import PolicyMiddleware
 
 logger = structlog.get_logger()
 
@@ -122,39 +121,26 @@ def build_middleware_stack(app: Any, settings: Any) -> list[str]:
         MiddlewareSpec(
             cls=UsageTrackerMiddleware,
             name="usage_tracker",
-            must_run_before=frozenset({"billing_enforcement"}),
+            must_run_before=frozenset({"policy"}),
             tags=frozenset({"billing"}),
         )
     )
 
-    # -- Billing enforcement: plan limit checks ------------------------
+    # -- Policy enforcement: unified rate-limit + quota + overrides ----
+    # RFC #243 PR-4 / #263 replaced BillingEnforcementMiddleware +
+    # RateLimitMiddleware + SlidingWindowRateLimiter with a single
+    # PolicyMiddleware backed by RequestPolicyEngine. The engine is
+    # resolved lazily via get_policy_engine() so tests can swap it via
+    # use_test_policy_engine().
     builder.add(
         MiddlewareSpec(
-            cls=BillingEnforcementMiddleware,
-            name="billing_enforcement",
-            must_run_before=frozenset({"rate_limiter"}),
-            tags=frozenset({"billing"}),
-        )
-    )
-
-    # -- Sliding window rate limiter (optional, feature-flagged) -------
-    builder.add(
-        MiddlewareSpec(
-            cls=SlidingWindowRateLimiter,
-            name="sliding_window_rate_limiter",
-            enabled=getattr(settings, "sliding_window_rate_limit_enabled", False),
-            optional=True,
-            must_run_after=frozenset({"rate_limiter"}),
-            tags=frozenset({"rate_limiting"}),
-        )
-    )
-
-    # -- Fixed-window rate limiter -------------------------------------
-    builder.add(
-        MiddlewareSpec(
-            cls=RateLimitMiddleware,
-            name="rate_limiter",
-            tags=frozenset({"rate_limiting"}),
+            cls=PolicyMiddleware,
+            name="policy",
+            kwargs={
+                "engine_factory": get_policy_engine,
+                "enforce": getattr(settings, "policy_enforce", True),
+            },
+            tags=frozenset({"rate_limiting", "billing"}),
         )
     )
 
@@ -168,7 +154,7 @@ def build_middleware_stack(app: Any, settings: Any) -> list[str]:
                 name="idempotency",
                 kwargs={"ttl": getattr(settings, "idempotency_ttl_seconds", 300)},
                 optional=True,
-                must_run_after=frozenset({"rate_limiter"}),
+                must_run_after=frozenset({"policy"}),
             )
         )
     except ImportError:

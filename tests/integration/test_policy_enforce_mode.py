@@ -123,12 +123,18 @@ class TestPolicyMiddlewareEnforceIntegration:
         The lifespan wiring reads ``settings.policy_enforce`` and passes
         it straight to ``PolicyMiddleware(enforce=...)`` — this test
         locks that contract by flowing the flag through the same path.
+        RFC #243 PR-4 (#263) flipped the default to True after deleting
+        the legacy rate_limiter + billing_enforcement middleware stack.
         """
         from shieldops.config import Settings
 
-        # Default: shadow mode
+        # Default post-#263: enforce mode
         s_default = Settings()
-        assert s_default.policy_enforce is False
+        assert s_default.policy_enforce is True
+
+        # Explicit shadow-mode opt-in still works
+        s_shadow = Settings(policy_enforce=False)
+        assert s_shadow.policy_enforce is False
 
         # Flipped via constructor (equivalent to env var override)
         s_enforced = Settings(policy_enforce=True)

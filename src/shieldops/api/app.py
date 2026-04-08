@@ -777,29 +777,58 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         except Exception as e:
             logger.warning("stripe_billing_service_init_failed", error=str(e))
 
-    # ── Billing enforcement service ──────────────────────────────
+    # ── Plan enforcement service (kept for /billing/usage route) ─
+    # RFC #243 PR-4 (#263): the legacy BillingEnforcementMiddleware is
+    # deleted — rate-limit + quota enforcement now runs through the
+    # RequestPolicyEngine + PolicyMiddleware wired below. PlanEnforcementService
+    # survives because /billing/usage still reads it for dashboard display.
     try:
-        from shieldops.api.middleware.billing_enforcement import (
-            BillingEnforcementMiddleware,
-        )
         from shieldops.billing.enforcement import PlanEnforcementService
 
         enforcement_service = PlanEnforcementService(
             session_factory=session_factory,
         )
-        BillingEnforcementMiddleware.set_enforcement_service(enforcement_service)
-
-        # Also wire into billing routes for /billing/usage endpoint
         try:
             from shieldops.api.routes import billing as billing_routes
 
             billing_routes.set_enforcement_service(enforcement_service)
         except Exception:  # noqa: S110
             pass  # billing routes may not be loaded yet
-
-        logger.info("billing_enforcement_initialized")
+        logger.info("plan_enforcement_service_initialized")
     except Exception as e:
-        logger.warning("billing_enforcement_init_failed", error=str(e))
+        logger.warning("plan_enforcement_service_init_failed", error=str(e))
+
+    # ── Request Policy Engine (RFC #243 PR-4 / #263) ──────────
+    # Replaces the legacy RateLimitMiddleware + BillingEnforcementMiddleware
+    # + SlidingWindowRateLimiter stack with the unified RequestPolicyEngine
+    # that handles rate limit + quota + overrides in one decision. The
+    # default plan is effectively unlimited so legacy deployments keep
+    # working without explicit per-tenant config; operators wire real
+    # per-tenant plans via a DB-backed PlanLoader in a follow-up PR.
+    try:
+        from shieldops.api.policy.composition import (
+            build_in_memory_engine,
+            set_policy_engine,
+        )
+        from shieldops.api.policy.types import Plan
+
+        _default_plan = Plan(
+            tier="legacy-default",
+            rps=1000.0,
+            burst=1000,
+            quotas={},
+        )
+        policy_engine, _ = build_in_memory_engine(default_plan=_default_plan)
+        set_policy_engine(policy_engine)
+        app.state.policy_engine = policy_engine
+        logger.info(
+            "policy_engine_installed",
+            enforce=settings.policy_enforce,
+            default_rps=_default_plan.rps,
+            default_burst=_default_plan.burst,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("policy_engine_install_failed", error=str(exc))
 
     cost_runner = CostRunner(
         connector_router=router,
@@ -14056,17 +14085,16 @@ def create_app() -> FastAPI:
     # Middleware stack (order matters: outermost first)
     from shieldops.api.middleware import (
         APIVersionMiddleware,
-        BillingEnforcementMiddleware,
         ErrorHandlerMiddleware,
         GracefulShutdownMiddleware,
         MetricsMiddleware,
-        RateLimitMiddleware,
         RequestIDMiddleware,
         RequestLoggingMiddleware,
         SecurityHeadersMiddleware,
-        SlidingWindowRateLimiter,
         UsageTrackerMiddleware,
     )
+    from shieldops.api.policy.composition import get_policy_engine
+    from shieldops.api.policy.middleware import PolicyMiddleware
 
     app.add_middleware(ErrorHandlerMiddleware)
     # Phase 13: Idempotency middleware for POST/PUT/PATCH deduplication
@@ -14076,16 +14104,16 @@ def create_app() -> FastAPI:
         app.add_middleware(IdempotencyMiddleware, ttl=settings.idempotency_ttl_seconds)
     except Exception:  # noqa: S110
         pass  # Idempotency middleware is optional
-    app.add_middleware(RateLimitMiddleware)
-    # Sliding window rate limiter (activated after the fixed-window limiter)
-    if settings.sliding_window_rate_limit_enabled:
-        app.add_middleware(SlidingWindowRateLimiter)
-    # BillingEnforcementMiddleware checks plan limits (agent count,
-    # API quota) and returns 402 when exceeded.  Placed after rate
-    # limiting so rate-limited requests are rejected before hitting
-    # billing checks.  The enforcement service is injected at
-    # startup via set_enforcement_service().
-    app.add_middleware(BillingEnforcementMiddleware)
+    # PolicyMiddleware (RFC #243 PR-4 / #263) replaces the legacy
+    # RateLimitMiddleware + SlidingWindowRateLimiter + BillingEnforcementMiddleware
+    # stack with the unified RequestPolicyEngine: one decision per request
+    # covering overrides → quotas → token-bucket rate limiting. Engine
+    # factory resolves lazily so tests can swap via use_test_policy_engine.
+    app.add_middleware(
+        PolicyMiddleware,
+        engine_factory=get_policy_engine,
+        enforce=settings.policy_enforce,
+    )
     # UsageTrackerMiddleware records per-endpoint call counts and
     # latencies.  Placed after auth/tenant so org_id is available
     # on request.state.

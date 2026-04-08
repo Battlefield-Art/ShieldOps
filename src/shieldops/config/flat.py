@@ -147,9 +147,12 @@ class FlatSettings(BaseSettings):
     # Token-bucket middleware (PRD-6 / RFC #241 PR-5)
     rate_limit_capacity: int = 1000
     rate_limit_refill_per_sec: float = 50.0
-    # RFC #243 PR-3: flip PolicyMiddleware from shadow to enforce mode.
-    # Default False — shadow mode is the safe rollout posture.
-    policy_enforce: bool = False
+    # RFC #243 PR-3 added this flag in shadow mode. RFC #243 PR-4 (#263)
+    # installed PolicyMiddleware in the lifespan, deleted the legacy
+    # RateLimitMiddleware + BillingEnforcementMiddleware stack, and
+    # flipped the default to True. Set POLICY_ENFORCE=false to opt back
+    # into shadow mode (log decisions but allow the request through).
+    policy_enforce: bool = True
 
     # ── Billing (Stripe + cloud) ───────────────────────────────────────
     stripe_secret_key: str = ""
