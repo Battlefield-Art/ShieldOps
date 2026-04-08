@@ -148,10 +148,21 @@ def parse_runner(path: Path) -> tuple[RunnerSpec | None, str]:
         return None, "no_runner_class"
 
     run_method: str | None = None
+    # Prefer 'run' or 'execute' if present; otherwise fall back to the first
+    # public async method on the Runner class. Many ShieldOps runners use a
+    # domain verb (certify, remediate, investigate, run_campaign) as the sole
+    # public async entry — RFC #247 PR-5 batch 2+ treats any such method as
+    # the spec's entry method.
+    preferred: str | None = None
+    fallback: str | None = None
     for item in runner_cls.body:
-        if isinstance(item, ast.AsyncFunctionDef) and item.name in {"run", "execute"}:
-            run_method = item.name
-            break
+        if isinstance(item, ast.AsyncFunctionDef):
+            if item.name in {"run", "execute"}:
+                preferred = item.name
+                break
+            if fallback is None and not item.name.startswith("_"):
+                fallback = item.name
+    run_method = preferred or fallback
     if run_method is None:
         return None, "no_async_run_or_execute"
 
@@ -206,6 +217,33 @@ def parse_graph(path: Path) -> tuple[GraphSpec | None, str]:
     # Track variables pointing at a StateGraph(...) instance (usually 'graph').
     graph_vars: set[str] = set()
 
+    # Many hand-rolled graph.py files define inner async wrappers inside
+    # ``build_graph`` that delegate to an imported node fn, e.g.:
+    #     async def _baseline(state):
+    #         return await compute_baseline(_to_dict(state), toolkit)
+    #     graph.add_node("baseline", _baseline)
+    # We want the emitter to import ``compute_baseline`` (the real public
+    # function), not ``_baseline`` (a module-private closure). Walk inner
+    # function bodies, find the first Await that resolves to a Name, and
+    # build a map wrapper_name -> underlying_fn_name.
+    inner_fn_map: dict[str, str] = {}
+    for inner in ast.walk(tree):
+        if isinstance(inner, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            for sub in ast.walk(inner):
+                if isinstance(sub, ast.Await) and isinstance(sub.value, ast.Call):
+                    call = sub.value
+                    if isinstance(call.func, ast.Name):
+                        inner_fn_map[inner.name] = call.func.id
+                        break
+                    if isinstance(call.func, ast.Attribute):
+                        inner_fn_map[inner.name] = call.func.attr
+                        break
+                # Plain return of a non-awaited call also counts (sync node fn)
+                if isinstance(sub, ast.Return) and isinstance(sub.value, ast.Call):
+                    call = sub.value
+                    if isinstance(call.func, ast.Name):
+                        inner_fn_map.setdefault(inner.name, call.func.id)
+
     for node in ast.walk(tree):
         # StateGraph(SomeState) — capture state_model
         if (
@@ -254,10 +292,61 @@ def parse_graph(path: Path) -> tuple[GraphSpec | None, str]:
                     pred_name = pred.id if isinstance(pred, ast.Name) else "<callable>"
                     spec.conditional_edges.append((a.value, pred_name))
 
+    # Fallback: recognise ``build_linear_graph(StateModel, [(name, fn), ...],
+    # toolkit=...)`` — the helper many agents migrated to in RFC #246.
+    # Treat it as a linear chain with entry at the first node.
+    if not spec.node_names:
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "build_linear_graph"
+                and len(node.args) >= 2
+            ):
+                state_arg = node.args[0]
+                list_arg = node.args[1]
+                if isinstance(state_arg, ast.Name) and spec.state_model is None:
+                    spec.state_model = state_arg.id
+                if isinstance(list_arg, ast.List):
+                    for elt in list_arg.elts:
+                        if isinstance(elt, ast.Tuple) and len(elt.elts) == 2:
+                            nm, fn = elt.elts
+                            if isinstance(nm, ast.Constant) and isinstance(nm.value, str):
+                                node_name = nm.value
+                                spec.node_names.append(node_name)
+                                fn_name = _extract_fn_name(fn)
+                                if fn_name is not None:
+                                    spec.node_fn_refs[node_name] = fn_name
+                if spec.node_names:
+                    # Build sequential edges end -> next
+                    for a, b in zip(spec.node_names, spec.node_names[1:], strict=False):
+                        spec.edges.append((a, b))
+                    spec.edges.append((spec.node_names[-1], "__END__"))
+                    if spec.entry_point is None:
+                        spec.entry_point = spec.node_names[0]
+                    break
+
     if not spec.node_names:
         return None, "no_nodes_found_in_graph"
     if spec.entry_point is None:
         return None, "no_entry_point"
+
+    # Collect names imported from .nodes so we can filter out private inner
+    # wrappers that aren't exported.
+    nodes_imports: set[str] = set()
+    for top in tree.body:
+        if isinstance(top, ast.ImportFrom) and (top.module or "").endswith("nodes"):
+            for alias in top.names:
+                nodes_imports.add(alias.asname or alias.name)
+
+    # Resolve inner-wrapper references to their underlying imported function.
+    for node_name, fn_ref in list(spec.node_fn_refs.items()):
+        if fn_ref in inner_fn_map:
+            resolved = inner_fn_map[fn_ref]
+            # Only swap if the resolved name is actually imported from nodes
+            # (avoids swapping to a helper like ``_to_dict``).
+            if not nodes_imports or resolved in nodes_imports:
+                spec.node_fn_refs[node_name] = resolved
 
     return spec, ""
 
@@ -317,10 +406,9 @@ def render_agent_py(extract: AgentExtract) -> str:
         target = "END" if tgt == "__END__" else f'"{tgt}"'
         edges_lines.append(f'        edge("{src}", {target}),')
     for src, pred in graph.conditional_edges:
-        edges_lines.append(
-            f'        # TODO: conditional edge from "{src}" routed by {pred}() — '
-            "wrap with cond(...)"
-        )
+        # Split the TODO across two lines to stay under the 100-col limit.
+        edges_lines.append(f'        # TODO: conditional edge from "{src}"')
+        edges_lines.append(f"        #   routed by {pred}() — wrap with cond(...)")
     if not edges_lines:
         edges_lines.append("        # TODO: no edges extracted")
     edges_block = "\n".join(edges_lines)
@@ -431,19 +519,40 @@ def main(argv: list[str] | None = None) -> int:
         default=DEFAULT_AGENTS,
         help="Path to the agents/ directory (default: src/shieldops/agents/)",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Max number of agents to migrate in this run (for batching).",
+    )
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help="Agent directory names to skip (repeatable).",
+    )
     args = parser.parse_args(argv)
+    exclude: set[str] = set(args.exclude or [])
 
     counts = {"migrated": 0, "skipped_already_migrated": 0, "skipped_shape": 0}
     samples: dict[str, list[str]] = {k: [] for k in counts}
     skip_reasons: dict[str, int] = {}
 
     agent_dirs = sorted(p for p in args.root.iterdir() if p.is_dir() and not p.name.startswith("_"))
+    migrated_written = 0
     for agent_dir in agent_dirs:
         # Only process agents that look like individual agents
         # (skip runtime/, tracing/, etc. that are support packages).
         if not ((agent_dir / "runner.py").exists() or (agent_dir / "graph.py").exists()):
             continue
-        bucket, detail = process_agent(agent_dir, apply=args.apply)
+        if agent_dir.name in exclude:
+            continue
+        # Decide what would happen without writing first.
+        limit_hit = args.limit is not None and migrated_written >= args.limit
+        should_write = args.apply and not limit_hit
+        bucket, detail = process_agent(agent_dir, apply=should_write)
+        if bucket == "migrated" and should_write:
+            migrated_written += 1
         counts[bucket] += 1
         if bucket == "skipped_shape":
             skip_reasons[detail] = skip_reasons.get(detail, 0) + 1
