@@ -314,3 +314,45 @@ ae571462 feat(policy): land RequestPolicyEngine + 5 ports + burst-refill contrac
 running in single-digit milliseconds each. Zero mocks. The test idiom
 is proven; the next session can apply it to the PR-2 migrations with
 confidence.
+
+## Lint gates
+
+The ports-and-adapters layering is enforced structurally — but enforced
+code won't stay enforced without a ratchet. Four local pre-commit
+scripts under ``scripts/lint/`` catch regressions before they land:
+
+| ID | RFC | What it catches | Scope |
+|----|-----|-----------------|-------|
+| **SHOP-001** | #244 | Agent runners without `@enforced(...)` — the licensing bypass that lets an agent silently exceed `agent_limit` | Touched `agents/*/runner.py` files |
+| **SHOP-003** | #247 | `AgentRuntime` core importing from `shieldops.sdk` — recollapses the domain/adapter split | Touched `agents/runtime/**.py` files |
+| **SHOP-004** | #247 | New `set_toolkit(...)` calls in `agents/` — the global-mutation pattern the RFC eliminated | Touched `agents/**.py` files |
+
+(SHOP-002 is reserved for RFC #244 PR-5's CI-only full-repo sweep.)
+
+**Why grep + AST and not a ruff plugin?** Ruff has no public
+custom-rule plugin API. Until it does, local pre-commit scripts are
+the idiom — they see the same staged files ruff does and exit non-zero
+on violation, which is all the gate needs.
+
+**Scoped, not full-repo.** SHOP-001 and SHOP-004 both pass
+`--files` from pre-commit (`pass_filenames: true`), so a touched file
+with a pre-existing violation still blocks the commit but unrelated
+work proceeds. Each has a `--all` mode that CI will turn on once the
+corresponding PR-5 codemod clears the backlog:
+
+- **SHOP-001 → full-repo** after RFC #244 PR-5 (#268) lands.
+- **SHOP-004 → full-repo** after RFC #247 PR-5 (#285) lands.
+
+**If a gate fires on your commit:**
+
+- **SHOP-001**: add `@enforced("your-agent-name")` to the runner's
+  `async def run/execute` method. See `shieldops.licensing.enforce`.
+- **SHOP-003**: move the SDK-shaped type behind a new Port in
+  `runtime/ports.py`; wire the SDK adapter at the composition root.
+- **SHOP-004**: delete the `set_toolkit(...)` line and declare the
+  toolkit on the Agent spec's `tools=` argument instead. Tests should
+  use `use_test_toolkit(...)` (a context manager) rather than
+  mutating a module global.
+
+The scripts are small enough to read in 60 seconds — prefer reading
+them over fighting them.

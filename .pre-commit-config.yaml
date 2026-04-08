@@ -52,3 +52,30 @@ repos:
         language: system
         files: ^src/shieldops/agents/.*/runner\.py$
         pass_filenames: true
+
+  # SHOP-003 — RFC #247 AgentRuntime port purity.
+  # The runtime/ subpackage is the domain/ports side of the ports-and-adapters
+  # split. It must stay dependency-free of shieldops.sdk, which is an outer-ring
+  # adapter. A regression here silently re-collapses the layering the RFC fixed.
+  - repo: local
+    hooks:
+      - id: shop-003-runtime-port-purity
+        name: SHOP-003 — AgentRuntime core must not import shieldops.sdk (RFC #247)
+        entry: python3 scripts/lint/shop_003_runtime_port_purity.py --files
+        language: system
+        files: ^src/shieldops/agents/runtime/.*\.py$
+        pass_filenames: true
+
+  # SHOP-004 — RFC #247 no set_toolkit regression.
+  # set_toolkit is the deprecated global-mutation pattern RFC #247 set out to
+  # eliminate. Scoped to files touched by the current commit so the backlog
+  # (#285 PR-5) doesn't block unrelated work; after PR-5 lands, flip this to
+  # --all and make it full-repo mandatory.
+  - repo: local
+    hooks:
+      - id: shop-004-no-set-toolkit
+        name: SHOP-004 — no new set_toolkit in agents/ (RFC #247)
+        entry: python3 scripts/lint/shop_004_no_set_toolkit.py --files
+        language: system
+        files: ^src/shieldops/agents/.*\.py$
+        pass_filenames: true
