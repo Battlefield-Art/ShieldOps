@@ -20,7 +20,7 @@ abstractions and ships the codemod for the 389 hand-rolled runners.
 
 from __future__ import annotations
 
-from shieldops.agents.runtime.agent import Agent, Edge, NodeFn, node
+from shieldops.agents.runtime.agent import Agent, Edge, NodeFn, edge, node
 from shieldops.agents.runtime.composition import (
     build_in_memory_runtime,
     get_agent_runtime,
@@ -59,6 +59,7 @@ __all__ = [
     "RunRecord",
     "WSHubPort",
     "build_in_memory_runtime",
+    "edge",
     "get_agent_runtime",
     "node",
     "set_agent_runtime",
