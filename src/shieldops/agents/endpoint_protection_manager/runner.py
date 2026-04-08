@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import EndpointProtectionManagerToolkit
 
@@ -31,6 +33,7 @@ class EndpointProtectionManagerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("epm_runner.init")
 
+    @enforced("endpoint_protection_manager")
     async def execute(
         self,
         tenant_id: str = "default",

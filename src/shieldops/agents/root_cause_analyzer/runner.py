@@ -19,6 +19,7 @@ from shieldops.agents.root_cause_analyzer.nodes import (
 from shieldops.agents.root_cause_analyzer.tools import (
     RootCauseAnalyzerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class RootCauseAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, RootCauseAnalyzerState] = {}
 
+    @enforced("root_cause_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

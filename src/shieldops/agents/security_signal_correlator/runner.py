@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecuritySignalCorrelatorToolkit
 
@@ -31,6 +33,7 @@ class SecuritySignalCorrelatorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("ssc_runner.init")
 
+    @enforced("security_signal_correlator")
     async def execute(
         self,
         tenant_id: str = "default",

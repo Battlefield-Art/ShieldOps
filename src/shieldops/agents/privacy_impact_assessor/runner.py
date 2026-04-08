@@ -13,6 +13,7 @@ from shieldops.agents.privacy_impact_assessor.graph import (
 from shieldops.agents.privacy_impact_assessor.models import PrivacyImpactAssessorState
 from shieldops.agents.privacy_impact_assessor.nodes import set_toolkit
 from shieldops.agents.privacy_impact_assessor.tools import PrivacyImpactAssessorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class PrivacyImpactAssessorRunner:
         self._app = graph.compile()
         self._results: dict[str, PrivacyImpactAssessorState] = {}
 
+    @enforced("privacy_impact_assessor")
     async def execute(
         self,
         tenant_id: str = "default",

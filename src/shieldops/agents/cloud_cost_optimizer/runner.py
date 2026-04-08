@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import CloudCostOptimizerToolkit
 
@@ -31,6 +33,7 @@ class CloudCostOptimizerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("cco_runner.init")
 
+    @enforced("cloud_cost_optimizer")
     async def execute(
         self,
         tenant_id: str = "default",

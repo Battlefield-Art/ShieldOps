@@ -13,6 +13,7 @@ from shieldops.agents.incident_prediction_engine.graph import (
 from shieldops.agents.incident_prediction_engine.models import IncidentPredictionEngineState
 from shieldops.agents.incident_prediction_engine.nodes import set_toolkit
 from shieldops.agents.incident_prediction_engine.tools import IncidentPredictionEngineToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class IncidentPredictionEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, IncidentPredictionEngineState] = {}
 
+    @enforced("incident_prediction_engine")
     async def execute(
         self,
         tenant_id: str = "default",

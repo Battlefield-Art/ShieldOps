@@ -19,6 +19,7 @@ from shieldops.agents.quantum_risk_assessor.nodes import (
 from shieldops.agents.quantum_risk_assessor.tools import (
     QuantumRiskAssessorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -39,6 +40,7 @@ class QuantumRiskAssessorRunner:
         self._results: dict[str, QuantumRiskAssessorState] = {}
         logger.info("quantum_risk_assessor_runner.initialized")
 
+    @enforced("quantum_risk_assessor")
     async def execute(
         self,
         tenant_id: str,

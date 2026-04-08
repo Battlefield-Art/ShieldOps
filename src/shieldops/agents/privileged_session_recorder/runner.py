@@ -13,6 +13,7 @@ from shieldops.agents.privileged_session_recorder.graph import (
 from shieldops.agents.privileged_session_recorder.models import PrivilegedSessionRecorderState
 from shieldops.agents.privileged_session_recorder.nodes import set_toolkit
 from shieldops.agents.privileged_session_recorder.tools import PrivilegedSessionRecorderToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class PrivilegedSessionRecorderRunner:
         self._app = graph.compile()
         self._results: dict[str, PrivilegedSessionRecorderState] = {}
 
+    @enforced("privileged_session_recorder")
     async def execute(
         self,
         tenant_id: str = "default",

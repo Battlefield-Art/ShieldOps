@@ -13,6 +13,7 @@ from shieldops.agents.artifact_integrity_checker.graph import (
 from shieldops.agents.artifact_integrity_checker.models import ArtifactIntegrityCheckerState
 from shieldops.agents.artifact_integrity_checker.nodes import set_toolkit
 from shieldops.agents.artifact_integrity_checker.tools import ArtifactIntegrityCheckerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ArtifactIntegrityCheckerRunner:
         self._app = graph.compile()
         self._results: dict[str, ArtifactIntegrityCheckerState] = {}
 
+    @enforced("artifact_integrity_checker")
     async def execute(
         self,
         tenant_id: str = "default",

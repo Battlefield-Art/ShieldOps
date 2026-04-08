@@ -7,6 +7,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import (
     create_infrastructure_drift_detector_graph,
 )
@@ -31,6 +33,7 @@ class InfrastructureDriftDetectorRunner:
         self._results: list[dict[str, Any]] = []
         logger.info("idd_runner.init")
 
+    @enforced("infrastructure_drift_detector")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -7,6 +7,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_multi_cloud_orchestrator_graph
 from .nodes import set_toolkit
 from .tools import MultiCloudOrchestratorToolkit
@@ -29,6 +31,7 @@ class MultiCloudOrchestratorRunner:
         self._results: list[dict[str, Any]] = []
         logger.info("mco_runner.init")
 
+    @enforced("multi_cloud_orchestrator")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -13,6 +13,7 @@ from shieldops.agents.sbom_analyzer.graph import (
 from shieldops.agents.sbom_analyzer.models import SbomAnalyzerState
 from shieldops.agents.sbom_analyzer.nodes import set_toolkit
 from shieldops.agents.sbom_analyzer.tools import SbomAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class SbomAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, SbomAnalyzerState] = {}
 
+    @enforced("sbom_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

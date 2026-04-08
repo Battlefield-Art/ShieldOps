@@ -13,6 +13,7 @@ from shieldops.agents.alert_enrichment_engine.graph import (
 from shieldops.agents.alert_enrichment_engine.models import AlertEnrichmentEngineState
 from shieldops.agents.alert_enrichment_engine.nodes import set_toolkit
 from shieldops.agents.alert_enrichment_engine.tools import AlertEnrichmentEngineToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class AlertEnrichmentEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, AlertEnrichmentEngineState] = {}
 
+    @enforced("alert_enrichment_engine")
     async def execute(
         self,
         tenant_id: str = "default",

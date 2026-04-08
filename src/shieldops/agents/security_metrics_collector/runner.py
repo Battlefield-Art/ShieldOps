@@ -13,6 +13,7 @@ from shieldops.agents.security_metrics_collector.graph import (
 from shieldops.agents.security_metrics_collector.models import SecurityMetricsCollectorState
 from shieldops.agents.security_metrics_collector.nodes import set_toolkit
 from shieldops.agents.security_metrics_collector.tools import SecurityMetricsCollectorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class SecurityMetricsCollectorRunner:
         self._app = graph.compile()
         self._results: dict[str, SecurityMetricsCollectorState] = {}
 
+    @enforced("security_metrics_collector")
     async def execute(
         self,
         tenant_id: str = "default",

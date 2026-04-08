@@ -19,6 +19,7 @@ from shieldops.agents.ioc_lifecycle.nodes import (
 from shieldops.agents.ioc_lifecycle.tools import (
     IOCLifecycleToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -41,6 +42,7 @@ class IOCLifecycleRunner:
         self._results: dict[str, IOCLifecycleState] = {}
         logger.info("ioc_lifecycle_runner.initialized")
 
+    @enforced("ioc_lifecycle")
     async def execute(
         self,
         tenant_id: str,

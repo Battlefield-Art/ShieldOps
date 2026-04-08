@@ -19,6 +19,7 @@ from shieldops.agents.performance_baseline_engine.nodes import (
 from shieldops.agents.performance_baseline_engine.tools import (
     PerformanceBaselineEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class PerformanceBaselineEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, PerformanceBaselineEngineState] = {}
 
+    @enforced("performance_baseline_engine")
     async def execute(
         self,
         tenant_id: str = "default",

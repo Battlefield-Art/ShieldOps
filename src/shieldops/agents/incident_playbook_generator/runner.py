@@ -17,6 +17,7 @@ from shieldops.agents.incident_playbook_generator.nodes import set_toolkit
 from shieldops.agents.incident_playbook_generator.tools import (
     IncidentPlaybookGeneratorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -31,6 +32,7 @@ class IncidentPlaybookGeneratorRunner:
         self._app = graph.compile()
         self._results: dict[str, IncidentPlaybookGeneratorState] = {}
 
+    @enforced("incident_playbook_generator")
     async def execute(
         self,
         tenant_id: str = "default",

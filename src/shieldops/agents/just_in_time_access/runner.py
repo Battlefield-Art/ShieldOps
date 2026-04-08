@@ -13,6 +13,7 @@ from shieldops.agents.just_in_time_access.graph import (
 from shieldops.agents.just_in_time_access.models import JustInTimeAccessState
 from shieldops.agents.just_in_time_access.nodes import set_toolkit
 from shieldops.agents.just_in_time_access.tools import JustInTimeAccessToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class JustInTimeAccessRunner:
         self._app = graph.compile()
         self._results: dict[str, JustInTimeAccessState] = {}
 
+    @enforced("just_in_time_access")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -13,6 +13,7 @@ from shieldops.agents.ci_cd_security_auditor.graph import (
 from shieldops.agents.ci_cd_security_auditor.models import CiCdSecurityAuditorState
 from shieldops.agents.ci_cd_security_auditor.nodes import set_toolkit
 from shieldops.agents.ci_cd_security_auditor.tools import CiCdSecurityAuditorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class CiCdSecurityAuditorRunner:
         self._app = graph.compile()
         self._results: dict[str, CiCdSecurityAuditorState] = {}
 
+    @enforced("ci_cd_security_auditor")
     async def execute(
         self,
         tenant_id: str = "default",

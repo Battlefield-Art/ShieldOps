@@ -19,6 +19,7 @@ from shieldops.agents.post_incident_analyzer.nodes import (
 from shieldops.agents.post_incident_analyzer.tools import (
     PostIncidentAnalyzerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -43,6 +44,7 @@ class PostIncidentAnalyzerRunner:
         self._results: dict[str, PostIncidentAnalyzerState] = {}
         logger.info("post_incident_analyzer_runner.initialized")
 
+    @enforced("post_incident_analyzer")
     async def execute(
         self,
         tenant_id: str,

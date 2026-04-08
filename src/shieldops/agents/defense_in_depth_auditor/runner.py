@@ -13,6 +13,7 @@ from shieldops.agents.defense_in_depth_auditor.graph import (
 from shieldops.agents.defense_in_depth_auditor.models import DefenseInDepthAuditorState
 from shieldops.agents.defense_in_depth_auditor.nodes import set_toolkit
 from shieldops.agents.defense_in_depth_auditor.tools import DefenseInDepthAuditorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class DefenseInDepthAuditorRunner:
         self._app = graph.compile()
         self._results: dict[str, DefenseInDepthAuditorState] = {}
 
+    @enforced("defense_in_depth_auditor")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import AlertFatigueReducerToolkit
 
@@ -31,6 +33,7 @@ class AlertFatigueReducerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("afr_runner.init")
 
+    @enforced("alert_fatigue_reducer")
     async def execute(
         self,
         tenant_id: str = "default",

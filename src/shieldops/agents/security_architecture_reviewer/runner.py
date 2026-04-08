@@ -15,6 +15,7 @@ from shieldops.agents.security_architecture_reviewer.nodes import set_toolkit
 from shieldops.agents.security_architecture_reviewer.tools import (
     SecurityArchitectureReviewerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -29,6 +30,7 @@ class SecurityArchitectureReviewerRunner:
         self._app = graph.compile()
         self._results: dict[str, SecurityArchitectureReviewerState] = {}
 
+    @enforced("security_architecture_reviewer")
     async def execute(
         self,
         tenant_id: str = "default",

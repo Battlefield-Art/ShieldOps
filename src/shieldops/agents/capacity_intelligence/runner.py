@@ -19,6 +19,7 @@ from shieldops.agents.capacity_intelligence.nodes import (
 from shieldops.agents.capacity_intelligence.tools import (
     CapacityIntelligenceToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class CapacityIntelligenceRunner:
         self._app = graph.compile()
         self._results: dict[str, CapacityIntelligenceState] = {}
 
+    @enforced("capacity_intelligence")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityDataMeshToolkit
 
@@ -31,6 +33,7 @@ class SecurityDataMeshRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("sdm_runner.init")
 
+    @enforced("security_data_mesh")
     async def execute(
         self,
         tenant_id: str = "default",

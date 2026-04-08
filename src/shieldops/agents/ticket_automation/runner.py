@@ -13,6 +13,7 @@ from shieldops.agents.ticket_automation.graph import (
 from shieldops.agents.ticket_automation.models import TicketAutomationState
 from shieldops.agents.ticket_automation.nodes import set_toolkit
 from shieldops.agents.ticket_automation.tools import TicketAutomationToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class TicketAutomationRunner:
         self._app = graph.compile()
         self._results: dict[str, TicketAutomationState] = {}
 
+    @enforced("ticket_automation")
     async def execute(
         self,
         tenant_id: str = "default",

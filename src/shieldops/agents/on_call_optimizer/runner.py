@@ -7,6 +7,8 @@ from uuid import uuid4
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import OnCallOptimizerToolkit
@@ -32,6 +34,7 @@ class OnCallOptimizerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("oco_runner.init")
 
+    @enforced("on_call_optimizer")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -23,6 +23,7 @@ from shieldops.agents.security_awareness.nodes import (
 from shieldops.agents.security_awareness.tools import (
     SecurityAwarenessToolkit,
 )
+from shieldops.licensing.enforce import enforced
 from shieldops.observability.tracing import get_tracer
 
 logger = structlog.get_logger()
@@ -53,6 +54,7 @@ class SecurityAwarenessRunner:
 
         self._assessments: dict[str, SecurityAwarenessState] = {}
 
+    @enforced("security_awareness")
     async def execute(
         self,
         tenant_id: str,

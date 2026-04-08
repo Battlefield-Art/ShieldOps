@@ -13,6 +13,7 @@ from shieldops.agents.security_control_mapper.graph import (
 from shieldops.agents.security_control_mapper.models import SecurityControlMapperState
 from shieldops.agents.security_control_mapper.nodes import set_toolkit
 from shieldops.agents.security_control_mapper.tools import SecurityControlMapperToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class SecurityControlMapperRunner:
         self._app = graph.compile()
         self._results: dict[str, SecurityControlMapperState] = {}
 
+    @enforced("security_control_mapper")
     async def execute(
         self,
         tenant_id: str = "default",

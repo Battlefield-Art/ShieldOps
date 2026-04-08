@@ -13,6 +13,7 @@ from shieldops.agents.data_lineage_tracker.graph import (
 from shieldops.agents.data_lineage_tracker.models import DataLineageTrackerState
 from shieldops.agents.data_lineage_tracker.nodes import set_toolkit
 from shieldops.agents.data_lineage_tracker.tools import DataLineageTrackerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class DataLineageTrackerRunner:
         self._app = graph.compile()
         self._results: dict[str, DataLineageTrackerState] = {}
 
+    @enforced("data_lineage_tracker")
     async def execute(
         self,
         tenant_id: str = "default",

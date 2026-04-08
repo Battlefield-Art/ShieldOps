@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityPostureScorerToolkit
 
@@ -31,6 +33,7 @@ class SecurityPostureScorerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("sps_runner.init")
 
+    @enforced("security_posture_scorer")
     async def execute(
         self,
         tenant_id: str = "default",

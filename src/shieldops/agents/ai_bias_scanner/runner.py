@@ -11,6 +11,7 @@ from shieldops.agents.ai_bias_scanner.graph import create_ai_bias_scanner_graph
 from shieldops.agents.ai_bias_scanner.models import AIBiasScannerState
 from shieldops.agents.ai_bias_scanner.nodes import set_toolkit
 from shieldops.agents.ai_bias_scanner.tools import AIBiasScannerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class AIBiasScannerRunner:
         self._app = graph.compile()
         self._results: dict[str, AIBiasScannerState] = {}
 
+    @enforced("ai_bias_scanner")
     async def execute(
         self,
         tenant_id: str = "default",

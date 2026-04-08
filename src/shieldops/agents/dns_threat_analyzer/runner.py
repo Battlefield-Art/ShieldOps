@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import DNSThreatAnalyzerToolkit
 
@@ -31,6 +33,7 @@ class DNSThreatAnalyzerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("dta_runner.init")
 
+    @enforced("dns_threat_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

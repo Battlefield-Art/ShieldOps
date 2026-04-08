@@ -13,6 +13,7 @@ from shieldops.agents.open_source_license_scanner.graph import (
 from shieldops.agents.open_source_license_scanner.models import OpenSourceLicenseScannerState
 from shieldops.agents.open_source_license_scanner.nodes import set_toolkit
 from shieldops.agents.open_source_license_scanner.tools import OpenSourceLicenseScannerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class OpenSourceLicenseScannerRunner:
         self._app = graph.compile()
         self._results: dict[str, OpenSourceLicenseScannerState] = {}
 
+    @enforced("open_source_license_scanner")
     async def execute(
         self,
         tenant_id: str = "default",

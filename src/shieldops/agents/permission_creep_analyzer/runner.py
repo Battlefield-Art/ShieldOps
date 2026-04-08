@@ -13,6 +13,7 @@ from shieldops.agents.permission_creep_analyzer.graph import (
 from shieldops.agents.permission_creep_analyzer.models import PermissionCreepAnalyzerState
 from shieldops.agents.permission_creep_analyzer.nodes import set_toolkit
 from shieldops.agents.permission_creep_analyzer.tools import PermissionCreepAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class PermissionCreepAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, PermissionCreepAnalyzerState] = {}
 
+    @enforced("permission_creep_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

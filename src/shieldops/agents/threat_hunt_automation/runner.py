@@ -16,6 +16,7 @@ from shieldops.agents.threat_hunt_automation.nodes import (
 from shieldops.agents.threat_hunt_automation.tools import (
     ThreatHuntAutomationToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -35,6 +36,7 @@ class ThreatHuntAutomationRunner:
         self._app = graph.compile()
         self._results: dict[str, Any] = {}
 
+    @enforced("threat_hunt_automation")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import APITokenRotatorToolkit
 
@@ -31,6 +33,7 @@ class APITokenRotatorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("atr_runner.init")
 
+    @enforced("api_token_rotator")
     async def execute(
         self,
         tenant_id: str = "default",

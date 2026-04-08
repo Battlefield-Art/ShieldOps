@@ -19,6 +19,7 @@ from shieldops.agents.session_manager.nodes import (
 from shieldops.agents.session_manager.tools import (
     SessionManagerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class SessionManagerRunner:
         self._app = graph.compile()
         self._results: dict[str, SessionManagerState] = {}
 
+    @enforced("session_manager")
     async def execute(self, tenant_id: str = "default") -> SessionManagerState:
         rid = f"sm-{uuid4().hex[:12]}"
         initial = SessionManagerState(request_id=rid, tenant_id=tenant_id)

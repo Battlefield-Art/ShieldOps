@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import CloudBillingProtectorToolkit
 
@@ -31,6 +33,7 @@ class CloudBillingProtectorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("cbp_runner.init")
 
+    @enforced("cloud_billing_protector")
     async def execute(
         self,
         tenant_id: str = "default",

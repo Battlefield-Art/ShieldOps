@@ -13,6 +13,7 @@ from shieldops.agents.playbook_optimizer.graph import (
 from shieldops.agents.playbook_optimizer.models import PlaybookOptimizerState
 from shieldops.agents.playbook_optimizer.nodes import set_toolkit
 from shieldops.agents.playbook_optimizer.tools import PlaybookOptimizerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class PlaybookOptimizerRunner:
         self._app = graph.compile()
         self._results: dict[str, PlaybookOptimizerState] = {}
 
+    @enforced("playbook_optimizer")
     async def execute(
         self,
         tenant_id: str = "default",

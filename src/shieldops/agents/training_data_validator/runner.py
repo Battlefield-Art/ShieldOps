@@ -11,6 +11,7 @@ from shieldops.agents.training_data_validator.graph import create_training_data_
 from shieldops.agents.training_data_validator.models import TrainingDataValidatorState
 from shieldops.agents.training_data_validator.nodes import set_toolkit
 from shieldops.agents.training_data_validator.tools import TrainingDataValidatorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class TrainingDataValidatorRunner:
         self._app = graph.compile()
         self._results: dict[str, TrainingDataValidatorState] = {}
 
+    @enforced("training_data_validator")
     async def execute(
         self,
         tenant_id: str = "default",

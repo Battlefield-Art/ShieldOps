@@ -17,6 +17,7 @@ from shieldops.agents.incident_communicator.nodes import set_toolkit
 from shieldops.agents.incident_communicator.tools import (
     IncidentCommunicatorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -39,6 +40,7 @@ class IncidentCommunicatorRunner:
         self._results: dict[str, IncidentCommunicatorState] = {}
         logger.info("incident_communicator_runner.initialized")
 
+    @enforced("incident_communicator")
     async def execute(
         self,
         tenant_id: str,

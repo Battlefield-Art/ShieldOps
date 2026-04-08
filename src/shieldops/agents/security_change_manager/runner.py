@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityChangeManagerToolkit
 
@@ -31,6 +33,7 @@ class SecurityChangeManagerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("scm_runner.init")
 
+    @enforced("security_change_manager")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -13,6 +13,7 @@ from shieldops.agents.kill_chain_analyzer.graph import (
 from shieldops.agents.kill_chain_analyzer.models import KillChainAnalyzerState
 from shieldops.agents.kill_chain_analyzer.nodes import set_toolkit
 from shieldops.agents.kill_chain_analyzer.tools import KillChainAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class KillChainAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, KillChainAnalyzerState] = {}
 
+    @enforced("kill_chain_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

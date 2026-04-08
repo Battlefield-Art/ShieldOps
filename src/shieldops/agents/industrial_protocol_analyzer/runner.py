@@ -13,6 +13,7 @@ from shieldops.agents.industrial_protocol_analyzer.graph import (
 from shieldops.agents.industrial_protocol_analyzer.models import IndustrialProtocolAnalyzerState
 from shieldops.agents.industrial_protocol_analyzer.nodes import set_toolkit
 from shieldops.agents.industrial_protocol_analyzer.tools import IndustrialProtocolAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class IndustrialProtocolAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, IndustrialProtocolAnalyzerState] = {}
 
+    @enforced("industrial_protocol_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

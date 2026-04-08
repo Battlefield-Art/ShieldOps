@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import AuditTrailAnalyzerToolkit
@@ -34,6 +36,7 @@ class AuditTrailAnalyzerRunner:
         self._app = self._graph.compile()
         logger.info("ata_runner.init")
 
+    @enforced("audit_trail_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

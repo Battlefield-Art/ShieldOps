@@ -9,6 +9,7 @@ from shieldops.agents.auto_remediation.graph import create_auto_remediation_grap
 from shieldops.agents.auto_remediation.models import AutoRemediationState
 from shieldops.agents.auto_remediation.nodes import set_toolkit
 from shieldops.agents.auto_remediation.tools import AutoRemediationToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -29,6 +30,7 @@ class AutoRemediationRunner:
         self._results: dict[str, AutoRemediationState] = {}
         logger.info("auto_remediation_runner.initialized")
 
+    @enforced("auto_remediation")
     async def execute(
         self,
         execute_id: str,

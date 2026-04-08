@@ -13,6 +13,7 @@ from shieldops.agents.adversary_emulator.graph import (
 from shieldops.agents.adversary_emulator.models import AdversaryEmulatorState
 from shieldops.agents.adversary_emulator.nodes import set_toolkit
 from shieldops.agents.adversary_emulator.tools import AdversaryEmulatorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class AdversaryEmulatorRunner:
         self._app = graph.compile()
         self._results: dict[str, AdversaryEmulatorState] = {}
 
+    @enforced("adversary_emulator")
     async def execute(
         self,
         tenant_id: str = "default",

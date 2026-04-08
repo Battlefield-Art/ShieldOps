@@ -19,6 +19,7 @@ from shieldops.agents.governance_dashboard.nodes import (
 from shieldops.agents.governance_dashboard.tools import (
     GovernanceDashboardToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -43,6 +44,7 @@ class GovernanceDashboardRunner:
             "governance_dashboard_runner.initialized",
         )
 
+    @enforced("governance_dashboard")
     async def execute(
         self,
         tenant_id: str,

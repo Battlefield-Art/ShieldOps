@@ -1,33 +1,41 @@
 """Codemod: apply ``@enforced("<agent_name>")`` to every agent runner's
-``async def run`` method — RFC #244 PR-3 adoption surface fix.
+async entry-point method — RFC #244 PR-3/PR-5 adoption surface fix.
 
-Agents whose runner class has an ``async def run(self, ...)`` method get:
+Agents whose runner class has an ``async def run(...)`` or ``async def
+execute(...)`` method get:
 
 1. An import of ``enforced`` from ``shieldops.licensing.enforce`` added
-   right above the class declaration (if not already present).
-2. A ``@enforced("<agent_name>")`` decorator prepended to ``async def run``
-   (where ``<agent_name>`` is the directory name of the runner file —
-   e.g. ``session_manager/runner.py`` → ``"session_manager"``).
+   right after the last top-level import (if not already present).
+2. A ``@enforced("<agent_name>")`` decorator prepended to the entry-point
+   method (where ``<agent_name>`` is the directory name of the runner
+   file — e.g. ``session_manager/runner.py`` → ``"session_manager"``).
+
+**Shapes supported (PR-5):**
+
+- ``async def run(self, ...)``              — single-line signature
+- ``async def run(\\n    self, ...)``        — multi-line signature
+- ``async def execute(self, ...)``          — single-line signature
+- ``async def execute(\\n    self, ...)``    — multi-line signature
 
 **Idempotency** — the codemod is safe to run twice. It skips:
 
-- files that already import ``enforced``
-- ``run`` methods that already have an ``@enforced(`` line directly above
+- files that already import ``enforced`` (import dedup via string check)
+- methods that already have an ``@enforced(`` line directly above the
+  matched ``async def`` line
 
-**Skip list** — files that use ``async def execute`` (~148 runners) or
-any method name other than ``run`` (~268 runners) are reported but not
-touched. The RFC's ``SHOP-001`` lint-rule-as-error PR-3 catches those
-via a separate mechanism once they migrate to ``async def run``.
+**Not touched** — files whose entry-point uses a domain-specific name
+(``certify``, ``monitor``, ``remediate``, ``validate``, ...) are reported
+as ``skipped_no_run`` (legacy field name retained). Those need a
+separate pass once they standardize on ``run``/``execute``.
 
 Usage::
 
     python scripts/codemods/licensing_enforce.py           # dry-run (default)
     python scripts/codemods/licensing_enforce.py --apply    # write changes
 
-The tool prints a JSON summary (``enforced``, ``skipped_no_run``,
-``skipped_already_enforced``) to stdout. Expected counts for 2026-04-07:
-~87 enforced, ~148 skipped_no_run (async def execute), ~268 skipped_no_run
-(neither run nor execute).
+The tool prints a JSON summary to stdout with legacy fields
+(``enforced``, ``skipped_no_run``, ``skipped_already_enforced``) plus a
+new ``per_shape`` block with fine-grained counts.
 """
 
 from __future__ import annotations
@@ -42,18 +50,23 @@ ROOT = Path(__file__).resolve().parents[2]
 AGENTS = ROOT / "src" / "shieldops" / "agents"
 
 IMPORT_LINE = "from shieldops.licensing.enforce import enforced\n"
-# Pattern matches `    async def run(self` with any extra whitespace + args.
-_ASYNC_RUN = re.compile(r"^(?P<indent>[ \t]+)async def run\(", re.MULTILINE)
+
+# Pattern matches either ``async def run(`` or ``async def execute(``
+# at the start of a line (plus leading indent). Works for both
+# single-line signatures (``async def run(self, ...)``) and multi-line
+# signatures (``async def run(\n    self, ...)``) because we only anchor
+# on the opening paren — everything after it is the parameter list.
+_ENTRY_POINT = re.compile(
+    r"^(?P<indent>[ \t]+)async def (?P<name>run|execute)\(",
+    re.MULTILINE,
+)
 
 
-def _already_enforced(source: str, run_match: re.Match[str]) -> bool:
-    """True if the line immediately above ``run`` already has @enforced("."""
-    start = run_match.start()
+def _already_enforced(source: str, match: re.Match[str]) -> bool:
+    """True if the line immediately above the match has ``@enforced(``."""
+    start = match.start()
     if start == 0:
         return False
-    # ``start - 1`` is the ``\n`` that ends the previous line (assuming the
-    # match was anchored at ``^`` after that \n, which our MULTILINE regex
-    # guarantees). Scan backward for the \n that begins that line.
     end_nl = start - 1
     prior_line_start = source.rfind("\n", 0, end_nl) + 1  # 0 if no earlier \n
     prior_line = source[prior_line_start:end_nl]
@@ -65,13 +78,7 @@ def _has_import(source: str) -> bool:
 
 
 def _add_import(source: str) -> str:
-    """Insert the import after the last top-level ``import`` / ``from``.
-
-    Uses :mod:`ast` to find the true end-line of the last top-level
-    ``Import`` / ``ImportFrom`` statement, so multi-line parenthesized
-    imports (``from X import (\\n  A,\\n  B,\\n)``) are handled correctly
-    without landing the inserted line inside the paren group.
-    """
+    """Insert the import after the last top-level ``import`` / ``from``."""
     import ast  # local import to keep the top-level code-free on load
 
     lines = source.splitlines(keepends=True)
@@ -90,8 +97,6 @@ def _add_import(source: str) -> str:
                 )
 
     if last_import_end_lineno == -1:
-        # No imports at all — extremely unlikely for a runner file. Fall
-        # back to inserting after the module docstring (if any) or at top.
         insert_at = 0
         if lines and lines[0].startswith(('"""', "'''")):
             for i in range(1, len(lines)):
@@ -100,44 +105,64 @@ def _add_import(source: str) -> str:
                     break
         lines.insert(insert_at, IMPORT_LINE)
     else:
-        # ast line numbers are 1-based; `last_import_end_lineno` is the
-        # physical line where the final import statement ends. Insert the
-        # new import on the following line.
         lines.insert(last_import_end_lineno, IMPORT_LINE)
     return "".join(lines)
 
 
-def _add_decorator(source: str, run_match: re.Match[str], agent_name: str) -> str:
-    """Insert ``@enforced("<agent_name>")`` above the matched ``run`` def."""
-    indent = run_match.group("indent")
+def _add_decorator(source: str, match: re.Match[str], agent_name: str) -> str:
+    """Insert ``@enforced("<agent_name>")`` above the matched def."""
+    indent = match.group("indent")
     decorator = f'{indent}@enforced("{agent_name}")\n'
-    return source[: run_match.start()] + decorator + source[run_match.start() :]
+    return source[: match.start()] + decorator + source[match.start() :]
 
 
-def process_file(path: Path, apply: bool) -> str:
-    """Return one of: 'enforced', 'skipped_no_run', 'skipped_already_enforced'.
+def _classify_shape(match: re.Match[str], source: str) -> str:
+    """Return a fine-grained shape tag for reporting."""
+    name = match.group("name")
+    line_end = source.find("\n", match.end())
+    if line_end == -1:
+        line_end = len(source)
+    rest = source[match.end() : line_end]
+    # Heuristic: if ``)`` appears before the newline it's single-line.
+    multi = ")" not in rest
+    return f"{name}_{'multi' if multi else 'single'}"
 
-    Only processes runner files whose class has ``async def run(self, ...)``.
+
+def process_file(path: Path, apply: bool) -> tuple[str, str | None]:
+    """Return ``(result, shape)``.
+
+    ``result`` ∈ {'enforced', 'skipped_no_entry_point',
+    'skipped_already_enforced'}. ``shape`` is the fine-grained tag
+    (``run_single``, ``run_multi``, ``execute_single``, ``execute_multi``)
+    when we matched an entry point; otherwise ``None``.
     """
     source = path.read_text()
-    m = _ASYNC_RUN.search(source)
+    m = _ENTRY_POINT.search(source)
     if m is None:
-        return "skipped_no_run"
+        return "skipped_no_entry_point", None
+    shape = _classify_shape(m, source)
     if _already_enforced(source, m):
-        return "skipped_already_enforced"
+        return "skipped_already_enforced", shape
 
     agent_name = path.parent.name  # e.g. 'session_manager'
     new_source = source
     if not _has_import(new_source):
         new_source = _add_import(new_source)
         # Re-match because indices shifted.
-        m = _ASYNC_RUN.search(new_source)
-        assert m is not None, "run method disappeared after import insertion"
+        m = _ENTRY_POINT.search(new_source)
+        assert m is not None, "entry point disappeared after import insertion"
     new_source = _add_decorator(new_source, m, agent_name)
 
     if apply:
         path.write_text(new_source)
-    return "enforced"
+    return "enforced", shape
+
+
+def _rel(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def main() -> int:
@@ -150,13 +175,37 @@ def main() -> int:
     args = parser.parse_args()
 
     runners = sorted(AGENTS.glob("*/runner.py"))
-    counts = {"enforced": 0, "skipped_no_run": 0, "skipped_already_enforced": 0}
+    # Legacy field names retained so downstream scripts don't break.
+    counts = {
+        "enforced": 0,
+        "skipped_no_run": 0,
+        "skipped_already_enforced": 0,
+    }
+    per_shape: dict[str, int] = {
+        "enforced_run_single": 0,
+        "enforced_run_multi": 0,
+        "enforced_execute_single": 0,
+        "enforced_execute_multi": 0,
+        "already_enforced_run_single": 0,
+        "already_enforced_run_multi": 0,
+        "already_enforced_execute_single": 0,
+        "already_enforced_execute_multi": 0,
+    }
     samples: dict[str, list[str]] = {k: [] for k in counts}
+
     for path in runners:
-        result = process_file(path, apply=args.apply)
-        counts[result] += 1
-        if len(samples[result]) < 3:
-            samples[result].append(str(path.relative_to(ROOT)))
+        result, shape = process_file(path, apply=args.apply)
+        if result == "skipped_no_entry_point":
+            counts["skipped_no_run"] += 1
+            bucket = "skipped_no_run"
+        else:
+            counts[result] += 1
+            bucket = result
+            if shape is not None:
+                prefix = "enforced" if result == "enforced" else "already_enforced"
+                per_shape[f"{prefix}_{shape}"] += 1
+        if len(samples[bucket]) < 3:
+            samples[bucket].append(_rel(path))
 
     print(
         json.dumps(
@@ -164,6 +213,7 @@ def main() -> int:
                 "mode": "apply" if args.apply else "dry-run",
                 "total_runners": len(runners),
                 **counts,
+                "per_shape": per_shape,
                 "samples": samples,
             },
             indent=2,

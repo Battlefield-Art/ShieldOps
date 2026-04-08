@@ -16,6 +16,7 @@ from shieldops.agents.security_awareness_trainer.nodes import (
 from shieldops.agents.security_awareness_trainer.tools import (
     SecurityAwarenessTrainerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -35,6 +36,7 @@ class SecurityAwarenessTrainerRunner:
         self._app = graph.compile()
         self._results: dict[str, Any] = {}
 
+    @enforced("security_awareness_trainer")
     async def execute(
         self,
         tenant_id: str = "default",

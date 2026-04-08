@@ -11,6 +11,7 @@ from shieldops.agents.model_drift_detector.graph import create_model_drift_detec
 from shieldops.agents.model_drift_detector.models import ModelDriftDetectorState
 from shieldops.agents.model_drift_detector.nodes import set_toolkit
 from shieldops.agents.model_drift_detector.tools import ModelDriftDetectorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -23,6 +24,7 @@ class ModelDriftDetectorRunner:
         self._app = graph.compile()
         self._results: dict[str, ModelDriftDetectorState] = {}
 
+    @enforced("model_drift_detector")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -13,6 +13,7 @@ from shieldops.agents.model_explainability_auditor.graph import (
 from shieldops.agents.model_explainability_auditor.models import ModelExplainabilityAuditorState
 from shieldops.agents.model_explainability_auditor.nodes import set_toolkit
 from shieldops.agents.model_explainability_auditor.tools import ModelExplainabilityAuditorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ModelExplainabilityAuditorRunner:
         self._app = graph.compile()
         self._results: dict[str, ModelExplainabilityAuditorState] = {}
 
+    @enforced("model_explainability_auditor")
     async def execute(
         self,
         tenant_id: str = "default",

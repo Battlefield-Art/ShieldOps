@@ -11,6 +11,7 @@ from shieldops.agents.attack_path_analyzer.graph import create_attack_path_analy
 from shieldops.agents.attack_path_analyzer.models import AttackPathAnalyzerState
 from shieldops.agents.attack_path_analyzer.nodes import set_toolkit
 from shieldops.agents.attack_path_analyzer.tools import AttackPathAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class AttackPathAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, AttackPathAnalyzerState] = {}
 
+    @enforced("attack_path_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

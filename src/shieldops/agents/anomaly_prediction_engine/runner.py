@@ -19,6 +19,7 @@ from shieldops.agents.anomaly_prediction_engine.nodes import (
 from shieldops.agents.anomaly_prediction_engine.tools import (
     AnomalyPredictionEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class AnomalyPredictionEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, AnomalyPredictionEngineState] = {}
 
+    @enforced("anomaly_prediction_engine")
     async def execute(
         self,
         tenant_id: str = "default",

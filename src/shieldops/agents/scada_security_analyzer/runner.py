@@ -11,6 +11,7 @@ from shieldops.agents.scada_security_analyzer.graph import create_scada_security
 from shieldops.agents.scada_security_analyzer.models import SCADASecurityAnalyzerState
 from shieldops.agents.scada_security_analyzer.nodes import set_toolkit
 from shieldops.agents.scada_security_analyzer.tools import SCADASecurityAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class SCADASecurityAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, SCADASecurityAnalyzerState] = {}
 
+    @enforced("scada_security_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

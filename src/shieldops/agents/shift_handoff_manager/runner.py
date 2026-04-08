@@ -13,6 +13,7 @@ from shieldops.agents.shift_handoff_manager.graph import (
 from shieldops.agents.shift_handoff_manager.models import ShiftHandoffManagerState
 from shieldops.agents.shift_handoff_manager.nodes import set_toolkit
 from shieldops.agents.shift_handoff_manager.tools import ShiftHandoffManagerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ShiftHandoffManagerRunner:
         self._app = graph.compile()
         self._results: dict[str, ShiftHandoffManagerState] = {}
 
+    @enforced("shift_handoff_manager")
     async def execute(
         self,
         tenant_id: str = "default",

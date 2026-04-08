@@ -13,6 +13,7 @@ from shieldops.agents.social_engineering_detector.graph import (
 from shieldops.agents.social_engineering_detector.models import SocialEngineeringDetectorState
 from shieldops.agents.social_engineering_detector.nodes import set_toolkit
 from shieldops.agents.social_engineering_detector.tools import SocialEngineeringDetectorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class SocialEngineeringDetectorRunner:
         self._app = graph.compile()
         self._results: dict[str, SocialEngineeringDetectorState] = {}
 
+    @enforced("social_engineering_detector")
     async def execute(
         self,
         tenant_id: str = "default",

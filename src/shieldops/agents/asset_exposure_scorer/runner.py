@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import AssetExposureScorerToolkit
 
@@ -31,6 +33,7 @@ class AssetExposureScorerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("aes_runner.init")
 
+    @enforced("asset_exposure_scorer")
     async def execute(
         self,
         tenant_id: str = "default",

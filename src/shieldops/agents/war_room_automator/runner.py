@@ -7,6 +7,8 @@ from uuid import uuid4
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import WarRoomAutomatorToolkit
@@ -32,6 +34,7 @@ class WarRoomAutomatorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("wra_runner.init")
 
+    @enforced("war_room_automator")
     async def execute(
         self,
         tenant_id: str = "default",

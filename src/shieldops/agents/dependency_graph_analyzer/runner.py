@@ -13,6 +13,7 @@ from shieldops.agents.dependency_graph_analyzer.graph import (
 from shieldops.agents.dependency_graph_analyzer.models import DependencyGraphAnalyzerState
 from shieldops.agents.dependency_graph_analyzer.nodes import set_toolkit
 from shieldops.agents.dependency_graph_analyzer.tools import DependencyGraphAnalyzerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class DependencyGraphAnalyzerRunner:
         self._app = graph.compile()
         self._results: dict[str, DependencyGraphAnalyzerState] = {}
 
+    @enforced("dependency_graph_analyzer")
     async def execute(
         self,
         tenant_id: str = "default",

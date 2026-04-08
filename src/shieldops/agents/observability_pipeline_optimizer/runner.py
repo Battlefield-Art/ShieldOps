@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import ObservabilityPipelineOptimizerToolkit
 
@@ -31,6 +33,7 @@ class ObservabilityPipelineOptimizerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("opo_runner.init")
 
+    @enforced("observability_pipeline_optimizer")
     async def execute(
         self,
         tenant_id: str = "default",

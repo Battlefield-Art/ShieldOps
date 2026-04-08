@@ -19,6 +19,7 @@ from shieldops.agents.evidence_collector.nodes import (
 from shieldops.agents.evidence_collector.tools import (
     EvidenceCollectorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -41,6 +42,7 @@ class EvidenceCollectorRunner:
         self._results: dict[str, EvidenceCollectorState] = {}
         logger.info("evidence_collector_runner.initialized")
 
+    @enforced("evidence_collector")
     async def execute(
         self,
         tenant_id: str,

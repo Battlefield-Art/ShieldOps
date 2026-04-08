@@ -19,6 +19,7 @@ from shieldops.agents.deployment_guardian.nodes import (
 from shieldops.agents.deployment_guardian.tools import (
     DeploymentGuardianToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class DeploymentGuardianRunner:
         self._app = graph.compile()
         self._results: dict[str, DeploymentGuardianState] = {}
 
+    @enforced("deployment_guardian")
     async def execute(self, tenant_id: str = "default") -> DeploymentGuardianState:
         rid = f"dg-{uuid4().hex[:12]}"
         initial = DeploymentGuardianState(request_id=rid, tenant_id=tenant_id)

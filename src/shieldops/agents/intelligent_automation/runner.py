@@ -9,6 +9,7 @@ from shieldops.agents.intelligent_automation.graph import create_intelligent_aut
 from shieldops.agents.intelligent_automation.models import IntelligentAutomationState
 from shieldops.agents.intelligent_automation.nodes import set_toolkit
 from shieldops.agents.intelligent_automation.tools import IntelligentAutomationToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -29,6 +30,7 @@ class IntelligentAutomationRunner:
         self._results: dict[str, IntelligentAutomationState] = {}
         logger.info("intelligent_automation_runner.initialized")
 
+    @enforced("intelligent_automation")
     async def execute(
         self,
         execute_id: str,

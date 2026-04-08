@@ -16,6 +16,7 @@ from shieldops.agents.risk_quantification_engine.nodes import (
 from shieldops.agents.risk_quantification_engine.tools import (
     RiskQuantificationEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -35,6 +36,7 @@ class RiskQuantificationEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, Any] = {}
 
+    @enforced("risk_quantification_engine")
     async def execute(
         self,
         tenant_id: str = "default",

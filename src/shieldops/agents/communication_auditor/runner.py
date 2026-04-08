@@ -11,6 +11,7 @@ from shieldops.agents.communication_auditor.graph import create_communication_au
 from shieldops.agents.communication_auditor.models import CommunicationAuditorState
 from shieldops.agents.communication_auditor.nodes import set_toolkit
 from shieldops.agents.communication_auditor.tools import CommunicationAuditorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class CommunicationAuditorRunner:
         self._app = graph.compile()
         self._results: dict[str, CommunicationAuditorState] = {}
 
+    @enforced("communication_auditor")
     async def execute(
         self,
         tenant_id: str = "default",

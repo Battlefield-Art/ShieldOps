@@ -13,6 +13,7 @@ from shieldops.agents.orphan_account_detector.graph import (
 from shieldops.agents.orphan_account_detector.models import OrphanAccountDetectorState
 from shieldops.agents.orphan_account_detector.nodes import set_toolkit
 from shieldops.agents.orphan_account_detector.tools import OrphanAccountDetectorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class OrphanAccountDetectorRunner:
         self._app = graph.compile()
         self._results: dict[str, OrphanAccountDetectorState] = {}
 
+    @enforced("orphan_account_detector")
     async def execute(
         self,
         tenant_id: str = "default",

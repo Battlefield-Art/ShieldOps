@@ -11,6 +11,7 @@ from shieldops.agents.security_copilot.graph import create_security_copilot_grap
 from shieldops.agents.security_copilot.models import SecurityCopilotState
 from shieldops.agents.security_copilot.nodes import set_toolkit
 from shieldops.agents.security_copilot.tools import SecurityCopilotToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class SecurityCopilotRunner:
         self._app = graph.compile()
         self._results: dict[str, SecurityCopilotState] = {}
 
+    @enforced("security_copilot")
     async def execute(
         self,
         tenant_id: str = "default",

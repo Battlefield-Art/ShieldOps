@@ -13,6 +13,7 @@ from shieldops.agents.dark_web_monitor.graph import (
 from shieldops.agents.dark_web_monitor.models import DarkWebMonitorState
 from shieldops.agents.dark_web_monitor.nodes import set_toolkit
 from shieldops.agents.dark_web_monitor.tools import DarkWebMonitorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class DarkWebMonitorRunner:
         self._app = graph.compile()
         self._results: dict[str, DarkWebMonitorState] = {}
 
+    @enforced("dark_web_monitor")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -19,6 +19,7 @@ from shieldops.agents.rate_limit_enforcer.nodes import (
 from shieldops.agents.rate_limit_enforcer.tools import (
     RateLimitEnforcerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class RateLimitEnforcerRunner:
         self._app = graph.compile()
         self._results: dict[str, RateLimitEnforcerState] = {}
 
+    @enforced("rate_limit_enforcer")
     async def execute(self, tenant_id: str = "default") -> RateLimitEnforcerState:
         rid = f"rle-{uuid4().hex[:12]}"
         initial = RateLimitEnforcerState(request_id=rid, tenant_id=tenant_id)

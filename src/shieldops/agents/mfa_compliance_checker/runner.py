@@ -13,6 +13,7 @@ from shieldops.agents.mfa_compliance_checker.graph import (
 from shieldops.agents.mfa_compliance_checker.models import MfaComplianceCheckerState
 from shieldops.agents.mfa_compliance_checker.nodes import set_toolkit
 from shieldops.agents.mfa_compliance_checker.tools import MfaComplianceCheckerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class MfaComplianceCheckerRunner:
         self._app = graph.compile()
         self._results: dict[str, MfaComplianceCheckerState] = {}
 
+    @enforced("mfa_compliance_checker")
     async def execute(
         self,
         tenant_id: str = "default",

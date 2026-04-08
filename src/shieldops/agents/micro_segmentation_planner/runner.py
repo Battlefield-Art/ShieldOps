@@ -13,6 +13,7 @@ from shieldops.agents.micro_segmentation_planner.graph import (
 from shieldops.agents.micro_segmentation_planner.models import MicroSegmentationPlannerState
 from shieldops.agents.micro_segmentation_planner.nodes import set_toolkit
 from shieldops.agents.micro_segmentation_planner.tools import MicroSegmentationPlannerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class MicroSegmentationPlannerRunner:
         self._app = graph.compile()
         self._results: dict[str, MicroSegmentationPlannerState] = {}
 
+    @enforced("micro_segmentation_planner")
     async def execute(
         self,
         tenant_id: str = "default",

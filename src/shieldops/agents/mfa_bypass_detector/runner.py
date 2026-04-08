@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import MFABypassDetectorToolkit
 
@@ -31,6 +33,7 @@ class MFABypassDetectorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("mbd_runner.init")
 
+    @enforced("mfa_bypass_detector")
     async def execute(
         self,
         tenant_id: str = "default",

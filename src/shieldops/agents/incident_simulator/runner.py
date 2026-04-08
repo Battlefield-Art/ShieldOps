@@ -24,6 +24,7 @@ from shieldops.agents.incident_simulator.nodes import (
 from shieldops.agents.incident_simulator.tools import (
     IncidentSimulatorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 from shieldops.observability.tracing import get_tracer
 
 logger = structlog.get_logger()
@@ -55,6 +56,7 @@ class IncidentSimulatorRunner:
 
         self._simulations: dict[str, IncidentSimulatorState] = {}
 
+    @enforced("incident_simulator")
     async def execute(
         self,
         tenant_id: str,

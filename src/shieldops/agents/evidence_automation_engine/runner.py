@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import EvidenceAutomationEngineToolkit
@@ -34,6 +36,7 @@ class EvidenceAutomationEngineRunner:
         self._app = self._graph.compile()
         logger.info("eae_runner.init")
 
+    @enforced("evidence_automation_engine")
     async def execute(
         self,
         frameworks: list[str] | None = None,

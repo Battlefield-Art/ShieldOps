@@ -13,6 +13,7 @@ from shieldops.agents.incident_cost_calculator.graph import (
 from shieldops.agents.incident_cost_calculator.models import IncidentCostCalculatorState
 from shieldops.agents.incident_cost_calculator.nodes import set_toolkit
 from shieldops.agents.incident_cost_calculator.tools import IncidentCostCalculatorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class IncidentCostCalculatorRunner:
         self._app = graph.compile()
         self._results: dict[str, IncidentCostCalculatorState] = {}
 
+    @enforced("incident_cost_calculator")
     async def execute(
         self,
         tenant_id: str = "default",

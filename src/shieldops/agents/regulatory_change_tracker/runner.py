@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import RegulatoryChangeTrackerToolkit
@@ -34,6 +36,7 @@ class RegulatoryChangeTrackerRunner:
         self._app = self._graph.compile()
         logger.info("rct_runner.init")
 
+    @enforced("regulatory_change_tracker")
     async def execute(
         self,
         regulations: list[str] | None = None,

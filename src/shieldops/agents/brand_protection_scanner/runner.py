@@ -13,6 +13,7 @@ from shieldops.agents.brand_protection_scanner.graph import (
 from shieldops.agents.brand_protection_scanner.models import BrandProtectionScannerState
 from shieldops.agents.brand_protection_scanner.nodes import set_toolkit
 from shieldops.agents.brand_protection_scanner.tools import BrandProtectionScannerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class BrandProtectionScannerRunner:
         self._app = graph.compile()
         self._results: dict[str, BrandProtectionScannerState] = {}
 
+    @enforced("brand_protection_scanner")
     async def execute(
         self,
         tenant_id: str = "default",

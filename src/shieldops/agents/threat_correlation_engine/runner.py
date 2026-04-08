@@ -13,6 +13,7 @@ from shieldops.agents.threat_correlation_engine.graph import (
 from shieldops.agents.threat_correlation_engine.models import ThreatCorrelationEngineState
 from shieldops.agents.threat_correlation_engine.nodes import set_toolkit
 from shieldops.agents.threat_correlation_engine.tools import ThreatCorrelationEngineToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ThreatCorrelationEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, ThreatCorrelationEngineState] = {}
 
+    @enforced("threat_correlation_engine")
     async def execute(
         self,
         tenant_id: str = "default",

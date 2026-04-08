@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import VendorComplianceAssessorToolkit
@@ -34,6 +36,7 @@ class VendorComplianceAssessorRunner:
         self._app = self._graph.compile()
         logger.info("vca_runner.init")
 
+    @enforced("vendor_compliance_assessor")
     async def execute(
         self,
         tenant_id: str = "default",

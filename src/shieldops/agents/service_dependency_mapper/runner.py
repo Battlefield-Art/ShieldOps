@@ -19,6 +19,7 @@ from shieldops.agents.service_dependency_mapper.nodes import (
 from shieldops.agents.service_dependency_mapper.tools import (
     ServiceDependencyMapperToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class ServiceDependencyMapperRunner:
         self._app = graph.compile()
         self._results: dict[str, ServiceDependencyMapperState] = {}
 
+    @enforced("service_dependency_mapper")
     async def execute(
         self,
         tenant_id: str = "default",

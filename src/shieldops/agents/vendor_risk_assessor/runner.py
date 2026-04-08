@@ -13,6 +13,7 @@ from shieldops.agents.vendor_risk_assessor.graph import (
 from shieldops.agents.vendor_risk_assessor.models import VendorRiskAssessorState
 from shieldops.agents.vendor_risk_assessor.nodes import set_toolkit
 from shieldops.agents.vendor_risk_assessor.tools import VendorRiskAssessorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class VendorRiskAssessorRunner:
         self._app = graph.compile()
         self._results: dict[str, VendorRiskAssessorState] = {}
 
+    @enforced("vendor_risk_assessor")
     async def execute(
         self,
         tenant_id: str = "default",

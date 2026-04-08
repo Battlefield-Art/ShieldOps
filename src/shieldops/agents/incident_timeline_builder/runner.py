@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import IncidentTimelineBuilderToolkit
 
@@ -31,6 +33,7 @@ class IncidentTimelineBuilderRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("itb_runner.init")
 
+    @enforced("incident_timeline_builder")
     async def execute(
         self,
         incident_id: str = "INC-001",

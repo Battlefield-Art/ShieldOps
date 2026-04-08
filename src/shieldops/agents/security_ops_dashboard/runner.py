@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityOpsDashboardToolkit
 
@@ -31,6 +33,7 @@ class SecurityOpsDashboardRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("sod_runner.init")
 
+    @enforced("security_ops_dashboard")
     async def execute(
         self,
         tenant_id: str = "default",

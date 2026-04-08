@@ -19,6 +19,7 @@ from shieldops.agents.behavioral_analytics_engine.nodes import (
 from shieldops.agents.behavioral_analytics_engine.tools import (
     BehavioralAnalyticsEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class BehavioralAnalyticsEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, BehavioralAnalyticsEngineState] = {}
 
+    @enforced("behavioral_analytics_engine")
     async def execute(
         self,
         tenant_id: str = "default",

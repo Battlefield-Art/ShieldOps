@@ -13,6 +13,7 @@ from shieldops.agents.soc_metrics_dashboard.graph import (
 from shieldops.agents.soc_metrics_dashboard.models import SocMetricsDashboardState
 from shieldops.agents.soc_metrics_dashboard.nodes import set_toolkit
 from shieldops.agents.soc_metrics_dashboard.tools import SocMetricsDashboardToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class SocMetricsDashboardRunner:
         self._app = graph.compile()
         self._results: dict[str, SocMetricsDashboardState] = {}
 
+    @enforced("soc_metrics_dashboard")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -13,6 +13,7 @@ from shieldops.agents.zero_trust_validator.graph import (
 from shieldops.agents.zero_trust_validator.models import ZeroTrustValidatorState
 from shieldops.agents.zero_trust_validator.nodes import set_toolkit
 from shieldops.agents.zero_trust_validator.tools import ZeroTrustValidatorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ZeroTrustValidatorRunner:
         self._app = graph.compile()
         self._results: dict[str, ZeroTrustValidatorState] = {}
 
+    @enforced("zero_trust_validator")
     async def execute(
         self,
         tenant_id: str = "default",

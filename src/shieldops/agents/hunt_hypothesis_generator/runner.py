@@ -13,6 +13,7 @@ from shieldops.agents.hunt_hypothesis_generator.graph import (
 from shieldops.agents.hunt_hypothesis_generator.models import HuntHypothesisGeneratorState
 from shieldops.agents.hunt_hypothesis_generator.nodes import set_toolkit
 from shieldops.agents.hunt_hypothesis_generator.tools import HuntHypothesisGeneratorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class HuntHypothesisGeneratorRunner:
         self._app = graph.compile()
         self._results: dict[str, HuntHypothesisGeneratorState] = {}
 
+    @enforced("hunt_hypothesis_generator")
     async def execute(
         self,
         tenant_id: str = "default",

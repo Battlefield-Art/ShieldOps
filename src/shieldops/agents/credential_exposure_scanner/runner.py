@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import CredentialExposureScannerToolkit
 
@@ -31,6 +33,7 @@ class CredentialExposureScannerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("ces_runner.init")
 
+    @enforced("credential_exposure_scanner")
     async def execute(
         self,
         tenant_id: str = "default",

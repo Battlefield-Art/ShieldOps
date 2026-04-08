@@ -13,6 +13,7 @@ from shieldops.agents.key_lifecycle_manager.graph import (
 from shieldops.agents.key_lifecycle_manager.models import KeyLifecycleManagerState
 from shieldops.agents.key_lifecycle_manager.nodes import set_toolkit
 from shieldops.agents.key_lifecycle_manager.tools import KeyLifecycleManagerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class KeyLifecycleManagerRunner:
         self._app = graph.compile()
         self._results: dict[str, KeyLifecycleManagerState] = {}
 
+    @enforced("key_lifecycle_manager")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -16,6 +16,7 @@ from shieldops.agents.response_automation_engine.nodes import (
 from shieldops.agents.response_automation_engine.tools import (
     ResponseAutomationEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -35,6 +36,7 @@ class ResponseAutomationEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, Any] = {}
 
+    @enforced("response_automation_engine")
     async def execute(
         self,
         tenant_id: str = "default",

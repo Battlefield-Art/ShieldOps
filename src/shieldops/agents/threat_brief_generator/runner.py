@@ -13,6 +13,7 @@ from shieldops.agents.threat_brief_generator.graph import (
 from shieldops.agents.threat_brief_generator.models import ThreatBriefGeneratorState
 from shieldops.agents.threat_brief_generator.nodes import set_toolkit
 from shieldops.agents.threat_brief_generator.tools import ThreatBriefGeneratorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ThreatBriefGeneratorRunner:
         self._app = graph.compile()
         self._results: dict[str, ThreatBriefGeneratorState] = {}
 
+    @enforced("threat_brief_generator")
     async def execute(
         self,
         tenant_id: str = "default",

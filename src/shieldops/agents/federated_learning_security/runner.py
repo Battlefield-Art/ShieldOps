@@ -13,6 +13,7 @@ from shieldops.agents.federated_learning_security.graph import (
 from shieldops.agents.federated_learning_security.models import FederatedLearningSecurityState
 from shieldops.agents.federated_learning_security.nodes import set_toolkit
 from shieldops.agents.federated_learning_security.tools import FederatedLearningSecurityToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class FederatedLearningSecurityRunner:
         self._app = graph.compile()
         self._results: dict[str, FederatedLearningSecurityState] = {}
 
+    @enforced("federated_learning_security")
     async def execute(
         self,
         tenant_id: str = "default",

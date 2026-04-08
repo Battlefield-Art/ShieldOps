@@ -19,6 +19,7 @@ from shieldops.agents.configuration_auditor.nodes import (
 from shieldops.agents.configuration_auditor.tools import (
     ConfigurationAuditorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class ConfigurationAuditorRunner:
         self._app = graph.compile()
         self._results: dict[str, ConfigurationAuditorState] = {}
 
+    @enforced("configuration_auditor")
     async def execute(self, tenant_id: str = "default") -> ConfigurationAuditorState:
         rid = f"ca-{uuid4().hex[:12]}"
         initial = ConfigurationAuditorState(request_id=rid, tenant_id=tenant_id)

@@ -13,6 +13,7 @@ from shieldops.agents.incident_similarity_engine.graph import (
 from shieldops.agents.incident_similarity_engine.models import IncidentSimilarityEngineState
 from shieldops.agents.incident_similarity_engine.nodes import set_toolkit
 from shieldops.agents.incident_similarity_engine.tools import IncidentSimilarityEngineToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class IncidentSimilarityEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, IncidentSimilarityEngineState] = {}
 
+    @enforced("incident_similarity_engine")
     async def execute(
         self,
         tenant_id: str = "default",

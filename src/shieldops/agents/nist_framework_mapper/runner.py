@@ -11,6 +11,7 @@ from shieldops.agents.nist_framework_mapper.graph import create_nist_framework_m
 from shieldops.agents.nist_framework_mapper.models import NISTFrameworkMapperState
 from shieldops.agents.nist_framework_mapper.nodes import set_toolkit
 from shieldops.agents.nist_framework_mapper.tools import NISTFrameworkMapperToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class NISTFrameworkMapperRunner:
         self._app = graph.compile()
         self._results: dict[str, NISTFrameworkMapperState] = {}
 
+    @enforced("nist_framework_mapper")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -13,6 +13,7 @@ from shieldops.agents.building_management_security.graph import (
 from shieldops.agents.building_management_security.models import BuildingManagementSecurityState
 from shieldops.agents.building_management_security.nodes import set_toolkit
 from shieldops.agents.building_management_security.tools import BuildingManagementSecurityToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class BuildingManagementSecurityRunner:
         self._app = graph.compile()
         self._results: dict[str, BuildingManagementSecurityState] = {}
 
+    @enforced("building_management_security")
     async def execute(
         self,
         tenant_id: str = "default",

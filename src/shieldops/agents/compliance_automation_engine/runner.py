@@ -17,6 +17,7 @@ from shieldops.agents.compliance_automation_engine.nodes import set_toolkit
 from shieldops.agents.compliance_automation_engine.tools import (
     ComplianceAutomationEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -31,6 +32,7 @@ class ComplianceAutomationEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, ComplianceAutomationEngineState] = {}
 
+    @enforced("compliance_automation_engine")
     async def execute(
         self,
         tenant_id: str = "default",

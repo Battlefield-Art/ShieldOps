@@ -17,6 +17,7 @@ from shieldops.agents.threat_feed_manager.nodes import set_toolkit
 from shieldops.agents.threat_feed_manager.tools import (
     ThreatFeedManagerToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -39,6 +40,7 @@ class ThreatFeedManagerRunner:
         self._results: dict[str, ThreatFeedManagerState] = {}
         logger.info("threat_feed_manager_runner.initialized")
 
+    @enforced("threat_feed_manager")
     async def execute(
         self,
         tenant_id: str,

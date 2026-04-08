@@ -16,6 +16,7 @@ from shieldops.agents.ioc_enrichment_engine.nodes import (
 from shieldops.agents.ioc_enrichment_engine.tools import (
     IOCEnrichmentEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -35,6 +36,7 @@ class IOCEnrichmentEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, Any] = {}
 
+    @enforced("ioc_enrichment_engine")
     async def execute(
         self,
         tenant_id: str = "default",

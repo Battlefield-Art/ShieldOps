@@ -7,6 +7,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import create_resource_rightsizer_graph
 from .nodes import set_toolkit
 from .tools import ResourceRightsizerToolkit
@@ -29,6 +31,7 @@ class ResourceRightsizerRunner:
         self._results: list[dict[str, Any]] = []
         logger.info("rr_runner.init")
 
+    @enforced("resource_rightsizer")
     async def execute(
         self,
         tenant_id: str = "default",

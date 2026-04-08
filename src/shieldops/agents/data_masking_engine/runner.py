@@ -13,6 +13,7 @@ from shieldops.agents.data_masking_engine.graph import (
 from shieldops.agents.data_masking_engine.models import DataMaskingEngineState
 from shieldops.agents.data_masking_engine.nodes import set_toolkit
 from shieldops.agents.data_masking_engine.tools import DataMaskingEngineToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class DataMaskingEngineRunner:
         self._app = graph.compile()
         self._results: dict[str, DataMaskingEngineState] = {}
 
+    @enforced("data_masking_engine")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import ShadowAPIDetectorToolkit
 
@@ -31,6 +33,7 @@ class ShadowAPIDetectorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("sad_runner.init")
 
+    @enforced("shadow_api_detector")
     async def execute(
         self,
         tenant_id: str = "default",

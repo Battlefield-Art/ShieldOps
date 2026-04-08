@@ -13,6 +13,7 @@ from shieldops.agents.threat_landscape_mapper.graph import (
 from shieldops.agents.threat_landscape_mapper.models import ThreatLandscapeMapperState
 from shieldops.agents.threat_landscape_mapper.nodes import set_toolkit
 from shieldops.agents.threat_landscape_mapper.tools import ThreatLandscapeMapperToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ThreatLandscapeMapperRunner:
         self._app = graph.compile()
         self._results: dict[str, ThreatLandscapeMapperState] = {}
 
+    @enforced("threat_landscape_mapper")
     async def execute(
         self,
         tenant_id: str = "default",

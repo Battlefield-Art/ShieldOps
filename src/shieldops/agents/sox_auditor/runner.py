@@ -11,6 +11,7 @@ from shieldops.agents.sox_auditor.graph import create_sox_auditor_graph
 from shieldops.agents.sox_auditor.models import SOXAuditorState
 from shieldops.agents.sox_auditor.nodes import set_toolkit
 from shieldops.agents.sox_auditor.tools import SOXAuditorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class SOXAuditorRunner:
         self._app = graph.compile()
         self._results: dict[str, SOXAuditorState] = {}
 
+    @enforced("sox_auditor")
     async def execute(
         self,
         tenant_id: str = "default",

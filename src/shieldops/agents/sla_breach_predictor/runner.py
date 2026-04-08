@@ -13,6 +13,7 @@ from shieldops.agents.sla_breach_predictor.graph import (
 from shieldops.agents.sla_breach_predictor.models import SlaBreachPredictorState
 from shieldops.agents.sla_breach_predictor.nodes import set_toolkit
 from shieldops.agents.sla_breach_predictor.tools import SlaBreachPredictorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class SlaBreachPredictorRunner:
         self._app = graph.compile()
         self._results: dict[str, SlaBreachPredictorState] = {}
 
+    @enforced("sla_breach_predictor")
     async def execute(
         self,
         tenant_id: str = "default",

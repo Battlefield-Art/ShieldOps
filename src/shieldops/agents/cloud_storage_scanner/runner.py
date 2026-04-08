@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import CloudStorageScannerToolkit
 
@@ -31,6 +33,7 @@ class CloudStorageScannerRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("css_runner.init")
 
+    @enforced("cloud_storage_scanner")
     async def execute(
         self,
         tenant_id: str = "default",

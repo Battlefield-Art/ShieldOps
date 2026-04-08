@@ -13,6 +13,7 @@ from shieldops.agents.consent_manager.graph import (
 from shieldops.agents.consent_manager.models import ConsentManagerState
 from shieldops.agents.consent_manager.nodes import set_toolkit
 from shieldops.agents.consent_manager.tools import ConsentManagerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ConsentManagerRunner:
         self._app = graph.compile()
         self._results: dict[str, ConsentManagerState] = {}
 
+    @enforced("consent_manager")
     async def execute(
         self,
         tenant_id: str = "default",

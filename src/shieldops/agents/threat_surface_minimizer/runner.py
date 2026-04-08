@@ -13,6 +13,7 @@ from shieldops.agents.threat_surface_minimizer.graph import (
 from shieldops.agents.threat_surface_minimizer.models import ThreatSurfaceMinimizerState
 from shieldops.agents.threat_surface_minimizer.nodes import set_toolkit
 from shieldops.agents.threat_surface_minimizer.tools import ThreatSurfaceMinimizerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class ThreatSurfaceMinimizerRunner:
         self._app = graph.compile()
         self._results: dict[str, ThreatSurfaceMinimizerState] = {}
 
+    @enforced("threat_surface_minimizer")
     async def execute(
         self,
         tenant_id: str = "default",

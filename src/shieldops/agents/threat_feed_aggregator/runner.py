@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import ThreatFeedAggregatorToolkit
 
@@ -35,6 +37,7 @@ class ThreatFeedAggregatorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("tfa_runner.init")
 
+    @enforced("threat_feed_aggregator")
     async def execute(
         self,
         tenant_id: str = "default",

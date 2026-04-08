@@ -19,6 +19,7 @@ from shieldops.agents.war_room_coordinator.nodes import (
 from shieldops.agents.war_room_coordinator.tools import (
     WarRoomCoordinatorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -43,6 +44,7 @@ class WarRoomCoordinatorRunner:
             "war_room_coordinator_runner.initialized",
         )
 
+    @enforced("war_room_coordinator")
     async def execute(
         self,
         tenant_id: str,

@@ -11,6 +11,7 @@ from shieldops.agents.inference_attack_detector.graph import create_inference_at
 from shieldops.agents.inference_attack_detector.models import InferenceAttackDetectorState
 from shieldops.agents.inference_attack_detector.nodes import set_toolkit
 from shieldops.agents.inference_attack_detector.tools import InferenceAttackDetectorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class InferenceAttackDetectorRunner:
         self._app = graph.compile()
         self._results: dict[str, InferenceAttackDetectorState] = {}
 
+    @enforced("inference_attack_detector")
     async def execute(
         self,
         tenant_id: str = "default",

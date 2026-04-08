@@ -11,6 +11,7 @@ from shieldops.agents.cctv_analytics.graph import create_cctv_analytics_graph
 from shieldops.agents.cctv_analytics.models import CCTVAnalyticsState
 from shieldops.agents.cctv_analytics.nodes import set_toolkit
 from shieldops.agents.cctv_analytics.tools import CCTVAnalyticsToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class CCTVAnalyticsRunner:
         self._app = graph.compile()
         self._results: dict[str, CCTVAnalyticsState] = {}
 
+    @enforced("cctv_analytics")
     async def execute(
         self,
         tenant_id: str = "default",

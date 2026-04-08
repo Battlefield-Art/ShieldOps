@@ -19,6 +19,7 @@ from shieldops.agents.health_check_orchestrator.nodes import (
 from shieldops.agents.health_check_orchestrator.tools import (
     HealthCheckOrchestratorToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,7 @@ class HealthCheckOrchestratorRunner:
         self._app = graph.compile()
         self._results: dict[str, HealthCheckOrchestratorState] = {}
 
+    @enforced("health_check_orchestrator")
     async def execute(self, tenant_id: str = "default") -> HealthCheckOrchestratorState:
         rid = f"hco-{uuid4().hex[:12]}"
         initial = HealthCheckOrchestratorState(request_id=rid, tenant_id=tenant_id)

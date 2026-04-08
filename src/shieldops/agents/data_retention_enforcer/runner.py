@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import DataRetentionEnforcerToolkit
@@ -34,6 +36,7 @@ class DataRetentionEnforcerRunner:
         self._app = self._graph.compile()
         logger.info("dre_runner.init")
 
+    @enforced("data_retention_enforcer")
     async def execute(
         self,
         tenant_id: str = "default",

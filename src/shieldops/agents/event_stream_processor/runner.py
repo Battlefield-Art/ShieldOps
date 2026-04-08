@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import EventStreamProcessorToolkit
 
@@ -33,6 +35,7 @@ class EventStreamProcessorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("esp_runner.init")
 
+    @enforced("event_stream_processor")
     async def execute(
         self,
         tenant_id: str = "default",

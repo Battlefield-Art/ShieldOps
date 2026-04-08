@@ -13,6 +13,7 @@ from shieldops.agents.runbook_knowledge_base.graph import (
 from shieldops.agents.runbook_knowledge_base.models import RunbookKnowledgeBaseState
 from shieldops.agents.runbook_knowledge_base.nodes import set_toolkit
 from shieldops.agents.runbook_knowledge_base.tools import RunbookKnowledgeBaseToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class RunbookKnowledgeBaseRunner:
         self._app = graph.compile()
         self._results: dict[str, RunbookKnowledgeBaseState] = {}
 
+    @enforced("runbook_knowledge_base")
     async def execute(
         self,
         tenant_id: str = "default",

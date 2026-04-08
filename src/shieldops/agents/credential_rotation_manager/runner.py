@@ -13,6 +13,7 @@ from shieldops.agents.credential_rotation_manager.graph import (
 from shieldops.agents.credential_rotation_manager.models import CredentialRotationManagerState
 from shieldops.agents.credential_rotation_manager.nodes import set_toolkit
 from shieldops.agents.credential_rotation_manager.tools import CredentialRotationManagerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class CredentialRotationManagerRunner:
         self._app = graph.compile()
         self._results: dict[str, CredentialRotationManagerState] = {}
 
+    @enforced("credential_rotation_manager")
     async def execute(
         self,
         tenant_id: str = "default",

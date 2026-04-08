@@ -11,6 +11,7 @@ from shieldops.agents.environmental_monitor.graph import create_environmental_mo
 from shieldops.agents.environmental_monitor.models import EnvironmentalMonitorState
 from shieldops.agents.environmental_monitor.nodes import set_toolkit
 from shieldops.agents.environmental_monitor.tools import EnvironmentalMonitorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class EnvironmentalMonitorRunner:
         self._app = graph.compile()
         self._results: dict[str, EnvironmentalMonitorState] = {}
 
+    @enforced("environmental_monitor")
     async def execute(
         self,
         tenant_id: str = "default",

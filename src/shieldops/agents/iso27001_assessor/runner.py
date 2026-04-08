@@ -11,6 +11,7 @@ from shieldops.agents.iso27001_assessor.graph import create_iso27001_assessor_gr
 from shieldops.agents.iso27001_assessor.models import ISO27001AssessorState
 from shieldops.agents.iso27001_assessor.nodes import set_toolkit
 from shieldops.agents.iso27001_assessor.tools import ISO27001AssessorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class ISO27001AssessorRunner:
         self._app = graph.compile()
         self._results: dict[str, ISO27001AssessorState] = {}
 
+    @enforced("iso27001_assessor")
     async def execute(
         self,
         tenant_id: str = "default",

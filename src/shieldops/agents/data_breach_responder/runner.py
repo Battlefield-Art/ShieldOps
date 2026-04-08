@@ -13,6 +13,7 @@ from shieldops.agents.data_breach_responder.graph import (
 from shieldops.agents.data_breach_responder.models import DataBreachResponderState
 from shieldops.agents.data_breach_responder.nodes import set_toolkit
 from shieldops.agents.data_breach_responder.tools import DataBreachResponderToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class DataBreachResponderRunner:
         self._app = graph.compile()
         self._results: dict[str, DataBreachResponderState] = {}
 
+    @enforced("data_breach_responder")
     async def execute(
         self,
         tenant_id: str = "default",

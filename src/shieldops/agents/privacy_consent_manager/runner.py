@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .nodes import set_toolkit
 from .tools import PrivacyConsentManagerToolkit
@@ -34,6 +36,7 @@ class PrivacyConsentManagerRunner:
         self._app = self._graph.compile()
         logger.info("pcm_runner.init")
 
+    @enforced("privacy_consent_manager")
     async def execute(
         self,
         tenant_id: str = "default",

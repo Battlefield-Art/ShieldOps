@@ -9,6 +9,7 @@ from shieldops.agents.runbook_automation.graph import create_runbook_automation_
 from shieldops.agents.runbook_automation.models import RunbookAutomationState
 from shieldops.agents.runbook_automation.nodes import set_toolkit
 from shieldops.agents.runbook_automation.tools import RunbookAutomationToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -29,6 +30,7 @@ class RunbookAutomationRunner:
         self._results: dict[str, RunbookAutomationState] = {}
         logger.info("runbook_automation_runner.initialized")
 
+    @enforced("runbook_automation")
     async def execute(
         self,
         tenant_id: str,

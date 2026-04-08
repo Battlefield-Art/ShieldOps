@@ -13,6 +13,7 @@ from shieldops.agents.tokenization_manager.graph import (
 from shieldops.agents.tokenization_manager.models import TokenizationManagerState
 from shieldops.agents.tokenization_manager.nodes import set_toolkit
 from shieldops.agents.tokenization_manager.tools import TokenizationManagerToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class TokenizationManagerRunner:
         self._app = graph.compile()
         self._results: dict[str, TokenizationManagerState] = {}
 
+    @enforced("tokenization_manager")
     async def execute(
         self,
         tenant_id: str = "default",

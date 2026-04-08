@@ -6,6 +6,8 @@ from typing import Any
 
 import structlog
 
+from shieldops.licensing.enforce import enforced
+
 from .graph import build_graph
 from .tools import SecurityROICalculatorToolkit
 
@@ -31,6 +33,7 @@ class SecurityROICalculatorRunner:
         self._results: dict[str, dict[str, Any]] = {}
         logger.info("src_runner.init")
 
+    @enforced("security_roi_calculator")
     async def execute(
         self,
         tenant_id: str = "default",

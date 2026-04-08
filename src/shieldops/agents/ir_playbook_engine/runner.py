@@ -17,6 +17,7 @@ from shieldops.agents.ir_playbook_engine.nodes import set_toolkit
 from shieldops.agents.ir_playbook_engine.tools import (
     IRPlaybookEngineToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -39,6 +40,7 @@ class IRPlaybookEngineRunner:
         self._results: dict[str, IRPlaybookEngineState] = {}
         logger.info("ir_playbook_engine_runner.initialized")
 
+    @enforced("ir_playbook_engine")
     async def execute(
         self,
         tenant_id: str,

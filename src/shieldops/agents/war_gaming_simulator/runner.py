@@ -13,6 +13,7 @@ from shieldops.agents.war_gaming_simulator.graph import (
 from shieldops.agents.war_gaming_simulator.models import WarGamingSimulatorState
 from shieldops.agents.war_gaming_simulator.nodes import set_toolkit
 from shieldops.agents.war_gaming_simulator.tools import WarGamingSimulatorToolkit
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -27,6 +28,7 @@ class WarGamingSimulatorRunner:
         self._app = graph.compile()
         self._results: dict[str, WarGamingSimulatorState] = {}
 
+    @enforced("war_gaming_simulator")
     async def execute(
         self,
         tenant_id: str = "default",

@@ -19,6 +19,7 @@ from shieldops.agents.threat_attribution.nodes import (
 from shieldops.agents.threat_attribution.tools import (
     ThreatAttributionToolkit,
 )
+from shieldops.licensing.enforce import enforced
 
 logger = structlog.get_logger()
 
@@ -43,6 +44,7 @@ class ThreatAttributionRunner:
         self._results: dict[str, ThreatAttributionState] = {}
         logger.info("threat_attribution_runner.initialized")
 
+    @enforced("threat_attribution")
     async def execute(
         self,
         tenant_id: str,
