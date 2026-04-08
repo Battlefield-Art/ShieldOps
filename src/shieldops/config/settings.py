@@ -145,6 +145,11 @@ class RateLimitConfig(BaseModel):
     rate_limit_default: int = 60
     rate_limit_auth_login: int = 10
     rate_limit_auth_register: int = 5
+    # RFC #243 PR-3: PolicyMiddleware enforcement toggle. When False
+    # (default) the middleware runs in shadow mode — decisions are
+    # logged but requests continue. When True, non-Allow decisions
+    # short-circuit with the translated HTTP response (429/402).
+    policy_enforce: bool = False
 
 
 class ScannersConfig(BaseModel):
@@ -326,6 +331,7 @@ _FLAT_TO_NESTED: dict[str, tuple[str, str]] = {
     "rate_limit_default": ("rate_limiting", "rate_limit_default"),
     "rate_limit_auth_login": ("rate_limiting", "rate_limit_auth_login"),
     "rate_limit_auth_register": ("rate_limiting", "rate_limit_auth_register"),
+    "policy_enforce": ("rate_limiting", "policy_enforce"),
     "kafka_brokers": ("kafka", "kafka_brokers"),
     "kafka_consumer_group": ("kafka", "kafka_consumer_group"),
     "anthropic_api_key": ("llm", "anthropic_api_key"),

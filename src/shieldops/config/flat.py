@@ -139,6 +139,9 @@ class FlatSettings(BaseSettings):
     rate_limit_default: int = 60
     rate_limit_auth_login: int = 10
     rate_limit_auth_register: int = 5
+    # RFC #243 PR-3: flip PolicyMiddleware from shadow to enforce mode.
+    # Default False — shadow mode is the safe rollout posture.
+    policy_enforce: bool = False
 
     # ── Billing (Stripe + cloud) ───────────────────────────────────────
     stripe_secret_key: str = ""
