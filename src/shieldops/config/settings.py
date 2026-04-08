@@ -3,25 +3,306 @@
 import os
 from typing import Any
 
-from pydantic import model_validator
+from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
 
-from shieldops.config.sub.agents import AgentConfig
-from shieldops.config.sub.api import ApiConfig
-from shieldops.config.sub.app import AppConfig
-from shieldops.config.sub.auth import AuthConfig
-from shieldops.config.sub.billing import BillingConfig
-from shieldops.config.sub.connectors import ConnectorsConfig
-from shieldops.config.sub.database import DatabaseConfig
 from shieldops.config.sub.engines import EnginesConfig
-from shieldops.config.sub.kafka import KafkaConfig
-from shieldops.config.sub.llm import LlmConfig
-from shieldops.config.sub.notifications import NotificationsConfig
-from shieldops.config.sub.observability import ObservabilityConfig
-from shieldops.config.sub.rate_limiting import RateLimitConfig
-from shieldops.config.sub.redis import RedisConfig
-from shieldops.config.sub.scanners import ScannersConfig
-from shieldops.config.sub.security import SecurityConfig
+
+# ---------------------------------------------------------------------------
+# Inlined non-engines sub-configs (RFC #241 PR-3 / #251).
+#
+# Previously these lived in src/shieldops/config/sub/<name>.py. They were
+# inlined here because (a) no external callers imported them directly and
+# (b) FlatSettings in flat.py now mirrors every field. The legacy Settings
+# class below still uses them via _FLAT_TO_NESTED for backwards compat.
+# `EnginesConfig` is intentionally still imported from sub/engines.py — it
+# gets its own Phase 3 decomposition PR.
+# ---------------------------------------------------------------------------
+
+
+class AppConfig(BaseModel):
+    """Core application settings."""
+
+    app_name: str = "ShieldOps"
+    app_version: str = "0.1.0"
+    debug: bool = False
+    environment: str = "development"
+
+
+class ApiConfig(BaseModel):
+    """API server settings."""
+
+    api_host: str = "0.0.0.0"  # noqa: S104  # nosec B104
+    api_port: int = 8000
+    api_prefix: str = "/api/v1"
+    cors_origins: list[str] = ["http://localhost:3000"]
+
+
+class DatabaseConfig(BaseModel):
+    """Database connection settings."""
+
+    database_url: str = "postgresql+asyncpg://shieldops:shieldops@localhost:5432/shieldops"
+    database_pool_size: int = 20
+
+
+class RedisConfig(BaseModel):
+    """Redis connection settings."""
+
+    redis_url: str = "redis://localhost:6379/0"
+
+
+class KafkaConfig(BaseModel):
+    """Kafka broker settings."""
+
+    kafka_brokers: str = "localhost:9092"
+    kafka_consumer_group: str = "shieldops-agents"
+
+
+class LlmConfig(BaseModel):
+    """LLM provider and routing settings."""
+
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-sonnet-4-20250514"
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o"
+    llm_routing_enabled: bool = False
+    llm_simple_model: str = "claude-haiku-4-5-20251001"
+    llm_moderate_model: str = "claude-sonnet-4-20250514"
+    llm_complex_model: str = "claude-opus-4-20250514"
+    rag_enabled: bool = False
+    rag_embedding_model: str = "text-embedding-3-small"
+
+
+class AuthConfig(BaseModel):
+    """JWT and OIDC/SSO authentication settings."""
+
+    jwt_secret_key: str = "change-me-in-production"  # noqa: S105
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
+    oidc_enabled: bool = False
+    oidc_issuer_url: str = ""
+    oidc_client_id: str = ""
+    oidc_client_secret: str = ""
+    oidc_redirect_uri: str = "http://localhost:8000/api/v1/auth/oidc/callback"
+    oidc_scopes: str = "openid email profile"
+
+
+class BillingConfig(BaseModel):
+    """Stripe, GCP, and Azure billing settings."""
+
+    # Stripe
+    stripe_secret_key: str = ""
+    stripe_publishable_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_api_key: str = ""
+    stripe_success_url: str = "http://localhost:5173/settings?billing=success"
+    stripe_cancel_url: str = "http://localhost:5173/settings?billing=cancel"
+    stripe_price_starter: str = ""
+    stripe_price_professional: str = ""
+    stripe_price_enterprise: str = ""
+
+    # GCP Billing
+    gcp_billing_dataset: str = "billing_export"
+    gcp_billing_table: str = "gcp_billing_export_v1"
+
+    # Azure Billing
+    azure_billing_enabled: bool = False
+
+
+class ObservabilityConfig(BaseModel):
+    """Observability, tracing, and monitoring settings."""
+
+    langsmith_api_key: str = ""
+    langsmith_project: str = "shieldops"
+    langsmith_enabled: bool = False
+    otel_exporter_endpoint: str = "http://localhost:4317"
+    otel_endpoint: str = "http://localhost:4317"
+    prometheus_url: str = "http://localhost:9090"
+    splunk_url: str = ""
+    splunk_token: str = ""
+    splunk_index: str = "main"
+    splunk_verify_ssl: bool = True
+    datadog_api_key: str = ""
+    datadog_app_key: str = ""
+    datadog_site: str = "datadoghq.com"
+    jaeger_url: str = ""
+    newrelic_api_key: str = ""
+    newrelic_account_id: str = ""
+    elastic_url: str = ""
+    elastic_api_key: str = ""
+    tracing_enabled: bool = False
+
+
+class RateLimitConfig(BaseModel):
+    """HTTP API rate limiting settings."""
+
+    rate_limit_enabled: bool = True
+    rate_limit_window_seconds: int = 60
+    sliding_window_rate_limit_enabled: bool = False
+    rate_limit_admin: int = 300
+    rate_limit_operator: int = 120
+    rate_limit_viewer: int = 60
+    rate_limit_default: int = 60
+    rate_limit_auth_login: int = 10
+    rate_limit_auth_register: int = 5
+
+
+class ScannersConfig(BaseModel):
+    """Security scanner and SBOM settings."""
+
+    nvd_api_key: str = ""
+    trivy_server_url: str = ""
+    trivy_timeout: int = 300
+    gitleaks_path: str = "gitleaks"
+    osv_scanner_path: str = "osv-scanner"
+    checkov_path: str = "checkov"
+    iac_scanner_enabled: bool = False
+    git_scanner_enabled: bool = False
+    k8s_scanner_enabled: bool = False
+    network_scanner_enabled: bool = False
+    syft_path: str = "syft"
+    sbom_enabled: bool = False
+    mitre_attack_enabled: bool = False
+    epss_enabled: bool = False
+    ghsa_enabled: bool = False
+    os_advisory_feeds_enabled: bool = False
+
+
+class NotificationsConfig(BaseModel):
+    """Slack, PagerDuty, webhook, and email notification settings."""
+
+    # Slack
+    slack_bot_token: str = ""
+    slack_signing_secret: str = ""
+    slack_approval_channel: str = "#shieldops-approvals"
+
+    # PagerDuty
+    pagerduty_routing_key: str = ""
+    pagerduty_api_key: str = ""
+    pagerduty_service_ids: str = ""
+
+    # Webhooks
+    webhook_url: str = ""
+    webhook_secret: str = ""
+    webhook_timeout: float = 10.0
+
+    # Email / SMTP
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = True
+    smtp_from_address: str = "shieldops@localhost"
+    smtp_to_addresses: list[str] = []
+
+    # Chat session
+    chat_session_ttl_seconds: int = 86400
+    chat_max_messages_per_session: int = 50
+
+
+class ConnectorsConfig(BaseModel):
+    """Cloud, security, and ITSM connector settings."""
+
+    # AWS
+    aws_region: str = ""
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+    cloudwatch_log_group: str = ""
+
+    # GCP
+    gcp_project_id: str = ""
+    gcp_region: str = "us-central1"
+
+    # Azure
+    azure_subscription_id: str = ""
+    azure_resource_group: str = ""
+    azure_location: str = "eastus"
+
+    # OPA
+    opa_endpoint: str = "http://localhost:8181"
+
+    # Linux SSH
+    linux_host: str = ""
+    linux_username: str = ""
+    linux_private_key_path: str = ""
+
+    # Windows WinRM
+    windows_host: str = ""
+    windows_username: str = ""
+    windows_password: str = ""
+    windows_use_ssl: bool = True
+    windows_port: int = 5986
+
+    # CrowdStrike
+    crowdstrike_client_id: str = ""
+    crowdstrike_client_secret: str = ""
+    crowdstrike_base_url: str = "https://api.crowdstrike.com"
+
+    # Microsoft Defender
+    defender_tenant_id: str = ""
+    defender_client_id: str = ""
+    defender_client_secret: str = ""
+
+    # Wiz
+    wiz_client_id: str = ""
+    wiz_client_secret: str = ""
+    wiz_api_endpoint: str = "https://api.us1.app.wiz.io/graphql"
+
+    # Splunk (extended connector fields)
+    splunk_hec_url: str = ""
+    splunk_hec_token: str = ""
+
+    # Elastic (extended)
+    elastic_cloud_id: str = ""
+
+    # New Relic (extended)
+    newrelic_region: str = "US"
+
+    # ServiceNow
+    servicenow_instance_url: str = ""
+    servicenow_username: str = ""
+    servicenow_password: str = ""
+
+    # Jira
+    jira_base_url: str = ""
+    jira_email: str = ""
+    jira_api_token: str = ""
+
+    # OpsGenie
+    opsgenie_api_key: str = ""
+
+
+class AgentConfig(BaseModel):
+    """Agent orchestration settings."""
+
+    agent_confidence_threshold_auto: float = 0.85
+    agent_confidence_threshold_approval: float = 0.50
+    agent_max_investigation_time_seconds: int = 600
+    agent_max_remediation_retries: int = 3
+    agent_global_max_concurrent: int = 20
+    agent_quota_enabled: bool = True
+    agent_collaboration_enabled: bool = True
+    agent_collaboration_max_messages: int = 1000
+    agent_collaboration_session_timeout_minutes: int = 60
+    agent_benchmark_enabled: bool = True
+    agent_benchmark_baseline_days: int = 30
+    agent_benchmark_regression_threshold: float = 0.2
+    agent_decision_tracking_enabled: bool = True
+    agent_decision_max_records: int = 50000
+    agent_decision_retention_days: int = 90
+
+
+class SecurityConfig(BaseModel):
+    """Vault, secret management, and security settings."""
+
+    vault_addr: str = ""
+    vault_token: str = ""
+    vault_mount_point: str = "secret"
+    vault_namespace: str = ""
+    gcp_secret_manager_enabled: bool = False
+    azure_keyvault_url: str = ""
+    github_advisory_token: str = ""
+
 
 # Map flat field names to (sub_config_name, nested_field_name)
 _FLAT_TO_NESTED: dict[str, tuple[str, str]] = {
